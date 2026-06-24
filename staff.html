@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="FIL-ITALIA Nation Select Basketball Program in Italy. Camps, tournaments, player development and international opportunities.">
+<meta property="og:image" content="images/logo.png">
+<meta property="og:title" content="FIL-ITALIA Nation Select">
+<meta property="og:description" content="Camps, tournaments and player development for Fil-Italian basketball athletes.">
+<title>FIL-ITALIA Staff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=3">
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="apple-touch-icon" href="images/logo.png">
+</head><body><div class="background-logo"></div><nav class="navbar">
+  <a href="index.html" class="logo-area">
+    <img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo">
+    <div class="logo-text">FIL-ITALIA</div>
+  </a>
+  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html" data-key="navHome">Home</a>
+    <a href="players.html" data-key="navPlayers">Players</a>
+    <a href="gallery.html" data-key="navGallery">Gallery</a>
+    <a href="staff.html" data-key="navStaff">Staff</a>
+    <a href="news.html" data-key="navNews">News</a>
+    <a href="events.html" data-key="navEvents">Events</a>
+    <a href="register.html" data-key="navJoin">Join</a>
+    <a href="camp-register.html" data-key="navCamp">Camp</a>
+    <a href="index.html#contact" data-key="navContact">Contact</a>
+  </div>
+  <div class="language-switch">
+    <button onclick="setLanguage('it')">IT</button>
+    <button onclick="setLanguage('en')">EN</button>
+    <button onclick="setLanguage('ph')">PH</button>
+  </div>
+</nav><section class="players-page"><h1 data-key="staffTitle">COACHES & STAFF</h1><div class="players-button-row"><a href="index.html" class="players-list-link" data-key="backHome">← Back to Home</a></div><p class="page-subtitle" data-key="staffPageSubtitle">Meet the people supporting FIL-ITALIA Nation Select.</p><div id="staffPageContainer"></div></section><div class="staff-modal" id="staffModal">
+  <span class="close-btn" onclick="closeStaff()">×</span>
+  <button class="modal-arrow modal-prev" onclick="prevStaff()">‹</button>
+  <button class="modal-arrow modal-next" onclick="nextStaff()">›</button>
+  <div class="staff-modal-content">
+    <img id="staffImage" alt="">
+    <h2 id="staffName"></h2>
+    <h4 id="staffRole"></h4>
+    <p id="staffBio"></p>
+  </div>
+</div>
+<footer>
+<img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
+<p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
+<div class="footer-links">
+<a href="privacy.html">Privacy Policy</a>
+</div>
+</footer>
+<script src="staff-data.js?v=3"></script>
+<script src="script.js?v=3"></script></body></html>

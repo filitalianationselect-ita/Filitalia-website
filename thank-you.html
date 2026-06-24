@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="FIL-ITALIA Talent ID Camp registration page.">
+<title>FIL-ITALIA Registration Completed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=4">
+<link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body>
+<div class="background-logo"></div>
+<nav class="navbar">
+  <a href="index.html" class="logo-area"><img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo"><div class="logo-text">FIL-ITALIA</div></a>
+  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html" data-key="navHome">Home</a>
+    <a href="players.html" data-key="navPlayers">Players</a>
+    <a href="gallery.html" data-key="navGallery">Gallery</a>
+    <a href="staff.html" data-key="navStaff">Staff</a>
+    <a href="news.html" data-key="navNews">News</a>
+    <a href="events.html" data-key="navEvents">Events</a>
+    <a href="register.html" data-key="navJoin">Join</a>
+    <a href="camp-register.html" data-key="navCamp">Camp</a>
+    <a href="index.html#contact" data-key="navContact">Contact</a>
+  </div>
+  <div class="language-switch"><button onclick="setLanguage('it')">IT</button><button onclick="setLanguage('en')">EN</button><button onclick="setLanguage('ph')">PH</button></div>
+</nav>
+
+<section class="players-page registration-page">
+  <div class="thank-you-card">
+    <div class="thank-you-icon">✓</div>
+    <h1 data-key="thankYouTitle">REGISTRAZIONE COMPLETATA</h1>
+    <p class="page-subtitle" data-key="thankYouSubtitle">Grazie per esserti registrato al FIL-ITALIA Talent ID Camp. Abbiamo ricevuto i tuoi dati.</p>
+    <div class="camp-actions" style="justify-content:center;">
+      <a class="main-button" href="events.html" data-key="backToEvents">Torna agli eventi</a>
+      <a class="players-list-link" href="index.html" data-key="navHome">Home</a>
+    </div>
+  </div>
+</section>
+
+<footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
+<script src="events-data.js?v=4"></script>
+<script src="script.js?v=4"></script>
+</body></html>

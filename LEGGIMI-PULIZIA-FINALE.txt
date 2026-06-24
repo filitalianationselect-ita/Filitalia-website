@@ -1,0 +1,25 @@
+FIL-ITALIA CLEAN FINAL PACKAGE
+
+Copia tutti questi file dentro /Users/ejay/Desktop/filitalia.official/ e fai Sostituisci.
+
+Ho tolto dal pacchetto i doppioni/progetti non attivi:
+- battle-of-europe-2026.html
+- idcamp-milan-2026.html
+- idcamp-rome-2026.html
+- training-bologna-2026.html
+- training-milan-2026.html
+- tournament.html
+- training.html
+
+Gallery visibile ora:
+- ID Camps
+- Nation Select Showcase
+- NBTC Manila
+
+Dentro ID Camps restano:
+- Milano
+- Firenze
+- Roma
+- Venezia
+
+Dopo la copia, apri index.html e fai Cmd + Shift + R.

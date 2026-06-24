@@ -1,0 +1,80 @@
+const galleryData = [
+  {
+    id: "idcamp-milano-2026",
+    title: "Talent ID Camp Milano",
+    category: "idcamp",
+    categoryLabel: "ID CAMP",
+    date: "25 July 2026",
+    month: "JULY 2026",
+    sortDate: "2026-07-25",
+    cover: "images/gallery/idcamp/milano-2026/cover.jpg",
+    folder: "images/gallery/idcamp/milano-2026",
+    count: 6,
+    page: "idcamp-milano-2026.html"
+  },
+  {
+    id: "idcamp-firenze-2026",
+    title: "Talent ID Camp Firenze",
+    category: "idcamp",
+    categoryLabel: "ID CAMP",
+    date: "26 July 2026",
+    month: "JULY 2026",
+    sortDate: "2026-07-26",
+    cover: "images/gallery/idcamp/firenze-2026/cover.jpg",
+    folder: "images/gallery/idcamp/firenze-2026",
+    count: 6,
+    page: "idcamp-firenze-2026.html"
+  },
+  {
+    id: "idcamp-roma-2026",
+    title: "Talent ID Camp Roma",
+    category: "idcamp",
+    categoryLabel: "ID CAMP",
+    date: "5 August 2026",
+    month: "AUGUST 2026",
+    sortDate: "2026-08-05",
+    cover: "images/gallery/idcamp/roma-2026/cover.jpg",
+    folder: "images/gallery/idcamp/roma-2026",
+    count: 6,
+    page: "idcamp-roma-2026.html"
+  },
+  {
+    id: "idcamp-venezia-2026",
+    title: "Talent ID Camp Venezia",
+    category: "idcamp",
+    categoryLabel: "ID CAMP",
+    date: "Coming Soon",
+    month: "COMING SOON",
+    sortDate: "9999-12-31",
+    cover: "images/gallery/idcamp/venezia-2026/cover.jpg",
+    folder: "images/gallery/idcamp/venezia-2026",
+    count: 6,
+    page: "idcamp-venezia-2026.html"
+  },
+  {
+    id: "nation-select-showcase-2026",
+    title: "Nation Select Showcase",
+    category: "showcase",
+    categoryLabel: "SHOWCASE",
+    date: "2026",
+    month: "2026",
+    sortDate: "2026-12-31",
+    cover: "images/logo.png",
+    folder: "images/gallery/showcase/nation-select-showcase-2026",
+    count: 6,
+    page: "nation-select-showcase-2026.html"
+  },
+  {
+    id: "nbtc-manila-2026",
+    title: "NBTC Manila",
+    category: "nbtc",
+    categoryLabel: "NBTC",
+    date: "2026",
+    month: "2026",
+    sortDate: "2026-12-31",
+    cover: "images/logo.png",
+    folder: "images/gallery/nbtc/nbtc-manila-2026",
+    count: 6,
+    page: "nbtc-manila-2026.html"
+  }
+];

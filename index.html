@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="FIL-ITALIA Nation Select Basketball Program in Italy. Camps, tournaments, player development and international opportunities.">
+<meta property="og:image" content="images/logo.png">
+<meta property="og:title" content="FIL-ITALIA Nation Select">
+<meta property="og:description" content="Camps, tournaments and player development for Fil-Italian basketball athletes.">
+<title>FIL-ITALIA Nation Select</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=3">
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="apple-touch-icon" href="images/logo.png">
+</head>
+<body>
+<div class="background-logo"></div>
+<nav class="navbar">
+  <a href="index.html" class="logo-area">
+    <img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo">
+    <div class="logo-text">FIL-ITALIA</div>
+  </a>
+  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="#top" data-key="navHome">Home</a>
+    <a href="#players" data-key="navPlayers">Players</a>
+    <a href="gallery.html" data-key="navGallery">Gallery</a>
+    <a href="#staff" data-key="navStaff">Staff</a>
+    <a href="#news" data-key="navNews">News</a>
+    <a href="#events" data-key="navEvents">Events</a>
+    <a href="register.html" data-key="navJoin">Join</a>
+    <a href="camp-register.html" data-key="navCamp">Camp</a>
+    <a href="#contact" data-key="navContact">Contact</a>
+  </div>
+  <div class="language-switch">
+    <button onclick="setLanguage('it')">IT</button>
+    <button onclick="setLanguage('en')">EN</button>
+    <button onclick="setLanguage('ph')">PH</button>
+  </div>
+</nav>
+<section class="hero" id="top">
+  <div class="hero-content">
+    <img src="images/logo.png" class="hero-logo" alt="FIL-ITALIA Logo">
+    <h1>FIL-ITALIA<span>NATION SELECT</span></h1>
+    <p data-key="heroText">Representing the Next Generation of Fil-Italian Basketball Talent</p>
+    <a href="#players" class="main-button" data-key="heroButton">View Players</a>
+  </div>
+</section>
+<section class="about-section" id="about">
+  <h2 data-key="aboutTitle">ABOUT US</h2>
+  <div class="about-grid">
+    <div class="about-card" onclick="openAbout('identity')"><h3 data-key="aboutCard1Title">National Identity</h3><p data-key="aboutCard1Text">Building a strong basketball culture under FIL-ITALIA.</p></div>
+    <div class="about-card" onclick="openAbout('development')"><h3 data-key="aboutCard2Title">Player Development</h3><p data-key="aboutCard2Text">Supporting athletes through development and opportunities.</p></div>
+    <div class="about-card" onclick="openAbout('vision')"><h3 data-key="aboutCard3Title">International Vision</h3><p data-key="aboutCard3Text">Connecting players, coaches and basketball communities worldwide.</p></div>
+  </div>
+</section>
+<div class="about-modal" id="aboutModal"><span class="close-btn" onclick="closeAbout()">×</span><div class="about-modal-content"><h2 id="aboutModalTitle"></h2><p id="aboutModalText"></p></div></div>
+<section class="players-section" id="players">
+  <h2 data-key="programTitle">FIL-ITALIA DEVELOPMENT PROGRAM</h2>
+  <p class="section-subtitle" data-key="programSubtitle">Athletes selected to grow, compete and represent FIL-ITALIA in future camps and tournaments.</p>
+  <div class="players-button-row"><a href="players.html" class="players-list-link" data-key="viewFullList">View Full Player List →</a></div>
+  <div class="players-grid" id="homePlayersGrid"></div>
+</section>
+<div class="player-modal" id="playerModal">
+  <span class="close-btn" onclick="closePlayer()">×</span>
+  <button class="modal-arrow modal-prev" onclick="prevPlayer()">‹</button>
+  <button class="modal-arrow modal-next" onclick="nextPlayer()">›</button>
+  <div class="modal-content">
+    <img id="modalImage" alt="">
+    <h2 id="modalName"></h2>
+    <h4 id="modalRole"></h4>
+    <div class="player-details">
+      <p><strong data-key="labelCategory">Category:</strong> <span id="modalCategory"></span></p>
+      <p><strong data-key="labelHeight">Height:</strong> <span id="modalHeight"></span></p>
+      <p><strong data-key="labelClub">Club:</strong> <span id="modalClub"></span></p>
+      <p><strong data-key="labelCity">City:</strong> <span id="modalCity"></span></p>
+      <p><strong data-key="labelNationality">Nationality:</strong> <span id="modalNationality"></span></p>
+    </div>
+    <p id="modalBio"></p>
+    <a id="modalHighlights" href="#" target="_blank" class="main-button" data-key="watchHighlights">Watch Highlights</a>
+  </div>
+</div>
+<section class="gallery-section" id="gallery">
+  <h2 data-key="galleryTitle">MEDIA GALLERY</h2>
+  <p class="section-subtitle" data-key="gallerySubtitle">Moments from camps, tournaments, training sessions and community events.</p>
+  <div class="players-button-row"><a href="gallery.html" class="players-list-link" data-key="viewGallery">View Gallery →</a></div>
+  <div class="gallery-grid"><img src="images/media1.jpg" alt="" onclick="openImageGallery(this)"><img src="images/media2.jpg" alt="" onclick="openImageGallery(this)"><img src="images/media3.jpg" alt="" onclick="openImageGallery(this)"></div>
+</section>
+<section class="staff-section" id="staff">
+  <h2 data-key="staffTitle">COACHES & STAFF</h2>
+  <p class="section-subtitle" data-key="staffSubtitle">The people helping guide, organize and develop the FIL-ITALIA basketball program.</p>
+  <div class="players-button-row"><a href="staff.html" class="players-list-link" data-key="viewFullStaff">View Full Staff →</a></div>
+  <div class="staff-grid" id="homeStaffGrid"></div>
+</section>
+<section class="news-section" id="news">
+  <h2 data-key="newsTitle">NEWS & ANNOUNCEMENTS</h2>
+  <div class="players-button-row"><a href="news.html" class="players-list-link" data-key="viewMoreNews">View More News →</a></div>
+  <p class="section-subtitle" data-key="newsSubtitle">Updates about selections, camps, tournaments and future FIL-ITALIA activities.</p>
+  <div class="news-grid" id="homeNewsGrid"></div>
+</section>
+<section class="join-section" id="join">
+<h2 data-key="joinTitle">JOIN FIL-ITALIA</h2>
+
+<p class="section-subtitle" data-key="joinSubtitle">
+Register your general profile as a player, coach, staff member, referee or collaborator. Camp registrations have a separate page.
+</p>
+
+<div class="join-button-row">
+<a href="register.html" class="main-button">Join FIL-ITALIA</a>
+<a href="camp-register.html" class="main-button secondary-main-button">Camp Registration</a>
+</div>
+</section>
+<section class="social-section" id="social"><h2 data-key="socialTitle">SOCIAL MEDIA</h2><p class="section-subtitle" data-key="socialSubtitle">Stay connected with FIL-ITALIA Nation Select and follow our players, activities and journey.</p><div class="social-grid"><a href="https://www.instagram.com/filitalianationselect?igsh=MXExeHoxY3I1cjE0bw%3D%3D&utm_source=qr" target="_blank" class="social-card"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" class="social-icon" alt="Instagram">Instagram</a><a href="https://www.facebook.com/share/1EPfQAxGx5/?mibextid=wwXIfr" target="_blank" class="social-card"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" class="social-icon" alt="Facebook">Facebook</a></div></section>
+<section class="events-section" id="events"><h2 data-key="eventsTitle">UPCOMING EVENTS</h2><div class="players-button-row"><a href="events.html" class="players-list-link" data-key="viewAllEvents">View All Events →</a></div><p class="section-subtitle" data-key="eventsSubtitle">Explore upcoming camps, tournaments, tryouts and future opportunities for our athletes.</p><div class="events-grid" id="homeEventsGrid"></div></section>
+<section class="contact-section" id="contact"><h2 data-key="contactTitle">CONTACT</h2><form action="https://formsubmit.co/Filitalia.nationselect@gmail.com" method="POST" class="contact-form"><input type="text" name="name" placeholder="Name" data-key-placeholder="namePlaceholder" required><input type="email" name="email" placeholder="Email" data-key-placeholder="emailPlaceholder" required><textarea name="message" placeholder="Message" data-key-placeholder="messagePlaceholder" required></textarea><input type="hidden" name="_subject" value="Nuovo messaggio FIL-ITALIA"><input type="hidden" name="_captcha" value="false"><button type="submit" data-key="sendButton">SEND MESSAGE</button></form></section>
+<footer>
+<img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
+<p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
+<div class="footer-links">
+<a href="privacy.html">Privacy Policy</a>
+</div>
+</footer>
+<div class="info-modal" id="infoModal">
+  <span class="close-btn" onclick="closeInfo()">×</span>
+  <button class="modal-arrow modal-prev" onclick="prevInfo()">‹</button>
+  <button class="modal-arrow modal-next" onclick="nextInfo()">›</button>
+  <div class="modal-content">
+    <img id="infoImage" alt="">
+    <h2 id="infoTitle"></h2>
+    <h4 id="infoSubtitle"></h4>
+    <p id="infoDescription"></p>
+  </div>
+</div>
+<div class="staff-modal" id="staffModal">
+  <span class="close-btn" onclick="closeStaff()">×</span>
+  <button class="modal-arrow modal-prev" onclick="prevStaff()">‹</button>
+  <button class="modal-arrow modal-next" onclick="nextStaff()">›</button>
+  <div class="staff-modal-content">
+    <img id="staffImage" alt="">
+    <h2 id="staffName"></h2>
+    <h4 id="staffRole"></h4>
+    <p id="staffBio"></p>
+  </div>
+</div>
+<div class="universal-modal" id="universalModal">
+  <span class="close-btn" onclick="closeModal()">×</span>
+  <button class="modal-arrow modal-prev" onclick="prevModal()">‹</button>
+  <img id="universalImage" alt="">
+  <button class="modal-arrow modal-next" onclick="nextModal()">›</button>
+</div>
+<script src="players-data.js?v=3"></script>
+<script src="staff-data.js?v=3"></script>
+<script src="events-data.js?v=3"></script>
+<script src="news-data.js?v=3"></script>
+<script src="gallery-data.js?v=3"></script>
+<script src="script.js?v=3"></script>
+</body></html>

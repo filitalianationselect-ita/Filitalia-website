@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="FIL-ITALIA Nation Select Basketball Program in Italy. Camps, tournaments, player development and international opportunities.">
+<meta property="og:image" content="images/logo.png">
+<meta property="og:title" content="FIL-ITALIA Nation Select">
+<meta property="og:description" content="Camps, tournaments and player development for Fil-Italian basketball athletes.">
+<title>Join FIL-ITALIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=3">
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="apple-touch-icon" href="images/logo.png">
+</head>
+<body>
+<div class="background-logo"></div>
+<nav class="navbar">
+  <a href="index.html" class="logo-area">
+    <img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo">
+    <div class="logo-text">FIL-ITALIA</div>
+  </a>
+  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html" data-key="navHome">Home</a>
+    <a href="players.html" data-key="navPlayers">Players</a>
+    <a href="gallery.html" data-key="navGallery">Gallery</a>
+    <a href="staff.html" data-key="navStaff">Staff</a>
+    <a href="news.html" data-key="navNews">News</a>
+    <a href="events.html" data-key="navEvents">Events</a>
+    <a href="register.html" data-key="navJoin">Join</a>
+    <a href="camp-register.html" data-key="navCamp">Camp</a>
+    <a href="index.html#contact" data-key="navContact">Contact</a>
+  </div>
+  <div class="language-switch">
+    <button onclick="setLanguage('it')">IT</button>
+    <button onclick="setLanguage('en')">EN</button>
+    <button onclick="setLanguage('ph')">PH</button>
+  </div>
+</nav>
+
+<section class="players-page registration-page">
+  <h1 data-key="joinPageTitle">UNISCITI A FIL-ITALIA</h1>
+  <div class="players-button-row"><a href="index.html#join" class="players-list-link" data-key="backHome">← Torna alla Home</a></div>
+  <p class="page-subtitle" data-key="joinSiteSubtitle">Compila il modulo direttamente sul sito. I dati verranno inviati al foglio DATABASE.</p>
+
+  <form class="site-registration-form" id="joinForm" data-form-type="general_join">
+    <input type="hidden" name="formType" value="general_join">
+    <input type="hidden" name="sourcePage" value="register.html">
+
+    <div class="form-section-card">
+      <h2 data-key="generalInfoTitle">Informazioni generali</h2>
+      <div class="form-grid">
+        <label><span data-key="roleLabel">Ruolo</span>
+          <select name="Role" id="joinRole" required>
+            <option value="" data-key="selectRoleOption">Seleziona ruolo</option>
+            <option value="Player">Player</option>
+            <option value="Coach">Coach</option>
+            <option value="Staff">Staff</option>
+            <option value="Referee">Referee</option>
+            <option value="Volunteer / Other">Volunteer / Other</option>
+          </select>
+        </label>
+        <label><span data-key="firstNameLabel">Nome</span><input name="Nome" required></label>
+        <label><span data-key="lastNameLabel">Cognome</span><input name="Cognome" required></label>
+        <label><span data-key="sexLabel">Sesso</span>
+          <select name="Sesso">
+            <option value="">-</option>
+            <option value="Maschio">Maschio</option>
+            <option value="Femmina">Femmina</option>
+          </select>
+        </label>
+        <label><span data-key="birthDateLabel">Data di nascita</span><input type="date" name="Data Nascita"></label>
+        <label><span data-key="residenceCityLabel">Città di Residenza</span><input name="Città di Residenza"></label>
+        <label><span data-key="emailLabel">Email</span><input type="email" name="Email" required></label>
+        <label><span data-key="phoneLabel">Telefono</span><input name="Telefono"></label>
+        <label><span data-key="nationalityLabel">Nazionalità / Origine</span><input name="Nazionalità" placeholder="Italian / Filipino / other"></label>
+      </div>
+    </div>
+
+    <div class="form-section-card guardian-section">
+      <h2 data-key="guardianDataTitle">Dati genitore/tutore</h2>
+      <p class="form-note" data-key="guardianDataNote">Compilare se il partecipante è minorenne. I dati resteranno nella stessa riga del giocatore.</p>
+      <div class="form-grid">
+        <label><span data-key="guardianFirstNameLabel">Nome Genitore</span><input name="Nome Genitore"></label>
+        <label><span data-key="guardianLastNameLabel">Cognome Genitore</span><input name="Cognome Genitore"></label>
+        <label><span data-key="guardianEmailLabel">Email Genitore</span><input type="email" name="Email Genitore"></label>
+        <label><span data-key="guardianPhoneLabel">Telefono Genitore</span><input name="Telefono Genitore"></label>
+        <label><span data-key="guardianDocumentLabel">Documento Genitore</span><input name="Documento Genitore" placeholder="Carta d'identità / Passaporto"></label>
+      </div>
+    </div>
+
+    <div class="form-section-card role-section role-player" data-role-section="Player">
+      <h2 data-key="playerInfoTitle">Dati giocatore</h2>
+      <div class="form-grid">
+        <label><span data-key="italianPassportLabel">Passaporto Italiano</span>
+          <select name="Passaporto Italiano"><option value="">-</option><option>Sì</option><option>No</option></select>
+        </label>
+        <label><span data-key="filipinoPassportLabel">Passaporto Filippino</span>
+          <select name="Passaporto Filippino"><option value="">-</option><option>Sì</option><option>No</option></select>
+        </label>
+        <label><span data-key="heightLabel">Altezza</span><input name="Altezza" placeholder="es. 180 cm"></label>
+        <label><span data-key="weightLabel">Peso</span><input name="Peso" placeholder="es. 72 kg"></label>
+        <label><span data-key="positionLabel">Ruolo Basket</span><input name="Ruolo Basket" placeholder="PG / SG / SF / PF / C"></label>
+        <label><span data-key="clubLabel">Squadra Attuale</span><input name="Squadra Attuale"></label>
+        <label><span data-key="instagramLabel">Instagram</span><input name="Instagram" placeholder="@username"></label>
+        <label><span data-key="highlightsLabel">Highlights</span><input name="Highlights" placeholder="YouTube, Hudl, Instagram..."></label>
+      </div>
+      <label class="full-label"><span data-key="playerPhotoLabel">Foto Giocatore</span><input type="file" name="Foto Giocatore" accept="image/*" data-required-for="Player"></label>
+    </div>
+
+    <div class="form-section-card role-section" data-role-section="Coach">
+      <h2 data-key="coachInfoTitle">Dati allenatore</h2>
+      <div class="form-grid">
+        <label><span data-key="coachLicenseLabel">Licenza / Qualifica</span><input name="Licenza Allenatore"></label>
+        <label><span data-key="federationLabel">Federazione</span><input name="Federazione"></label>
+        <label><span data-key="experienceYearsLabel">Anni di esperienza</span><input name="Anni Esperienza"></label>
+        <label><span data-key="coachedCategoriesLabel">Categorie allenate</span><input name="Categorie Allenate" placeholder="U12, U14, U16, Senior..."></label>
+      </div>
+      <label class="full-label"><span data-key="motivationLabel">Perché vuoi collaborare con FIL-ITALIA?</span><textarea name="Motivazione"></textarea></label>
+    </div>
+
+    <div class="form-section-card role-section" data-role-section="Staff">
+      <h2 data-key="staffInfoTitle">Dati staff</h2>
+      <div class="form-grid">
+        <label><span data-key="staffAreaLabel">Area di interesse</span>
+          <select name="Area Staff"><option value="">-</option><option>Team Manager</option><option>Event Manager</option><option>Media</option><option>Social Media</option><option>Scouting</option><option>Operations</option><option>Logistics</option></select>
+        </label>
+        <label><span data-key="availabilityLabel">Disponibilità</span><input name="Disponibilità"></label>
+      </div>
+      <label class="full-label"><span data-key="previousExperienceLabel">Esperienze precedenti</span><textarea name="Esperienze Precedenti"></textarea></label>
+    </div>
+
+    <div class="form-section-card role-section" data-role-section="Referee">
+      <h2 data-key="refereeInfoTitle">Dati arbitro</h2>
+      <div class="form-grid">
+        <label><span data-key="refereeLevelLabel">Livello arbitrale</span><input name="Livello Arbitrale"></label>
+        <label><span data-key="federationLabel">Federazione</span><input name="Federazione Arbitro"></label>
+        <label><span data-key="experienceYearsLabel">Anni di esperienza</span><input name="Anni Esperienza Arbitro"></label>
+        <label><span data-key="availabilityAreaLabel">Zona disponibilità</span><input name="Zona Disponibilità"></label>
+      </div>
+    </div>
+
+    <div class="form-section-card role-section" data-role-section="Volunteer / Other">
+      <h2 data-key="volunteerInfoTitle">Volunteer / Other</h2>
+      <div class="form-grid">
+        <label><span data-key="professionLabel">Professione</span><input name="Professione"></label>
+        <label><span data-key="skillsLabel">Competenze</span><input name="Competenze"></label>
+      </div>
+      <label class="full-label"><span data-key="howHelpLabel">Come vorresti aiutare FIL-ITALIA?</span><textarea name="Come Aiutare"></textarea></label>
+    </div>
+
+    <div class="form-section-card">
+      <h2 data-key="privacyTitle">Privacy e consensi</h2>
+      <label class="full-label"><span data-key="messageLabel">Note</span><textarea name="Note"></textarea></label>
+      <label class="check-row"><input type="checkbox" name="Privacy Consent" value="yes" required><span data-key="privacyConsentLabel">Accetto il trattamento dei dati secondo la Privacy Policy.</span></label>
+      <label class="check-row"><input type="checkbox" name="Media Consent" value="yes"><span data-key="mediaConsentLabel">Autorizzo l’utilizzo di foto/video per comunicazioni ufficiali FIL-ITALIA.</span></label>
+      <button type="submit" class="submit-registration-button" data-key="submitJoinButton">INVIA CANDIDATURA</button>
+      <p class="form-status" id="joinFormStatus"></p>
+    </div>
+  </form>
+</section>
+
+<footer>
+<img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
+<p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
+<div class="footer-links"><a href="privacy.html">Privacy Policy</a></div>
+</footer>
+<script src="script.js?v=3"></script>
+</body>
+</html>

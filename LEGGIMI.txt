@@ -1,0 +1,40 @@
+FIL-ITALIA CAMP SITE - COSA FARE
+
+Questa cartella NON deve diventare un sito separato nuovo.
+È una cartella pronta per aggiornare il sito attuale.
+
+COME USARLA:
+1. Fai backup del sito attuale.
+2. Carica/sostituisci questi file nella stessa cartella principale del sito.
+3. Mantieni la cartella images già esistente.
+4. I file nuovi da aggiungere sono:
+   - roma-camp.html
+   - milano-camp.html
+   - firenze-camp.html
+   - venezia-camp.html
+   - bologna-camp.html
+   - thank-you.html
+
+FILE DA SOSTITUIRE:
+- index.html
+- camp-register.html
+- events-data.js
+- script.js
+- style.css
+
+PERCORSO NUOVO:
+Eventi -> pagina città -> camp-register.html -> thank-you.html
+
+GOOGLE SHEET:
+Il file Code.gs va copiato in Apps Script.
+Sostituisci:
+- INCOLLA_QUI_ID_GOOGLE_SHEET
+- INCOLLA_QUI_ID_CARTELLA_DRIVE_FOTO
+
+I fogli città devono chiamarsi esattamente:
+- Firenze
+- Roma
+- Milano
+- Venezia
+- Bologna
+
