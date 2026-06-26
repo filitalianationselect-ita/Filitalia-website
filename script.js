@@ -420,6 +420,9 @@ function localNews(item, field){
   return translatedField(item, field);
 }
 
+function localEvent(item, field){
+  return translatedField(item, field);
+}
 
 /* ===== FREE AUTO TRANSLATION FALLBACK =====
    How it works:
@@ -591,6 +594,8 @@ function openPlayerData(player){
     highlights.href = player.highlights || "#";
     highlights.style.display = player.highlights && player.highlights !== "#" ? "inline-block" : "none";
   }
+
+  ensureModalShareButton(document.querySelector("#playerModal .modal-content"), "player", player);
 }
 
 function closePlayer(){ const modal = document.getElementById("playerModal"); if(modal) modal.style.display = "none"; }
@@ -738,6 +743,7 @@ function openStaffData(item){
   document.getElementById("staffName").innerText = localStaff(item,"name");
   document.getElementById("staffRole").innerText = localStaff(item,"role");
   document.getElementById("staffBio").innerText = localStaff(item,"bio");
+  ensureModalShareButton(document.querySelector("#staffModal .staff-modal-content"), "staff", item);
 }
 
 function closeStaff(){ const modal = document.getElementById("staffModal"); if(modal) modal.style.display = "none"; }
@@ -814,6 +820,7 @@ function getVisibleEvents(){
 
 function buildEventCard(item, index){
   const link = `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
+  const eventId = safe(item.id || item.slug || "");
   const readMore = tr("readMore");
   return `
     <div class="event-card" onclick="openEventByIndex(${index})">
@@ -822,7 +829,10 @@ function buildEventCard(item, index){
       <p>${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
       <p>${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
       <div class="event-read-more">${safe(readMore)}</div>
-      <a class="ticket-button" href="${safe(link)}" target="_blank" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+      <div class="event-card-actions">
+        <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
+        <a class="ticket-button" href="${safe(link)}" target="_blank" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+      </div>
     </div>`;
 }
 
@@ -935,12 +945,319 @@ function getLongText(item, field, fallback){
   return value || fallback || "";
 }
 
+
+
+/* ===== FIL-ITALIA SHARE SYSTEM - CLEAN ===== */
+function makeSlug(value){
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "item";
+}
+
+function getItemId(type, data){
+  if(!data) return "item";
+  if(data.id) return String(data.id);
+  if(data.slug) return String(data.slug);
+  if(type === "player") return makeSlug(data.name || data.title || "player");
+  if(type === "staff") return makeSlug(localStaff(data,"name") || data.name || "staff");
+  if(type === "news") return makeSlug(localNews(data,"title") || data.title || "news");
+  if(type === "event") return makeSlug(localEvent(data,"title") || data.title || "event");
+  if(type === "album") return makeSlug(data.id || data.title || "album");
+  return makeSlug(data.title || data.name || "item");
+}
+
+function buildShareUrl(type, data, customPage){
+  const url = new URL(customPage || window.location.href, window.location.href);
+  url.hash = "";
+  url.searchParams.set("type", type);
+  url.searchParams.set("id", getItemId(type, data));
+  return url.toString();
+}
+
+function getShareTitle(type, data){
+  if(type === "player") return data?.name || "FIL-ITALIA Player";
+  if(type === "staff") return localStaff(data,"name") || "FIL-ITALIA Staff";
+  if(type === "event") return localEvent(data,"title") || "FIL-ITALIA Event";
+  if(type === "news") return localNews(data,"title") || "FIL-ITALIA News";
+  if(type === "album") return data?.title || "FIL-ITALIA Album";
+  return "FIL-ITALIA Nation Select";
+}
+
+function getShareText(type, data){
+  if(type === "player") return `🏀 FIL-ITALIA Nation Select\nGuarda il profilo di ${getShareTitle(type, data)}.`;
+  if(type === "staff") return `🏀 FIL-ITALIA Nation Select\nScopri ${getShareTitle(type, data)}.`;
+  if(type === "event") return `🏀 FIL-ITALIA Nation Select\n${getShareTitle(type, data)}\nRegistrazioni aperte.`;
+  if(type === "news") return `🏀 FIL-ITALIA Nation Select\n${getShareTitle(type, data)}`;
+  if(type === "album") return `🏀 FIL-ITALIA Nation Select\nGuarda l'album: ${getShareTitle(type, data)}`;
+  return "🏀 FIL-ITALIA Nation Select";
+}
+
+async function shareFilitalia(type, data, customPage){
+  const title = getShareTitle(type, data);
+  const text = getShareText(type, data);
+  const url = buildShareUrl(type, data, customPage);
+  const fullText = `${text}\n${url}`;
+
+  try{
+    // iPhone / Android: apre il menu vero del telefono con WhatsApp, Facebook, Instagram, Messenger, ecc.
+    if(navigator.share){
+      await navigator.share({title, text, url});
+      return;
+    }
+  }catch(error){
+    // Se l'utente chiude il menu di condivisione, non mostriamo errori.
+    if(error && (error.name === "AbortError" || error.name === "NotAllowedError")) return;
+  }
+
+  // Computer o browser senza navigator.share: mostriamo un piccolo pannello social.
+  openFallbackShareSheet(title, text, url, fullText);
+}
+
+function openFallbackShareSheet(title, text, url, fullText){
+  closeFallbackShareSheet();
+
+  const encodedUrl = encodeURIComponent(url);
+  const encodedText = encodeURIComponent(fullText);
+  const encodedTitle = encodeURIComponent(title);
+
+  const overlay = document.createElement("div");
+  overlay.className = "share-sheet-overlay";
+  overlay.innerHTML = `
+    <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+      <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
+      <h3>Condividi</h3>
+      <p>Scegli dove condividere il link.</p>
+      <div class="share-sheet-grid">
+        <a href="https://wa.me/?text=${encodedText}" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" rel="noopener">Facebook</a>
+        <button type="button" onclick="shareToInstagram('${encodedText}')">Instagram</button>
+        <button type="button" onclick="copyShareLink('${encodedText}')">Copia link</button>
+      </div>
+    </div>`;
+
+  overlay.addEventListener("click", function(event){
+    if(event.target === overlay) closeFallbackShareSheet();
+  });
+
+  document.body.appendChild(overlay);
+}
+
+async function shareToInstagram(encodedText){
+  const text = decodeURIComponent(encodedText);
+  try{
+    await navigator.clipboard.writeText(text);
+    showShareToast("Link copiato. Apri Instagram e incollalo nella storia o nei messaggi.");
+  }catch(error){
+    window.prompt("Copia questo link per Instagram:", text);
+  }
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || "");
+  if(isMobile){
+    setTimeout(() => { window.location.href = "instagram://app"; }, 350);
+  } else {
+    window.open("https://www.instagram.com/", "_blank", "noopener");
+  }
+  closeFallbackShareSheet();
+}
+
+function closeFallbackShareSheet(){
+  const oldSheet = document.querySelector(".share-sheet-overlay");
+  if(oldSheet) oldSheet.remove();
+}
+
+async function copyShareLink(encodedText){
+  const text = decodeURIComponent(encodedText);
+  try{
+    await navigator.clipboard.writeText(text);
+    showShareToast("Link copiato");
+    closeFallbackShareSheet();
+  }catch(error){
+    window.prompt("Copia questo link:", text);
+  }
+}
+
+function showShareToast(message){
+  let toast = document.querySelector(".share-toast");
+  if(!toast){
+    toast = document.createElement("div");
+    toast.className = "share-toast";
+    document.body.appendChild(toast);
+  }
+  toast.innerText = message;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 1800);
+}
+
+function ensureModalShareButton(container, type, data, customPage){
+  if(!container) return;
+
+  let wrap = container.querySelector("#infoShareRow") || container.querySelector(".share-action-row");
+  if(!wrap){
+    wrap = document.createElement("div");
+    wrap.className = "share-action-row";
+    container.appendChild(wrap);
+  }
+
+  let shareBtn = wrap.querySelector("#infoShareButton") || wrap.querySelector(".share-button");
+  if(!shareBtn){
+    shareBtn = document.createElement("button");
+    shareBtn.type = "button";
+    shareBtn.className = "share-button";
+    wrap.insertBefore(shareBtn, wrap.firstChild);
+  }
+
+  shareBtn.innerText = "Condividi";
+  shareBtn.style.display = "inline-flex";
+  shareBtn.onclick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    shareFilitalia(type, data, customPage);
+  };
+
+  let regBtn = wrap.querySelector("#infoRegisterButton") || wrap.querySelector(".share-register-button");
+  if(type === "event"){
+    if(!regBtn){
+      regBtn = document.createElement("a");
+      regBtn.className = "share-register-button";
+      wrap.appendChild(regBtn);
+    }
+    regBtn.href = `camp-register.html?event=${encodeURIComponent(data?.id || "")}`;
+    regBtn.innerText = tr("registerNow");
+    regBtn.style.display = "inline-flex";
+  } else if(regBtn){
+    regBtn.style.display = "none";
+  }
+}
+
+
+
+/* ===== EVENT SHARE BUTTON ABSOLUTE FIX =====
+   This forces the event modal to show Condividi + Register even if older
+   markup or CSS is still present. */
+function forceEventModalButtons(item){
+  if(!item || item.type !== "event" || !item.data) return;
+  const modal = document.getElementById("infoModal");
+  const content = modal ? modal.querySelector(".modal-content") : null;
+  if(!content) return;
+
+  let row = document.getElementById("eventModalButtonsFinal");
+  if(!row){
+    row = document.createElement("div");
+    row.id = "eventModalButtonsFinal";
+    row.className = "event-modal-buttons-final share-action-row";
+    content.appendChild(row);
+  }
+
+  row.style.cssText = "display:flex!important;visibility:visible!important;opacity:1!important;justify-content:center!important;align-items:center!important;gap:12px!important;flex-wrap:wrap!important;margin-top:24px!important;width:100%!important;";
+
+  let shareBtn = document.getElementById("eventModalShareFinal");
+  if(!shareBtn){
+    shareBtn = document.createElement("button");
+    shareBtn.type = "button";
+    shareBtn.id = "eventModalShareFinal";
+    shareBtn.className = "share-button";
+    row.appendChild(shareBtn);
+  }
+  shareBtn.textContent = "Condividi";
+  shareBtn.style.cssText = "display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important;min-height:44px!important;padding:12px 24px!important;border-radius:999px!important;border:2px solid #0b8f3d!important;background:#0b8f3d!important;color:#fff!important;font-weight:900!important;text-transform:uppercase!important;cursor:pointer!important;text-decoration:none!important;";
+  shareBtn.onclick = function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    shareFilitalia("event", item.data);
+  };
+
+  let registerBtn = document.getElementById("eventModalRegisterFinal");
+  if(!registerBtn){
+    registerBtn = document.createElement("a");
+    registerBtn.id = "eventModalRegisterFinal";
+    registerBtn.className = "share-register-button";
+    row.appendChild(registerBtn);
+  }
+  registerBtn.href = "camp-register.html?event=" + encodeURIComponent(item.data.id || "");
+  registerBtn.textContent = tr("registerNow") || "Register";
+  registerBtn.style.cssText = "display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:center!important;min-height:44px!important;padding:12px 24px!important;border-radius:999px!important;border:2px solid #c62828!important;background:#c62828!important;color:#fff!important;font-weight:900!important;text-transform:uppercase!important;text-decoration:none!important;";
+}
+
+function findSharedItem(list, type, id){
+  if(!Array.isArray(list) || !id) return -1;
+  return list.findIndex(item => getItemId(type, item) === id || String(item.id || "") === id || String(item.slug || "") === id);
+}
+
+function handleSharedLink(){
+  const params = new URLSearchParams(window.location.search);
+  const type = params.get("type");
+  const id = params.get("id");
+  if(!type || !id) return;
+
+  setTimeout(() => {
+    if(type === "news" && typeof newsData !== "undefined"){
+      const index = findSharedItem(newsData, "news", id);
+      if(index >= 0) openNewsByIndex(index);
+    }
+    if(type === "event" && typeof eventsData !== "undefined"){
+      const visible = getVisibleEvents();
+      const index = findSharedItem(visible, "event", id);
+      if(index >= 0){
+        currentInfoList = visible.map(data => ({type:"event", data}));
+        currentInfoIndex = index;
+        openInfo(currentInfoList[index]);
+      }
+    }
+    if(type === "player" && typeof playersData !== "undefined"){
+      const index = findSharedItem(playersData, "player", id);
+      if(index >= 0) openPlayerByIndex(index);
+    }
+    if(type === "staff" && typeof staffData !== "undefined"){
+      const index = findSharedItem(staffData, "staff", id);
+      if(index >= 0) openStaffByIndex(index);
+    }
+  }, 250);
+}
+
+
+function renderInfoActions(container, type, data){
+  if(!container) return;
+
+  container.querySelectorAll(".share-action-row, #eventModalButtonsFinal, .info-action-stack").forEach(el => el.remove());
+
+  const oldRegister = container.querySelector("#infoRegisterButton, #eventTicketBtn");
+  if(oldRegister) oldRegister.style.display = "none";
+
+  const row = document.createElement("div");
+  row.className = type === "event" ? "info-action-stack event-action-stack" : "info-action-stack";
+
+  if(type === "event"){
+    const register = document.createElement("a");
+    register.className = "info-register-main";
+    register.href = getCampPageLink(data);
+    register.innerText = tr("registerNow") || "Registrati ora";
+    row.appendChild(register);
+  }
+
+  const share = document.createElement("button");
+  share.type = "button";
+  share.className = type === "event" ? "info-share-small" : "info-share-main";
+  share.innerText = "Condividi";
+  share.onclick = function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    shareFilitalia(type, data);
+  };
+  row.appendChild(share);
+
+  container.appendChild(row);
+}
+
 function openInfo(item){
   const modal = document.getElementById("infoModal");
   if(!modal || !item) return;
 
   const data = item.data;
+  const content = modal.querySelector(".modal-content");
   modal.style.display = "flex";
+  modal.classList.toggle("event-info-modal", item.type === "event");
+  modal.classList.toggle("news-info-modal", item.type !== "event");
 
   if(item.type === "event"){
     document.getElementById("infoTitle").innerHTML = autoTextHTML(data,"title",localEvent(data,"title"), 0);
@@ -953,18 +1270,13 @@ function openInfo(item){
   }
   translateAutoElements(modal);
 
-  document.getElementById("infoImage").src = data.image || "images/logo.png";
-
-  const btn = document.getElementById("eventTicketBtn");
-  if(btn){
-    if(item.type === "event"){
-      btn.href = `camp-register.html?event=${encodeURIComponent(data.id || "")}`;
-      btn.innerText = tr("registerNow");
-      btn.style.display = "inline-flex";
-    } else {
-      btn.style.display = "none";
-    }
+  const image = document.getElementById("infoImage");
+  if(image){
+    image.src = data.image || "images/logo.png";
+    image.alt = getShareTitle(item.type, data);
   }
+
+  renderInfoActions(content, item.type, data);
 }
 
 function closeInfo(){ const modal = document.getElementById("infoModal"); if(modal) modal.style.display = "none"; }
@@ -972,6 +1284,7 @@ function prevInfo(){ currentInfoIndex = (currentInfoIndex - 1 + currentInfoList.
 function nextInfo(){ currentInfoIndex = (currentInfoIndex + 1) % currentInfoList.length; openInfo(currentInfoList[currentInfoIndex]); }
 
 function buildAlbumCard(album){
+  const sharePage = new URL(album.page || window.location.pathname, window.location.href).toString();
   return `
     <a href="${safe(album.page)}" class="album-card">
       <img src="${safe(album.cover)}" alt="${safe(album.title)}">
@@ -979,6 +1292,7 @@ function buildAlbumCard(album){
         <span>${safe(album.date)}</span>
         <h3>${safe(album.title)}</h3>
         <p>${safe(tr("viewAlbum"))}</p>
+        <button type="button" class="album-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('album', galleryData.find(a => a.id === '${safe(album.id || "")}') || {id:'${safe(album.id || "")}', title:'${safe(album.title || "")}'}, '${safe(sharePage)}');">Condividi</button>
       </div>
     </a>`;
 }
@@ -988,9 +1302,9 @@ function renderGalleryHome(){
   if(!container) return;
 
   container.innerHTML = `
-    <a href="idcamp.html" class="album-card"><img src="images/gallery/idcamp/milano-2026/cover.jpg"><div class="album-info"><span>ID CAMP</span><h3>ID Camp</h3><p>${safe(tr("viewGallery"))}</p></div></a>
-    <a href="training.html" class="album-card"><img src="images/gallery/training/prova1.jpg"><div class="album-info"><span>${lang()==="it"?"ALLENAMENTI":"TRAINING"}</span><h3>${lang()==="it"?"Allenamenti":"Training"}</h3><p>${safe(tr("viewGallery"))}</p></div></a>
-    <a href="tournament.html" class="album-card"><img src="images/gallery/tournament/prova1.jpg"><div class="album-info"><span>${lang()==="it"?"TORNEI":"TOURNAMENT"}</span><h3>${lang()==="it"?"Tornei":"Tournament"}</h3><p>${safe(tr("viewGallery"))}</p></div></a>`;
+    <a href="idcamp.html" class="album-card"><img src="images/gallery/idcamp/milano-2026/cover.jpg"><div class="album-info"><span>ID CAMP</span><h3>ID Camp</h3><p>${safe(tr("viewGallery"))}</p><button type="button" class="album-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('album',{id:'idcamp',title:'ID Camp'},'idcamp.html');">Condividi</button></div></a>
+    <a href="training.html" class="album-card"><img src="images/gallery/training/prova1.jpg"><div class="album-info"><span>${lang()==="it"?"ALLENAMENTI":"TRAINING"}</span><h3>${lang()==="it"?"Allenamenti":"Training"}</h3><p>${safe(tr("viewGallery"))}</p><button type="button" class="album-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('album',{id:'training',title:'Training'},'training.html');">Condividi</button></div></a>
+    <a href="tournament.html" class="album-card"><img src="images/gallery/tournament/prova1.jpg"><div class="album-info"><span>${lang()==="it"?"TORNEI":"TOURNAMENT"}</span><h3>${lang()==="it"?"Tornei":"Tournament"}</h3><p>${safe(tr("viewGallery"))}</p><button type="button" class="album-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('album',{id:'tournament',title:'Tournament'},'tournament.html');">Condividi</button></div></a>`;
 }
 
 function renderGalleryCategory(){
@@ -1190,6 +1504,7 @@ function initSiteForms(){
 document.addEventListener("DOMContentLoaded", () => {
   safeRun(() => setLanguage(getSavedLanguage()), "initial setLanguage");
   safeRun(initSiteForms, "initSiteForms");
+  safeRun(handleSharedLink, "handleSharedLink");
 });
 
 /* ===== FIL-ITALIA FINAL FORM EXTENSIONS ===== */
@@ -1389,14 +1704,24 @@ function getCampPageLink(item){
 function buildEventCard(item, index){
   const link = getCampPageLink(item);
   const readMore = tr("readMore");
+  const eventId = safe(String(item.id || item.slug || index));
+  const image = safe(item.image || "images/logo.png");
   return `
-    <div class="event-card" onclick="window.location.href='${safe(link)}'">
-      <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
-      <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
-      <p>${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
-      <p>${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
-      <div class="event-read-more">${safe(readMore)}</div>
-      <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+    <div class="event-card event-card-horizontal" onclick="openEventByIndex(${index})">
+      <div class="event-card-image-wrap">
+        <img class="event-card-image" src="${image}" alt="">
+      </div>
+      <div class="event-card-content">
+        <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
+        <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
+        <p class="event-card-location">${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
+        <p class="event-card-excerpt">${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
+        <div class="event-read-more">${safe(readMore)}</div>
+        <div class="event-card-actions">
+          <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+          <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
+        </div>
+      </div>
     </div>`;
 }
 
