@@ -2407,3 +2407,25 @@ body.mobile-menu-open .nav-links{
     font-size:1.15rem !important;
   }
 }
+/* FIX NEWS CARD LANGUAGE */
+.news-card span,
+.news-card-content span {
+  background: transparent !important;
+  color: inherit !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  display: inline !important;
+  margin: 0 !important;
+}
+
+.news-card .news-date,
+.news-card-content .news-date {
+  display: inline-block !important;
+  background: #0b8f3d !important;
+  color: white !important;
+  padding: 7px 14px !important;
+  border-radius: 999px !important;
+  font-size: .8rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 15px !important;
+}

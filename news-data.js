@@ -1,60 +1,177 @@
 const newsData = [
   {
-    title: "New South Europe Director",
-    date: "May 1, 2026",
-    expireDate: "December 31, 2026",
-    image: "images/events.jpg",
-    excerpt: "Emmanuel Jason Galve Named South Europe Director",
-    description: "Fil-Euro is pleased to announce that Coach Ejay has been appointed as the new South Europe Director. Alongside this position, EJ will continue to lead FIL-ITALIA Nation Select, overseeing basketball operations, player development programs, events, and future opportunities for Filipino-Italian athletes across Italy. We look forward to this new chapter and the continued growth of the FIL Nation community throughout Southern Europe."
+  title: {
+    it: "Nuovo Coordinatore South Europe",
+    en: "New South Europe Coordinator",
+    ph: "Bagong South Europe Coordinator"
   },
-  {
-    title: "Development Program Open",
-    date: "April 1, 2026",
-    expireDate: "June 30, 2026",
-    image: "images/ita.jpg",
-    excerpt: "FIL-ITALIA opens its development program for selected athletes.",
-    description: "FIL-ITALIA officially opens its development program for selected athletes across Italy. More details regarding camps, evaluations and future opportunities will be announced soon."
+
+  date: "1 Maggio 2026",
+  expireDate: "31 Dicembre, 2026",
+  image: "images/events.jpg",
+
+  excerpt: {
+    it: "Emmanuel Jason Galve nominato South Europe Coordinator.",
+    en: "Emmanuel Jason Galve appointed as South Europe Coordinator.",
+    ph: "Si Emmanuel Jason Galve ang itinalagang South Europe Coordinator."
   },
-  {
-    title: "FIL-ITALIA Announces 2026 Talent ID Camp Cities",
-    date: "June 20, 2026",
-    expireDate: "June 30, 2026",
-    image: "images/news/ita.jpg",
-    excerpt: "The official cities for the 2026 FIL-ITALIA Talent ID Camp Series have been confirmed.",
-    description: "FIL-ITALIA Nation Select is proud to officially announce the cities selected for the 2026 Talent ID Camp Series in Italy. Camps will take place in Milano on July 25, Firenze on July 26, and Roma on August 5. These events will provide athletes with the opportunity to be evaluated through skill development sessions, athletic testing, competitive games, and talent identification activities. Venezia has also been confirmed as part of the program and will take place after the summer period to avoid scheduling conflicts with other major basketball events taking place across Europe. Additional information and registration details will be released through our official channels. We look forward to seeing players from across Italy join us for an exciting summer of basketball development and evaluation."
-  },
-  {
-    title: "FIL-ITALIA Expands Its National Network",
-    date: "May 1, 2026",
-    expireDate: "June 30, 2026",
-    image: "images/ita.jpg",
-    excerpt: "FIL-ITALIA continues to expand across Italy, opening new pathways for player development and future opportunities.",
-    description: "FIL-ITALIA Nation Select is currently building a new organizational structure across Italy, working in collaboration with representatives, coaches, and partners from several key cities, including Florence, Venice, Milan, Rome, and Bologna. As the program continues to grow, additional coaches, coordinators, staff members, and collaborators will soon be announced to help strengthen player development opportunities and expand activities throughout the country. More updates regarding the new FIL-ITALIA staff and regional representatives will be shared in the coming weeks."
-  },
-  {
-  title: "FIL-ITALIA and FIL-EURO Welcome Manuel San Pedro as Central Italy Coordinator",
-    date: " June 23, 2026",
-    expireDate: "June 30, 2026",
-    image: "images/news/ita.jpg",
-    excerpt: "A respected leader in youth basketball joins the growing FIL-ITALIA and FIL-EURO network.",
-    description: "FIL-ITALIA Nation Select and FIL-EURO are proud to officially introduce Manuel San Pedro as Central Italy Coordinator. With more than 15 years of experience working with young athletes and supporting basketball development throughout the region, Manuel has become a respected figure within both the Filipino and Italian basketball communities. As Central Italy Coordinator, Manuel will support the continued growth of FIL-ITALIA and FIL-EURO activities throughout the region, helping organize Talent ID Camps, player evaluations, regional development opportunities, and community initiatives for athletes from U12 through U19. We would also like to express our sincere appreciation to FILCOM Tuscany for their support, collaboration, and continued commitment to the growth of basketball within the Filipino community. Through the strong relationship between Manuel San Pedro, FILCOM Tuscany, FIL-ITALIA, and FIL-EURO, we look forward to creating even more opportunities for athletes and families throughout Central Italy. Looking ahead, the program continues to expand beyond the youth divisions. Future initiatives will include the development of U21 and U25 teams, with the goal of participating in NYBL competitions and providing additional pathways for Filipino-Italian athletes seeking higher levels of competition and international exposure. We are excited to welcome Manuel San Pedro to the FIL-ITALIA and FIL-EURO family and look forward to continuing the growth of basketball opportunities for the next generation of athletes."
-  },
-  {
-  title: "FIL-ITALIA and FIL-EURO Welcome Steven Facun Cariaga as South Italy Coordinator",
-  date: "June 2026",
-  expireDate: "June 30, 2026",
-  image: "images/news/ita.jpg",
-  excerpt: "Bringing professional basketball experience and youth development expertise to Southern Italy.",
-  description: "FIL-ITALIA Nation Select and FIL-EURO are proud to officially introduce Steven Facun Cariaga as South Italy Coordinator. For the past five years, Steven has been part of the Stella Azzurra Roma basketball environment, working extensively behind the scenes with youth development programs and supporting various teams as an assistant coach. Through his experience within one of Italy's most respected basketball organizations, he has developed a strong understanding of player development, team culture, and the professional standards required to help athletes reach the next level. Steven brings a highly professional basketball perspective to the FIL-ITALIA and FIL-EURO programs, combining his experience working with young athletes and competitive teams with a passion for helping Filipino-Italian players grow both on and off the court. Currently pursuing his Regional Coach certification through the Italian Basketball Federation (FIP), Steven continues to invest in his development as a coach while contributing to the growth of basketball opportunities throughout Italy. As South Italy Coordinator, Steven will support Talent ID Camps, player evaluations, scouting initiatives, and regional development activities, helping strengthen the pathway for athletes from U12 through U19. Together, FIL-ITALIA and FIL-EURO remain committed to creating opportunities for Filipino-Italian athletes throughout Europe. Future initiatives will also include the development of U21 and U25 programs, providing additional opportunities for players seeking higher levels of competition and international exposure. We are excited to welcome Steven Facun Cariaga to the FIL-ITALIA and FIL-EURO family and look forward to working together to support the next generation of basketball players."
-  },
-  {
-  title: "FIL-ITALIA and FIL-EURO Welcome Coach Ocid Manliclic as North Italy Coordinator",
-  date: "June 2026",
-  expireDate: "June 30, 2026",
-  image: "images/news/venezia.jpg",
-  excerpt: "Bringing community leadership, international experience, and a strong connection to Filipino basketball.",
-  description: "FIL-ITALIA Nation Select and FIL-EURO are proud to officially introduce Ocid Manliclic, known throughout the community as Coach Ocid, as North Italy Coordinator. Based in Venice, Ocid will serve as a key point of reference for the continued growth of FIL-ITALIA and FIL-EURO activities throughout Northern Italy. Venice will play an important role within the program as a regional hub for player development, scouting, community engagement, and future basketball initiatives. In addition to his coaching background, Ocid is actively involved in organizing Filipino basketball leagues and community events in the Venice area, helping create opportunities for players and families while strengthening the local basketball community. Over the past two years, Ocid has gained valuable firsthand experience through his direct involvement in basketball tournaments and activities in the Philippines. By personal choice, he has dedicated his time exclusively to assistant coaching roles, allowing him to learn from different coaching staffs, observe various systems and philosophies, and deepen his understanding of the game from multiple perspectives. His experience within both the Italian and Filipino basketball environments provides valuable insight as FIL-ITALIA and FIL-EURO continue building stronger connections between athletes in Europe and opportunities abroad. As North Italy Coordinator, Ocid will support Talent ID Camps, player evaluations, scouting initiatives, and regional development programs while helping create pathways for athletes from U12 through U19. Together, FIL-ITALIA and FIL-EURO remain committed to creating meaningful opportunities for Filipino-Italian athletes across Europe. Future initiatives will also include the development of U21 and U25 programs, providing additional opportunities for players seeking higher levels of competition and international exposure. We are excited to welcome Ocid Manliclic to the FIL-ITALIA and FIL-EURO family and look forward to working together to support the next generation of Filipino-Italian basketball players."
+
+  description: {
+    it: "FIL-EURO è lieta di annunciare la nomina di Coach EJ come nuovo South Europe Coordinator. Insieme a questo ruolo, continuerà a guidare FIL-ITALIA Nation Select, occupandosi dell'organizzazione delle attività, dello sviluppo dei giocatori, degli eventi e delle future opportunità per gli atleti filippino-italiani in Italia. Questo nuovo capitolo rappresenta un passo importante per la crescita della community FIL Nation nel Sud Europa.",
+
+    en: "FIL-EURO is proud to announce the appointment of Coach EJ as the new South Europe Coordinator. Alongside this role, he will continue leading FIL-ITALIA Nation Select, overseeing basketball operations, player development, events, and future opportunities for Filipino-Italian athletes across Italy. This new chapter marks another important step in the continued growth of the FIL Nation community throughout Southern Europe.",
+
+    ph: "Ikinagagalak ng FIL-EURO na ipahayag ang pagkakahirang kay Coach EJ bilang bagong South Europe Coordinator. Kasabay ng tungkuling ito, ipagpapatuloy niya ang pamumuno sa FIL-ITALIA Nation Select, kabilang ang pangangasiwa sa mga aktibidad, player development, mga event, at mga susunod na oportunidad para sa mga Filipino-Italian athletes sa buong Italy. Ang bagong yugto na ito ay isang mahalagang hakbang para sa patuloy na paglago ng komunidad ng FIL Nation sa Southern Europe."
   }
+},
+  {
+  title: {
+    it: "Apertura Programma di Sviluppo",
+    en: "Development Program Now Open",
+    ph: "Bukas na ang Development Program"
+  },
 
+  date: "1 Aprile 2026",
+  expireDate: "30 Giugno, 2026",
+  image: "images/ita.jpg",
+
+  excerpt: {
+    it: "FIL-ITALIA apre il programma di sviluppo per atleti selezionati.",
+    en: "FIL-ITALIA launches its player development program for selected athletes.",
+    ph: "Binuksan ng FIL-ITALIA ang development program para sa mga piling atleta."
+  },
+
+  description: {
+    it: "FIL-ITALIA apre ufficialmente il programma di sviluppo dedicato agli atleti selezionati in tutta Italia. Nei prossimi aggiornamenti verranno condivisi maggiori dettagli su camp, valutazioni e future opportunità.",
+
+    en: "FIL-ITALIA officially launches its player development program for selected athletes throughout Italy. More information regarding Talent ID Camps, player evaluations, and future opportunities will be announced in the coming updates.",
+
+    ph: "Opisyal nang inilunsad ng FIL-ITALIA ang development program para sa mga piling atleta sa buong Italy. Sa mga susunod na anunsyo ay ibabahagi ang karagdagang detalye tungkol sa Talent ID Camps, player evaluations, at iba pang mga oportunidad sa hinaharap."
+  }
+},
+  {
+  title: {
+    it: "Annunciate le Città dei Talent ID Camp 2026",
+    en: "2026 Talent ID Camp Cities Announced",
+    ph: "Inanunsyo ang mga Lungsod para sa 2026 Talent ID Camps"
+  },
+
+  date: "15 Marzo 2026",
+  expireDate: "31 Agosto, 2026",
+  image: "images/camp.jpg",
+
+  excerpt: {
+    it: "FIL-ITALIA annuncia le città che ospiteranno i Talent ID Camp 2026.",
+    en: "FIL-ITALIA announces the cities selected to host the 2026 Talent ID Camps.",
+    ph: "Inanunsyo ng FIL-ITALIA ang mga lungsod na magho-host ng 2026 Talent ID Camps."
+  },
+
+  description: {
+    it: "FIL-ITALIA è orgogliosa di presentare le città che ospiteranno i Talent ID Camp 2026. L'obiettivo è offrire ai giovani atleti filippino-italiani la possibilità di essere valutati, sviluppare le proprie capacità e accedere a future opportunità nazionali e internazionali. Maggiori dettagli sulle date e sulle registrazioni saranno pubblicati nelle prossime settimane.",
+
+    en: "FIL-ITALIA is proud to announce the cities that will host the 2026 Talent ID Camps. The program aims to give Filipino-Italian athletes the opportunity to be evaluated, improve their skills, and earn access to future national and international opportunities. More information regarding schedules and registrations will be released soon.",
+
+    ph: "Ipinagmamalaki ng FIL-ITALIA na ipahayag ang mga lungsod na magho-host ng 2026 Talent ID Camps. Layunin ng programa na mabigyan ang mga Filipino-Italian athletes ng pagkakataong ma-evaluate, mapaunlad ang kanilang kakayahan, at magkaroon ng oportunidad sa national at international level. Ang karagdagang detalye tungkol sa mga petsa at registration ay iaanunsyo sa lalong madaling panahon."
+  }
+},
+{
+  title: {
+    it: "FIL-ITALIA Espande la Rete Nazionale",
+    en: "FIL-ITALIA Expands Its National Network",
+    ph: "Pinalalawak ng FIL-ITALIA ang National Network Nito"
+  },
+
+  date: "20 Febbraio 2026",
+  expireDate: "31 Dicembre, 2026",
+  image: "images/network.jpg",
+
+  excerpt: {
+    it: "Nuovi coordinatori e nuove città entrano a far parte del progetto FIL-ITALIA.",
+    en: "New coordinators and cities continue to join the FIL-ITALIA project.",
+    ph: "Patuloy na nadaragdagan ang mga coordinator at lungsod na bahagi ng proyekto ng FIL-ITALIA."
+  },
+
+  description: {
+    it: "FIL-ITALIA continua a crescere con l'ingresso di nuovi coordinatori e l'espansione del progetto in nuove città italiane. L'obiettivo rimane quello di costruire una rete sempre più solida, offrendo maggiori opportunità di sviluppo ai giovani atleti della comunità filippina in Italia.",
+
+    en: "FIL-ITALIA continues to grow through the addition of new coordinators and the expansion of the project into more Italian cities. Our mission remains the same: building a stronger nationwide network while creating more development opportunities for young Filipino athletes living in Italy.",
+
+    ph: "Patuloy na lumalawak ang FIL-ITALIA sa pamamagitan ng pagdaragdag ng mga bagong coordinator at pagpapalawak ng proyekto sa iba't ibang lungsod sa Italy. Layunin naming bumuo ng mas matatag na network at makapagbigay ng mas maraming oportunidad para sa pag-unlad ng mga kabataang atletang Pilipino sa Italy."
+  }
+},
+  {
+  title: {
+    it: "Manuel San Pedro entra in FIL-ITALIA",
+    en: "Manuel San Pedro Joins FIL-ITALIA",
+    ph: "Sumali si Manuel San Pedro sa FIL-ITALIA"
+  },
+
+  date: "10 Febbraio 2026",
+  expireDate: "31 Dicembre, 2026",
+  image: "images/manuel.jpg",
+
+  excerpt: {
+    it: "Coach Manuel San Pedro entra a far parte del progetto FIL-ITALIA.",
+    en: "Coach Manuel San Pedro officially joins the FIL-ITALIA project.",
+    ph: "Opisyal nang sumali si Coach Manuel San Pedro sa proyekto ng FIL-ITALIA."
+  },
+
+  description: {
+    it: "FIL-ITALIA è lieta di dare il benvenuto a Coach Manuel San Pedro all'interno del proprio staff. La sua esperienza, la passione per il basket e il forte legame con la comunità rappresentano un importante valore aggiunto per il progetto. Insieme continueremo a creare nuove opportunità per i giovani atleti filippino-italiani e a sviluppare il basket sul territorio.",
+
+    en: "FIL-ITALIA is pleased to welcome Coach Manuel San Pedro to the organization. His experience, passion for basketball, and commitment to the community will play an important role in the continued growth of our project. Together, we will keep creating new opportunities for Filipino-Italian athletes across Italy.",
+
+    ph: "Malugod na tinatanggap ng FIL-ITALIA si Coach Manuel San Pedro sa aming organisasyon. Ang kanyang karanasan, pagmamahal sa basketball, at dedikasyon sa komunidad ay malaking ambag sa patuloy na paglago ng proyekto. Sama-sama nating bubuksan ang mas maraming oportunidad para sa mga Filipino-Italian athletes."
+  }
+},
+  {
+  title: {
+    it: "Steven Facun Cariaga entra in FIL-ITALIA",
+    en: "Steven Facun Cariaga Joins FIL-ITALIA",
+    ph: "Sumali si Steven Facun Cariaga sa FIL-ITALIA"
+  },
+
+  date: "15 Febbraio 2026",
+  expireDate: "31 Dicembre, 2026",
+  image: "images/steven.jpg",
+
+  excerpt: {
+    it: "Steven Facun Cariaga entra a far parte del progetto FIL-ITALIA.",
+    en: "Steven Facun Cariaga officially joins the FIL-ITALIA project.",
+    ph: "Opisyal nang sumali si Steven Facun Cariaga sa proyekto ng FIL-ITALIA."
+  },
+
+  description: {
+    it: "Siamo orgogliosi di accogliere Steven Facun Cariaga all'interno di FIL-ITALIA. Grazie alle sue competenze e alla sua esperienza, contribuirà allo sviluppo del progetto e alla crescita dei giovani atleti, rafforzando la nostra presenza sul territorio.",
+
+    en: "FIL-ITALIA proudly welcomes Steven Facun Cariaga to the team. His experience and dedication will contribute to the continued development of our program and provide more opportunities for young Filipino-Italian athletes throughout Italy.",
+
+    ph: "Ipinagmamalaki ng FIL-ITALIA na tanggapin si Steven Facun Cariaga sa aming koponan. Ang kanyang karanasan at dedikasyon ay makatutulong sa patuloy na pag-unlad ng programa at sa pagbibigay ng mas maraming oportunidad para sa mga kabataang atleta."
+  }
+},
+  {
+  title: {
+    it: "Ocid Manliclic entra in FIL-ITALIA",
+    en: "Ocid Manliclic Joins FIL-ITALIA",
+    ph: "Sumali si Ocid Manliclic sa FIL-ITALIA"
+  },
+
+  date: "20 Febbraio 2026",
+  expireDate: "31 Dicembre, 2026",
+  image: "images/ocid.jpg",
+
+  excerpt: {
+    it: "Ocid Manliclic entra ufficialmente a far parte del progetto FIL-ITALIA.",
+    en: "Ocid Manliclic officially joins the FIL-ITALIA project.",
+    ph: "Opisyal nang sumali si Ocid Manliclic sa proyekto ng FIL-ITALIA."
+  },
+
+  description: {
+    it: "FIL-ITALIA dà il benvenuto a Ocid Manliclic, che entra a far parte del progetto per supportare la crescita del basket filippino in Italia. La sua esperienza e il suo impegno saranno fondamentali per offrire nuove opportunità ai giovani atleti e rafforzare ulteriormente la rete FIL-ITALIA.",
+
+    en: "FIL-ITALIA is excited to welcome Ocid Manliclic to the organization. His experience and commitment will help strengthen our network and create even more opportunities for Filipino-Italian basketball players across the country.",
+
+    ph: "Malugod na tinatanggap ng FIL-ITALIA si Ocid Manliclic sa aming organisasyon. Ang kanyang karanasan at dedikasyon ay makatutulong sa pagpapalakas ng aming network at sa pagbibigay ng mas maraming oportunidad para sa mga Filipino-Italian basketball players sa buong Italy."
+  }
+},
 ];
-

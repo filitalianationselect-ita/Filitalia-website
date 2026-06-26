@@ -416,7 +416,7 @@ function translatedField(item, field){
   return value || "";
 }
 
-function localEvent(item, field){
+function localNews(item, field){
   return translatedField(item, field);
 }
 
@@ -497,92 +497,39 @@ async function translateAutoElements(root=document){
 }
 
 function localNews(item, field){
+  const value = item[field];
   const L = lang();
-  const title = item.title;
 
-  const map = {
-    "New South Europe Director":{
-      it:{title:"Nuovo South Europe Director", excerpt:"Emmanuel Jason Galve nominato South Europe Director", description:"Fil-Euro è lieta di annunciare che Coach Ejay è stato nominato nuovo South Europe Director. Insieme a questo ruolo, EJ continuerà a guidare FIL-ITALIA Nation Select, occupandosi delle attività basket, dei programmi di sviluppo, degli eventi e delle future opportunità per gli atleti filippino-italiani in Italia."},
-      en:{title:item.title, excerpt:item.excerpt, description:item.description},
-      ph:{title:item.title, excerpt:"Emmanuel Jason Galve, hinirang bilang South Europe Director", description:"Ikinagagalak ng Fil-Euro na i-announce na si Coach Ejay ay itinalaga bilang bagong South Europe Director. Patuloy niyang pangungunahan ang FIL-ITALIA Nation Select."}
-    },
-    "Development Program Open":{
-      it:{title:"Apertura Development Program", excerpt:"FIL-ITALIA apre il programma di sviluppo per atleti selezionati.", description:"FIL-ITALIA apre ufficialmente il proprio programma di sviluppo per atleti selezionati in tutta Italia. Ulteriori dettagli su camp, valutazioni e future opportunità saranno comunicati presto."},
-      en:{title:item.title, excerpt:item.excerpt, description:item.description},
-      ph:{title:item.title, excerpt:"Binubuksan ng FIL-ITALIA ang development program para sa selected athletes.", description:"Opisyal na binubuksan ng FIL-ITALIA ang development program para sa selected athletes sa buong Italy."}
-    },
-    "Upcoming Camps":{
-      it:{title:"Prossimi Camp", excerpt:"Nuove date e nuove città saranno annunciate presto.", description:"Nuove date e nuove città per i camp saranno annunciate presto. I giocatori avranno opportunità di partecipare a valutazioni, allenamenti di sviluppo e future selezioni."},
-      en:{title:item.title, excerpt:item.excerpt, description:item.description},
-      ph:{title:item.title, excerpt:"Iaanunsyo soon ang bagong camp dates at locations.", description:"Iaanunsyo soon ang bagong camp dates at locations. Magkakaroon ang players ng opportunities para sa evaluations, development sessions at future selections."}
-    },
-    "FIL-ITALIA Expands Its National Network":{
-      it:{title:"FIL-ITALIA espande la rete nazionale", excerpt:"FIL-ITALIA continua a crescere in Italia, creando nuovi percorsi di sviluppo e opportunità.", description:"FIL-ITALIA Nation Select sta costruendo una nuova struttura organizzativa in tutta Italia, collaborando con rappresentanti, allenatori e partner di città chiave come Firenze, Venezia, Milano, Roma e Bologna."},
-      en:{title:item.title, excerpt:item.excerpt, description:item.description},
-      ph:{title:item.title, excerpt:"Patuloy na lumalawak ang FIL-ITALIA sa Italy.", description:"Ang FIL-ITALIA Nation Select ay kasalukuyang bumubuo ng bagong organizational structure sa buong Italy kasama ang coaches, representatives at partners."}
-    },
-    "New Staff Announcements Coming Soon":{
-      it:{title:"Nuovi annunci staff in arrivo", excerpt:"FIL-ITALIA annuncerà nuovi coach, coordinatori, staff media e collaboratori regionali.", description:"FIL-ITALIA Nation Select continua a crescere costruendo una rete più forte in Italia e nel Sud Europa. Nelle prossime settimane presenteremo nuovi coach, coordinatori, staff media e collaboratori regionali."},
-      en:{title:item.title, excerpt:item.excerpt, description:item.description},
-      ph:{title:item.title, excerpt:"Mag-aanunsyo ang FIL-ITALIA ng bagong coaches, coordinators, media staff at regional collaborators.", description:"Patuloy na lumalago ang FIL-ITALIA Nation Select habang binubuo ang mas malakas na network sa Italy at Southern Europe."}
-    }
-  };
-
-  if(map[title] && map[title][L] && map[title][L][field]) return map[title][L][field];
-
-  if(field === "date"){
-    return L === "it" ? (item.date || "").replace("May","Maggio").replace("April","Aprile").replace("June","Giugno").replace("Summer","Estate") : item.date;
+  if(value && typeof value === "object"){
+    return value[L] || value.it || value.en || value.ph || "";
   }
 
-  return item[field] || "";
+  return value || "";
 }
 
 function localStaff(item, field){
   const L = lang();
+  const value = item[field];
 
-  if(field === "role"){
-    if(L === "it"){
-      if(item.role === "Program Coordinator") return "Coordinatore del programma";
-      if(item.role === "Coach") return "Allenatore";
-      if(item.role === "Videografo") return "Videografo";
-    }
-    if(L === "ph"){
-      if(item.role === "Videografo") return "Videographer";
-    }
-    return item.role || "";
+  if(value && typeof value === "object"){
+    return value[L] || value.it || value.en || "";
   }
 
   if(field === "department"){
     if(L === "it"){
       if(item.department === "Directors") return "Direzione";
       if(item.department === "Coaches") return "Allenatori";
+      if(item.department === "Media") return "Media";
+    }
+    if(L === "ph"){
+      if(item.department === "Directors") return "Direksyon";
+      if(item.department === "Coaches") return "Mga Coach";
+      if(item.department === "Media") return "Media";
     }
     return item.department || "Staff";
   }
 
-  if(field === "name"){
-    if(L === "it"){
-      if(item.name === "Florence") return "Firenze";
-      if(item.name === "Rome") return "Roma";
-      if(item.name === "Milan") return "Milano";
-    }
-    return item.name || "";
-  }
-
-  if(field === "bio"){
-    if(L === "it"){
-      if(item.name.includes("Emmanuel")) return "Coach EJ contribuisce a guidare, organizzare e sviluppare il programma basket FIL-ITALIA, supportando giocatori, staff e attività future.";
-      if(item.name === "Venezia") return "Allenatore di basket a Venezia, specializzato nello sviluppo dei giocatori, nella programmazione degli allenamenti e nelle attività di squadra per la community filippina locale.";
-      if(item.name === "Florence") return "Allenatore dedicato alla community filippina di Firenze, con focus su sviluppo dei giocatori, allenamenti strutturati e cultura di squadra.";
-      if(item.name === "Bologna") return "Allenatore giovanile a Bologna, dedicato allo sviluppo dei giocatori e alle attività di squadra per bambini e ragazzi filippini.";
-      if(item.name === "Rome") return "Allenatore con base a Roma, specializzato nello sviluppo dei giocatori, nella pianificazione tattica degli allenamenti e nella gestione di squadre.";
-      if(item.name === "Milan") return "Allenatore per giovani giocatori filippini a Milano, con focus su sviluppo, allenamenti strutturati e cultura di squadra.";
-      if(item.name === "Videografo") return "Videografo specializzato nel raccontare energia e spirito di partite e allenamenti, creando contenuti per promuovere FIL-ITALIA.";
-    }
-    return item.bio || "";
-  }
-
-  return item[field] || "";
+  return value || "";
 }
 
 function getPlayerRole(player){
@@ -977,13 +924,15 @@ function formatLongTextHTML(text){
   }).join("");
 }
 
-function getLongText(item, field, fallbackText){
+function getLongText(item, field, fallback){
   const value = item?.[field];
-  const L = lang();
-  if(value && typeof value === "object" && !Array.isArray(value)){
-    return value[L] || value.it || value.en || value.ph || fallbackText || "";
+
+  if(value && typeof value === "object"){
+    const L = lang();
+    return value[L] || value.it || value.en || value.ph || fallback || "";
   }
-  return fallbackText || value || "";
+
+  return value || fallback || "";
 }
 
 function openInfo(item){
