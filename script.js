@@ -420,6 +420,10 @@ function localNews(item, field){
   return translatedField(item, field);
 }
 
+function localEvent(item, field){
+  return translatedField(item, field);
+}
+
 
 /* ===== FREE AUTO TRANSLATION FALLBACK =====
    How it works:
@@ -575,7 +579,9 @@ function openPlayerByIndex(index){
 function openPlayerData(player){
   const modal = document.getElementById("playerModal");
   if(!modal || !player) return;
+
   modal.style.display = "flex";
+
   document.getElementById("modalName").innerText = player.name || "";
   document.getElementById("modalRole").innerText = getPlayerRole(player);
   document.getElementById("modalBio").innerText = lang() === "it" ? "Atleta selezionato nel Programma di Sviluppo FIL-ITALIA." : lang() === "ph" ? "Selected athlete sa FIL-ITALIA Development Program." : "Selected athlete in the FIL-ITALIA Development Program.";
@@ -591,6 +597,32 @@ function openPlayerData(player){
     highlights.href = player.highlights || "#";
     highlights.style.display = player.highlights && player.highlights !== "#" ? "inline-block" : "none";
   }
+
+  let shareBtn = document.getElementById("modalShare");
+
+  if(!shareBtn){
+    shareBtn = document.createElement("button");
+    shareBtn.id = "modalShare";
+    shareBtn.className = "share-btn";
+    shareBtn.innerText = "Condividi";
+    modal.querySelector(".modal-content")?.appendChild(shareBtn);
+  }
+
+  shareBtn.onclick = function(){
+    const playerId = player.id || player.slug || player.name?.toLowerCase().replaceAll(" ", "-");
+    const url = `${window.location.origin}${window.location.pathname}?type=player&id=${encodeURIComponent(playerId)}`;
+
+    if(navigator.share){
+      navigator.share({
+        title: player.name || "FIL-ITALIA Player",
+        text: getPlayerRole(player) || "Guarda questo player FIL-ITALIA",
+        url: url
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Link copiato!");
+    }
+  };
 }
 
 function closePlayer(){ const modal = document.getElementById("playerModal"); if(modal) modal.style.display = "none"; }
@@ -724,10 +756,50 @@ function buildStaffCard(item, index){
     </div>`;
 }
 
-function openStaffByIndex(index){
-  currentStaffList = staffData;
-  currentStaffIndex = index;
-  openStaffData(staffData[index]);
+function openStaffData(item){
+  const modal = document.getElementById("staffModal");
+  if(!modal || !item) return;
+
+  modal.style.display = "flex";
+
+  document.getElementById("staffModalName").innerText = localStaff(item,"name");
+  document.getElementById("staffModalRole").innerText = localStaff(item,"role");
+  document.getElementById("staffModalDepartment").innerText = localStaff(item,"department");
+  document.getElementById("staffModalBio").innerText = localStaff(item,"bio");
+  document.getElementById("staffModalImage").src = item.image || "images/logo.png";
+
+  let shareBtn = document.getElementById("staffShare");
+
+  if(!shareBtn){
+    shareBtn = document.createElement("button");
+    shareBtn.id = "staffShare";
+    shareBtn.className = "share-btn";
+    shareBtn.innerText = "Condividi";
+    modal.querySelector(".modal-content")?.appendChild(shareBtn);
+  }
+
+  shareBtn.onclick = function(){
+
+    const staffId =
+      item.id ||
+      item.slug ||
+      item.name?.toLowerCase().replaceAll(" ","-");
+
+    const url =
+      `${window.location.origin}${window.location.pathname}?type=staff&id=${encodeURIComponent(staffId)}`;
+
+    if(navigator.share){
+      navigator.share({
+        title: localStaff(item,"name"),
+        text: localStaff(item,"role"),
+        url: url
+      });
+    }else{
+      navigator.clipboard.writeText(url);
+      alert("Link copiato!");
+    }
+
+  };
 }
 
 function openStaffData(item){
@@ -943,28 +1015,51 @@ function openInfo(item){
   modal.style.display = "flex";
 
   if(item.type === "event"){
-    document.getElementById("infoTitle").innerHTML = autoTextHTML(data,"title",localEvent(data,"title"), 0);
-    document.getElementById("infoSubtitle").innerHTML = `${autoTextHTML(data,"date",localEvent(data,"date"), 0)} • ${autoTextHTML(data,"location",localEvent(data,"location"), 0)}`;
-    document.getElementById("infoDescription").innerHTML = formatLongTextHTML(getLongText(data,"description",localEvent(data,"description")));
+    document.getElementById("infoTitle").innerHTML = autoTextHTML(data,"title",localEvent(data,"title"),0);
+    document.getElementById("infoSubtitle").innerHTML =
+      `${autoTextHTML(data,"date",localEvent(data,"date"),0)} • ${autoTextHTML(data,"location",localEvent(data,"location"),0)}`;
   } else {
-    document.getElementById("infoTitle").innerHTML = autoTextHTML(data,"title",localNews(data,"title"), 0);
-    document.getElementById("infoSubtitle").innerText = tr("newsTitle");
-    document.getElementById("infoDescription").innerHTML = formatLongTextHTML(getLongText(data,"description",localNews(data,"description")));
+    document.getElementById("infoTitle").innerHTML = autoTextHTML(data,"title",localNews(data,"title"),0);
+    document.getElementById("infoSubtitle").innerHTML = autoTextHTML(data,"date",localNews(data,"date"),0);
   }
-  translateAutoElements(modal);
 
-  document.getElementById("infoImage").src = data.image || "images/logo.png";
+  document.getElementById("infoImage").src = data.image || "";
+  document.getElementById("infoContent").innerHTML =
+    item.type === "event"
+      ? autoTextHTML(data,"description",localEvent(data,"description"),0)
+      : autoTextHTML(data,"content",localNews(data,"content"),0);
 
-  const btn = document.getElementById("eventTicketBtn");
-  if(btn){
-    if(item.type === "event"){
-      btn.href = `camp-register.html?event=${encodeURIComponent(data.id || "")}`;
-      btn.innerText = tr("registerNow");
-      btn.style.display = "inline-flex";
-    } else {
-      btn.style.display = "none";
+  let shareBtn = document.getElementById("infoShare");
+
+  if(!shareBtn){
+    shareBtn = document.createElement("button");
+    shareBtn.id = "infoShare";
+    shareBtn.className = "share-btn";
+    shareBtn.innerText = "Condividi";
+    modal.querySelector(".modal-content")?.appendChild(shareBtn);
+  }
+
+  shareBtn.onclick = function(){
+
+    const itemId =
+      data.id ||
+      data.slug ||
+      data.title?.toLowerCase().replaceAll(" ","-");
+
+    const url =
+      `${window.location.origin}${window.location.pathname}?type=${item.type}&id=${encodeURIComponent(itemId)}`;
+
+    if(navigator.share){
+      navigator.share({
+        title: data.title || "FIL-ITALIA",
+        text: data.description || "",
+        url: url
+      });
+    }else{
+      navigator.clipboard.writeText(url);
+      alert("Link copiato!");
     }
-  }
+  };
 }
 
 function closeInfo(){ const modal = document.getElementById("infoModal"); if(modal) modal.style.display = "none"; }
@@ -1628,4 +1723,81 @@ Object.assign(translations.ph, {
   campBolognaTitle:"TALENT ID CAMP BOLOGNA",
   campBolognaName:"Talent ID Camp Bologna",
   campBolognaDescription:"Page ready para sa future Bologna camp. Ilalagay ang official date kapag confirmed na."
+});
+function shareItem(item){
+  if(!item || !item.data) return;
+
+  const data = item.data;
+  const id = data.id || data.slug || data.title?.toLowerCase().replaceAll(" ", "-");
+  const url = `${window.location.origin}${window.location.pathname}?type=${item.type}&id=${encodeURIComponent(id)}`;
+
+  const title = data.title || data.name || "FIL-ITALIA Nation Select";
+  const text = data.subtitle || data.description || "Guarda questo contenuto FIL-ITALIA";
+
+  if(navigator.share){
+    navigator.share({ title, text, url });
+  } else {
+    navigator.clipboard.writeText(url);
+    alert("Link copiato!");
+  }
+}
+window.addEventListener("load", () => {
+
+  const params = new URLSearchParams(window.location.search);
+
+  const type = params.get("type");
+  const id = params.get("id");
+
+  if(!type || !id) return;
+
+  setTimeout(() => {
+
+    if(type === "player" && typeof players !== "undefined"){
+
+      const player = players.find(p => {
+        const pid = p.id || p.slug || p.name?.toLowerCase().replaceAll(" ","-");
+        return String(pid) === String(id);
+      });
+
+      if(player) openPlayerData(player);
+    }
+
+    if(type === "event" && typeof events !== "undefined"){
+
+      const event = events.find(e => {
+        const eid = e.id || e.slug || e.title?.toLowerCase().replaceAll(" ","-");
+        return String(eid) === String(id);
+      });
+
+      if(event) openInfo({
+        type:"event",
+        data:event
+      });
+    }
+
+    if(type === "news" && typeof newsData !== "undefined"){
+
+      const news = newsData.find(n => {
+        const nid = n.id || n.slug || n.title?.toLowerCase().replaceAll(" ","-");
+        return String(nid) === String(id);
+      });
+
+      if(news) openInfo({
+        type:"news",
+        data:news
+      });
+    }
+
+    if(type === "staff" && typeof staffData !== "undefined"){
+
+      const staff = staffData.find(s => {
+        const sid = s.id || s.slug || s.name?.toLowerCase().replaceAll(" ","-");
+        return String(sid) === String(id);
+      });
+
+      if(staff) openStaffData(staff);
+    }
+
+  },300);
+
 });
