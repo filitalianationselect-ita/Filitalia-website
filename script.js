@@ -1001,7 +1001,7 @@ async function shareFilitalia(type, data, customPage){
   const fullText = `${text}\n${url}`;
 
   try{
-    // iPhone / Android: apre il menu vero del telefono con WhatsApp, Facebook, Instagram, Messenger, ecc.
+    // iPhone / Android: apre il menu vero del telefono con WhatsApp, Facebook, Telegram, Messenger, ecc.
     if(navigator.share){
       await navigator.share({title, text, url});
       return;
@@ -1032,7 +1032,6 @@ function openFallbackShareSheet(title, text, url, fullText){
       <div class="share-sheet-grid">
         <a href="https://wa.me/?text=${encodedText}" target="_blank" rel="noopener">WhatsApp</a>
         <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" rel="noopener">Facebook</a>
-        <button type="button" onclick="shareToInstagram('${encodedText}')">Instagram</button>
         <button type="button" onclick="copyShareLink('${encodedText}')">Copia link</button>
       </div>
     </div>`;
@@ -1042,23 +1041,6 @@ function openFallbackShareSheet(title, text, url, fullText){
   });
 
   document.body.appendChild(overlay);
-}
-
-async function shareToInstagram(encodedText){
-  const text = decodeURIComponent(encodedText);
-  try{
-    await navigator.clipboard.writeText(text);
-    showShareToast("Link copiato. Apri Instagram e incollalo nella storia o nei messaggi.");
-  }catch(error){
-    window.prompt("Copia questo link per Instagram:", text);
-  }
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || "");
-  if(isMobile){
-    setTimeout(() => { window.location.href = "instagram://app"; }, 350);
-  } else {
-    window.open("https://www.instagram.com/", "_blank", "noopener");
-  }
-  closeFallbackShareSheet();
 }
 
 function closeFallbackShareSheet(){
@@ -1215,49 +1197,12 @@ function handleSharedLink(){
   }, 250);
 }
 
-
-function renderInfoActions(container, type, data){
-  if(!container) return;
-
-  container.querySelectorAll(".share-action-row, #eventModalButtonsFinal, .info-action-stack").forEach(el => el.remove());
-
-  const oldRegister = container.querySelector("#infoRegisterButton, #eventTicketBtn");
-  if(oldRegister) oldRegister.style.display = "none";
-
-  const row = document.createElement("div");
-  row.className = type === "event" ? "info-action-stack event-action-stack" : "info-action-stack";
-
-  if(type === "event"){
-    const register = document.createElement("a");
-    register.className = "info-register-main";
-    register.href = getCampPageLink(data);
-    register.innerText = tr("registerNow") || "Registrati ora";
-    row.appendChild(register);
-  }
-
-  const share = document.createElement("button");
-  share.type = "button";
-  share.className = type === "event" ? "info-share-small" : "info-share-main";
-  share.innerText = "Condividi";
-  share.onclick = function(ev){
-    ev.preventDefault();
-    ev.stopPropagation();
-    shareFilitalia(type, data);
-  };
-  row.appendChild(share);
-
-  container.appendChild(row);
-}
-
 function openInfo(item){
   const modal = document.getElementById("infoModal");
   if(!modal || !item) return;
 
   const data = item.data;
-  const content = modal.querySelector(".modal-content");
   modal.style.display = "flex";
-  modal.classList.toggle("event-info-modal", item.type === "event");
-  modal.classList.toggle("news-info-modal", item.type !== "event");
 
   if(item.type === "event"){
     document.getElementById("infoTitle").innerHTML = autoTextHTML(data,"title",localEvent(data,"title"), 0);
@@ -1270,13 +1215,21 @@ function openInfo(item){
   }
   translateAutoElements(modal);
 
-  const image = document.getElementById("infoImage");
-  if(image){
-    image.src = data.image || "images/logo.png";
-    image.alt = getShareTitle(item.type, data);
+  document.getElementById("infoImage").src = data.image || "images/logo.png";
+
+  const btn = document.getElementById("eventTicketBtn") || document.getElementById("infoRegisterButton");
+  if(btn){
+    if(item.type === "event"){
+      btn.href = `camp-register.html?event=${encodeURIComponent(data.id || "")}`;
+      btn.innerText = tr("registerNow");
+      btn.style.display = "inline-flex";
+    } else {
+      btn.style.display = "none";
+    }
   }
 
-  renderInfoActions(content, item.type, data);
+  ensureModalShareButton(document.querySelector("#infoModal .modal-content"), item.type, data);
+  forceEventModalButtons(item);
 }
 
 function closeInfo(){ const modal = document.getElementById("infoModal"); if(modal) modal.style.display = "none"; }
@@ -1705,23 +1658,15 @@ function buildEventCard(item, index){
   const link = getCampPageLink(item);
   const readMore = tr("readMore");
   const eventId = safe(String(item.id || item.slug || index));
-  const image = safe(item.image || "images/logo.png");
   return `
-    <div class="event-card event-card-horizontal" onclick="openEventByIndex(${index})">
-      <div class="event-card-image-wrap">
-        <img class="event-card-image" src="${image}" alt="">
-      </div>
-      <div class="event-card-content">
-        <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
-        <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
-        <p class="event-card-location">${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
-        <p class="event-card-excerpt">${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
-        <div class="event-read-more">${safe(readMore)}</div>
-        <div class="event-card-actions">
-          <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
-          <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
-        </div>
-      </div>
+    <div class="event-card" onclick="openEventByIndex(${index})">
+      <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
+      <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
+      <p>${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
+      <p>${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
+      <div class="event-read-more">${safe(readMore)}</div>
+      <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
+      <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
     </div>`;
 }
 
@@ -1954,3 +1899,313 @@ Object.assign(translations.ph, {
   campBolognaName:"Talent ID Camp Bologna",
   campBolognaDescription:"Page ready para sa future Bologna camp. Ilalagay ang official date kapag confirmed na."
 });
+
+/* ===== RELEASE 300 - EVENTI COME NEWS + PAGINA EVENTO STABILE ===== */
+function eventImage(item){
+  return item && item.image ? item.image : "images/logo.png";
+}
+function eventTitle(item){ return localEvent(item,"title") || item.title || "Evento FIL-ITALIA"; }
+function eventDate(item){ return localEvent(item,"date") || item.date || item.campDate || ""; }
+function eventLocation(item){ return localEvent(item,"location") || item.location || item.campCity || ""; }
+function eventExcerpt(item){ return localEvent(item,"excerpt") || item.excerpt || ""; }
+function eventDescription(item){ return localEvent(item,"description") || item.description || eventExcerpt(item); }
+function eventPageLink(item){ return `event.html?id=${encodeURIComponent(item.id || item.slug || "")}`; }
+function eventRegisterLink(item){ return `camp-register.html?event=${encodeURIComponent(item.id || "")}`; }
+function getEventByIdFinal(id){
+  if(typeof eventsData === "undefined" || !Array.isArray(eventsData)) return null;
+  return eventsData.find(e => String(e.id || e.slug || "") === String(id || "")) || null;
+}
+
+buildEventCard = function(item, index){
+  const img = safe(eventImage(item));
+  const title = eventTitle(item);
+  const id = safe(String(item.id || item.slug || index));
+  return `
+    <div class="event-card event-card-news-style">
+      <a class="event-card-main" href="${safe(eventPageLink(item))}">
+        <img class="event-cover" src="${img}" alt="${safe(title)}" onerror="this.onerror=null;this.src='images/logo.png';">
+        <div class="event-card-content">
+          <span>${autoTextHTML(item,"date",eventDate(item),0)}</span>
+          <h3>${autoTextHTML(item,"title",title,0)}</h3>
+          <p class="event-location-line">${autoTextHTML(item,"location",eventLocation(item),0)}</p>
+          <p>${autoTextHTML(item,"excerpt",eventExcerpt(item),0)}</p>
+          <div class="event-read-more">${safe(lang()==="it" ? "Leggi tutto" : lang()==="ph" ? "Read more" : "Read more")}</div>
+        </div>
+      </a>
+      <div class="event-card-actions">
+        <a class="ticket-button event-main-action" href="${safe(eventRegisterLink(item))}" onclick="event.stopPropagation();">${safe(tr("registerNow") || "REGISTRATI ORA")}</a>
+        <button type="button" class="ticket-button event-main-action event-share-action" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getEventByIdFinal('${id}') || getVisibleEvents()[${index}]);">Condividi</button>
+      </div>
+    </div>`;
+};
+
+openEventByIndex = function(index){
+  const item = getVisibleEvents()[index];
+  if(!item) return;
+  window.location.href = eventPageLink(item);
+};
+
+renderEvents = function(){
+  const home = document.getElementById("homeEventsGrid");
+  const all = document.getElementById("allEventsGrid");
+  if(typeof eventsData === "undefined" || !Array.isArray(eventsData)) return;
+  const visibleEvents = getVisibleEvents();
+  if(home){ home.innerHTML = visibleEvents.slice(0,3).map((e,i)=>buildEventCard(e,i)).join(""); }
+  if(all){ all.innerHTML = visibleEvents.map((e,i)=>buildEventCard(e,i)).join(""); }
+  translateAutoElements(document);
+};
+
+function renderEventDetailPage(){
+  const container = document.getElementById("eventDetailContainer");
+  if(!container || typeof eventsData === "undefined") return;
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id") || params.get("event");
+  const item = getEventByIdFinal(id) || getVisibleEvents()[0];
+  if(!item){
+    container.innerHTML = `<div class="event-detail-card"><div class="event-detail-info"><h1>Evento non trovato</h1><a class="players-list-link" href="events.html">← Torna agli Eventi</a></div></div>`;
+    return;
+  }
+  document.title = eventTitle(item) + " | FIL-ITALIA";
+  const city = item.campCity || (eventLocation(item).split(",")[0]) || "";
+  const time = item.time || item.orario || (eventDescription(item).match(/\b\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\b/) || [""])[0] || "Da confermare";
+  const place = item.place || item.venue || item.luogo || (eventLocation(item) || city);
+  container.innerHTML = `
+    <div class="event-detail-card">
+      <div class="event-detail-image-wrap">
+        <img src="${safe(eventImage(item))}" alt="${safe(eventTitle(item))}" onerror="this.onerror=null;this.src='images/logo.png';">
+      </div>
+      <div class="event-detail-info">
+        <span class="event-detail-badge">FIL-ITALIA TALENT ID CAMP</span>
+        <h1>${autoTextHTML(item,"title",eventTitle(item),0)}</h1>
+        <p class="event-detail-description">${autoTextHTML(item,"description",eventDescription(item),0)}</p>
+        <div class="event-detail-fields">
+          <div><strong>CITTÀ</strong><span>${safe(city)}</span></div>
+          <div><strong>DATA</strong><span>${autoTextHTML(item,"date",eventDate(item),0)}</span></div>
+          <div><strong>ORARIO</strong><span>${safe(time)}</span></div>
+          <div><strong>LUOGO</strong><span>${safe(place)}</span></div>
+        </div>
+        <div class="event-detail-actions">
+          <a class="ticket-button event-main-action" href="${safe(eventRegisterLink(item))}">${safe(tr("registerNow") || "Registrati ora")}</a>
+          <button type="button" class="ticket-button event-main-action event-share-action" onclick="shareFilitalia('event', getEventByIdFinal('${safe(item.id || item.slug || "")}'))">Condividi</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+shareFilitalia = async function(type, data, customPage){
+  if(!data) data = {title:"FIL-ITALIA Nation Select"};
+
+  const rawTitle = type === "event"
+    ? eventTitle(data)
+    : (typeof localNews === "function" && type === "news"
+      ? localNews(data,"title")
+      : (data.title || data.name || "FIL-ITALIA Nation Select"));
+
+  const title = typeof rawTitle === "object"
+    ? (rawTitle[lang()] || rawTitle.it || rawTitle.en || "FIL-ITALIA Nation Select")
+    : String(rawTitle || "FIL-ITALIA Nation Select");
+
+  const itemId = data.id || data.slug || title.toLowerCase().replaceAll(" ", "-");
+  const page = customPage || (type === "event"
+    ? eventPageLink(data)
+    : `${window.location.pathname}?type=${encodeURIComponent(type || "share")}&id=${encodeURIComponent(itemId)}`);
+
+  const url = new URL(page, window.location.href).toString();
+  const text = `🏀 FIL-ITALIA Nation Select
+${title}
+${url}`;
+
+  // Apriamo sempre il pannello social del sito, così su Mac/PC non resta fermo.
+  // Da telefono i pulsanti aprono direttamente WhatsApp/Facebook/Instagram o copiano il link.
+  openFallbackShareSheet(title, url, text);
+};
+
+openFallbackShareSheet = function(title, url, text){
+  closeFallbackShareSheet();
+
+  const encodedUrl = encodeURIComponent(url);
+  const encodedText = encodeURIComponent(text || (title + " " + url));
+  const safeUrl = String(url).replace(/'/g, "%27");
+
+  const overlay = document.createElement("div");
+  overlay.className = "share-sheet-overlay";
+  overlay.innerHTML = `
+    <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+      <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
+      <h3>Condividi</h3>
+      <div class="share-sheet-grid">
+        <a href="https://wa.me/?text=${encodedText}" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" rel="noopener">Facebook</a>
+        <button type="button" onclick="copyShareLink('${safeUrl}'); window.open('https://www.instagram.com/','_blank');">Instagram</button>
+        <button type="button" onclick="copyShareLink('${safeUrl}')">Copia link</button>
+      </div>
+      <p class="share-sheet-note">Per Instagram il link viene copiato: incollalo nel messaggio o nella storia.</p>
+    </div>`;
+
+  overlay.addEventListener("click", e => { if(e.target === overlay) closeFallbackShareSheet(); });
+  document.body.appendChild(overlay);
+};
+
+function finalEventInit(){
+  renderEvents();
+  renderEventDetailPage();
+}
+document.addEventListener("DOMContentLoaded", finalEventInit);
+
+
+/* ===== FINAL FIX: clean share behavior + object text guard ===== */
+(function(){
+  const LIVE_BASE_FALLBACK = "https://filitalianationselect.netlify.app";
+
+  window.filText = function(value){
+    const L = (typeof lang === "function" ? lang() : "it");
+    if(value && typeof value === "object" && !Array.isArray(value)){
+      return value[L] || value.it || value.en || value.ph || "";
+    }
+    return value == null ? "" : String(value);
+  };
+
+  window.translatedField = function(item, field){
+    return window.filText(item && item[field]);
+  };
+  window.localEvent = function(item, field){
+    return window.filText(item && item[field]);
+  };
+  window.localNews = function(item, field){
+    return window.filText(item && item[field]);
+  };
+
+  window.getCleanShareUrl = function(type, data, customPage){
+    let itemId = data && (data.id || data.slug);
+    if(!itemId){
+      const title = data && (data.title || data.name) ? window.filText(data.title || data.name) : "filitalia";
+      itemId = title.toLowerCase().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,"");
+    }
+
+    let page = customPage;
+    if(!page){
+      if(type === "event"){
+        page = (typeof eventPageLink === "function" && data) ? eventPageLink(data) : `event.html?id=${encodeURIComponent(itemId)}`;
+      }else{
+        page = `${window.location.pathname.split('/').pop() || 'index.html'}?type=${encodeURIComponent(type || "share")}&id=${encodeURIComponent(itemId)}`;
+      }
+    }
+
+    const isLocal = window.location.protocol === "file:";
+    const base = isLocal ? LIVE_BASE_FALLBACK + "/" : window.location.href;
+    return new URL(page, base).toString();
+  };
+
+  window.shareFilitalia = async function(type, data, customPage){
+    if(!data) data = {title:"FIL-ITALIA Nation Select"};
+    const rawTitle = type === "event"
+      ? (typeof eventTitle === "function" ? eventTitle(data) : data.title)
+      : (type === "news" && typeof localNews === "function" ? localNews(data,"title") : (data.title || data.name));
+    const title = window.filText(rawTitle) || "FIL-ITALIA Nation Select";
+    const url = window.getCleanShareUrl(type, data, customPage);
+    const text = `🏀 FIL-ITALIA Nation Select\n${title}\n${url}`;
+    window.openFallbackShareSheet(title, url, text);
+  };
+
+  window.openFallbackShareSheet = function(title, url, text){
+    window.closeFallbackShareSheet();
+
+    const encodedUrl = encodeURIComponent(url);
+    const encodedText = encodeURIComponent(text || (title + "\n" + url));
+    const safeUrl = String(url).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+
+    const overlay = document.createElement("div");
+    overlay.className = "share-sheet-overlay";
+    overlay.innerHTML = `
+      <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+        <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
+        <h3>Condividi</h3>
+        <div class="share-sheet-grid">
+          <button type="button" onclick="openShareExternal('https://api.whatsapp.com/send?text=${encodedText}')">WhatsApp</button>
+          <button type="button" onclick="openShareExternal('https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}')">Facebook</button>
+          <button type="button" onclick="copyShareLink('${safeUrl}'); openShareExternal('https://www.instagram.com/')">Instagram</button>
+          <button type="button" onclick="copyShareLink('${safeUrl}')">Copia link</button>
+        </div>
+        <p class="share-sheet-note">Per Instagram il link viene copiato: incollalo nel messaggio o nella storia.</p>
+      </div>`;
+
+    overlay.addEventListener("click", function(e){ if(e.target === overlay) window.closeFallbackShareSheet(); });
+    document.body.appendChild(overlay);
+  };
+
+  window.openShareExternal = function(url){
+    window.closeFallbackShareSheet();
+    setTimeout(function(){ window.open(url, "_blank", "noopener"); }, 80);
+  };
+
+  window.closeFallbackShareSheet = function(){
+    document.querySelectorAll(".share-sheet-overlay").forEach(el => el.remove());
+  };
+
+  window.copyShareLink = async function(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      window.showShareToast("Link copiato");
+    }catch(error){
+      window.prompt("Copia questo link:", text);
+    }
+    window.closeFallbackShareSheet();
+  };
+
+  window.showShareToast = function(message){
+    let toast = document.querySelector(".share-toast");
+    if(!toast){
+      toast = document.createElement("div");
+      toast.className = "share-toast";
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(window.__shareToastTimer);
+    window.__shareToastTimer = setTimeout(function(){
+      toast.classList.remove("show");
+      setTimeout(function(){ if(toast && !toast.classList.contains("show")) toast.remove(); }, 350);
+    }, 1800);
+  };
+
+  window.populateCampEventSelect = function(){
+    const select = document.getElementById("campEventSelect");
+    const list = (typeof getVisibleEvents === "function" ? getVisibleEvents() : (Array.isArray(window.eventsData) ? window.eventsData : (typeof eventsData !== "undefined" && Array.isArray(eventsData) ? eventsData : [])));
+    if(!select || !Array.isArray(list) || !list.length) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const selectedId = params.get("event") || params.get("id");
+    const current = select.value;
+    const firstOption = `<option value="">${typeof tr === "function" ? tr("selectEventOption") : "Seleziona evento"}</option>`;
+
+    select.innerHTML = firstOption + list.map(function(eventItem){
+      const title = window.filText(eventItem.title) || eventItem.id || "Event";
+      const date = window.filText(eventItem.campDate || eventItem.date) || "";
+      const city = window.filText(eventItem.campCity || eventItem.city || eventItem.location) || "";
+      const selected = (selectedId && selectedId === eventItem.id) || current === title ? " selected" : "";
+      return `<option value="${safe(title)}" data-id="${safe(eventItem.id || "")}" data-city="${safe(city)}" data-date="${safe(date)}" data-title="${safe(title)}"${selected}>${safe(title)}${date ? " - " + safe(date) : ""}</option>`;
+    }).join("");
+
+    if(typeof updateCampEventCity === "function") updateCampEventCity();
+  };
+
+  window.updateCampEventCity = function(){
+    const select = document.getElementById("campEventSelect");
+    const city = document.getElementById("campEventCity");
+    const date = document.getElementById("campEventDate");
+    if(!select) return;
+    const selected = select.options[select.selectedIndex];
+    if(city) city.value = selected && selected.dataset.city ? selected.dataset.city : "";
+    if(date) date.value = selected && selected.dataset.date ? selected.dataset.date : "";
+  };
+
+  document.addEventListener("DOMContentLoaded", function(){
+    if(document.getElementById("campEventSelect")){
+      setTimeout(function(){
+        window.populateCampEventSelect();
+        const select = document.getElementById("campEventSelect");
+        if(select) select.addEventListener("change", window.updateCampEventCity);
+      }, 100);
+    }
+  });
+})();

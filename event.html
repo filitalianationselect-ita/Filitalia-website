@@ -3,18 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="FIL-ITALIA Nation Select Basketball Program in Italy. Camps, tournaments, player development and international opportunities.">
+<meta name="description" content="Dettagli evento FIL-ITALIA Nation Select.">
 <meta property="og:image" content="images/logo.png">
-<meta property="og:title" content="FIL-ITALIA Nation Select">
-<meta property="og:description" content="Camps, tournaments and player development for Fil-Italian basketball athletes.">
-<title>ID Camp</title>
+<meta property="og:title" content="FIL-ITALIA Evento">
+<meta property="og:description" content="Dettagli e registrazione evento FIL-ITALIA Nation Select.">
+<title>FIL-ITALIA Evento</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=400">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
-</head><body data-gallery-category="idcamp"><div class="background-logo"></div><nav class="navbar">
+</head>
+<body>
+<div class="background-logo"></div>
+<nav class="navbar">
   <a href="index.html" class="logo-area">
     <img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo">
     <div class="logo-text">FIL-ITALIA</div>
@@ -36,14 +39,19 @@
     <button onclick="setLanguage('en')">EN</button>
     <button onclick="setLanguage('ph')">PH</button>
   </div>
-</nav><section class="players-page"><h1 id="galleryCategoryTitle">ID Camp</h1><div class="players-button-row"><a href="gallery.html" id="backGalleryBtn" class="players-list-link" data-key="backGallery">← Back to Gallery</a></div><p class="page-subtitle" id="galleryCategorySubtitle" data-key="idcampSubtitle">Album degli ID Camp ordinati dal camp più vicino al più lontano.</p><div id="galleryAlbumsGrid"></div></section><div class="universal-modal" id="universalModal">
-  <span class="close-btn" onclick="closeModal()">×</span>
-  <button class="modal-arrow modal-prev" onclick="prevModal()">‹</button>
-  <img id="universalImage" alt="">
-  <button class="modal-arrow modal-next" onclick="nextModal()">›</button>
-</div><footer>
+</nav>
+
+<section class="event-detail-page players-page">
+  <div class="players-button-row"><a href="events.html" class="players-list-link">← Torna agli Eventi</a></div>
+  <div id="eventDetailContainer"></div>
+</section>
+
+<footer>
 <img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
 <p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
 <div class="footer-links"><a href="privacy.html">Privacy Policy</a></div>
-</footer><script src="gallery-data.js?v=500"></script>
-<script src="script.js?v=400"></script></body></html>
+</footer>
+<script src="events-data.js?v=400"></script>
+<script src="script.js?v=400"></script>
+</body>
+</html>
