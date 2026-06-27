@@ -2103,22 +2103,8 @@ document.addEventListener("DOMContentLoaded", finalEventInit);
       : (type === "news" && typeof localNews === "function" ? localNews(data,"title") : (data.title || data.name));
     const title = window.filText(rawTitle) || "FIL-ITALIA Nation Select";
     const url = window.getCleanShareUrl(type, data, customPage);
-    const text = `🏀 FIL-ITALIA Nation Select
+   const text = `🏀 FIL-ITALIA Nation Select
 ${title}`;
-
-if(navigator.share){
-  try{
-    await navigator.share({
-      title: title,
-      text: text,
-      url: url
-    });
-    return;
-  }catch(error){
-    if(error && error.name === "AbortError") return;
-  }
-}
-
 window.openFallbackShareSheet(title, url, `${text}
 ${url}`);
   };
