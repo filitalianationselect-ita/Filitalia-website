@@ -1,0 +1,7 @@
+node_modules/
+players-data.backup-*.js
+.DS_Store
+generated/
+social/
+.env
+.vscode/settings.json

@@ -1,0 +1,29 @@
+{
+  "name": "sito-filitalia-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "events-data.js",
+  "scripts": {
+    "generate": "node scripts/generate-pages.js",
+    "sitemap": "node scripts/generate-sitemap.js",
+    "check": "node scripts/check-site.js",
+    "build": "node scripts/generate-pages.js && node scripts/generate-sitemap.js && node scripts/check-site.js && node scripts/generate-social-images.js",
+    "social": "node scripts/generate-social-images.js",
+    "migrate": "node scripts/migrate-players.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/filitalianationselect-ita/Filitalia-website.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/filitalianationselect-ita/Filitalia-website/issues"
+  },
+  "homepage": "https://github.com/filitalianationselect-ita/Filitalia-website#readme",
+  "dependencies": {
+    "canvas": "^3.2.3"
+  }
+}

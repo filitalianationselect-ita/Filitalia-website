@@ -1972,7 +1972,7 @@ function renderEventDetailPage(){
   container.innerHTML = `
     <div class="event-detail-card">
       <div class="event-detail-image-wrap">
-        <img src="${safe(eventImage(item))}" alt="${safe(eventTitle(item))}" onerror="this.onerror=null;this.src='images/logo.png';">
+        <img src="${safe(eventImage(item))}" alt="${safe(eventTitle(item))}" style="object-position:${safe(item.imagePosition || 'center center')};" onerror="this.onerror=null;this.src='images/logo.png';">
       </div>
       <div class="event-detail-info">
         <span class="event-detail-badge">FIL-ITALIA TALENT ID CAMP</span>
@@ -2076,25 +2076,31 @@ document.addEventListener("DOMContentLoaded", finalEventInit);
   };
 
   window.getCleanShareUrl = function(type, data, customPage){
-    let itemId = data && (data.id || data.slug);
-    if(!itemId){
-      const title = data && (data.title || data.name) ? window.filText(data.title || data.name) : "filitalia";
-      itemId = title.toLowerCase().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,"");
-    }
+  let itemId = data && (data.id || data.slug);
 
-    let page = customPage;
-    if(!page){
-      if(type === "event"){
-        page = (typeof eventPageLink === "function" && data) ? eventPageLink(data) : `event.html?id=${encodeURIComponent(itemId)}`;
-      }else{
-        page = `${window.location.pathname.split('/').pop() || 'index.html'}?type=${encodeURIComponent(type || "share")}&id=${encodeURIComponent(itemId)}`;
-      }
-    }
+  if(!itemId){
+    const title = data && (data.title || data.name) ? window.filText(data.title || data.name) : "filitalia";
+    itemId = title.toLowerCase().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,"");
+  }
 
-    const isLocal = window.location.protocol === "file:";
-    const base = isLocal ? LIVE_BASE_FALLBACK + "/" : window.location.href;
-    return new URL(page, base).toString();
-  };
+  let page = customPage;
+
+  if(!page){
+    if(type === "event"){
+      page = `event.html?id=${encodeURIComponent(itemId)}`;
+    }else if(type === "player"){
+      page = `player.html?id=${encodeURIComponent(itemId)}`;
+    }else if(type === "news"){
+      page = `news-item.html?id=${encodeURIComponent(itemId)}`;
+    }else{
+      page = `${window.location.pathname.split('/').pop() || 'index.html'}?type=${encodeURIComponent(type || "share")}&id=${encodeURIComponent(itemId)}`;
+    }
+  }
+
+  const isLocal = window.location.protocol === "file:";
+  const base = isLocal ? LIVE_BASE_FALLBACK + "/" : window.location.href;
+  return new URL(page, base).toString();
+};
 
   window.shareFilitalia = async function(type, data, customPage){
     if(!data) data = {title:"FIL-ITALIA Nation Select"};
