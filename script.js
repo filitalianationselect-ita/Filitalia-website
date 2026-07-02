@@ -2547,10 +2547,8 @@ ${url}`);
       ctx.fill();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 39px Arial";
-      ctx.fillText("filitalianationselect.netlify.app", 125, 1760);
-      ctx.font = "29px Arial";
-      ctx.fillText("Seleziona Instagram e poi La tua storia", 125, 1805);
+      ctx.font = "900 44px Arial";
+      ctx.fillText("FIL-ITALIA NATION SELECT", 125, 1775);
 
       const blob = await canvasToBlob(canvas);
       const file = new File([blob], "filitalia-instagram-story.png", { type: "image/png" });
