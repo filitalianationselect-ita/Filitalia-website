@@ -3,14 +3,29 @@
   "version": "1.0.0",
   "description": "",
   "main": "events-data.js",
-  "scripts": {
-    "generate": "node scripts/generate-pages.js",
-    "sitemap": "node scripts/generate-sitemap.js",
-    "check": "node scripts/check-site.js",
-    "build": "node scripts/generate-pages.js && node scripts/generate-sitemap.js && node scripts/check-site.js && node scripts/generate-social-images.js",
-    "social": "node scripts/generate-social-images.js",
-    "migrate": "node scripts/migrate-players.js"
-  },
+"scripts": {
+  "generate": "node scripts/generate-pages.js",
+  "sitemap": "node scripts/generate-sitemap.js",
+  "check": "node scripts/check-site.js",
+  "build": "node scripts/generate-pages.js && node scripts/generate-sitemap.js && node scripts/check-site.js && node scripts/generate-social-images.js",
+  "social": "node scripts/generate-social-images.js",
+  "migrate": "node scripts/migrate-players.js",
+
+  "new-player": "node scripts/new-player.js",
+  "edit-player": "node scripts/edit-player.js",
+  "delete-player": "node scripts/delete-player.js",
+
+  "new-event": "node scripts/new-event.js",
+  "edit-event": "node scripts/edit-event.js",
+  "delete-event": "node scripts/delete-event.js",
+
+  "new-news": "node scripts/new-news.js",
+  "edit-news": "node scripts/edit-news.js",
+  "delete-news": "node scripts/delete-news.js",
+
+  "manager": "node scripts/manager.js",
+  "publish": "node scripts/publish-site.js"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/filitalianationselect-ita/Filitalia-website.git"

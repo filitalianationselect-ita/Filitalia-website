@@ -81,5 +81,26 @@ const playersData = [
     highlights: "#",
     imagePosition: "center top",
     status: "Active"
+  },
+
+  {
+    id: "aron-matalog",
+    name: "Aron Matalog",
+    year: "2009",
+    category: "U17",
+    role: "Point Guard",
+    position: "Point Guard",
+    height: "1.70",
+    club: "",
+    city: "Milano",
+    nationality: "",
+    jerseyNumber: "",
+    instagram: "aron.matalog",
+    handedness: "",
+    image: "images/players/9",
+    cardImage: "images/players/9",
+    highlights: "#",
+    imagePosition: "center top",
+    status: "Active"
   }
 ];

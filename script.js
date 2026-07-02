@@ -819,7 +819,9 @@ function getVisibleEvents(){
 }
 
 function buildEventCard(item, index){
-  const link = `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
+  const defaultLink =
+  `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
+  const link = item.ticket || defaultLink;
   const eventId = safe(item.id || item.slug || "");
   const readMore = tr("readMore");
   return `
@@ -1220,7 +1222,9 @@ function openInfo(item){
   const btn = document.getElementById("eventTicketBtn") || document.getElementById("infoRegisterButton");
   if(btn){
     if(item.type === "event"){
-      btn.href = `camp-register.html?event=${encodeURIComponent(data.id || "")}`;
+      const defaultLink =
+  `camp-register.html?event=${encodeURIComponent(data.id || "")}`;
+      btn.href = data.ticket || defaultLink;  
       btn.innerText = tr("registerNow");
       btn.style.display = "inline-flex";
     } else {
