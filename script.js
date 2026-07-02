@@ -2221,3 +2221,369 @@ ${url}`);
     }
   });
 })();
+
+/* ===== FIL-ITALIA INSTAGRAM STORY SHARE - FINAL ===== */
+(function(){
+  function storyText(value){
+    if(typeof window.filText === "function") return window.filText(value);
+    const currentLang = typeof lang === "function" ? lang() : "it";
+    if(value && typeof value === "object" && !Array.isArray(value)){
+      return value[currentLang] || value.it || value.en || value.ph || "";
+    }
+    return value == null ? "" : String(value);
+  }
+
+  function escapeInline(value){
+    return String(value || "")
+      .replace(/\\/g, "\\\\")
+      .replace(/'/g, "\\'")
+      .replace(/\r?\n/g, " ");
+  }
+
+  function storyTitle(type, data){
+    if(type === "event" && typeof eventTitle === "function"){
+      return storyText(eventTitle(data));
+    }
+    if(type === "news" && typeof localNews === "function"){
+      return storyText(localNews(data, "title"));
+    }
+    if(type === "staff" && typeof localStaff === "function"){
+      return storyText(localStaff(data, "name"));
+    }
+    return storyText(data && (data.title || data.name)) || "FIL-ITALIA Nation Select";
+  }
+
+  function storyImage(type, data){
+    if(!data) return "images/logo.png";
+    const candidates = [];
+
+    if(type === "player"){
+      candidates.push(data.cardImage, data.image, data.photo, data.profileImage, data.playerImage);
+    }else if(type === "event"){
+      candidates.push(data.image, data.eventImage, data.banner, data.poster, data.coverImage, data.cover);
+    }else if(type === "news"){
+      candidates.push(data.image, data.coverImage, data.cover, data.poster, data.thumbnail);
+    }else if(type === "staff"){
+      candidates.push(data.image, data.photo, data.profileImage);
+    }else{
+      candidates.push(data.image, data.photo, data.cover, data.thumbnail);
+    }
+
+    return candidates.find(Boolean) || "images/logo.png";
+  }
+
+  function storyMeta(type, data){
+    if(!data) return "";
+
+    if(type === "event"){
+      const date = typeof eventDate === "function" ? eventDate(data) : storyText(data.date || data.campDate);
+      const place = typeof eventLocation === "function" ? eventLocation(data) : storyText(data.location || data.city || data.campCity);
+      return [date, place].filter(Boolean).join(" • ");
+    }
+
+    if(type === "player"){
+      const role = typeof getPlayerRole === "function" ? getPlayerRole(data) : storyText(data.role || data.position);
+      const category = storyText(data.category || data.year);
+      const city = typeof getPlayerCity === "function" ? getPlayerCity(data) : storyText(data.city);
+      return [category, role, city].filter(Boolean).join(" • ");
+    }
+
+    if(type === "news"){
+      return storyText(data.date);
+    }
+
+    if(type === "staff"){
+      return [storyText(data.role), storyText(data.department)].filter(Boolean).join(" • ");
+    }
+
+    return "";
+  }
+
+  function roundedRect(ctx, x, y, width, height, radius){
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+    ctx.lineTo(x + width, y + height - r);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    ctx.lineTo(x + r, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function wrapText(ctx, text, maxWidth, maxLines){
+    const words = String(text || "").split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = "";
+
+    words.forEach(function(word){
+      const test = line ? line + " " + word : word;
+      if(ctx.measureText(test).width <= maxWidth){
+        line = test;
+      }else{
+        if(line) lines.push(line);
+        line = word;
+      }
+    });
+
+    if(line) lines.push(line);
+
+    if(maxLines && lines.length > maxLines){
+      lines.length = maxLines;
+      let last = lines[maxLines - 1];
+      while(last.length > 1 && ctx.measureText(last + "...").width > maxWidth){
+        last = last.slice(0, -1);
+      }
+      lines[maxLines - 1] = last.trim() + "...";
+    }
+
+    return lines;
+  }
+
+  function loadStoryImage(src){
+    return new Promise(function(resolve){
+      if(!src){
+        resolve(null);
+        return;
+      }
+
+      const image = new Image();
+      image.onload = function(){ resolve(image); };
+      image.onerror = function(){ resolve(null); };
+
+      try{
+        const imageUrl = new URL(src, window.location.href);
+        if(imageUrl.origin !== window.location.origin){
+          image.crossOrigin = "anonymous";
+        }
+        image.src = imageUrl.toString();
+      }catch(error){
+        image.src = src;
+      }
+    });
+  }
+
+  function canvasToBlob(canvas){
+    return new Promise(function(resolve, reject){
+      try{
+        canvas.toBlob(function(blob){
+          if(blob) resolve(blob);
+          else reject(new Error("Immagine Story non creata."));
+        }, "image/png", 0.95);
+      }catch(error){
+        reject(error);
+      }
+    });
+  }
+
+  function downloadStory(blob){
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "filitalia-instagram-story.png";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  window.shareFilitalia = function(type, data, customPage){
+    const safeData = data || { title: "FIL-ITALIA Nation Select" };
+    const title = storyTitle(type, safeData);
+    const url = typeof window.getCleanShareUrl === "function"
+      ? window.getCleanShareUrl(type, safeData, customPage)
+      : new URL(customPage || window.location.href, window.location.href).toString();
+    const text = `🏀 FIL-ITALIA Nation Select\n${title}`;
+
+    window.__filitaliaSharePayload = {
+      type: type || "share",
+      data: safeData,
+      customPage: customPage || "",
+      title,
+      url,
+      text
+    };
+
+    window.openFallbackShareSheet(title, url, text, true);
+  };
+
+  window.shareFilitaliaLink = async function(){
+    const payload = window.__filitaliaSharePayload || {};
+    const title = payload.title || "FIL-ITALIA Nation Select";
+    const text = payload.text || title;
+    const url = payload.url || window.location.href;
+
+    if(navigator.share){
+      try{
+        await navigator.share({ title, text, url });
+        window.closeFallbackShareSheet();
+        return;
+      }catch(error){
+        if(error && error.name === "AbortError") return;
+      }
+    }
+
+    await window.copyShareLink(url);
+  };
+
+  window.openFallbackShareSheet = function(title, url, text, hasStory){
+    window.closeFallbackShareSheet();
+
+    const encodedUrl = encodeURIComponent(url);
+    const encodedText = encodeURIComponent((text || title) + "\n" + url);
+    const safeUrl = escapeInline(url);
+
+    const overlay = document.createElement("div");
+    overlay.className = "share-sheet-overlay";
+    overlay.innerHTML = `
+      <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+        <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
+        <h3>Condividi</h3>
+        <div class="share-sheet-grid">
+          ${hasStory ? '<button type="button" onclick="createFilitaliaStory()">📲 Story Instagram</button>' : ''}
+          <button type="button" onclick="shareFilitaliaLink()">Condividi link</button>
+          <button type="button" onclick="openShareExternal('https://api.whatsapp.com/send?text=${encodedText}')">WhatsApp</button>
+          <button type="button" onclick="openShareExternal('https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}')">Facebook</button>
+          <button type="button" onclick="copyShareLink('${safeUrl}')">Copia link</button>
+        </div>
+        <p class="share-sheet-note">Da telefono, “Story Instagram” crea la grafica verticale e apre il menu di condivisione. Seleziona Instagram e poi La tua storia.</p>
+      </div>`;
+
+    overlay.addEventListener("click", function(event){
+      if(event.target === overlay) window.closeFallbackShareSheet();
+    });
+
+    document.body.appendChild(overlay);
+  };
+
+  window.createFilitaliaStory = async function(){
+    const payload = window.__filitaliaSharePayload || {};
+    const data = payload.data || {};
+    const type = payload.type || "share";
+    const title = payload.title || "FIL-ITALIA Nation Select";
+    const url = payload.url || window.location.href;
+
+    window.showShareToast("Creo la Story...");
+
+    try{
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext("2d");
+
+      if(!ctx) throw new Error("Canvas non disponibile.");
+
+      const background = ctx.createLinearGradient(0, 0, 1080, 1920);
+      background.addColorStop(0, "#07111f");
+      background.addColorStop(0.48, "#0b2342");
+      background.addColorStop(1, "#101010");
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, 1080, 1920);
+
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = "#ffffff";
+      for(let x = -150; x < 1230; x += 170){
+        ctx.beginPath();
+        ctx.arc(x, 430, 86, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      const image = await loadStoryImage(storyImage(type, data));
+      const imageX = 90;
+      const imageY = 245;
+      const imageW = 900;
+      const imageH = 835;
+
+      ctx.save();
+      roundedRect(ctx, imageX, imageY, imageW, imageH, 48);
+      ctx.clip();
+
+      if(image){
+        const scale = Math.max(imageW / image.width, imageH / image.height);
+        const sourceW = imageW / scale;
+        const sourceH = imageH / scale;
+        const sourceX = (image.width - sourceW) / 2;
+        const sourceY = (image.height - sourceH) / 2;
+        ctx.drawImage(image, sourceX, sourceY, sourceW, sourceH, imageX, imageY, imageW, imageH);
+      }else{
+        ctx.fillStyle = "rgba(255,255,255,0.10)";
+        ctx.fillRect(imageX, imageY, imageW, imageH);
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.font = "900 110px Arial";
+        ctx.fillText("FIL-ITALIA", 540, 625);
+        ctx.font = "900 72px Arial";
+        ctx.fillText("NATION SELECT", 540, 735);
+      }
+      ctx.restore();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.font = "900 52px Arial";
+      ctx.fillText("FIL-ITALIA NATION SELECT", 540, 145);
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 82px Arial";
+      wrapText(ctx, title, 900, 3).forEach(function(line, index){
+        ctx.fillText(line, 90, 1225 + index * 94);
+      });
+
+      const meta = storyMeta(type, data);
+      if(meta){
+        ctx.fillStyle = "rgba(255,255,255,0.84)";
+        ctx.font = "42px Arial";
+        wrapText(ctx, meta, 900, 2).forEach(function(line, index){
+          ctx.fillText(line, 90, 1515 + index * 56);
+        });
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      roundedRect(ctx, 90, 1690, 900, 128, 30);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 39px Arial";
+      ctx.fillText("filitalianationselect.netlify.app", 125, 1760);
+      ctx.font = "29px Arial";
+      ctx.fillText("Seleziona Instagram e poi La tua storia", 125, 1805);
+
+      const blob = await canvasToBlob(canvas);
+      const file = new File([blob], "filitalia-instagram-story.png", { type: "image/png" });
+
+      let canShareFile = false;
+      if(navigator.share){
+        canShareFile = typeof navigator.canShare === "function"
+          ? navigator.canShare({ files: [file] })
+          : true;
+      }
+
+      if(canShareFile){
+        try{
+          await navigator.share({
+            files: [file],
+            title,
+            text: "Story FIL-ITALIA"
+          });
+          window.closeFallbackShareSheet();
+          return;
+        }catch(error){
+          if(error && error.name === "AbortError") return;
+          console.warn("Condivisione file non disponibile:", error);
+        }
+      }
+
+      downloadStory(blob);
+      window.showShareToast("Story scaricata");
+      window.closeFallbackShareSheet();
+    }catch(error){
+      console.error("Errore Story FIL-ITALIA:", error);
+      window.showShareToast("Impossibile creare la Story");
+    }
+  };
+})();
+
