@@ -94,10 +94,14 @@ function pageTemplate({ title, description, image, url, redirectUrl, type = "art
 <meta name="twitter:image" content="${esc(image)}">
 
 <link rel="canonical" href="${esc(url)}">
+<script>
+  if (!/facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp/i.test(navigator.userAgent)) {
+    window.location.replace("${esc(redirectUrl)}");
+  }
+</script>
 </head>
 <body>
 <p>Reindirizzamento a <a href="${esc(redirectUrl)}">${esc(title)}</a>...</p>
-<script>window.location.replace(${JSON.stringify(redirectUrl)});</script>
 </body>
 </html>`;
 }
@@ -132,7 +136,7 @@ function generate(){
     const title = text(event.title) || "FIL-ITALIA Event";
     const id = itemId("event", event, title);
     const url = `${SITE_URL}/generated/events/${encodeURIComponent(id)}.html`;
-    const redirectUrl = `${SITE_URL}/generated/events/${id}.html`;
+    const redirectUrl = `${SITE_URL}/event.html?id=${encodeURIComponent(id)}`;
 
     writeFile(`generated/events/${id}.html`, pageTemplate({
       title: `${title} | FIL-ITALIA`,
@@ -148,7 +152,7 @@ function generate(){
     const title = text(item.title) || "FIL-ITALIA News";
     const id = itemId("news", item, title);
     const url = `${SITE_URL}/generated/news/${encodeURIComponent(id)}.html`;
-    const redirectUrl = `${SITE_URL}/generated/news/${id}.html`;
+    const redirectUrl = `${SITE_URL}/news.html?type=news&id=${encodeURIComponent(id)}`;
 
     writeFile(`generated/news/${id}.html`, pageTemplate({
       title: `${title} | FIL-ITALIA`,
