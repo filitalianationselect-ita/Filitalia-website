@@ -2436,6 +2436,9 @@ ${url}`);
     const encodedText = encodeURIComponent((text || title) + "\n" + url);
     const safeUrl = escapeInline(url);
 
+    const whatsappHref = "https://api.whatsapp.com/send?text=" + encodedText;
+    const facebookHref = "https://www.facebook.com/sharer/sharer.php?u=" + encodedUrl;
+
     const overlay = document.createElement("div");
     overlay.className = "share-sheet-overlay";
     overlay.innerHTML = `
@@ -2445,11 +2448,10 @@ ${url}`);
         <div class="share-sheet-grid">
           ${hasStory ? '<button type="button" onclick="createFilitaliaStory()">📲 Story Instagram</button>' : ''}
           <button type="button" onclick="shareFilitaliaLink()">Condividi link</button>
-          <button type="button" onclick="openShareExternal('https://api.whatsapp.com/send?text=${encodedText}')">WhatsApp</button>
-          <button type="button" onclick="openShareExternal('https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}')">Facebook</button>
+          <a href="${whatsappHref}" target="_blank" rel="noopener noreferrer" onclick="setTimeout(function(){ closeFallbackShareSheet(); }, 300)">WhatsApp</a>
+          <a href="${facebookHref}" target="_blank" rel="noopener noreferrer" onclick="setTimeout(function(){ closeFallbackShareSheet(); }, 300)">Facebook</a>
           <button type="button" onclick="copyShareLink('${safeUrl}')">Copia link</button>
         </div>
-        <p class="share-sheet-note">Da telefono, “Story Instagram” crea la grafica verticale e apre il menu di condivisione. Seleziona Instagram e poi La tua storia.</p>
       </div>`;
 
     overlay.addEventListener("click", function(event){
