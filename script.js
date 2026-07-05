@@ -833,7 +833,7 @@ function buildEventCard(item, index){
       <div class="event-read-more">${safe(readMore)}</div>
       <div class="event-card-actions">
         <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
-        <a class="ticket-button" href="${safe(link)}" target="_blank" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+        <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
       </div>
     </div>`;
 }
@@ -1027,14 +1027,13 @@ function openFallbackShareSheet(title, text, url, fullText){
   const overlay = document.createElement("div");
   overlay.className = "share-sheet-overlay";
   overlay.innerHTML = `
-    <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+    <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Facebook Post">
       <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
-      <h3>Condividi</h3>
-      <p>Scegli dove condividere il link.</p>
+      <h3>Facebook Post</h3>
+      <p>Pubblica il contenuto su Facebook.</p>
       <div class="share-sheet-grid">
-        <a href="https://wa.me/?text=${encodedText}" target="_blank" rel="noopener">WhatsApp</a>
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" rel="noopener">Facebook</a>
-        <button type="button" onclick="copyShareLink('${encodedText}')">Copia link</button>
+        <a href="https://wa.me/?text=${encodedText}" rel="noopener">WhatsApp</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" rel="noopener">Facebook Post</a>
       </div>
     </div>`;
 
@@ -2034,14 +2033,13 @@ openFallbackShareSheet = function(title, url, text){
   const overlay = document.createElement("div");
   overlay.className = "share-sheet-overlay";
   overlay.innerHTML = `
-    <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+    <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Facebook Post">
       <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
-      <h3>Condividi</h3>
+      <h3>Facebook Post</h3>
       <div class="share-sheet-grid">
-        <a href="https://wa.me/?text=${encodedText}" target="_blank" rel="noopener">WhatsApp</a>
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" rel="noopener">Facebook</a>
+        <a href="https://wa.me/?text=${encodedText}" rel="noopener">WhatsApp</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" rel="noopener">Facebook Post</a>
         <button type="button" onclick="copyShareLink('${safeUrl}'); window.open('https://www.instagram.com/','_blank');">Instagram</button>
-        <button type="button" onclick="copyShareLink('${safeUrl}')">Copia link</button>
       </div>
       <p class="share-sheet-note">Per Instagram il link viene copiato: incollalo nel messaggio o nella storia.</p>
     </div>`;
@@ -2139,14 +2137,13 @@ ${url}`);
     const overlay = document.createElement("div");
     overlay.className = "share-sheet-overlay";
     overlay.innerHTML = `
-      <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+      <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Facebook Post">
         <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
-        <h3>Condividi</h3>
+        <h3>Facebook Post</h3>
         <div class="share-sheet-grid">
           <button type="button" onclick="openShareExternal('https://api.whatsapp.com/send?text=${encodedText}')">WhatsApp</button>
-          <button type="button" onclick="openShareExternal('https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}')">Facebook</button>
+          <button type="button" onclick="window.location.href=\'https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}\'">Facebook Post</button>
           <button type="button" onclick="copyShareLink('${safeUrl}'); openShareExternal('https://www.instagram.com/')">Instagram</button>
-          <button type="button" onclick="copyShareLink('${safeUrl}')">Copia link</button>
         </div>
         <p class="share-sheet-note">Per Instagram il link viene copiato: incollalo nel messaggio o nella storia.</p>
       </div>`;
@@ -2453,15 +2450,14 @@ ${url}`);
     const overlay = document.createElement("div");
     overlay.className = "share-sheet-overlay";
     overlay.innerHTML = `
-      <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Condividi">
+      <div class="share-sheet" role="dialog" aria-modal="true" aria-label="Facebook Post">
         <button type="button" class="share-sheet-close" onclick="closeFallbackShareSheet()">×</button>
-        <h3>Condividi</h3>
+        <h3>Facebook Post</h3>
         <div class="share-sheet-grid">
           ${hasStory ? '<button type="button" onclick="createFilitaliaStory()">📲 Story Instagram</button>' : ''}
           <button type="button" onclick="shareFilitaliaLink()">Condividi link</button>
-          <a href="${whatsappHref}" target="_blank" rel="noopener noreferrer" onclick="setTimeout(function(){ closeFallbackShareSheet(); }, 300)">WhatsApp</a>
-          <a href="${facebookHref}" target="_blank" rel="noopener noreferrer" onclick="setTimeout(function(){ closeFallbackShareSheet(); }, 300)">Facebook</a>
-          <button type="button" onclick="copyShareLink('${safeUrl}')">Copia link</button>
+          <a href="${whatsappHref}" rel="noopener noreferrer" onclick="setTimeout(function(){ closeFallbackShareSheet(); }, 300)">WhatsApp</a>
+          <a href="${facebookHref}" rel="noopener noreferrer" onclick="setTimeout(function(){ closeFallbackShareSheet(); }, 300)">Facebook Post</a>
         </div>
       </div>`;
 
