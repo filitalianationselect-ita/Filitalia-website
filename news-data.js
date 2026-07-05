@@ -8,7 +8,7 @@ const newsData = [
 
     date: "1 luglio 2026",
     expireDate: "December 31, 2026",
-    image: "images/johnbanela.jpg",
+    image: "images/johnbanela.jpg?v=2",
 
     excerpt: {
       it: "FIL-ITALIA ringrazia John Banela per aver sostenuto e sponsorizzato la realizzazione del nostro sito ufficiale.",

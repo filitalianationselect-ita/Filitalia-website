@@ -96,7 +96,7 @@ function pageTemplate({ title, description, image, url, redirectUrl, type = "art
 <link rel="canonical" href="${esc(url)}">
 <script>
   if (!/facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp/i.test(navigator.userAgent)) {
-    window.location.replace("${esc(redirectUrl)}");
+    window.location.replace(${JSON.stringify(redirectUrl)});
   }
 </script>
 </head>
