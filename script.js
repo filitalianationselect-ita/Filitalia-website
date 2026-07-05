@@ -2059,7 +2059,7 @@ document.addEventListener("DOMContentLoaded", finalEventInit);
 
 /* ===== FINAL FIX: clean share behavior + object text guard ===== */
 (function(){
-  const LIVE_BASE_FALLBACK = "https://filitalianationselect.netlify.app";
+  const LIVE_BASE_FALLBACK = "https://www.filitalianationselect.com";
 
   window.filText = function(value){
     const L = (typeof lang === "function" ? lang() : "it");
@@ -2103,16 +2103,16 @@ document.addEventListener("DOMContentLoaded", finalEventInit);
     if(type === "news"){
       page = `generated/news/${encodeURIComponent(itemId)}.html`;
     }else if(type === "event"){
-      page = `event.html?id=${encodeURIComponent(itemId)}`;
+      page = `generated/events/${encodeURIComponent(itemId)}.html`;
     }else if(type === "player"){
-      page = `player.html?id=${encodeURIComponent(itemId)}`;
+      page = `generated/players/${encodeURIComponent(itemId)}.html`;
     }else{
       page = `${window.location.pathname.split('/').pop() || 'index.html'}?type=${encodeURIComponent(type || "share")}&id=${encodeURIComponent(itemId)}`;
     }
   }
 
   const isLocal = window.location.protocol === "file:";
-  const base = isLocal ? LIVE_BASE_FALLBACK + "/" : window.location.href;
+  const base = isLocal ? LIVE_BASE_FALLBACK + "/" : window.location.origin + "/";
   return new URL(page, base).toString();
 };
 
@@ -2156,8 +2156,9 @@ ${url}`);
   };
 
   window.openShareExternal = function(url){
+    // window.open deve partire subito dal click, altrimenti Safari/Facebook lo blocca come popup.
+    window.open(url, "_blank", "noopener");
     window.closeFallbackShareSheet();
-    setTimeout(function(){ window.open(url, "_blank", "noopener"); }, 80);
   };
 
   window.closeFallbackShareSheet = function(){
