@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const SITE_URL = "https://www.filitalianationselect.com";
+const SITE_URL = (process.env.SITE_URL || "https://filitalianationselect.netlify.app").replace(/\/$/, "");
 
 function ensureDir(dir){
   if(!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -20,7 +20,7 @@ function slug(value){
     .toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-+|-+$/g, "") || "filitalia";
 }
 
 function getText(value){
@@ -30,6 +30,15 @@ function getText(value){
   return value || "";
 }
 
+function cleanDescription(value){
+  const text = getText(value);
+  return String(text || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 220);
+}
+
 function loadData(fileName, varName){
   const raw = fs.readFileSync(fileName, "utf8");
   const match = raw.match(new RegExp(`(?:const|let|var)\\s+${varName}\\s*=\\s*([\\s\\S]*?);\\s*$`));
@@ -37,7 +46,7 @@ function loadData(fileName, varName){
   return Function(`return ${match[1]}`)();
 }
 
-function pageTemplate({ title, description, image, url, redirectUrl }){
+function pageTemplate({ title, description, image, url, redirectUrl, type = "website" }){
   return `<!DOCTYPE html>
 <html lang="it">
 <head>
@@ -45,20 +54,25 @@ function pageTemplate({ title, description, image, url, redirectUrl }){
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<meta property="og:type" content="website">
+<meta property="og:site_name" content="FIL-ITALIA Nation Select">
+<meta property="og:locale" content="it_IT">
+<meta property="og:type" content="${esc(type)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:image" content="${esc(image)}">
+<meta property="og:image:secure_url" content="${esc(image)}">
+<meta property="og:image:alt" content="${esc(title)}">
 <meta property="og:url" content="${esc(url)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${esc(image)}">
+<link rel="canonical" href="${esc(url)}">
 <meta http-equiv="refresh" content="0; url=${esc(redirectUrl)}">
-<link rel="canonical" href="${esc(redirectUrl)}">
 </head>
 <body>
 <p>Reindirizzamento a <a href="${esc(redirectUrl)}">${esc(title)}</a>...</p>
+<script>window.location.replace(${JSON.stringify(redirectUrl)});</script>
 </body>
 </html>`;
 }
@@ -87,11 +101,12 @@ function generate(){
 
     fs.writeFileSync(file, pageTemplate({
       title: `${name} | FIL-ITALIA`,
-      description: `${name} - Profilo giocatore FIL-ITALIA Nation Select.`,
+      description: cleanDescription(player.excerpt || player.description) || `${name} - Profilo giocatore FIL-ITALIA Nation Select.`,
       image: fullImage(player.image || player.cardImage),
       url,
-      redirectUrl
-    }));
+      redirectUrl,
+      type: "profile"
+    }), "utf8");
   });
 
   events.forEach(event => {
@@ -103,30 +118,32 @@ function generate(){
 
     fs.writeFileSync(file, pageTemplate({
       title: `${title} | FIL-ITALIA`,
-      description: getText(event.description) || "Evento FIL-ITALIA Nation Select.",
+      description: cleanDescription(event.excerpt || event.description) || "Evento FIL-ITALIA Nation Select.",
       image: fullImage(event.image || event.cover),
       url,
-      redirectUrl
-    }));
+      redirectUrl,
+      type: "article"
+    }), "utf8");
   });
 
   news.forEach(item => {
     const title = getText(item.title) || "FIL-ITALIA News";
-    const id = item.id || item.slug || slug(title);
+    const id = slug(item.id || item.slug || title);
     const file = `generated/news/${id}.html`;
     const url = `${SITE_URL}/generated/news/${id}.html`;
-    const redirectUrl = `${SITE_URL}/news-item.html?id=${encodeURIComponent(id)}`;
+    const redirectUrl = `${SITE_URL}/news.html?type=news&id=${encodeURIComponent(id)}`;
 
     fs.writeFileSync(file, pageTemplate({
       title: `${title} | FIL-ITALIA`,
-      description: getText(item.description || item.excerpt) || "News FIL-ITALIA Nation Select.",
+      description: cleanDescription(item.excerpt || item.description) || "News FIL-ITALIA Nation Select.",
       image: fullImage(item.image),
       url,
-      redirectUrl
-    }));
+      redirectUrl,
+      type: "article"
+    }), "utf8");
   });
 
-  console.log("✅ Pagine generate correttamente in /generated");
+  console.log("✅ Pagine social generate correttamente in /generated");
 }
 
 generate();

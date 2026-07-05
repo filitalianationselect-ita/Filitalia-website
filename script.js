@@ -2080,22 +2080,32 @@ document.addEventListener("DOMContentLoaded", finalEventInit);
   };
 
   window.getCleanShareUrl = function(type, data, customPage){
+  function shareSlug(value){
+    return String(value || "filitalia")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "filitalia";
+  }
+
   let itemId = data && (data.id || data.slug);
 
   if(!itemId){
     const title = data && (data.title || data.name) ? window.filText(data.title || data.name) : "filitalia";
-    itemId = title.toLowerCase().replace(/[^a-z0-9]+/gi,"-").replace(/^-+|-+$/g,"");
+    itemId = shareSlug(title);
+  }else if(type === "news"){
+    itemId = shareSlug(itemId);
   }
 
   let page = customPage;
 
   if(!page){
-    if(type === "event"){
+    if(type === "news"){
+      page = `generated/news/${encodeURIComponent(itemId)}.html`;
+    }else if(type === "event"){
       page = `event.html?id=${encodeURIComponent(itemId)}`;
     }else if(type === "player"){
       page = `player.html?id=${encodeURIComponent(itemId)}`;
-    }else if(type === "news"){
-      page = `news-item.html?id=${encodeURIComponent(itemId)}`;
     }else{
       page = `${window.location.pathname.split('/').pop() || 'index.html'}?type=${encodeURIComponent(type || "share")}&id=${encodeURIComponent(itemId)}`;
     }
