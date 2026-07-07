@@ -1,6 +1,6 @@
 /* FIL-ITALIA SCRIPT CLEAN TRANSLATION */
 
-const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyDUeaXNIsSytRNcd9TczKszaby6IXj2HhHzsEdvyxCLn80BctufXIpirILDIPSDM2z/exec";
+const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwgWxqQi1rR8JgegQRF1DNctd9UGOOS_LlOtma9NoKu4ozTh4h9LPTqI5LnwNgIuEZa/exec";
 
 const translations = {
   it: {
