@@ -190,7 +190,7 @@
         </div>
         <div class="news-detail-content">${richDescription(item.description || item.excerpt || "")}</div>
         <div class="news-detail-actions">
-          <button type="button" class="ticket-button event-main-action event-share-action" onclick="shareFilitalia('news', newsData.find(n => String(n.id || n.slug || '') === '${esc(item.id || item.slug || slug(txt(item.title)))}') || ${JSON.stringify(item).replace(/"/g,'&quot;')}, 'news-item.html?id=${encodeURIComponent(item.id || item.slug || slug(txt(item.title)))}')">${shareLabel}</button>
+          <button type="button" class="ticket-button event-main-action event-share-action" onclick="shareFilitalia('news', newsData.find(n => String(n.id || n.slug || '') === '${esc(item.id || item.slug || slug(txt(item.title)))}') || ${JSON.stringify(item).replace(/"/g,'&quot;')})">${shareLabel}</button>
         </div>
       </article>`;
   }

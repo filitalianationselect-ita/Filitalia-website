@@ -152,7 +152,7 @@ function generate(){
     const title = text(item.title) || "FIL-ITALIA News";
     const id = itemId("news", item, title);
     const url = `${SITE_URL}/generated/news/${encodeURIComponent(id)}.html`;
-    const redirectUrl = `${SITE_URL}/news.html?type=news&id=${encodeURIComponent(id)}`;
+    const redirectUrl = `${SITE_URL}/news-item.html?id=${encodeURIComponent(id)}`;
 
     writeFile(`generated/news/${id}.html`, pageTemplate({
       title: `${title} | FIL-ITALIA`,
