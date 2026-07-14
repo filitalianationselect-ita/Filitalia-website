@@ -867,17 +867,25 @@ function renderEvents(){
   translateAutoElements(document);
 }
 
-function buildNewsCard(item, index){
+function buildNewsCard(item, index, openDetailPage = false){
   const img = item.image ? safe(item.image) : "images/logo.png";
-  return `
-    <div class="news-card" onclick="openNewsByIndex(${index})">
-      <img class="news-cover" src="${img}" alt="${safe(localNews(item,"title") || item.title || "News")}" onerror="this.onerror=null;this.src='images/logo.png';">
+  const title = localNews(item,"title") || item.title || "News";
+  const cardContent = `
+      <img class="news-cover" src="${img}" alt="${safe(title)}" onerror="this.onerror=null;this.src='images/logo.png';">
       <div class="news-card-content">
         <span>${autoTextHTML(item,"date",localNews(item,"date"), 0)}</span>
         <h3>${autoTextHTML(item,"title",localNews(item,"title"), 0)}</h3>
         <p>${autoTextHTML(item,"excerpt",localNews(item,"excerpt"), 0)}</p>
-      </div>
-    </div>`;
+      </div>`;
+
+  // Nella Home apriamo la pagina completa della news.
+  // Nella pagina News manteniamo il comportamento esistente.
+  if(openDetailPage){
+    const newsUrl = `news-item.html?id=${encodeURIComponent(getItemId("news", item))}`;
+    return `<a class="news-card" href="${safe(newsUrl)}" aria-label="${safe(title)}" style="text-decoration:none;color:inherit;">${cardContent}</a>`;
+  }
+
+  return `<div class="news-card" onclick="openNewsByIndex(${index})">${cardContent}</div>`;
 }
 
 function renderNews(){
@@ -889,7 +897,7 @@ function renderNews(){
   if(home){
     home.innerHTML = newsData
       .slice(0,3)
-      .map((n,i)=>buildNewsCard(n,i))
+      .map((n,i)=>buildNewsCard(n,i,true))
       .join("");
   }
 
