@@ -59,7 +59,7 @@
   </div>
 </nav>
 
-<section class="event-detail-page players-page">
+<section class="event-detail-page players-page news-detail-page">
   <div class="players-button-row"><a href="news.html" class="players-list-link">← Torna alle News</a></div>
   <div id="newsDetailContainer"></div>
 </section>
@@ -112,20 +112,24 @@
     const image = item.image || "images/logo.png";
     document.title = title + " | FIL-ITALIA";
     container.innerHTML = `
-      <div class="event-detail-card">
-        <div class="event-detail-image-wrap">
-          <img src="${esc(image)}" alt="${esc(title)}" style="object-position:${esc(item.imagePosition || 'center center')};" onerror="this.onerror=null;this.src='images/logo.png';">
-        </div>
-        <div class="event-detail-info">
+      <article class="event-detail-card news-detail-card">
+        <header class="event-detail-info news-detail-header">
           <span class="event-detail-badge">FIL-ITALIA NEWS</span>
           <h1>${esc(title)}</h1>
-          <p class="event-detail-description">${esc(txt(item.date || ""))}</p>
+          <p class="event-detail-description news-detail-date">${esc(txt(item.date || ""))}</p>
+        </header>
+
+        <div class="event-detail-image-wrap news-detail-image-wrap">
+          <img src="${esc(image)}" alt="${esc(title)}" style="object-position:${esc(item.imagePosition || 'center center')};" onerror="this.onerror=null;this.src='images/logo.png';">
+        </div>
+
+        <div class="event-detail-info news-detail-body">
           <div class="event-detail-description">${richDescription(item.description || item.excerpt || "")}</div>
           <div class="event-detail-actions">
             <button type="button" class="ticket-button event-main-action event-share-action" onclick="shareFilitalia('news', newsData.find(n => String(n.id || n.slug || '') === '${esc(item.id || item.slug || slug(txt(item.title)))}') || ${JSON.stringify(item).replace(/"/g,'&quot;')}, 'news-item.html?id=${encodeURIComponent(item.id || item.slug || slug(txt(item.title)))}')">Condividi</button>
           </div>
         </div>
-      </div>`;
+      </article>`;
   }
   document.addEventListener("DOMContentLoaded", render);
 })();

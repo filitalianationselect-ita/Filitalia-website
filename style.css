@@ -2850,3 +2850,77 @@ body.mobile-menu-open .nav-links{
   z-index:2147483647 !important;
   box-shadow:0 12px 35px rgba(0,0,0,.25) !important;
 }
+
+
+/* ===== NEWS DETAIL: FOTO NEL FLUSSO COME LE ALTRE NEWS ===== */
+.news-detail-card{
+  max-width:900px !important;
+  grid-template-columns:1fr !important;
+  align-items:start !important;
+  gap:24px !important;
+  padding:38px !important;
+}
+
+.news-detail-header,
+.news-detail-body{
+  width:100% !important;
+  max-width:780px !important;
+  margin:0 auto !important;
+}
+
+.news-detail-header{
+  text-align:center !important;
+}
+
+.news-detail-header .event-detail-badge{
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+.news-detail-header h1{
+  text-align:center !important;
+  margin-bottom:10px !important;
+}
+
+.news-detail-date{
+  text-align:center !important;
+  margin-bottom:0 !important;
+}
+
+.news-detail-image-wrap{
+  width:100% !important;
+  max-width:780px !important;
+  margin:0 auto !important;
+}
+
+.news-detail-image-wrap img{
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+  max-height:620px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  margin:0 auto !important;
+  background:#f5f5f5 !important;
+}
+
+.news-detail-body .event-detail-description{
+  width:100% !important;
+  text-align:left !important;
+}
+
+.news-detail-body .event-detail-actions{
+  margin:28px auto 0 !important;
+}
+
+@media(max-width:900px){
+  .news-detail-card{
+    padding:24px !important;
+    gap:20px !important;
+  }
+
+  .news-detail-image-wrap img{
+    height:auto !important;
+    max-height:460px !important;
+  }
+}
