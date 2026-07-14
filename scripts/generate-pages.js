@@ -151,17 +151,23 @@ function generate(){
   news.forEach(item => {
     const title = text(item.title) || "FIL-ITALIA News";
     const id = itemId("news", item, title);
-    const url = `${SITE_URL}/generated/news/${encodeURIComponent(id)}.html`;
+    const url = `${SITE_URL}/generated/news/${encodeURIComponent(id)}/`;
     const redirectUrl = `${SITE_URL}/news-item.html?id=${encodeURIComponent(id)}`;
 
-    writeFile(`generated/news/${id}.html`, pageTemplate({
+    const content = pageTemplate({
       title: `${title} | FIL-ITALIA`,
       description: cleanDescription(item.excerpt || item.description || "News FIL-ITALIA Nation Select."),
       image: fullImage(item.image),
       url,
       redirectUrl,
       type: "article"
-    }));
+    });
+
+    // URL principale: /generated/news/ID/
+    writeFile(`generated/news/${id}/index.html`, content);
+
+    // Compatibilità con eventuali vecchi link: /generated/news/ID.html
+    writeFile(`generated/news/${id}.html`, content);
   });
 
   console.log(`✅ Pagine social generate: players ${players.length}, events ${events.length}, news ${news.length}`);

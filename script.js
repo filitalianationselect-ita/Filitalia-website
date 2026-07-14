@@ -2102,18 +2102,16 @@ document.addEventListener("DOMContentLoaded", finalEventInit);
     itemId = shareSlug(itemId);
   }
 
-  // Per news, eventi e giocatori condividiamo sempre la pagina statica
-  // generata con i metadati Open Graph corretti. Un eventuale customPage
-  // come news-item.html?id=... non deve sovrascrivere questo indirizzo,
-  // altrimenti Facebook legge titolo e logo generici.
   let page;
 
+  // Le news devono usare SEMPRE la pagina statica con i meta Open Graph.
+  // Ignoriamo customPage perché news-item.html ha meta generici.
   if(type === "news"){
-    page = `generated/news/${encodeURIComponent(itemId)}.html`;
+    page = `generated/news/${encodeURIComponent(itemId)}/`;
   }else if(type === "event"){
-    page = `generated/events/${encodeURIComponent(itemId)}.html`;
+    page = customPage || `generated/events/${encodeURIComponent(itemId)}.html`;
   }else if(type === "player"){
-    page = `generated/players/${encodeURIComponent(itemId)}.html`;
+    page = customPage || `generated/players/${encodeURIComponent(itemId)}.html`;
   }else if(customPage){
     page = customPage;
   }else{

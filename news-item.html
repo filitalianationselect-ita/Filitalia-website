@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="/">
 <meta name="description" content="News FIL-ITALIA Nation Select.">
 <meta property="og:image" content="images/logo.png">
 <meta property="og:title" content="FIL-ITALIA News">
@@ -122,7 +123,7 @@
 <div class="footer-links"><a href="privacy.html">Privacy Policy</a></div>
 </footer>
 <script src="news-data.js?v=501"></script>
-<script src="script.js?v=402"></script>
+<script src="script.js?v=404"></script>
 <script>
 (function(){
   function txt(value){
@@ -171,6 +172,17 @@
     }
     const title = txt(item.title) || "FIL-ITALIA News";
     const image = item.image || "images/logo.png";
+    const cleanId = slug(item.id || item.slug || title);
+
+    // Mantiene aperta la news normale, ma nella barra indirizzi mostra
+    // il link statico corretto. Così anche "copia link" usa titolo e foto giusti.
+    if(window.location.protocol !== "file:" && cleanId){
+      const cleanPath = `/generated/news/${encodeURIComponent(cleanId)}/`;
+      if(window.location.pathname !== cleanPath){
+        window.history.replaceState({ newsId: cleanId }, "", cleanPath);
+      }
+    }
+
     document.title = title + " | FIL-ITALIA";
     const L = (typeof lang === "function" ? lang() : "it");
     const shareLabel = L === "en" ? "Share" : L === "ph" ? "I-share" : "Condividi";
