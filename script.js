@@ -867,25 +867,20 @@ function renderEvents(){
   translateAutoElements(document);
 }
 
-function buildNewsCard(item, index, openDetailPage = false){
+function buildNewsCard(item, index){
   const img = item.image ? safe(item.image) : "images/logo.png";
   const title = localNews(item,"title") || item.title || "News";
-  const cardContent = `
+  const newsUrl = `news-item.html?id=${encodeURIComponent(getItemId("news", item))}`;
+
+  return `
+    <a class="news-card" href="${safe(newsUrl)}" aria-label="${safe(title)}" style="text-decoration:none;color:inherit;">
       <img class="news-cover" src="${img}" alt="${safe(title)}" onerror="this.onerror=null;this.src='images/logo.png';">
       <div class="news-card-content">
         <span>${autoTextHTML(item,"date",localNews(item,"date"), 0)}</span>
         <h3>${autoTextHTML(item,"title",localNews(item,"title"), 0)}</h3>
         <p>${autoTextHTML(item,"excerpt",localNews(item,"excerpt"), 0)}</p>
-      </div>`;
-
-  // Nella Home apriamo la pagina completa della news.
-  // Nella pagina News manteniamo il comportamento esistente.
-  if(openDetailPage){
-    const newsUrl = `news-item.html?id=${encodeURIComponent(getItemId("news", item))}`;
-    return `<a class="news-card" href="${safe(newsUrl)}" aria-label="${safe(title)}" style="text-decoration:none;color:inherit;">${cardContent}</a>`;
-  }
-
-  return `<div class="news-card" onclick="openNewsByIndex(${index})">${cardContent}</div>`;
+      </div>
+    </a>`;
 }
 
 function renderNews(){
@@ -897,7 +892,7 @@ function renderNews(){
   if(home){
     home.innerHTML = newsData
       .slice(0,3)
-      .map((n,i)=>buildNewsCard(n,i,true))
+      .map((n,i)=>buildNewsCard(n,i))
       .join("");
   }
 
@@ -911,10 +906,9 @@ function renderNews(){
 }
 
 function openNewsByIndex(index){
-  if(typeof newsData === "undefined") return;
-  currentInfoList = newsData.map(data => ({type:"news",data}));
-  currentInfoIndex = index;
-  openInfo(currentInfoList[index]);
+  if(typeof newsData === "undefined" || !newsData[index]) return;
+  const item = newsData[index];
+  window.location.href = `news-item.html?id=${encodeURIComponent(getItemId("news", item))}`;
 }
 
 
@@ -972,7 +966,12 @@ function getItemId(type, data){
   if(data.slug) return String(data.slug);
   if(type === "player") return makeSlug(data.name || data.title || "player");
   if(type === "staff") return makeSlug(localStaff(data,"name") || data.name || "staff");
-  if(type === "news") return makeSlug(localNews(data,"title") || data.title || "news");
+  if(type === "news"){
+    const stableTitle = data.title && typeof data.title === "object"
+      ? (data.title.it || data.title.en || data.title.ph || "news")
+      : (data.title || "news");
+    return makeSlug(stableTitle);
+  }
   if(type === "event") return makeSlug(localEvent(data,"title") || data.title || "event");
   if(type === "album") return makeSlug(data.id || data.title || "album");
   return makeSlug(data.title || data.name || "item");
