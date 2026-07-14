@@ -19,10 +19,447 @@ const newsData = [
       "ph": "Ipinakita ng Rome U21 Tournament ang bagong henerasyon ng Filipino basketball sa Italy. Ipinamalas ng mga batang talento, umuusbong na mga koponan, at mataas na antas ng kompetisyon na narito na ang kinabukasan ng ating komunidad."
     },
     "description": {
-      "it": "🏀 **ROMA U21: LA NUOVA GENERAZIONE È GIÀ QUI**Il 12 luglio Roma non ha ospitato solo un torneo U21: ha acceso i riflettori su una nuova era del basket filippino in Italia. In una categoria sempre più rara, questo evento ha mostrato chiaramente che il futuro è già in campo, pronto a prendersi spazio.Quando si parla di Roma, il pensiero va subito alla storica squadra **ROMANTICO** e a nomi come **Cullar, i fratelli Magbuhos, Panopio, Araja, Dimayuga, Barcebal, Pangilinan e Gomez**.Giocatori che hanno dominato per anni i tornei della community e che, nella maggior parte dei casi, hanno proseguito il proprio percorso nel basket professionistico nelle Filippine.Ora è il momento dei nuovi.Giovani cresciuti nei campionati **Élite ed Eccellenza di livello nazionale del campionato FIP**. Non arrivano dal nulla: si sono costruiti sul campo.### 🔥 I PROTAGONISTI⭐ **Dwayne Vivero**, MVP e tra i migliori marcatori del torneo.⭐ **Christian Patrick** **Landicho**, inserito nel Mythical Five e pronto a dimostrare il suo valore.⭐ **David Panopio**, classe 2010.Il cognome **Panopio** richiama subito **Dalph**. Questa volta, però, David ha dimostrato di meritarsi tutto, senza scorciatoie.A questi livelli non basta il nome. Servono talento, lavoro e continuità.👀 Da seguire anche **Manzano, Cansicio, Crisologo, Cariaga e Cabarubbia**, con questi ultimi due classe 2010.📊 **Età media della squadra vincitrice: 16 anni**🏆 Vince **ROMA NEXT GEN**La finale è stata assegnata a tavolino per il forfait di **Proudly Pinoy**, che aveva disputato soltanto il primo tempo. Peccato, perché sarebbe stata una sfida interessante.Anche l’altra squadra di Roma si è fatta valere, mostrando carattere, intensità e diversi ragazzi interessanti. Una conferma ulteriore di quanto il movimento romano sia vivo e ricco di talento.### 📍 SQUADRE PRESENTI* 2 squadre di Milano* 2 squadre di Roma* 2 squadre di Modena* 1 team europeoLe squadre milanesi hanno convinto.**Proudly Pinoy**, realtà attiva anche nel torneo **NBTC** nelle Filippine, e **Farini** hanno mostrato diversi giocatori interessanti.Da segnalare in particolare **il numero 7 di Farini**, **il lungo di Proudly** e **i fratelli Deguzman**, talenti che speriamo possano continuare a crescere giocando nei campionati italiani di livello Élite o Eccellenza.🌍 Interessante anche **UNITED**, squadra europea composta da giocatori provenienti da Regno Unito, Spagna e Milano.Tra i profili migliori troviamo **McLean Verte**, classe 2008, che nonostante alcuni problemi fisici ha fatto vedere qualità importanti.📉 Per le due squadre di Modena, invece, il torneo ha evidenziato una differenza di livello rispetto alle altre formazioni.Una delle squadre, guidata da **Coach Ejay**, ha affrontato **Roma Next Gen, Roma 2 e United**, soffrendo scarti importanti.Non è una critica. È un segnale.Per competere in tornei di questo livello serve di più:* Allenamenti intensi* Fondamentali solidi* Abitudine a giocare contro avversari forti### 👏 UN GRAZIE SPECIALE AGLI SPONSOR E AI DONATORI**Sponsor principali*** Finest Health - Saladmaster* City Travel* Frisch Revo - Filinvest Land* Mr & Mrs Rod Santos* Phil Cargo - Pol & Evelyn Reyes* Enagic Independent Distributor - Kangen Family* FNAR - Filipino Nurses Association Rome* Modesto Banzon Photography**Donatori*** Zero Cycling* Puri* PRR* Rome BV* Boss Gambit* Irish* Paolo Alviar* Mancini on the Go* Brellis* Bebots Halo-Halo* Marty Rivera* Kusina Kapampangan* Vic Garcia* Individual RunnersIl loro supporto è fondamentale per permettere a eventi come questo di crescere.### 🏅 PREMI E RICONOSCIMENTI**Champion**Premio offerto da **City Travel****1° posto**Premio offerto da **Commissioner Vic Garcia****2° posto**Premio offerto da **Mr & Mrs Rod Santos****3° posto**Premio offerto da **Phil Cargo - Pol & Evelyn Reyes****Mythical Five**Premio offerto da **Frisch Revo - Filinvest Land****MVP Season / MVP Finals**Premio offerto da **Lhon Robles****Best in Uniform**Premio offerto da **Saladmaster****Best in Three-Point Shooting**Premio offerto da **Rod Anuran - Mancini on the Go**👏 Complimenti anche agli organizzatori e ai nuovi staff.È bello vedere nuove persone investire tempo, energie e passione nell’organizzazione di tornei giovanili, soprattutto in una categoria come l’U21, che ormai viene proposta sempre più raramente.Roma si conferma una delle realtà più attive della community, non soltanto con l’U21, ma anche nelle categorie **U12, U14 e U15**.Questo non è soltanto presente.È costruzione del futuro.Il talento c’è, ovunque. Ma il futuro del basket dipende da chi sceglie di crederci davvero, lavorare ogni giorno e creare opportunità concrete per i giovani.**ADESSO TOCCA A NOI**Sosteniamo, seguiamo e investiamo in questa nuova generazione. Il prossimo livello non arriverà da solo: lo costruiremo insieme. 🇮🇹🇵🇭**A breve pubblicheremo anche le foto del torneo. Restate connessi!**",
-      "en": "🏀 **ROME U21: THE NEXT GENERATION IS HERE**On **July 12**, Rome hosted more than just an U21 tournament. It marked the beginning of a new era for Filipino basketball in Italy. In a category that has become increasingly rare, this event clearly showed that the future is already on the court, ready to make its mark.When people talk about Rome, they immediately think of the historic **ROMANTICO** team and names such as **Cullar, the Magbuhos brothers, Panopio, Araja, Dimayuga, Barcebal, Pangilinan, and Gomez**.These are the players who dominated the Filipino community tournaments for years, and most of them have continued their careers in professional basketball in the Philippines.Now, it's time for the next generation.Young players who have developed through the **Élite and Eccellenza divisions of the Italian FIP National Championships**. They didn't appear overnight. They earned every opportunity through hard work on the court.### 🔥 THE STANDOUT PLAYERS⭐ **Dwayne Vivero**, Tournament MVP and one of the leading scorers.⭐ **Christian Patrick Landicho**, selected to the Mythical Five and ready to prove his potential.⭐ **David Panopio**, born in 2010.The surname **Panopio** immediately brings **Dalph** to mind. This time, however, David proved that he has earned everything through his own ability, without shortcuts.At this level, a name alone is never enough.Talent, hard work, and consistency make the difference.👀 Also keep an eye on **Manzano, Cansicio, Crisologo, Cariaga, and Cabarubbia**, with the last two born in 2010.📊 **Average age of the championship team: 16 years old**🏆 **ROMA NEXT GEN** claimed the championship.The final was awarded by default after **Proudly Pinoy** forfeited following the first half. It was unfortunate, as it had all the ingredients to become an exciting championship game.The other Rome team also proved its value, displaying determination, intensity, and several promising young players. Another sign that the basketball movement in Rome is alive and full of talent.### 📍 PARTICIPATING TEAMS* 2 teams from Milan* 2 teams from Rome* 2 teams from Modena* 1 European mixed teamThe Milan teams impressed throughout the tournament.**Proudly Pinoy**, also active in the **NBTC** in the Philippines, together with **Farini**, showcased several talented players.Special recognition goes to **Farini's number 7**, **Proudly Pinoy's big man**, and **the Deguzman brothers**, all players with strong potential who we hope will continue developing in the Italian Élite and Eccellenza championships.🌍 Another team worth mentioning is **UNITED**, a European squad featuring players from the United Kingdom, Spain, and Milan.Among the most impressive prospects was **McLean Verte (2008)**, who displayed excellent quality despite dealing with physical issues.For the two teams from Modena, the tournament highlighted the current gap in experience and competitiveness compared to the other teams.One of them, coached by **Coach Ejay**, faced **Roma Next Gen, Roma 2, and United**, experiencing the intensity required at this level.This is not criticism.It is simply a message.To compete in tournaments like this, teams must continue raising their standards through:* Higher training intensity* Strong basketball fundamentals* Regular competition against high-level opponents### 👏 SPECIAL THANKS TO OUR SPONSORS AND DONORS**Main Sponsors*** Finest Health - Saladmaster* City Travel* Frisch Revo - Filinvest Land* Mr & Mrs Rod Santos* Phil Cargo - Pol & Evelyn Reyes* Enagic Independent Distributor - Kangen Family* FNAR - Filipino Nurses Association Rome* Modesto Banzon Photography**Donors*** Zero Cycling* Puri* PRR* Rome BV* Boss Gambit* Irish* Paolo Alviar* Mancini on the Go* Brellis* Bebots Halo-Halo* Marty Rivera* Kusina Kapampangan* Vic Garcia* Individual RunnersTheir support continues to make tournaments like this possible.### 🏅 AWARDS AND RECOGNITIONS**Champion**Sponsored by **City Travel****1st Place**Sponsored by **Commissioner Vic Garcia****2nd Place**Sponsored by **Mr & Mrs Rod Santos****3rd Place**Sponsored by **Phil Cargo - Pol & Evelyn Reyes****Mythical Five**Sponsored by **Frisch Revo - Filinvest Land****Season MVP / Finals MVP**Sponsored by **Lhon Robles****Best in Uniform**Sponsored by **Saladmaster****Best Three-Point Shooter**Sponsored by **Rod Anuran - Mancini on the Go**Congratulations to the organizers and the new staff.It is inspiring to see more people investing their time, passion, and energy into organizing youth tournaments, especially in the U21 category, which has become increasingly rare.Rome continues to establish itself as one of the most active Filipino basketball communities, not only through U21 competitions but also in the **U12, U14, and U15** categories.This is more than the present.It is the foundation of the future.Talent exists everywhere. The future of Filipino basketball depends on those who believe in it, work every day, and continue creating real opportunities for young athletes.**NOW IT'S OUR TURN.**Let's continue supporting, following, and investing in this new generation.The next level of Filipino basketball in Italy will not happen by itself. We will build it together. 🇮🇹🇵🇭**Official tournament photos will be published soon. Stay tuned!**",
-      "ph": "🏀 **ROMA U21: NARITO NA ANG BAGONG HENERASYON**Noong **Hulyo 12**, hindi lamang isang U21 tournament ang ginanap sa Roma. Isa itong mahalagang hakbang para sa bagong yugto ng Filipino basketball sa Italy. Sa isang kategoryang bihira nang magkaroon ng mga torneo, malinaw na ipinakita ng event na ito na ang kinabukasan ay narito na at handa nang sumikat.Kapag pinag-uusapan ang Roma, agad na naiisip ang makasaysayang koponan na **ROMANTICO** at ang mga pangalang **Cullar, magkapatid na Magbuhos, Panopio, Araja, Dimayuga, Barcebal, Pangilinan, at Gomez**.Sila ang mga manlalarong nangibabaw sa Filipino community tournaments sa loob ng maraming taon, at karamihan sa kanila ay nagpatuloy hanggang sa professional basketball sa Pilipinas.Ngayon naman ay panahon na ng bagong henerasyon.Mga batang manlalarong nahubog sa **Élite at Eccellenza, ang pinakamataas na antas ng national FIP youth championships sa Italy**. Hindi sila basta sumulpot. Pinaghirapan nila ang bawat pagkakataon at unti-unting pinatunayan ang kanilang sarili sa loob ng court.### 🔥 MGA NAMUKOD-TANGING MANLALARO⭐ **Dwayne Vivero**, MVP at isa sa mga top scorers ng torneo.⭐ **Christian Patrick Landicho**, napabilang sa **Mythical Five** at patuloy na nagpapakita ng malaking potensyal.⭐ **David Panopio**, ipinanganak noong **2010**.Kapag narinig ang apelyidong **Panopio**, unang pumapasok sa isip si **Dalph**. Ngunit sa pagkakataong ito, ipinakita ni David na karapat-dapat siya sa bawat pagkakataong ibinigay sa kanya.Sa ganitong antas ng kompetisyon, hindi sapat ang pangalan.Kailangan ng talento, sipag, dedikasyon, at tuloy-tuloy na pag-unlad.👀 Abangan din sina **Manzano, Cansicio, Crisologo, Cariaga, at Cabarubbia**, kung saan ang huling dalawa ay kapwa ipinanganak noong **2010**.📊 **Average age ng kampeon: 16 taong gulang.**"
-    }
+  "it": `🏀 **ROMA U21: LA NUOVA GENERAZIONE È GIÀ QUI**
+
+Il 12 luglio Roma non ha ospitato solo un torneo U21: ha acceso i riflettori su una nuova era del basket filippino in Italia.
+
+In una categoria sempre più rara, questo evento ha mostrato chiaramente che il futuro è già in campo, pronto a prendersi spazio.
+
+Quando si parla di Roma, il pensiero va subito alla storica squadra **ROMANTICO** e a nomi come **Cullar, i fratelli Magbuhos, Panopio, Araja, Dimayuga, Barcebal, Pangilinan e Gomez**.
+
+Giocatori che hanno dominato per anni i tornei della community e che, nella maggior parte dei casi, hanno proseguito il proprio percorso nel basket professionistico nelle Filippine.
+
+Ora è il momento dei nuovi.
+
+Giovani cresciuti nei campionati **Élite ed Eccellenza di livello nazionale del campionato FIP**.
+
+Non arrivano dal nulla: si sono costruiti sul campo.
+
+### 🔥 I PROTAGONISTI
+
+⭐ **Dwayne Vivero**, MVP e tra i migliori marcatori del torneo.
+
+⭐ **Christian Patrick Landicho**, inserito nel Mythical Five e pronto a dimostrare il suo valore.
+
+⭐ **David Panopio**, classe 2010.
+
+Il cognome **Panopio** richiama subito **Dalph**. Questa volta, però, David ha dimostrato di meritarsi tutto, senza scorciatoie.
+
+A questi livelli non basta il nome. Servono talento, lavoro e continuità.
+
+👀 Da seguire anche **Manzano, Cansicio, Crisologo, Cariaga e Cabarubbia**, con questi ultimi due classe 2010.
+
+📊 **Età media della squadra vincitrice: 16 anni**
+
+🏆 Vince **ROMA NEXT GEN**
+
+La finale è stata assegnata a tavolino per il forfait di **Proudly Pinoy**, che aveva disputato soltanto il primo tempo. Peccato, perché sarebbe stata una sfida interessante.
+
+Anche l’altra squadra di Roma si è fatta valere, mostrando carattere, intensità e diversi ragazzi interessanti. Una conferma ulteriore di quanto il movimento romano sia vivo e ricco di talento.
+
+### 📍 SQUADRE PRESENTI
+
+* 2 squadre di Milano
+* 2 squadre di Roma
+* 2 squadre di Modena
+* 1 team europeo
+
+Le squadre milanesi hanno convinto.
+
+**Proudly Pinoy**, realtà attiva anche nel torneo **NBTC** nelle Filippine, e **Farini** hanno mostrato diversi giocatori interessanti.
+
+Da segnalare in particolare **il numero 7 di Farini**, **il lungo di Proudly** e **i fratelli Deguzman**, talenti che speriamo possano continuare a crescere giocando nei campionati italiani di livello Élite o Eccellenza.
+
+🌍 Interessante anche **UNITED**, squadra europea composta da giocatori provenienti da Regno Unito, Spagna e Milano.
+
+Tra i profili migliori troviamo **McLean Verte**, classe 2008, che nonostante alcuni problemi fisici ha fatto vedere qualità importanti.
+
+📉 Per le due squadre di Modena, invece, il torneo ha evidenziato una differenza di livello rispetto alle altre formazioni.
+
+Una delle squadre, guidata da **Coach Ejay**, ha affrontato **Roma Next Gen, Roma 2 e United**, soffrendo scarti importanti.
+
+Non è una critica. È un segnale.
+
+Per competere in tornei di questo livello serve di più:
+
+* Allenamenti intensi
+* Fondamentali solidi
+* Abitudine a giocare contro avversari forti
+
+### 👏 UN GRAZIE SPECIALE AGLI SPONSOR E AI DONATORI
+
+**Sponsor principali**
+
+* Finest Health - Saladmaster
+* City Travel
+* Frisch Revo - Filinvest Land
+* Mr & Mrs Rod Santos
+* Phil Cargo - Pol & Evelyn Reyes
+* Enagic Independent Distributor - Kangen Family
+* FNAR - Filipino Nurses Association Rome
+* Modesto Banzon Photography
+
+**Donatori**
+
+* Zero Cycling
+* Puri
+* PRR
+* Rome BV
+* Boss Gambit
+* Irish
+* Paolo Alviar
+* Mancini on the Go
+* Brellis
+* Bebots Halo-Halo
+* Marty Rivera
+* Kusina Kapampangan
+* Vic Garcia
+* Individual Runners
+
+Il loro supporto è fondamentale per permettere a eventi come questo di crescere.
+
+### 🏅 PREMI E RICONOSCIMENTI
+
+**Champion**  
+Premio offerto da **City Travel**
+
+**1° posto**  
+Premio offerto da **Commissioner Vic Garcia**
+
+**2° posto**  
+Premio offerto da **Mr & Mrs Rod Santos**
+
+**3° posto**  
+Premio offerto da **Phil Cargo - Pol & Evelyn Reyes**
+
+**Mythical Five**  
+Premio offerto da **Frisch Revo - Filinvest Land**
+
+**MVP Season / MVP Finals**  
+Premio offerto da **Lhon Robles**
+
+**Best in Uniform**  
+Premio offerto da **Saladmaster**
+
+**Best in Three-Point Shooting**  
+Premio offerto da **Rod Anuran - Mancini on the Go**
+
+👏 Complimenti anche agli organizzatori e ai nuovi staff.
+
+È bello vedere nuove persone investire tempo, energie e passione nell’organizzazione di tornei giovanili, soprattutto in una categoria come l’U21, che ormai viene proposta sempre più raramente.
+
+Roma si conferma una delle realtà più attive della community, non soltanto con l’U21, ma anche nelle categorie **U12, U14 e U15**.
+
+Questo non è soltanto presente.
+
+È costruzione del futuro.
+
+Il talento c’è, ovunque. Ma il futuro del basket dipende da chi sceglie di crederci davvero, lavorare ogni giorno e creare opportunità concrete per i giovani.
+
+**ADESSO TOCCA A NOI**
+
+Sosteniamo, seguiamo e investiamo in questa nuova generazione.
+
+Il prossimo livello non arriverà da solo: lo costruiremo insieme. 🇮🇹🇵🇭
+
+**A breve pubblicheremo anche le foto del torneo. Restate connessi!**`,
+  "en": `🏀 **ROME U21: THE NEXT GENERATION IS HERE**
+
+On **July 12**, Rome hosted more than just an U21 tournament. It marked the beginning of a new era for Filipino basketball in Italy.
+
+In a category that has become increasingly rare, this event clearly showed that the future is already on the court, ready to make its mark.
+
+When people talk about Rome, they immediately think of the historic **ROMANTICO** team and names such as **Cullar, the Magbuhos brothers, Panopio, Araja, Dimayuga, Barcebal, Pangilinan, and Gomez**.
+
+These are the players who dominated the Filipino community tournaments for years, and most of them have continued their careers in professional basketball in the Philippines.
+
+Now, it's time for the next generation.
+
+Young players who have developed through the **Élite and Eccellenza divisions of the Italian FIP National Championships**.
+
+They didn't appear overnight. They earned every opportunity through hard work on the court.
+
+### 🔥 THE STANDOUT PLAYERS
+
+⭐ **Dwayne Vivero**, Tournament MVP and one of the leading scorers.
+
+⭐ **Christian Patrick Landicho**, selected to the Mythical Five and ready to prove his potential.
+
+⭐ **David Panopio**, born in 2010.
+
+The surname **Panopio** immediately brings **Dalph** to mind. This time, however, David proved that he has earned everything through his own ability, without shortcuts.
+
+At this level, a name alone is never enough.
+
+Talent, hard work, and consistency make the difference.
+
+👀 Also keep an eye on **Manzano, Cansicio, Crisologo, Cariaga, and Cabarubbia**, with the last two born in 2010.
+
+📊 **Average age of the championship team: 16 years old**
+
+🏆 **ROMA NEXT GEN** claimed the championship.
+
+The final was awarded by default after **Proudly Pinoy** forfeited following the first half. It was unfortunate, as it had all the ingredients to become an exciting championship game.
+
+The other Rome team also proved its value, displaying determination, intensity, and several promising young players. Another sign that the basketball movement in Rome is alive and full of talent.
+
+### 📍 PARTICIPATING TEAMS
+
+* 2 teams from Milan
+* 2 teams from Rome
+* 2 teams from Modena
+* 1 European mixed team
+
+The Milan teams impressed throughout the tournament.
+
+**Proudly Pinoy**, also active in the **NBTC** in the Philippines, together with **Farini**, showcased several talented players.
+
+Special recognition goes to **Farini's number 7**, **Proudly Pinoy's big man**, and **the Deguzman brothers**, all players with strong potential who we hope will continue developing in the Italian Élite and Eccellenza championships.
+
+🌍 Another team worth mentioning is **UNITED**, a European squad featuring players from the United Kingdom, Spain, and Milan.
+
+Among the most impressive prospects was **McLean Verte (2008)**, who displayed excellent quality despite dealing with physical issues.
+
+For the two teams from Modena, the tournament highlighted the current gap in experience and competitiveness compared to the other teams.
+
+One of them, coached by **Coach Ejay**, faced **Roma Next Gen, Roma 2, and United**, experiencing the intensity required at this level.
+
+This is not criticism.
+
+It is simply a message.
+
+To compete in tournaments like this, teams must continue raising their standards through:
+
+* Higher training intensity
+* Strong basketball fundamentals
+* Regular competition against high-level opponents
+
+### 👏 SPECIAL THANKS TO OUR SPONSORS AND DONORS
+
+**Main Sponsors**
+
+* Finest Health - Saladmaster
+* City Travel
+* Frisch Revo - Filinvest Land
+* Mr & Mrs Rod Santos
+* Phil Cargo - Pol & Evelyn Reyes
+* Enagic Independent Distributor - Kangen Family
+* FNAR - Filipino Nurses Association Rome
+* Modesto Banzon Photography
+
+**Donors**
+
+* Zero Cycling
+* Puri
+* PRR
+* Rome BV
+* Boss Gambit
+* Irish
+* Paolo Alviar
+* Mancini on the Go
+* Brellis
+* Bebots Halo-Halo
+* Marty Rivera
+* Kusina Kapampangan
+* Vic Garcia
+* Individual Runners
+
+Their support continues to make tournaments like this possible.
+
+### 🏅 AWARDS AND RECOGNITIONS
+
+**Champion**  
+Sponsored by **City Travel**
+
+**1st Place**  
+Sponsored by **Commissioner Vic Garcia**
+
+**2nd Place**  
+Sponsored by **Mr & Mrs Rod Santos**
+
+**3rd Place**  
+Sponsored by **Phil Cargo - Pol & Evelyn Reyes**
+
+**Mythical Five**  
+Sponsored by **Frisch Revo - Filinvest Land**
+
+**Season MVP / Finals MVP**  
+Sponsored by **Lhon Robles**
+
+**Best in Uniform**  
+Sponsored by **Saladmaster**
+
+**Best Three-Point Shooter**  
+Sponsored by **Rod Anuran - Mancini on the Go**
+
+Congratulations to the organizers and the new staff.
+
+It is inspiring to see more people investing their time, passion, and energy into organizing youth tournaments, especially in the U21 category, which has become increasingly rare.
+
+Rome continues to establish itself as one of the most active Filipino basketball communities, not only through U21 competitions but also in the **U12, U14, and U15** categories.
+
+This is more than the present.
+
+It is the foundation of the future.
+
+Talent exists everywhere. The future of Filipino basketball depends on those who believe in it, work every day, and continue creating real opportunities for young athletes.
+
+**NOW IT'S OUR TURN.**
+
+Let's continue supporting, following, and investing in this new generation.
+
+The next level of Filipino basketball in Italy will not happen by itself. We will build it together. 🇮🇹🇵🇭
+
+**Official tournament photos will be published soon. Stay tuned!**`,
+  "ph": `🏀 **ROMA U21: NARITO NA ANG BAGONG HENERASYON**
+
+Noong **Hulyo 12**, hindi lamang isang U21 tournament ang ginanap sa Roma. Isa itong mahalagang hakbang para sa bagong yugto ng Filipino basketball sa Italy.
+
+Sa isang kategoryang bihira nang magkaroon ng mga torneo, malinaw na ipinakita ng event na ito na ang kinabukasan ay narito na at handa nang sumikat.
+
+Kapag pinag-uusapan ang Roma, agad na naiisip ang makasaysayang koponan na **ROMANTICO** at ang mga pangalang **Cullar, magkapatid na Magbuhos, Panopio, Araja, Dimayuga, Barcebal, Pangilinan, at Gomez**.
+
+Sila ang mga manlalarong nangibabaw sa Filipino community tournaments sa loob ng maraming taon, at karamihan sa kanila ay nagpatuloy hanggang sa professional basketball sa Pilipinas.
+
+Ngayon naman ay panahon na ng bagong henerasyon.
+
+Mga batang manlalarong nahubog sa **Élite at Eccellenza, ang pinakamataas na antas ng national FIP youth championships sa Italy**.
+
+Hindi sila basta sumulpot. Pinaghirapan nila ang bawat pagkakataon at unti-unting pinatunayan ang kanilang sarili sa loob ng court.
+
+### 🔥 MGA NAMUKOD-TANGING MANLALARO
+
+⭐ **Dwayne Vivero**, MVP at isa sa mga top scorers ng torneo.
+
+⭐ **Christian Patrick Landicho**, napabilang sa **Mythical Five** at patuloy na nagpapakita ng malaking potensyal.
+
+⭐ **David Panopio**, ipinanganak noong **2010**.
+
+Kapag narinig ang apelyidong **Panopio**, unang pumapasok sa isip si **Dalph**. Ngunit sa pagkakataong ito, ipinakita ni David na karapat-dapat siya sa bawat pagkakataong ibinigay sa kanya.
+
+Sa ganitong antas ng kompetisyon, hindi sapat ang pangalan.
+
+Kailangan ng talento, sipag, dedikasyon, at tuloy-tuloy na pag-unlad.
+
+👀 Abangan din sina **Manzano, Cansicio, Crisologo, Cariaga, at Cabarubbia**, kung saan ang huling dalawa ay kapwa ipinanganak noong **2010**.
+
+📊 **Average age ng kampeon: 16 taong gulang**
+
+🏆 Nagkampeon ang **ROMA NEXT GEN**.
+
+Iginawad ang panalo sa final sa Roma Next Gen matapos mag-forfeit ang **Proudly Pinoy** pagkatapos ng first half. Sayang, dahil maaari sana itong maging isang kapanapanabik na championship game.
+
+Nagpakita rin ng husay ang isa pang koponan mula Roma, na may matinding determinasyon, enerhiya, at ilang promising na batang manlalaro. Isa na namang patunay na buhay at hitik sa talento ang basketball community sa Roma.
+
+### 📍 MGA KOPONANG LUMAHOK
+
+* 2 koponan mula Milan
+* 2 koponan mula Roma
+* 2 koponan mula Modena
+* 1 European mixed team
+
+Maganda ang ipinakita ng mga koponan mula Milan.
+
+Ang **Proudly Pinoy**, na aktibo rin sa **NBTC** sa Pilipinas, at ang **Farini** ay parehong nagpakita ng ilang mahuhusay at promising na manlalaro.
+
+Kapansin-pansin lalo na ang **number 7 ng Farini**, ang **big man ng Proudly Pinoy**, at ang **magkapatid na Deguzman**. Umaasa kaming patuloy silang lalago at makapaglaro sa Élite at Eccellenza championships sa Italy.
+
+🌍 Kapansin-pansin din ang **UNITED**, isang European team na binubuo ng mga manlalaro mula United Kingdom, Spain, at Milan.
+
+Isa sa mga pinakamahusay na prospect ay si **McLean Verte**, ipinanganak noong 2008, na nagpakita ng magandang kalidad sa kabila ng ilang physical issues.
+
+Para naman sa dalawang koponan mula Modena, ipinakita ng torneo ang kasalukuyang agwat sa experience at competitiveness kumpara sa ibang teams.
+
+Isa sa mga koponan, na pinangunahan ni **Coach Ejay**, ay nakaharap ang **Roma Next Gen, Roma 2, at United**, at naranasan ang intensity na kailangan sa ganitong antas.
+
+Hindi ito pagpuna.
+
+Isa itong malinaw na mensahe.
+
+Upang makipagsabayan sa ganitong klase ng torneo, kailangan pang itaas ang antas sa pamamagitan ng:
+
+* Mas matinding training
+* Mas matibay na basketball fundamentals
+* Regular na paglalaro laban sa malalakas na kalaban
+
+### 👏 ESPESYAL NA PASASALAMAT SA MGA SPONSOR AT DONOR
+
+**Main Sponsors**
+
+* Finest Health - Saladmaster
+* City Travel
+* Frisch Revo - Filinvest Land
+* Mr & Mrs Rod Santos
+* Phil Cargo - Pol & Evelyn Reyes
+* Enagic Independent Distributor - Kangen Family
+* FNAR - Filipino Nurses Association Rome
+* Modesto Banzon Photography
+
+**Donors**
+
+* Zero Cycling
+* Puri
+* PRR
+* Rome BV
+* Boss Gambit
+* Irish
+* Paolo Alviar
+* Mancini on the Go
+* Brellis
+* Bebots Halo-Halo
+* Marty Rivera
+* Kusina Kapampangan
+* Vic Garcia
+* Individual Runners
+
+Napakahalaga ng kanilang suporta upang patuloy na maisagawa at mapalago ang mga ganitong event.
+
+### 🏅 MGA PARANGAL AT PAGKILALA
+
+**Champion**  
+Sponsored by **City Travel**
+
+**1st Place**  
+Sponsored by **Commissioner Vic Garcia**
+
+**2nd Place**  
+Sponsored by **Mr & Mrs Rod Santos**
+
+**3rd Place**  
+Sponsored by **Phil Cargo - Pol & Evelyn Reyes**
+
+**Mythical Five**  
+Sponsored by **Frisch Revo - Filinvest Land**
+
+**Season MVP / Finals MVP**  
+Sponsored by **Lhon Robles**
+
+**Best in Uniform**  
+Sponsored by **Saladmaster**
+
+**Best Three-Point Shooter**  
+Sponsored by **Rod Anuran - Mancini on the Go**
+
+👏 Binabati rin namin ang mga organizers at bagong staff.
+
+Napakagandang makita na mas maraming tao ang naglalaan ng oras, enerhiya, at passion sa pag-oorganisa ng youth tournaments, lalo na sa U21 category na bihira nang maisagawa.
+
+Patuloy na pinatutunayan ng Roma na isa ito sa pinakaaktibong Filipino basketball communities, hindi lamang sa U21 kundi pati sa mga kategoryang **U12, U14, at U15**.
+
+Hindi lamang ito tungkol sa kasalukuyan.
+
+Ito ang pundasyon ng kinabukasan.
+
+May talento sa lahat ng lugar. Ngunit ang kinabukasan ng Filipino basketball ay nakasalalay sa mga taong tunay na naniniwala, patuloy na nagtatrabaho, at lumilikha ng konkretong oportunidad para sa mga kabataan.
+
+**NGAYON, TAYO NAMAN.**
+
+Patuloy nating suportahan, subaybayan, at pag-investan ang bagong henerasyong ito.
+
+Hindi kusang darating ang susunod na antas ng Filipino basketball sa Italy. Sama-sama natin itong bubuuin. 🇮🇹🇵🇭
+
+**Malapit na rin naming ilabas ang official tournament photos. Abangan!**`
+}
   },
   {
     "title": {
