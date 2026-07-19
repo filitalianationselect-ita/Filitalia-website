@@ -1,0 +1,9 @@
+FIL-ITALIA V8
+
+- Correzione definitiva sincronizzazione Account -> Google Sheet DATABASE.
+- Il browser invia i dati profilo già letti da Supabase.
+- Apps Script verifica sempre identità ed email tramite token Supabase.
+- La lettura REST del profilo lato Apps Script è ora solo un controllo aggiuntivo e non blocca il salvataggio.
+- Conferma reale tramite stato JSONP: il sito mostra successo soltanto dopo la scrittura della riga.
+- Aggiornamento della stessa riga tramite Account ID, senza duplicati.
+- Log Apps Script più chiari e funzione testDatabaseFilItalia inclusa.

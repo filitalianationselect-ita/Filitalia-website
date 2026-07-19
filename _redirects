@@ -1,0 +1,4 @@
+/register.html  /login.html?mode=signup  302
+/account              /account.html              200
+/login                /login.html                200
+/reset-password       /reset-password.html       200

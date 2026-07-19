@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Area riservata FIL-ITALIA Nation Select.">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Il mio account | FIL-ITALIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=800">
+<link rel="stylesheet" href="account.css?v=800">
+<link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body data-account-page="account">
+<div class="background-logo"></div>
+<nav class="navbar">
+  <a href="index.html" class="logo-area"><img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo"><div class="logo-text">FIL-ITALIA</div></a>
+  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Apri menu">☰</button>
+  <div class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="players.html">Players</a><a href="events.html">Events</a><a href="camp-register.html">Camp</a><a href="account.html" aria-current="page">Account</a></div>
+  <div class="language-switch"><button onclick="setLanguage('it')">IT</button><button onclick="setLanguage('en')">EN</button><button onclick="setLanguage('ph')">PH</button></div>
+</nav>
+<main class="account-main">
+  <div class="account-shell">
+    <p id="accountConfigWarning" class="account-config-warning" hidden>Collega Supabase in <strong>supabase-config.js</strong> prima di usare l’area riservata.</p>
+
+    <section class="account-card">
+      <div class="account-head">
+        <div>
+          <h1 id="accountName" class="account-title">Account FIL-ITALIA</h1>
+          <p id="accountEmail" class="account-subtitle"></p>
+          <div class="account-meta"><span id="accountRole" class="account-badge">In attesa</span><span id="accountStatusBadge" class="account-badge status-pending">Caricamento...</span></div>
+        </div>
+        <button id="logoutButton" class="account-button secondary" type="button">ESCI</button>
+      </div>
+
+      <div id="pendingApprovalBox" class="pending-approval-box" hidden>
+        L’account è stato creato ma deve ancora essere approvato. Nel frattempo puoi aggiornare i dati di base; le funzioni riservate restano bloccate.
+      </div>
+
+      <h2 class="account-section-title">Dati personali</h2>
+      <form id="profileForm" class="account-form" data-requires-auth>
+        <div class="account-grid">
+          <label>Nome<input name="firstName" maxlength="100" autocomplete="given-name" required></label>
+          <label>Cognome<input name="lastName" maxlength="100" autocomplete="family-name" required></label>
+          <label>Telefono<input name="phone" maxlength="50" autocomplete="tel"></label>
+          <label>Città<input name="city" maxlength="120" autocomplete="address-level2"></label>
+          <label>Lingua
+            <select name="language"><option value="it">Italiano</option><option value="en">English</option><option value="ph">Tagalog</option></select>
+          </label>
+        </div>
+        <button class="account-button" type="submit">SALVA PROFILO</button>
+        <p id="profileStatus" class="account-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="account-card" data-role-section="player,parent,coach,coordinator,staff,admin" hidden>
+      <h2 class="account-section-title">Le mie registrazioni</h2>
+      <div id="accountRegistrations"><p class="account-muted">Caricamento...</p></div>
+    </section>
+
+    <section id="playerProfileSection" class="account-card" hidden>
+      <h2 class="account-section-title">Profilo giocatore per i camp</h2>
+      <p class="account-muted">Compila questi dati una sola volta. Nei camp verranno recuperati automaticamente insieme alla foto.</p>
+
+      <form id="playerProfileForm" class="account-form" data-requires-auth>
+        <div class="player-photo-editor">
+          <img id="playerPhotoPreview" class="player-photo-preview" src="images/logo.png" alt="Anteprima foto giocatore">
+          <label>Foto giocatore <span aria-hidden="true">*</span>
+            <input id="playerPhotoInput" type="file" accept="image/jpeg,image/png,image/webp">
+            <small>JPG, PNG o WEBP. Massimo 5 MB. Se hai già una foto, non devi ricaricarla.</small>
+          </label>
+        </div>
+
+        <div class="account-grid">
+          <label>Data di nascita <span aria-hidden="true">*</span><input type="date" name="birthDate" required></label>
+          <label>Sesso <span aria-hidden="true">*</span>
+            <select name="sex" required>
+              <option value="">Seleziona</option>
+              <option value="Maschio">Maschio</option>
+              <option value="Femmina">Femmina</option>
+              <option value="Altro">Altro / Preferisco non indicarlo</option>
+            </select>
+          </label>
+          <label>Città di residenza <span aria-hidden="true">*</span><input name="residenceCity" maxlength="120" required></label>
+          <label>Ruolo basket <span aria-hidden="true">*</span><input name="position" maxlength="30" placeholder="PG / SG / SF / PF / C" required></label>
+          <label>Squadra attuale<input name="currentClub" maxlength="160"></label>
+          <label>Altezza (cm)<input type="number" name="heightCm" min="80" max="250" inputmode="numeric"></label>
+          <label>Peso (kg)<input type="number" name="weightKg" min="20" max="250" step="0.1" inputmode="decimal"></label>
+          <label>Passaporto italiano
+            <select name="italianPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
+          </label>
+          <label>Passaporto filippino
+            <select name="filipinoPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
+          </label>
+          <label>Instagram<input name="instagram" maxlength="160" placeholder="@username"></label>
+          <label>Highlights<input type="url" name="highlightsUrl" maxlength="500" placeholder="https://..."></label>
+        </div>
+
+        <button class="account-button" type="submit">SALVA PROFILO GIOCATORE</button>
+        <p id="playerProfileStatus" class="account-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="account-card" data-role-section="parent" hidden>
+      <h2 class="account-section-title">Area genitore</h2>
+      <div class="account-feature-grid"><article class="account-feature"><h3>Giocatori collegati</h3><p>Gestione dei figli o atleti minorenni associati.</p></article><article class="account-feature"><h3>Camp</h3><p>Iscrizioni, consensi e stato del pagamento.</p></article><article class="account-feature"><h3>Comunicazioni</h3><p>Aggiornamenti ufficiali FIL-ITALIA.</p></article></div>
+    </section>
+
+    <section class="account-card" data-role-section="coach,coordinator,staff" hidden>
+      <h2 class="account-section-title">Area staff</h2>
+      <div class="account-feature-grid"><article class="account-feature"><h3>Giocatori</h3><p>Accesso limitato agli atleti assegnati.</p></article><article class="account-feature"><h3>Valutazioni</h3><p>Inserimento note tecniche e presenze.</p></article><article class="account-feature"><h3>Attività</h3><p>Camp e convocazioni della propria area.</p></article></div>
+    </section>
+
+    <section id="adminAccountsSection" class="account-card" hidden>
+      <h2 class="account-section-title">Approvazione account</h2>
+      <p class="account-muted">Il ruolo scelto dall’utente è solo una richiesta. L’account diventa operativo esclusivamente dopo l’approvazione dell’amministratore.</p>
+      <div id="pendingAccountsList"></div>
+      <p id="adminStatus" class="account-status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+</main>
+<footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
+<script src="script.js?v=800"></script>
+<script src="filitalia-i18n.js?v=800"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=800"></script>
+<script src="auth-client.js?v=800"></script>
+<script src="auth-pages.js?v=800"></script>
+</body>
+</html>

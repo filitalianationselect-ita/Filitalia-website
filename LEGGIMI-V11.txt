@@ -1,0 +1,30 @@
+FIL-ITALIA V11 - TRADUZIONI + ACCOUNT DUPLICATO
+
+CORREZIONI INCLUSE
+- Un solo pulsante Account in ogni menu.
+- Rimozione definitiva della vecchia voce Join.
+- Traduzioni Italiano, English e Filipino/Tagalog per:
+  login, creazione account, recupero password, area account,
+  profilo giocatore, messaggi di errore e conferma, iscrizione camp,
+  Privacy Policy, Documents e pagine interne.
+- Compatibilità con Supabase, Google Sheet e Safari mantenuta.
+- Versioni asset portate a v=800 per evitare la cache vecchia.
+
+COME INSTALLARE
+1. Apri la cartella principale del sito in Visual Studio Code.
+2. Copia dentro tutti i file e la cartella scripts presenti in questo pacchetto.
+3. Quando il Mac chiede, scegli Sostituisci.
+4. NON cancellare la cartella images e NON cancellare node_modules.
+5. Nel terminale esegui:
+
+   npm run build
+
+6. Se il build termina con 0 errori, pubblica:
+
+   npx netlify-cli@latest deploy --prod --dir=.
+
+CONTROLLI DOPO IL DEPLOY
+- Cambia lingua con IT, EN e PH su login.html e account.html.
+- Apri un evento: nel menu deve comparire un solo Account.
+- Salva il profilo giocatore e verifica la sincronizzazione Google Sheet.
+- Apri camp-register.html e verifica compilazione automatica e traduzioni.

@@ -1,0 +1,16 @@
+FIL-ITALIA SECURITY + ACCOUNTS V1
+================================
+
+- Aggiunte pagine login, registrazione account, recupero password e dashboard.
+- Aggiunti ruoli e approvazione Admin con Supabase Row Level Security.
+- Aggiunto collegamento verificato tra sessione account e moduli pubblici.
+- Il JWT viene verificato da Apps Script e rimosso prima del salvataggio.
+- Le iscrizioni camp degli utenti loggati vengono replicate in Supabase con ID anti-duplicato.
+- Aggiunti honeypot, controllo tempo, rate limit, allowlist e validazione server.
+- Aggiunto controllo reale dei byte JPG/PNG/WEBP e limite 5 MB.
+- Aggiunta protezione Formula Injection per Google Sheets.
+- Aggiunta sanitizzazione HTML delle news.
+- Aggiunti header Netlify in CSP Report-Only.
+- Rimossa una regola CORP che poteva bloccare le anteprime social.
+- Corretta la cache immagini per evitare foto vecchie bloccate nel browser.
+- Rimosse tre implementazioni duplicate dei moduli da script.js.

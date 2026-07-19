@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=400">
+<link rel="stylesheet" href="style.css?v=800">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
@@ -30,8 +30,7 @@
     <a href="#staff" data-key="navStaff">Staff</a>
     <a href="#news" data-key="navNews">News</a>
     <a href="#events" data-key="navEvents">Events</a>
-    <a href="register.html" data-key="navJoin">Join</a>
-    <a href="camp-register.html" data-key="navCamp">Camp</a>
+    <a href="account.html" data-filitalia-account-link="true">Account</a><a href="camp-register.html" data-key="navCamp">Camp</a>
     <a href="#contact" data-key="navContact">Contact</a>
   </div>
   <div class="language-switch">
@@ -100,21 +99,17 @@
   <p class="section-subtitle" data-key="newsSubtitle">Updates about selections, camps, tournaments and future FIL-ITALIA activities.</p>
   <div class="news-grid" id="homeNewsGrid"></div>
 </section>
-<section class="join-section" id="join">
-<h2 data-key="joinTitle">JOIN FIL-ITALIA</h2>
-
-<p class="section-subtitle" data-key="joinSubtitle">
-Register your general profile as a player, coach, staff member, referee or collaborator. Camp registrations have a separate page.
-</p>
-
+<section class="join-section" id="account-access">
+<h2 data-account-cta-title>ACCOUNT FIL-ITALIA</h2>
+<p class="section-subtitle" data-account-cta-text>Crea il tuo account, completa il profilo una sola volta e usalo per le future iscrizioni ai camp.</p>
 <div class="join-button-row">
-<a href="register.html" class="main-button">Join FIL-ITALIA</a>
-<a href="camp-register.html" class="main-button secondary-main-button">Camp Registration</a>
+<a href="login.html?mode=signup" class="main-button" data-account-cta-create>CREA ACCOUNT</a>
+<a href="login.html" class="main-button secondary-main-button" data-account-cta-login>ACCEDI</a>
 </div>
 </section>
 <section class="social-section" id="social"><h2 data-key="socialTitle">SOCIAL MEDIA</h2><p class="section-subtitle" data-key="socialSubtitle">Stay connected with FIL-ITALIA Nation Select and follow our players, activities and journey.</p><div class="social-grid"><a href="https://www.instagram.com/filitalianationselect?igsh=MXExeHoxY3I1cjE0bw%3D%3D&utm_source=qr" target="_blank" class="social-card"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" class="social-icon" alt="Instagram">Instagram</a><a href="https://www.facebook.com/share/1EPfQAxGx5/?mibextid=wwXIfr" target="_blank" class="social-card"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" class="social-icon" alt="Facebook">Facebook</a></div></section>
 <section class="events-section" id="events"><h2 data-key="eventsTitle">UPCOMING EVENTS</h2><div class="players-button-row"><a href="events.html" class="players-list-link" data-key="viewAllEvents">View All Events →</a></div><p class="section-subtitle" data-key="eventsSubtitle">Explore upcoming camps, tournaments, tryouts and future opportunities for our athletes.</p><div class="events-grid" id="homeEventsGrid"></div></section>
-<section class="contact-section" id="contact"><h2 data-key="contactTitle">CONTACT</h2><form action="https://formsubmit.co/Filitalia.nationselect@gmail.com" method="POST" class="contact-form"><input type="text" name="name" placeholder="Name" data-key-placeholder="namePlaceholder" required><input type="email" name="email" placeholder="Email" data-key-placeholder="emailPlaceholder" required><textarea name="message" placeholder="Message" data-key-placeholder="messagePlaceholder" required></textarea><input type="hidden" name="_subject" value="Nuovo messaggio FIL-ITALIA"><input type="hidden" name="_captcha" value="false"><button type="submit" data-key="sendButton">SEND MESSAGE</button></form></section>
+<section class="contact-section" id="contact"><h2 data-key="contactTitle">CONTACT</h2><form action="https://formsubmit.co/Filitalia.nationselect@gmail.com" method="POST" class="contact-form"><input type="text" name="name" placeholder="Name" maxlength="100" autocomplete="name" data-key-placeholder="namePlaceholder" required><input type="email" name="email" placeholder="Email" maxlength="254" autocomplete="email" data-key-placeholder="emailPlaceholder" required><textarea name="message" placeholder="Message" maxlength="2000" data-key-placeholder="messagePlaceholder" required></textarea><input type="hidden" name="_subject" value="Nuovo messaggio FIL-ITALIA"><input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;pointer-events:none"><button type="submit" data-key="sendButton">SEND MESSAGE</button></form></section>
 <footer>
 <img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
 <p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
@@ -150,10 +145,11 @@ Register your general profile as a player, coach, staff member, referee or colla
   <img id="universalImage" alt="">
   <button class="modal-arrow modal-next" onclick="nextModal()">›</button>
 </div>
-<script src="players-data.js?v=500"></script>
-<script src="staff-data.js?v=500"></script>
-<script src="events-data.js?v=400"></script>
-<script src="news-data.js?v=501"></script>
-<script src="gallery-data.js?v=500"></script>
-<script src="script.js?v=401"></script>
+<script src="players-data.js?v=800"></script>
+<script src="staff-data.js?v=800"></script>
+<script src="events-data.js?v=800"></script>
+<script src="news-data.js?v=800"></script>
+<script src="gallery-data.js?v=800"></script>
+<script src="script.js?v=800"></script>
+<script src="filitalia-i18n.js?v=800"></script>
 </body></html>

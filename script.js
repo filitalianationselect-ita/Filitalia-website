@@ -1,10 +1,11 @@
 /* FIL-ITALIA SCRIPT CLEAN TRANSLATION */
 
 const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwgWxqQi1rR8JgegQRF1DNctd9UGOOS_LlOtma9NoKu4ozTh4h9LPTqI5LnwNgIuEZa/exec";
+window.FILITALIA_FORM_ENDPOINT = GOOGLE_SHEET_WEB_APP_URL;
 
 const translations = {
   it: {
-    navHome:"Home", navPlayers:"Giocatori", navGallery:"Galleria", navStaff:"Staff", navNews:"News", navEvents:"Eventi", navJoin:"Join FIL-ITALIA", navCamp:"Registrazione Camp", navContact:"Contatti",
+    navHome:"Home", navPlayers:"Giocatori", navGallery:"Galleria", navStaff:"Staff", navNews:"News", navEvents:"Eventi", navJoin:"Account", navCamp:"Registrazione Camp", navContact:"Contatti",
     heroText:"Rappresentiamo la nuova generazione del talento cestistico Fil-Italiano",
     heroButton:"Vedi giocatori",
     aboutTitle:"CHI SIAMO",
@@ -29,7 +30,7 @@ const translations = {
     joinTitle:"UNISCITI A FIL-ITALIA",
     joinSubtitle:"Crea il tuo profilo generale come giocatore, allenatore, staff, arbitro o collaboratore. Le registrazioni camp hanno una pagina separata.",
     joinButton:"Candidati ora",
-    joinGeneralButton:"Unisciti a FIL-ITALIA",
+    joinGeneralButton:"Crea account",
     campRegistrationButton:"Registrazione Camp",
     joinPageTitle:"UNISCITI A FIL-ITALIA",
     joinPageSubtitle:"Usa questo modulo per entrare nel progetto FIL-ITALIA come giocatore, allenatore, staff, arbitro, collaboratore o volontario. Questa è una registrazione generale, non una registrazione camp/evento.",
@@ -45,7 +46,7 @@ const translations = {
     roleRefereesText:"Per arbitri, volontari, collaboratori o chiunque voglia supportare il progetto.",
     joinNowButton:"UNISCITI A FIL-ITALIA",
     campPageTitle:"REGISTRAZIONE CAMP",
-    campPageSubtitle:"Questa pagina è solo per ID Camp, City Camp e training camp. Per profili generali di giocatori, allenatori, staff o arbitri usa la pagina Join FIL-ITALIA.",
+    campPageSubtitle:"Questa pagina è dedicata alle iscrizioni ai camp. Per creare o aggiornare il profilo usa l’area Account.",
     campFormTitle:"Modulo ufficiale registrazione camp",
     campFormText:"Usa questo modulo solo quando ti iscrivi a un camp o a un’attività di allenamento FIL-ITALIA specifica.",
     campFormButton:"REGISTRATI A UN CAMP",
@@ -54,7 +55,7 @@ const translations = {
     campLinkTitle:"Registrazione camp",
     campLinkText:"Se vuoi iscriverti a un camp o a un evento di allenamento specifico, usa la pagina dedicata ai camp.",
     goToCampRegistration:"Vai alla registrazione camp →",
-    goToJoin:"Vai a Join FIL-ITALIA →",
+    goToJoin:"Crea account →",
     socialTitle:"SOCIAL MEDIA",
     socialSubtitle:"Resta connesso con FIL-ITALIA Nation Select e segui giocatori, attività e percorso.",
     eventsTitle:"PROSSIMI EVENTI",
@@ -95,7 +96,7 @@ const translations = {
   },
 
   en: {
-    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Join FIL-ITALIA", navCamp:"Camp Registration", navContact:"Contact",
+    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
     heroText:"Representing the next generation of Fil-Italian basketball talent",
     heroButton:"View Players",
     aboutTitle:"ABOUT US",
@@ -120,7 +121,7 @@ const translations = {
     joinTitle:"JOIN FIL-ITALIA",
     joinSubtitle:"Register your general profile as a player, coach, staff member, referee or collaborator. Camp registrations have a separate page.",
     joinButton:"Apply Now",
-    joinGeneralButton:"Join FIL-ITALIA",
+    joinGeneralButton:"Create account",
     campRegistrationButton:"Camp Registration",
     joinPageTitle:"JOIN FIL-ITALIA",
     joinPageSubtitle:"Use this form to join the FIL-ITALIA project as a player, coach, staff member, referee, collaborator or volunteer. This is a general profile registration, not a camp/event registration.",
@@ -136,7 +137,7 @@ const translations = {
     roleRefereesText:"For referees, volunteers, collaborators or anyone who wants to support the project.",
     joinNowButton:"JOIN FIL-ITALIA NOW",
     campPageTitle:"CAMP REGISTRATION",
-    campPageSubtitle:"This page is only for ID Camps, City Camps and training camp registrations. For general player, coach, staff or referee profiles, use the Join FIL-ITALIA page.",
+    campPageSubtitle:"This page is for camp registrations. Use the Account area to create or update your profile.",
     campFormTitle:"Official Camp Registration Form",
     campFormText:"Use this form only when you are registering for a specific FIL-ITALIA camp or training activity.",
     campFormButton:"REGISTER FOR A CAMP",
@@ -145,7 +146,7 @@ const translations = {
     campLinkTitle:"Camp Registration",
     campLinkText:"If you want to register for a specific camp or training event, use the dedicated camp registration page.",
     goToCampRegistration:"Go to Camp Registration →",
-    goToJoin:"Go to Join FIL-ITALIA →",
+    goToJoin:"Create account →",
     socialTitle:"SOCIAL MEDIA",
     socialSubtitle:"Stay connected with FIL-ITALIA Nation Select and follow our players, activities and journey.",
     eventsTitle:"UPCOMING EVENTS",
@@ -186,7 +187,7 @@ const translations = {
   },
 
   ph: {
-    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Join FIL-ITALIA", navCamp:"Camp Registration", navContact:"Contact",
+    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
     heroText:"Kinakatawan ang susunod na henerasyon ng Fil-Italian basketball talent",
     heroButton:"Tingnan ang Players",
     aboutTitle:"TUNGKOL SA AMIN",
@@ -227,7 +228,7 @@ const translations = {
     roleRefereesText:"Para sa referees, volunteers, collaborators o kahit sino na gustong sumuporta sa project.",
     joinNowButton:"SUMALI SA FIL-ITALIA",
     campPageTitle:"CAMP REGISTRATION",
-    campPageSubtitle:"Ang page na ito ay para lamang sa ID Camps, City Camps at training camp registrations. Para sa general player, coach, staff o referee profiles, gamitin ang Join FIL-ITALIA page.",
+    campPageSubtitle:"Ang page na ito ay para sa camp registrations. Gamitin ang Account area para gumawa o mag-update ng profile.",
     campFormTitle:"Official Camp Registration Form",
     campFormText:"Gamitin ang form na ito kapag magre-register ka sa isang specific FIL-ITALIA camp o training activity.",
     campFormButton:"MAG-REGISTER SA CAMP",
@@ -236,7 +237,7 @@ const translations = {
     campLinkTitle:"Camp Registration",
     campLinkText:"Kung gusto mong mag-register sa specific camp o training event, gamitin ang dedicated camp registration page.",
     goToCampRegistration:"Pumunta sa Camp Registration →",
-    goToJoin:"Pumunta sa Join FIL-ITALIA →",
+    goToJoin:"Gumawa ng account →",
     socialTitle:"SOCIAL MEDIA",
     socialSubtitle:"Manatiling connected sa FIL-ITALIA Nation Select at sundan ang aming players, activities at journey.",
     eventsTitle:"UPCOMING EVENTS",
@@ -1365,92 +1366,6 @@ function renderRegistrationPage(){
 
 
 /* ===== SITE FORMS TO GOOGLE SHEETS ===== */
-function populateCampEventSelect(){
-  const select = document.getElementById("campEventSelect");
-  const list = getVisibleEvents();
-  if(!select || !Array.isArray(list) || !list.length) return;
-
-  const params = new URLSearchParams(window.location.search);
-  const selectedId = params.get("event");
-  const current = select.value;
-  const firstOption = `<option value="">${safe(tr("selectEventOption"))}</option>`;
-
-  select.innerHTML = firstOption + list.map(eventItem => {
-    const title = localEvent(eventItem,"title") || eventItem.id || "Event";
-    const date = localEvent(eventItem,"date") || "";
-    const city = localEvent(eventItem,"location") || "";
-    const value = title; // This is what goes to Google Sheet as Camp Name
-    const selected = (selectedId && selectedId === eventItem.id) || current === value || current === eventItem.id ? " selected" : "";
-    return `<option value="${safe(value)}" data-id="${safe(eventItem.id || "")}" data-city="${safe(city)}" data-date="${safe(date)}" data-title="${safe(title)}"${selected}>${safe(title)} ${date ? "- " + safe(date) : ""}</option>`;
-  }).join("");
-
-  updateCampEventCity();
-}
-
-function updateCampEventCity(){
-  const select = document.getElementById("campEventSelect");
-  const city = document.getElementById("campEventCity");
-  const date = document.getElementById("campEventDate");
-  if(!select) return;
-  const selected = select.options[select.selectedIndex];
-  if(city) city.value = selected?.dataset.city || "";
-  if(date) date.value = selected?.dataset.date || "";
-}
-
-function collectFormData(form){
-  const data = {};
-  new FormData(form).forEach((value,key) => { data[key] = value; });
-
-  data.pageUrl = window.location.href;
-  data.language = lang();
-  data.submittedAt = new Date().toISOString();
-
-  // Aliases for Google Sheet headers / Apps Script compatibility
-  if(data["Nome Giocatore"] && !data["Nome"]) data["Nome"] = data["Nome Giocatore"];
-  if(data["Cognome Giocatore"] && !data["Cognome"]) data["Cognome"] = data["Cognome Giocatore"];
-  if(data["Email Giocatore"] && !data["Email"]) data["Email"] = data["Email Giocatore"];
-  if(data["Telefono Giocatore"] && !data["Telefono"]) data["Telefono"] = data["Telefono Giocatore"];
-  if(data["Città di Residenza"] && !data["Città"]) data["Città"] = data["Città di Residenza"];
-
-  if(form.id === "campForm"){
-    const select = document.getElementById("campEventSelect");
-    const selected = select?.options[select.selectedIndex];
-
-    if(selected){
-      data["Camp Name"] = selected.dataset.title || data["Camp Name"] || selected.value || "";
-      data["Camp City"] = selected.dataset.city || data["Camp City"] || "";
-      data["Camp Date"] = selected.dataset.date || data["Camp Date"] || "";
-      data.eventId = selected.dataset.id || "";
-      data.eventTitle = selected.dataset.title || "";
-    }
-  }
-
-  return data;
-}
-
-async function submitSiteForm(form){
-  const status = form.querySelector(".form-status");
-  if(!GOOGLE_SHEET_WEB_APP_URL || GOOGLE_SHEET_WEB_APP_URL.includes("INCOLLA_QUI")){
-    if(status){ status.className = "form-status error"; status.innerText = tr("formConfigError"); }
-    return;
-  }
-  if(status){ status.className = "form-status"; status.innerText = tr("formSending"); }
-  const payload = collectFormData(form);
-  try{
-    await fetch(GOOGLE_SHEET_WEB_APP_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
-    form.reset();
-    populateCampEventSelect();
-    if(status){ status.className = "form-status success"; status.innerText = tr("formSuccess"); }
-  }catch(error){
-    if(status){ status.className = "form-status error"; status.innerText = tr("formError"); }
-  }
-}
-
 function initSiteForms(){
   populateCampEventSelect();
   const campSelect = document.getElementById("campEventSelect");
@@ -1531,92 +1446,6 @@ function fileToPayload(file){
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-}
-
-async function collectFormData(form){
-  const data = {};
-  const fd = new FormData(form);
-  for(const [key,value] of fd.entries()){
-    if(value instanceof File){
-      if(value && value.name){ data[key] = await fileToPayload(value); }
-    } else {
-      data[key] = value;
-    }
-  }
-  data.pageUrl = window.location.href;
-  data.language = lang();
-  data.submittedAt = new Date().toISOString();
-
-  // Aliases for Google Sheet headers / Apps Script compatibility
-  if(data["Nome Giocatore"] && !data["Nome"]) data["Nome"] = data["Nome Giocatore"];
-  if(data["Cognome Giocatore"] && !data["Cognome"]) data["Cognome"] = data["Cognome Giocatore"];
-  if(data["Email Giocatore"] && !data["Email"]) data["Email"] = data["Email Giocatore"];
-  if(data["Telefono Giocatore"] && !data["Telefono"]) data["Telefono"] = data["Telefono Giocatore"];
-  if(data["Città di Residenza"] && !data["Città"]) data["Città"] = data["Città di Residenza"];
-
-  if(form.id === "campForm"){
-    const select = document.getElementById("campEventSelect");
-    const selected = select?.options[select.selectedIndex];
-    data["Camp Name"] = selected?.dataset.title || data["Camp Name"] || "";
-    data["Camp City"] = document.getElementById("campEventCity")?.value || data["Camp City"] || "";
-  }
-  return data;
-}
-
-async function submitSiteForm(form){
-  const status = form.querySelector(".form-status");
-  const button = form.querySelector('button[type="submit"]');
-
-  function showStatus(message, type){
-    if(status){
-      status.className = "form-status " + (type || "");
-      status.innerText = message;
-      status.style.display = "block";
-      status.style.marginTop = "18px";
-      status.style.padding = "14px";
-      status.style.borderRadius = "10px";
-      status.style.fontWeight = "700";
-      status.style.textAlign = "center";
-      status.style.background = type === "success" ? "#d7ffd9" : type === "error" ? "#ffd7d7" : "#fff3cd";
-      status.style.color = "#111";
-      status.scrollIntoView({ behavior:"smooth", block:"center" });
-    }
-  }
-
-  if(!GOOGLE_SHEET_WEB_APP_URL || GOOGLE_SHEET_WEB_APP_URL.includes("INCOLLA_QUI")){
-    showStatus("Errore: manca il link Google Apps Script nel file script.js", "error");
-    alert("Errore: manca il link Google Apps Script nel file script.js");
-    return;
-  }
-
-  showStatus("Invio in corso...", "sending");
-  if(button){ button.disabled = true; button.innerText = "INVIO IN CORSO..."; }
-
-  const payload = await collectFormData(form);
-
-  try{
-    await fetch(GOOGLE_SHEET_WEB_APP_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
-
-    form.reset();
-    populateCampEventSelect();
-    if(typeof initDynamicRoleSections === "function") initDynamicRoleSections();
-
-    showStatus("Registrazione inviata correttamente. Grazie!", "success");
-    alert("Registrazione inviata correttamente!");
-  }catch(error){
-    showStatus("Errore durante l’invio. Riprova o contatta FIL-ITALIA.", "error");
-    alert("Errore durante l’invio. Riprova o contatta FIL-ITALIA.");
-  }finally{
-    if(button){
-      button.disabled = false;
-      button.innerText = form.id === "campForm" ? "ISCRIVITI AL CAMP" : "INVIA CANDIDATURA";
-    }
-  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1735,6 +1564,12 @@ async function collectFormData(form){
   data.pageUrl = window.location.href;
   data.language = lang();
   data.submittedAt = new Date().toISOString();
+  if(!form.dataset.submissionId){
+    form.dataset.submissionId = (window.crypto && typeof window.crypto.randomUUID === "function")
+      ? window.crypto.randomUUID()
+      : "00000000-0000-4000-8000-" + String(Date.now()).slice(-12).padStart(12, "0");
+  }
+  data.submissionId = form.dataset.submissionId;
 
   if(data["Nome Giocatore"] && !data["Nome"]) data["Nome"] = data["Nome Giocatore"];
   if(data["Cognome Giocatore"] && !data["Cognome"]) data["Cognome"] = data["Cognome Giocatore"];
@@ -1750,6 +1585,20 @@ async function collectFormData(form){
     data["Camp Date"] = selected?.dataset.date || document.getElementById("campEventDate")?.value || "";
     data.eventId = selected?.dataset.id || "";
   }
+
+  // Optional secure account link. The server verifies the JWT with Supabase,
+  // removes it from the payload and stores only the verified user id/email.
+  try{
+    if(window.FilitaliaAuth && window.FilitaliaAuth.configured){
+      const session = await window.FilitaliaAuth.getSession();
+      if(session && session.access_token){
+        data.accountAccessToken = session.access_token;
+      }
+    }
+  }catch(error){
+    console.warn("Account session unavailable; continuing as guest.", error);
+  }
+
   return data;
 }
 
@@ -1793,13 +1642,6 @@ async function submitSiteForm(form){
     }
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  populateCampEventSelect();
-  const campSelect = document.getElementById("campEventSelect");
-  if(campSelect) campSelect.addEventListener("change", updateCampEventCity);
-});
-
 
 /* ===== EXTRA TRANSLATIONS FOR NEW PAGES - 2026 PACKAGE ===== */
 Object.assign(translations.it, {
@@ -2603,3 +2445,127 @@ ${url}`);
   };
 })();
 
+
+
+/* ===== FIL-ITALIA ACCOUNT NAVIGATION ===== */
+(function(){
+  "use strict";
+  function accountLabel(){
+    const current = typeof lang === "function" ? lang() : (localStorage.getItem("language") || "it");
+    if(current === "en") return "Account";
+    if(current === "ph") return "Account";
+    return "Account";
+  }
+  function secureExternalLinks(){
+    document.querySelectorAll('a[target="_blank"]').forEach(function(link){
+      const rel = new Set(String(link.getAttribute("rel") || "").split(/\s+/).filter(Boolean));
+      rel.add("noopener");
+      rel.add("noreferrer");
+      link.setAttribute("rel", Array.from(rel).join(" "));
+    });
+  }
+  function injectAccountNavigation(){
+    secureExternalLinks();
+    document.querySelectorAll(".nav-links").forEach(function(nav){
+      const accountLinks = Array.from(nav.querySelectorAll("a")).filter(function(link){
+        const href = String(link.getAttribute("href") || "").trim();
+        try {
+          const url = new URL(href, window.location.href);
+          return /\/(?:account|login)(?:\.html)?\/?$/.test(url.pathname) || link.hasAttribute("data-filitalia-account-link");
+        } catch (_) {
+          return /(?:^|\/)(?:account|login)(?:\.html)?$/.test(href.split(/[?#]/)[0]);
+        }
+      });
+
+      let link = accountLinks[0];
+      if(!link){
+        link = document.createElement("a");
+        nav.appendChild(link);
+      }
+      link.href = "account.html";
+      link.textContent = accountLabel();
+      link.setAttribute("data-filitalia-account-link", "true");
+      link.setAttribute("aria-label", "FIL-ITALIA Account");
+      accountLinks.slice(1).forEach(function(duplicate){ duplicate.remove(); });
+    });
+  }
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", injectAccountNavigation);
+  }else{
+    injectAccountNavigation();
+  }
+  window.addEventListener("filitalia-language-changed", injectAccountNavigation);
+})();
+
+
+/* ===== REMOVE LEGACY JOIN FIL-ITALIA FLOW ===== */
+(function(){
+  "use strict";
+
+  function currentLanguage(){
+    try { return typeof lang === "function" ? lang() : (localStorage.getItem("language") || "it"); }
+    catch (_) { return "it"; }
+  }
+
+  function labels(){
+    const language = currentLanguage();
+    if(language === "en") return {
+      title: "FIL-ITALIA ACCOUNT",
+      text: "Create your account, complete your profile once and use it for future camp registrations.",
+      create: "CREATE ACCOUNT",
+      login: "LOG IN"
+    };
+    if(language === "ph") return {
+      title: "FIL-ITALIA ACCOUNT",
+      text: "Gumawa ng account, kumpletuhin ang profile nang isang beses at gamitin ito sa mga susunod na camp registration.",
+      create: "GUMAWA NG ACCOUNT",
+      login: "MAG-LOG IN"
+    };
+    return {
+      title: "ACCOUNT FIL-ITALIA",
+      text: "Crea il tuo account, completa il profilo una sola volta e usalo per le future iscrizioni ai camp.",
+      create: "CREA ACCOUNT",
+      login: "ACCEDI"
+    };
+  }
+
+  function isRegisterLink(link){
+    const href = String(link.getAttribute("href") || "").split("#")[0].split("?")[0];
+    return href === "register.html" || href.endsWith("/register.html");
+  }
+
+  function removeLegacyJoin(){
+    const copy = labels();
+
+    document.querySelectorAll('.nav-links a, [data-key="navJoin"]').forEach(function(link){
+      if(link.getAttribute("data-key") === "navJoin" || isRegisterLink(link)) link.remove();
+    });
+
+    document.querySelectorAll('a[href]').forEach(function(link){
+      if(!isRegisterLink(link)) return;
+      link.href = "login.html?mode=signup";
+      link.removeAttribute("data-key");
+      link.textContent = copy.create;
+    });
+
+    document.querySelectorAll("section.join-section, #join.join-section").forEach(function(section){
+      section.innerHTML = "" +
+        '<h2 data-account-cta-title></h2>' +
+        '<p class="section-subtitle" data-account-cta-text></p>' +
+        '<div class="join-button-row">' +
+          '<a href="login.html?mode=signup" class="main-button" data-account-cta-create></a>' +
+          '<a href="login.html" class="main-button secondary-main-button" data-account-cta-login></a>' +
+        '</div>';
+      section.id = "account-access";
+    });
+
+    document.querySelectorAll("[data-account-cta-title]").forEach(function(node){ node.textContent = copy.title; });
+    document.querySelectorAll("[data-account-cta-text]").forEach(function(node){ node.textContent = copy.text; });
+    document.querySelectorAll("[data-account-cta-create]").forEach(function(node){ node.textContent = copy.create; });
+    document.querySelectorAll("[data-account-cta-login]").forEach(function(node){ node.textContent = copy.login; });
+  }
+
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", removeLegacyJoin);
+  else removeLegacyJoin();
+  window.addEventListener("filitalia-language-changed", removeLegacyJoin);
+})();

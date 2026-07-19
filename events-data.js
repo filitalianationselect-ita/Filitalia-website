@@ -2,10 +2,10 @@ const eventsData = [
   {
     id: "idcamp-milano-2026",
     title: { it:"Talent ID Camp Milano", en:"Talent ID Camp Milan", ph:"Talent ID Camp Milan" },
-    date: { it:"25 Luglio 2026", en:"July 25, 2026", ph:"Hulyo 25, 2026" },
-    sortDate: "2026-07-25",
+    date: { it:"Data in arrivo", en:"Coming Soon", ph:"Coming Soon" },
+    sortDate: "2026-09-13",
     campCity: "Milano",
-    campDate: { it:"25 Luglio 2026", en:"July 25, 2026", ph:"Hulyo 25, 2026" },
+    campDate: { it:"Data in arrivo", en:"Coming Soon", ph:"Coming Soon" },
     location: { it:"Milano, Italia", en:"Milan, Italy", ph:"Milan, Italy" },
     image: "images/ita.jpg",
     excerpt: {
@@ -23,21 +23,21 @@ const eventsData = [
   {
     id: "idcamp-firenze-2026",
     title: { it:"Talent ID Camp Firenze", en:"Talent ID Camp Florence", ph:"Talent ID Camp Florence" },
-    date: { it:"26 Luglio 2026", en:"July 26, 2026", ph:"Hulyo 26, 2026" },
-    sortDate: "2026-07-26",
+    date: { it:"20 Settembre 2026", en:"September 20, 2026", ph:"Setyembre 20, 2026" },
+    sortDate: "2026-09-20",
     campCity: "Firenze",
-    campDate: { it:"26 Luglio 2026", en:"July 26, 2026", ph:"Hulyo 26, 2026" },
+    campDate: { it:"20 Settembre 2026", en:"September 20, 2026", ph:"Setyembre 20, 2026" },
     location: { it:"Firenze, Italia", en:"Florence, Italy", ph:"Florence, Italy" },
     image: "images/ita.jpg",
     excerpt: {
-      it:"FIL-ITALIA Talent ID Camp a Firenze.",
-      en:"FIL-ITALIA Talent ID Camp in Florence.",
-      ph:"FIL-ITALIA Talent ID Camp sa Florence."
+      it:"FIL-ITALIA Talent ID Camp a Firenze dalle 9 alle 14.",
+      en:"FIL-ITALIA Talent ID Camp in Florence from 9 to 14.",
+      ph:"FIL-ITALIA Talent ID Camp sa Florence, 9 hanggang 14."
     },
     description: {
-      it:"FIL-ITALIA Talent ID Camp a Firenze per atleti interessati al percorso FIL-ITALIA Nation Select.",
-      en:"FIL-ITALIA Talent ID Camp in Florence for athletes interested in the FIL-ITALIA Nation Select pathway.",
-      ph:"FIL-ITALIA Talent ID Camp sa Florence para sa athletes na interested sa FIL-ITALIA Nation Select pathway."
+      it:"FIL-ITALIA Talent ID Camp a Firenze per in Via Ser Lapo Gavacciani 9, Firenze. Il camp è dedicato alla valutazione, allo sviluppo e alle future opportunità con il percorso FIL-ITALIA Nation Select.",
+      en:"FIL-ITALIA Talent ID Camp in Florence at Via Ser Lapo Gavacciani 9, Florence. The camp is focused on player evaluation, development and future opportunities with the FIL-ITALIA Nation Select pathway.",
+      ph:"FIL-ITALIA Talent ID Camp sa Florence sa Via Ser Lapo Gavacciani 9, Florence. Focus ang camp sa player evaluation, development at future opportunities sa FIL-ITALIA Nation Select pathway."
     },
     page: "firenze-camp.html"
   },
@@ -65,35 +65,22 @@ const eventsData = [
   {
     id: "idcamp-venezia-2026",
     title: { it:"Talent ID Camp Venezia", en:"Talent ID Camp Venice", ph:"Talent ID Camp Venice" },
-    date: { it:"Data in arrivo", en:"Coming Soon", ph:"Coming Soon" },
-    sortDate: "2026-12-31",
+    date: { it:"13 Settembre 2026", en:"September 13, 2026", ph:"Setyembre 13, 2026" },
+    sortDate: "2026-09-13",
     campCity: "Venezia",
-    campDate: { it:"Data in arrivo", en:"Coming Soon", ph:"Coming Soon" },
+    campDate: { it:"13 Settembre 2026", en:"September 13, 2026", ph:"Setyembre 13, 2026" },
     location: { it:"Venezia, Italia", en:"Venice, Italy", ph:"Venice, Italy" },
     image: "images/ita.jpg",
-    excerpt: { it:"Data ufficiale in arrivo.", en:"Official date coming soon.", ph:"Official date coming soon." },
+    excerpt: {
+      it:"FIL-ITALIA Talent ID Camp a Venezia dalle 15:00 alle 20:00.",
+      en:"FIL-ITALIA Talent ID Camp in Venice from 15:00 to 20:00.",
+      ph:"FIL-ITALIA Talent ID Camp sa Venice, 15:00 hanggang 20:00."
+    },
     description: {
       it:"FIL-ITALIA Talent ID Camp a Venezia per valutazione giocatori, sviluppo e future opportunità. La data ufficiale sarà annunciata presto.",
       en:"FIL-ITALIA Talent ID Camp in Venice for player evaluation, development and future opportunities. Official date coming soon.",
       ph:"FIL-ITALIA Talent ID Camp sa Venice para sa player evaluation, development at future opportunities. Official date coming soon."
     },
     page: "venezia-camp.html"
-  },
-  {
-    id: "idcamp-bologna-2026",
-    title: { it:"Talent ID Camp Bologna", en:"Talent ID Camp Bologna", ph:"Talent ID Camp Bologna" },
-    date: { it:"Data in arrivo", en:"Coming Soon", ph:"Coming Soon" },
-    sortDate: "2026-12-31",
-    campCity: "Bologna",
-    campDate: { it:"Data in arrivo", en:"Coming Soon", ph:"Coming Soon" },
-    location: { it:"Bologna, Italia", en:"Bologna, Italy", ph:"Bologna, Italy" },
-    image: "images/ita.jpg",
-    excerpt: { it:"Data ufficiale in arrivo.", en:"Official date coming soon.", ph:"Official date coming soon." },
-    description: {
-      it:"FIL-ITALIA Talent ID Camp a Bologna per valutazione giocatori, sviluppo e future opportunità. La data ufficiale sarà annunciata presto.",
-      en:"FIL-ITALIA Talent ID Camp in Bologna for player evaluation, development and future opportunities. Official date coming soon.",
-      ph:"FIL-ITALIA Talent ID Camp sa Bologna para sa player evaluation, development at future opportunities. Official date coming soon."
-    },
-    page: "bologna-camp.html"
   }
 ];

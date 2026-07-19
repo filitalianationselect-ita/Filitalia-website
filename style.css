@@ -2924,3 +2924,11 @@ body.mobile-menu-open .nav-links{
     max-height:460px !important;
   }
 }
+
+
+/* FIL-ITALIA account navigation */
+.nav-links a[aria-current="page"],
+.nav-links a[data-filitalia-account-link="true"]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}

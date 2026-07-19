@@ -1,0 +1,43 @@
+FIL-ITALIA TEST CHECKLIST
+========================
+
+SITO PUBBLICO
+[ ] Home desktop e mobile
+[ ] Menu mobile
+[ ] Cambio lingua IT/EN/PH
+[ ] Players, Staff, Events, News e Gallery
+[ ] Condivisione WhatsApp/Facebook
+[ ] Immagini e font caricati
+
+MODULI
+[ ] Invio troppo rapido bloccato
+[ ] Campo honeypot compilato bloccato
+[ ] Email non valida bloccata
+[ ] Immagine oltre 5 MB bloccata
+[ ] File non JPG/PNG/WEBP bloccato
+[ ] Registrazione camp salvata in CAMPS e foglio città
+[ ] Utente loggato: Verified Account ID/Email presenti, ma nessun token nel foglio
+[ ] Utente loggato: registrazione camp visibile nella propria area account
+[ ] Utente non loggato: registrazione camp ancora funzionante
+[ ] Candidatura salvata in DATABASE
+[ ] Rate limit dopo 3 invii uguali in 15 minuti
+
+ACCOUNT
+[ ] Creazione account
+[ ] Email di conferma
+[ ] Login
+[ ] Logout
+[ ] Recupero password
+[ ] Profilo modificabile senza poter cambiare il proprio ruolo
+[ ] Account pending non vede aree riservate
+[ ] Admin vede gli account pending
+[ ] Admin approva/rifiuta un account
+[ ] Utente non può leggere profili altrui
+
+SICUREZZA
+[ ] _headers presente nel deploy pubblicato
+[ ] X-Frame-Options = DENY
+[ ] X-Content-Type-Options = nosniff
+[ ] CSP Report-Only non mostra violazioni inattese critiche
+[ ] News con <strong>, liste e paragrafi funzionano
+[ ] Tag script/iframe inseriti in una news non vengono renderizzati

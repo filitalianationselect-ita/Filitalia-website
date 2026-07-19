@@ -1,0 +1,31 @@
+FIL-ITALIA SECURITY FIX
+
+1. SOSTITUISCI nel sito:
+   - index.html
+   - register.html
+   - camp-register.html
+
+2. AGGIUNGI nella cartella principale:
+   - filitalia-antispam.js
+
+3. In Google Apps Script:
+   - copia il contenuto del nuovo Code.gs
+   - rimetti SPREADSHEET_ID e PHOTO_FOLDER_ID corretti
+   - salva
+   - Esegui deployment > Gestisci deployment > Modifica > Nuova versione > Distribuisci
+
+4. Non cambiare il link GOOGLE_SHEET_WEB_APP_URL nel file script.js se il deployment mantiene lo stesso URL.
+
+PROTEZIONI INSERITE
+- CAPTCHA riattivato nel modulo contatti FormSubmit
+- honeypot invisibile contro bot
+- tempo minimo di compilazione
+- limite di 3 invii ogni 15 minuti per email/telefono
+- controllo email, città e consensi
+- limite foto 5 MB
+- solo JPG, PNG e WEBP
+- protezione da formule pericolose nei Google Sheets
+- limite dimensione richiesta
+
+NOTA
+Il file script.js usa mode: no-cors. Il browser non può leggere la risposta reale del server e può mostrare successo anche quando il server respinge spam. Il server, comunque, non salva la richiesta rifiutata.

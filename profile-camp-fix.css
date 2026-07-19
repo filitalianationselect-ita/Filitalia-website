@@ -1,0 +1,29 @@
+.form-profile-notice {
+  max-width: 980px;
+  margin: 0 auto 22px;
+  padding: 15px 18px;
+  border-radius: 14px;
+  border: 1px solid #cedbd4;
+  background: #f4f8f6;
+  color: #173428;
+  font-weight: 750;
+  line-height: 1.55;
+}
+.form-profile-notice.success { background: #e5f7ec; border-color: #94d5ad; color: #075f32; }
+.form-profile-notice.warning { background: #fff7df; border-color: #eed28a; color: #694d00; }
+.form-profile-notice.info { background: #eef5ff; border-color: #b8cee9; color: #244c75; }
+.field-help,
+.site-registration-form small {
+  display: block;
+  margin-top: 6px;
+  color: #66736d;
+  font-size: .82rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.player-photo-required {
+  padding: 14px;
+  border: 2px dashed rgba(11, 143, 61, .35);
+  border-radius: 14px;
+  background: #fbfdfc;
+}

@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=800">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
@@ -32,7 +32,7 @@
     <a href="staff.html" data-key="navStaff">Staff</a>
     <a href="news.html" data-key="navNews">News</a>
     <a href="events.html" data-key="navEvents">Events</a>
-    <a href="register.html" data-key="navJoin">Join</a>
+    <a href="account.html" data-filitalia-account-link="true">Account</a>
     <a href="camp-register.html" data-key="navCamp">Camp</a>
     <a href="index.html#contact" data-key="navContact">Contact</a>
   </div>
@@ -44,87 +44,56 @@
 </nav>
 
 <section class="players-page privacy-page">
-  <h1>PRIVACY POLICY</h1>
-  <p class="page-subtitle">
-    Information about how FIL-ITALIA Basketball collects and uses data for registrations, events, media content and communication.
-  </p>
-
+  <h1 data-i18n="privacyTitlePage">PRIVACY POLICY</h1>
+  <p class="page-subtitle" data-i18n="privacySubtitlePage">Informazioni su come FIL-ITALIA Basketball raccoglie e utilizza i dati.</p>
   <div class="privacy-card">
-
-    <h2>English Version</h2>
-
-    <h3>1. Data collected</h3>
-    <p>FIL-ITALIA Basketball may collect personal information provided voluntarily through forms, registration pages, direct messages or event participation.</p>
-    <ul>
-      <li>Full name</li>
-      <li>Date of birth</li>
-      <li>Email address and phone number</li>
-      <li>City and country of residence</li>
-      <li>Basketball information such as role, team, height, category and highlights</li>
-      <li>Parent or legal guardian information for underage players</li>
-      <li>Photos and videos taken during FIL-ITALIA activities</li>
-    </ul>
-
-    <h3>2. Use of data</h3>
-    <p>The data is used only for organizational, sporting and communication purposes related to FIL-ITALIA Basketball.</p>
-    <ul>
-      <li>Managing registrations and event participation</li>
-      <li>Organizing camps, tryouts, tournaments and training activities</li>
-      <li>Communicating with players, families, coaches and staff</li>
-      <li>Player evaluation, scouting and development activities</li>
-      <li>Publishing official content related to FIL-ITALIA programs</li>
-    </ul>
-
-    <h3>3. Photos and videos</h3>
-    <p>During events, camps, trainings and tournaments, FIL-ITALIA may take photos and videos for promotional, informational and documentary purposes. These contents may be published on the official website, social media pages and communication channels.</p>
-
-    <h3>4. Underage players</h3>
-    <p>For players under 18 years old, registration and media consent must be completed or authorized by a parent or legal guardian.</p>
-
-    <h3>5. Data sharing</h3>
-    <p>Personal data will not be sold or shared with third parties for commercial purposes. Data may be shared only when necessary for organizational, safety, legal or official sporting purposes.</p>
-
-    <h3>6. Contact</h3>
-    <p>For privacy-related requests, contact: <a href="mailto:Filitalia.nationselect@gmail.com">Filitalia.nationselect@gmail.com</a></p>
-
-    <hr>
-
-    <h2>Versione Italiana</h2>
-
-    <h3>1. Dati raccolti</h3>
-    <p>FIL-ITALIA Basketball può raccogliere informazioni personali fornite volontariamente tramite moduli, pagine di registrazione, messaggi diretti o partecipazione agli eventi.</p>
-    <ul>
-      <li>Nome e cognome</li>
-      <li>Data di nascita</li>
-      <li>Indirizzo email e numero di telefono</li>
-      <li>Città e paese di residenza</li>
-      <li>Informazioni sportive come ruolo, squadra, altezza, categoria e highlights</li>
-      <li>Dati del genitore o tutore legale per giocatori minorenni</li>
-      <li>Foto e video realizzati durante le attività FIL-ITALIA</li>
-    </ul>
-
-    <h3>2. Utilizzo dei dati</h3>
-    <p>I dati vengono utilizzati esclusivamente per finalità organizzative, sportive e comunicative legate a FIL-ITALIA Basketball.</p>
-    <ul>
-      <li>Gestione delle registrazioni e della partecipazione agli eventi</li>
-      <li>Organizzazione di camp, tryout, tornei e allenamenti</li>
-      <li>Comunicazioni con giocatori, famiglie, allenatori e staff</li>
-      <li>Valutazione, scouting e sviluppo dei giocatori</li>
-      <li>Pubblicazione di contenuti ufficiali relativi ai programmi FIL-ITALIA</li>
-    </ul>
-
-    <h3>3. Foto e video</h3>
-    <p>Durante eventi, camp, allenamenti e tornei, FIL-ITALIA può realizzare foto e video per finalità promozionali, informative e documentative. I contenuti potranno essere pubblicati sul sito ufficiale, sui social media e sui canali di comunicazione dell'organizzazione.</p>
-
-    <h3>4. Giocatori minorenni</h3>
-    <p>Per i giocatori minorenni, la registrazione e il consenso all'utilizzo di foto e video devono essere compilati o autorizzati da un genitore o tutore legale.</p>
-
-    <h3>5. Condivisione dei dati</h3>
-    <p>I dati personali non saranno venduti né condivisi con terzi per finalità commerciali. Potranno essere condivisi solo quando necessario per finalità organizzative, di sicurezza, legali o sportive ufficiali.</p>
-
-    <h3>6. Contatti</h3>
-    <p>Per richieste relative alla privacy: <a href="mailto:Filitalia.nationselect@gmail.com">Filitalia.nationselect@gmail.com</a></p>
-
+    <div class="language-content" data-language-section="it">
+      <h2>Versione Italiana</h2>
+      <h3>1. Dati raccolti</h3>
+      <p>FIL-ITALIA Basketball può raccogliere informazioni personali fornite volontariamente tramite moduli, pagine di registrazione, messaggi diretti o partecipazione agli eventi.</p>
+      <ul><li>Nome e cognome</li><li>Data di nascita</li><li>Indirizzo email e numero di telefono</li><li>Città e paese di residenza</li><li>Informazioni sportive come ruolo, squadra, altezza, categoria e highlights</li><li>Dati del genitore o tutore legale per giocatori minorenni</li><li>Foto e video realizzati durante le attività FIL-ITALIA</li></ul>
+      <h3>2. Utilizzo dei dati</h3>
+      <p>I dati vengono utilizzati esclusivamente per finalità organizzative, sportive e comunicative legate a FIL-ITALIA Basketball.</p>
+      <ul><li>Gestione delle registrazioni e della partecipazione agli eventi</li><li>Organizzazione di camp, tryout, tornei e allenamenti</li><li>Comunicazioni con giocatori, famiglie, allenatori e staff</li><li>Valutazione, scouting e sviluppo dei giocatori</li><li>Pubblicazione di contenuti ufficiali relativi ai programmi FIL-ITALIA</li></ul>
+      <h3>3. Foto e video</h3><p>Durante eventi, camp, allenamenti e tornei, FIL-ITALIA può realizzare foto e video per finalità promozionali, informative e documentative. I contenuti potranno essere pubblicati sul sito ufficiale, sui social media e sui canali di comunicazione dell’organizzazione.</p>
+      <h3>4. Giocatori minorenni</h3><p>Per i giocatori minorenni, la registrazione e il consenso all’utilizzo di foto e video devono essere compilati o autorizzati da un genitore o tutore legale.</p>
+      <h3>5. Condivisione dei dati</h3><p>I dati personali non saranno venduti né condivisi con terzi per finalità commerciali. Potranno essere condivisi solo quando necessario per finalità organizzative, di sicurezza, legali o sportive ufficiali.</p>
+      <h3>6. Account e area riservata</h3><p>Quando viene creato un account, FIL-ITALIA può trattare indirizzo email, nome, ruolo richiesto, stato dell’account e informazioni tecniche di autenticazione necessarie a proteggere l’accesso. Il ruolo richiesto viene verificato da una persona autorizzata; nessun account viene attivato esclusivamente tramite una decisione automatizzata.</p>
+      <h3>7. Fornitori tecnici e conservazione</h3><p>Per hosting, autenticazione, database, moduli e file possono essere utilizzati servizi Netlify, Supabase e Google. Tali fornitori trattano i dati per erogare i servizi tecnici richiesti e secondo le relative condizioni contrattuali e misure di sicurezza.</p>
+      <h3>8. Durata e diritti dell’interessato</h3><p>I dati di account e registrazione vengono conservati per il periodo necessario alla gestione delle attività FIL-ITALIA, del rapporto con l’account e degli eventuali obblighi organizzativi o di legge. È possibile chiedere accesso, rettifica, cancellazione, limitazione o portabilità dei dati, opporsi quando previsto, revocare il consenso per i futuri utilizzi media e proporre reclamo all’autorità competente.</p>
+      <h3>9. Sicurezza dell’account</h3><p>Le password sono gestite dal fornitore di autenticazione e non vengono salvate nei file pubblici del sito o in Google Sheets. Gli accessi sono separati per ruolo e protetti da regole di autorizzazione nel database.</p>
+      <h3>10. Contatti</h3><p>Per richieste relative alla privacy: <a href="mailto:Filitalia.nationselect@gmail.com">Filitalia.nationselect@gmail.com</a></p>
+    </div>
+    <div class="language-content" data-language-section="en" hidden>
+      <h2>English Version</h2>
+      <h3>1. Data collected</h3><p>FIL-ITALIA Basketball may collect personal information provided voluntarily through forms, registration pages, direct messages or event participation.</p>
+      <ul><li>Full name</li><li>Date of birth</li><li>Email address and phone number</li><li>City and country of residence</li><li>Basketball information such as position, team, height, category and highlights</li><li>Parent or legal guardian information for underage players</li><li>Photos and videos taken during FIL-ITALIA activities</li></ul>
+      <h3>2. Use of data</h3><p>The data is used only for organizational, sporting and communication purposes related to FIL-ITALIA Basketball.</p>
+      <ul><li>Managing registrations and event participation</li><li>Organizing camps, tryouts, tournaments and training activities</li><li>Communicating with players, families, coaches and staff</li><li>Player evaluation, scouting and development activities</li><li>Publishing official content related to FIL-ITALIA programs</li></ul>
+      <h3>3. Photos and videos</h3><p>During events, camps, training sessions and tournaments, FIL-ITALIA may take photos and videos for promotional, informational and documentary purposes. This content may be published on the official website, social media pages and communication channels.</p>
+      <h3>4. Underage players</h3><p>For players under 18 years old, registration and media consent must be completed or authorized by a parent or legal guardian.</p>
+      <h3>5. Data sharing</h3><p>Personal data will not be sold or shared with third parties for commercial purposes. Data may be shared only when necessary for organizational, safety, legal or official sporting purposes.</p>
+      <h3>6. Accounts and restricted area</h3><p>When an account is created, FIL-ITALIA may process the email address, name, requested role, account status and technical authentication information needed to protect access. The requested role is reviewed by an authorized person; no account is activated solely by an automated decision.</p>
+      <h3>7. Service providers and storage</h3><p>Technical services used for hosting, authentication, databases, forms and files may include Netlify, Supabase and Google services. These providers process data only to deliver the requested technical services and according to their applicable contractual and security terms.</p>
+      <h3>8. Retention and individual rights</h3><p>Account and registration data is retained for the period necessary to manage FIL-ITALIA activities, the account relationship and applicable organizational or legal obligations. Users may request access, correction, deletion, restriction or portability of their data, object where applicable, withdraw consent for future media use and lodge a complaint with the competent data protection authority.</p>
+      <h3>9. Account security</h3><p>Passwords are handled by the authentication provider and are not stored in FIL-ITALIA website files or Google Sheets. Access is separated by role and protected by database authorization policies.</p>
+      <h3>10. Contact</h3><p>For privacy-related requests: <a href="mailto:Filitalia.nationselect@gmail.com">Filitalia.nationselect@gmail.com</a></p>
+    </div>
+    <div class="language-content" data-language-section="ph" hidden>
+      <h2>Bersiyong Filipino</h2>
+      <h3>1. Mga datos na kinokolekta</h3><p>Maaaring kolektahin ng FIL-ITALIA Basketball ang personal na impormasyong kusang ibinibigay sa forms, registration pages, direct messages o pagsali sa events.</p>
+      <ul><li>Buong pangalan</li><li>Petsa ng kapanganakan</li><li>Email address at numero ng telepono</li><li>Lungsod at bansang tinitirhan</li><li>Impormasyon sa basketball gaya ng posisyon, team, taas, category at highlights</li><li>Impormasyon ng magulang o legal guardian para sa menor de edad na player</li><li>Mga litrato at video mula sa FIL-ITALIA activities</li></ul>
+      <h3>2. Paggamit ng datos</h3><p>Ginagamit lamang ang datos para sa organizational, sporting at communication purposes na kaugnay ng FIL-ITALIA Basketball.</p>
+      <ul><li>Pamamahala ng registrations at event participation</li><li>Pag-oorganisa ng camps, tryouts, tournaments at training activities</li><li>Pakikipag-ugnayan sa players, families, coaches at staff</li><li>Player evaluation, scouting at development</li><li>Paglalathala ng opisyal na content tungkol sa FIL-ITALIA programs</li></ul>
+      <h3>3. Mga litrato at video</h3><p>Sa events, camps, training sessions at tournaments, maaaring kumuha ang FIL-ITALIA ng litrato at video para sa promotional, informational at documentary purposes. Maaaring ilathala ang content sa opisyal na website, social media pages at communication channels.</p>
+      <h3>4. Mga menor de edad na player</h3><p>Para sa players na wala pang 18 taong gulang, kailangang kumpletuhin o pahintulutan ng magulang o legal guardian ang registration at media consent.</p>
+      <h3>5. Pagbabahagi ng datos</h3><p>Hindi ibebenta o ibabahagi ang personal na datos sa third parties para sa commercial purposes. Maaari lamang itong ibahagi kapag kailangan para sa organization, safety, legal o opisyal na sporting purposes.</p>
+      <h3>6. Accounts at restricted area</h3><p>Kapag gumagawa ng account, maaaring iproseso ng FIL-ITALIA ang email address, pangalan, requested role, account status at technical authentication information na kailangan para protektahan ang access. Sinusuri ng awtorisadong tao ang requested role at walang account na ina-activate sa pamamagitan lamang ng automated decision.</p>
+      <h3>7. Technical service providers at storage</h3><p>Maaaring gamitin ang Netlify, Supabase at Google services para sa hosting, authentication, databases, forms at files. Pinoproseso ng mga provider na ito ang datos para lamang maibigay ang kinakailangang technical services at ayon sa kanilang contractual at security terms.</p>
+      <h3>8. Panahon ng pag-iingat at mga karapatan</h3><p>Pinananatili ang account at registration data sa panahong kailangan para pamahalaan ang FIL-ITALIA activities, account relationship at naaangkop na organizational o legal obligations. Maaaring humiling ang user ng access, correction, deletion, restriction o portability ng data, tumutol kung naaangkop, bawiin ang consent para sa future media use at magsampa ng reklamo sa competent data protection authority.</p>
+      <h3>9. Seguridad ng account</h3><p>Ang passwords ay pinamamahalaan ng authentication provider at hindi sine-save sa public website files o Google Sheets. Hiwalay ang access ayon sa role at protektado ng database authorization policies.</p>
+      <h3>10. Contact</h3><p>Para sa privacy requests: <a href="mailto:Filitalia.nationselect@gmail.com">Filitalia.nationselect@gmail.com</a></p>
+    </div>
   </div>
 </section>
 
@@ -136,5 +105,7 @@
 </div>
 </footer>
 
+<script src="script.js?v=800"></script>
+<script src="filitalia-i18n.js?v=800"></script>
 </body>
 </html>

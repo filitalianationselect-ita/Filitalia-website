@@ -5,3 +5,5 @@ generated/
 social/
 .env
 .vscode/settings.json
+# Local Netlify folder
+.netlify
