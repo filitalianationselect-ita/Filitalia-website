@@ -85,6 +85,49 @@
     });
   }
 
+  async function invokeFunction(name, body) {
+    const session = await getSession();
+    const headers = {};
+    if (session && session.access_token) {
+      headers.Authorization = "Bearer " + session.access_token;
+    }
+
+    const result = await requireClient().functions.invoke(name, {
+      body: body || {},
+      headers
+    });
+
+    if (result.error) throw result.error;
+    if (result.data && result.data.error) throw new Error(result.data.error);
+    return result.data || {};
+  }
+
+  async function notifyAdminNewUser(userId) {
+    if (!userId) return null;
+    return invokeFunction("notify-admin-new-user", { user_id: userId });
+  }
+
+  async function requestAccountDeletion(reason) {
+    return invokeFunction("request-account-deletion", {
+      reason: cleanText(reason || "", 500)
+    });
+  }
+
+  async function listDeletionRequests() {
+    const result = await requireClient()
+      .from("account_deletion_requests")
+      .select("id,user_id,email,first_name,last_name,reason,status,requested_at")
+      .eq("status", "pending")
+      .order("requested_at", { ascending: true });
+
+    if (result.error) throw result.error;
+    return result.data || [];
+  }
+
+  async function adminDeleteUser(requestId) {
+    return invokeFunction("admin-delete-user", { request_id: requestId });
+  }
+
   async function signIn(email, password) {
     if (!isEmail(email)) throw new Error("INVALID_EMAIL");
     return requireClient().auth.signInWithPassword({
@@ -509,6 +552,9 @@
     if (code === "INVALID_PHOTO_TYPE") return t("errorPhotoType");
     if (code === "PHOTO_TOO_LARGE") return t("errorPhotoSize");
     if (code === "SHEET_SYNC_NOT_CONFIGURED") return t("errorSheetConfig");
+    if (code === "DELETE_REQUEST_EXISTS") return "Hai già inviato una richiesta di eliminazione.";
+    if (code === "CANNOT_DELETE_ADMIN") return "L’account amministratore principale non può essere eliminato.";
+    if (code === "NOT_AUTHORIZED") return "Non sei autorizzato a eseguire questa operazione.";
     if (lower.includes("invalid login credentials")) return t("errorLogin");
     if (lower.includes("email not confirmed")) return t("errorEmailConfirm");
     if (lower.includes("user already registered")) return t("errorRegistered");
@@ -521,6 +567,10 @@
     configured,
     client,
     signUp,
+    notifyAdminNewUser,
+    requestAccountDeletion,
+    listDeletionRequests,
+    adminDeleteUser,
     signIn,
     signOut,
     sendPasswordReset,

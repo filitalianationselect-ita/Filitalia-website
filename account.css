@@ -160,3 +160,29 @@
     height: 130px;
   }
 }
+
+
+/* ===== ACCOUNT DELETION ===== */
+.account-danger-zone {
+  border: 1px solid #efcaca;
+  background: #fffafa;
+}
+.account-danger-zone textarea {
+  width: 100%;
+  margin-top: 8px;
+  resize: vertical;
+  min-height: 92px;
+}
+.account-button.danger {
+  background: #a52626;
+  border-color: #a52626;
+  color: #fff;
+}
+.account-button.danger:hover {
+  background: #861d1d;
+  border-color: #861d1d;
+}
+.account-button.danger:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}

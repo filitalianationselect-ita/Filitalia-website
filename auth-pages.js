@@ -113,6 +113,12 @@
             language: localStorage.getItem("language") || "it"
           });
           if (result.error) throw result.error;
+          const createdUser = result.data && result.data.user;
+          if (createdUser && createdUser.id) {
+            auth.notifyAdminNewUser(createdUser.id).catch(function (notifyError) {
+              console.warn("Admin signup notification unavailable", notifyError);
+            });
+          }
           signupForm.reset();
           setStatus(
             "signupStatus",
@@ -352,6 +358,106 @@
     }
   }
 
+  function createDeletionRequestRow(request, onDeleted) {
+    const row = document.createElement("div");
+    row.className = "pending-account-row";
+
+    const info = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = [request.first_name, request.last_name].filter(Boolean).join(" ") || request.email;
+    const meta = document.createElement("span");
+    meta.textContent = (request.email || "") + (request.reason ? " · " + request.reason : "");
+    info.append(title, meta);
+
+    const actions = document.createElement("div");
+    actions.className = "pending-account-actions";
+    const approveButton = document.createElement("button");
+    approveButton.type = "button";
+    approveButton.className = "account-button danger";
+    approveButton.textContent = "ELIMINA DEFINITIVAMENTE";
+    approveButton.addEventListener("click", async function () {
+      const confirmed = window.confirm(
+        "Eliminare definitivamente questo account? L’operazione non può essere annullata."
+      );
+      if (!confirmed) return;
+
+      approveButton.disabled = true;
+      setStatus("deletionAdminStatus", "Eliminazione in corso...", "sending");
+      try {
+        await auth.adminDeleteUser(request.id);
+        row.remove();
+        setStatus("deletionAdminStatus", "Account eliminato definitivamente.", "success");
+        if (typeof onDeleted === "function") onDeleted();
+      } catch (error) {
+        approveButton.disabled = false;
+        setStatus("deletionAdminStatus", auth.friendlyError(error), "error");
+      }
+    });
+
+    actions.appendChild(approveButton);
+    row.append(info, actions);
+    return row;
+  }
+
+  async function loadDeletionRequests() {
+    const list = byId("deletionRequestsList");
+    if (!list) return;
+    setStatus("deletionAdminStatus", "Caricamento richieste...", "sending");
+
+    try {
+      const requests = await auth.listDeletionRequests();
+      list.replaceChildren();
+      requests.forEach(function (request) {
+        list.appendChild(createDeletionRequestRow(request));
+      });
+
+      if (!requests.length) {
+        const empty = document.createElement("p");
+        empty.className = "account-muted";
+        empty.textContent = "Nessuna richiesta di eliminazione in attesa.";
+        list.appendChild(empty);
+      }
+      setStatus("deletionAdminStatus", "", "");
+    } catch (error) {
+      setStatus("deletionAdminStatus", auth.friendlyError(error), "error");
+    }
+  }
+
+  function initDeletionRequest(profile) {
+    const button = byId("requestDeletionButton");
+    const reason = byId("deletionReason");
+    if (!button) return;
+
+    if (profile && profile.role === "admin") {
+      button.disabled = true;
+      button.textContent = "ACCOUNT ADMIN PROTETTO";
+      return;
+    }
+
+    button.addEventListener("click", async function () {
+      const confirmed = window.confirm(
+        "Inviare la richiesta di eliminazione? L’account non verrà cancellato subito: sarà verificato dall’amministratore."
+      );
+      if (!confirmed) return;
+
+      button.disabled = true;
+      setStatus("deletionStatus", "Invio richiesta...", "sending");
+      try {
+        await auth.requestAccountDeletion(reason ? reason.value : "");
+        setStatus(
+          "deletionStatus",
+          "Richiesta inviata. Riceverai una conferma quando l’account sarà eliminato.",
+          "success"
+        );
+        button.textContent = "RICHIESTA INVIATA";
+        if (reason) reason.disabled = true;
+      } catch (error) {
+        button.disabled = false;
+        setStatus("deletionStatus", auth.friendlyError(error), "error");
+      }
+    });
+  }
+
   async function initAccountPage() {
     if (!configGuard()) return;
 
@@ -365,6 +471,7 @@
       profile = await auth.getOwnProfile();
       if (!profile) throw new Error("PROFILE_NOT_FOUND");
       renderProfile(profile);
+      initDeletionRequest(profile);
       auth.syncOwnProfileToSheet().catch(function (error) {
         console.warn("Google Sheet profile sync unavailable", error);
       });
@@ -477,8 +584,10 @@
 
     if (profile.role === "admin" && profile.status === "active") {
       const adminSection = byId("adminAccountsSection");
+    const adminDeletionSection = byId("adminDeletionSection");
       if (adminSection) adminSection.hidden = false;
       loadAdminPanel();
+      loadDeletionRequests();
     }
 
     loadRegistrations();
