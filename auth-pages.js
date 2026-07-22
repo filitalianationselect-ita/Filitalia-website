@@ -243,86 +243,122 @@
     return playerProfile;
   }
 
-  function createPendingAccountRow(profile, onUpdated) {
+  function accountStatusLabel(status) {
+    const labels = { pending: "In attesa", active: "Attivo", suspended: "Sospeso", rejected: "Rifiutato" };
+    return labels[status] || status || "-";
+  }
+
+  function adminActionButton(label, className, handler) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "account-button compact " + (className || "");
+    button.textContent = label;
+    button.addEventListener("click", handler);
+    return button;
+  }
+
+  function createManagedAccountRow(profile, onUpdated) {
     const row = document.createElement("div");
-    row.className = "pending-account-row";
+    row.className = "pending-account-row managed-account-row";
 
     const info = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.email;
     const meta = document.createElement("span");
-    meta.textContent = (profile.email || "") + " · " + tx("requestLabel") + ": " + roleLabel(profile.requested_role);
+    meta.textContent = (profile.email || "") + " · " + accountStatusLabel(profile.status) + " · Richiesta: " + roleLabel(profile.requested_role);
     info.append(title, meta);
 
     const actions = document.createElement("div");
     actions.className = "pending-account-actions";
-
     const roleSelect = document.createElement("select");
     ["player", "parent", "coach", "coordinator", "staff", "admin"].forEach(function (role) {
       const option = document.createElement("option");
       option.value = role;
       option.textContent = roleLabel(role);
-      option.selected = role === profile.requested_role;
+      option.selected = role === (profile.role === "pending" ? profile.requested_role : profile.role);
       roleSelect.appendChild(option);
     });
+    actions.appendChild(roleSelect);
 
-    const approve = document.createElement("button");
-    approve.type = "button";
-    approve.className = "account-button compact";
-    approve.textContent = tx("approve");
-    approve.addEventListener("click", async function () {
-      approve.disabled = true;
+    async function update(status, question) {
+      if (question && !window.confirm(question)) return;
+      Array.from(actions.querySelectorAll("button,select")).forEach(function (el) { el.disabled = true; });
+      setStatus("adminStatus", "Aggiornamento e invio mail...", "sending");
       try {
-        await auth.adminSetAccountStatus(profile.id, roleSelect.value, "active");
-        row.remove();
-        if (onUpdated) onUpdated();
+        await auth.adminSetAccountStatus(profile.id, roleSelect.value, status);
+        setStatus("adminStatus", "Account aggiornato. Mail inviata all’utente.", "success");
+        if (typeof onUpdated === "function") await onUpdated();
       } catch (error) {
+        Array.from(actions.querySelectorAll("button,select")).forEach(function (el) { el.disabled = false; });
         setStatus("adminStatus", auth.friendlyError(error), "error");
-        approve.disabled = false;
       }
-    });
+    }
 
-    const reject = document.createElement("button");
-    reject.type = "button";
-    reject.className = "account-button compact secondary";
-    reject.textContent = tx("reject");
-    reject.addEventListener("click", async function () {
-      reject.disabled = true;
-      try {
-        await auth.adminSetAccountStatus(profile.id, roleSelect.value, "rejected");
-        row.remove();
-        if (onUpdated) onUpdated();
-      } catch (error) {
-        setStatus("adminStatus", auth.friendlyError(error), "error");
-        reject.disabled = false;
-      }
-    });
+    if (profile.status === "pending" || profile.status === "rejected") {
+      actions.appendChild(adminActionButton("APPROVA", "", function () { update("active"); }));
+    }
+    if (profile.status === "pending") {
+      actions.appendChild(adminActionButton("RIFIUTA", "secondary", function () { update("rejected", "Rifiutare questa richiesta di account?"); }));
+    }
+    if (profile.status === "active" && profile.role !== "admin") {
+      actions.appendChild(adminActionButton("SOSPENDI", "warning-button", function () { update("suspended", "Sospendere temporaneamente questo account?"); }));
+    }
+    if (profile.status === "suspended" || profile.status === "rejected") {
+      actions.appendChild(adminActionButton("RIATTIVA", "", function () { update("active"); }));
+    }
 
-    actions.append(roleSelect, approve, reject);
     row.append(info, actions);
     return row;
   }
 
-  async function loadAdminPanel() {
-    const list = byId("pendingAccountsList");
-    if (!list) return;
-    setStatus("adminStatus", tx("loadingRequests"), "sending");
+  async function loadManagedAccounts() {
+    const list = byId("managedAccountsList");
+    const filter = byId("adminAccountFilter");
+    if (!list) return [];
+    setStatus("adminStatus", "Caricamento account...", "sending");
     try {
-      const profiles = await auth.listPendingAccounts();
+      const profiles = await auth.listManagedAccounts(filter ? filter.value : "pending");
       list.replaceChildren();
       profiles.forEach(function (profile) {
-        list.appendChild(createPendingAccountRow(profile));
+        list.appendChild(createManagedAccountRow(profile, loadAdminDashboard));
       });
       if (!profiles.length) {
         const empty = document.createElement("p");
         empty.className = "account-muted";
-        empty.textContent = tx("noPendingAccounts");
+        empty.textContent = "Nessun account in questa categoria.";
         list.appendChild(empty);
       }
       setStatus("adminStatus", "", "");
+      return profiles;
     } catch (error) {
       setStatus("adminStatus", auth.friendlyError(error), "error");
+      return [];
     }
+  }
+
+  async function loadAdminDashboard() {
+    setStatus("adminDashboardStatus", "Aggiornamento dashboard...", "sending");
+    try {
+      const results = await Promise.all([
+        auth.listManagedAccounts("all"),
+        auth.listDeletionRequests()
+      ]);
+      const profiles = results[0];
+      const deletions = results[1];
+      const count = function (status) { return profiles.filter(function (p) { return p.status === status; }).length; };
+      if (byId("adminPendingCount")) byId("adminPendingCount").textContent = String(count("pending"));
+      if (byId("adminDeletionCount")) byId("adminDeletionCount").textContent = String(deletions.length);
+      if (byId("adminActiveCount")) byId("adminActiveCount").textContent = String(count("active"));
+      if (byId("adminSuspendedCount")) byId("adminSuspendedCount").textContent = String(count("suspended"));
+      setStatus("adminDashboardStatus", "", "");
+      await Promise.all([loadManagedAccounts(), loadDeletionRequests()]);
+    } catch (error) {
+      setStatus("adminDashboardStatus", auth.friendlyError(error), "error");
+    }
+  }
+
+  async function loadAdminPanel() {
+    return loadManagedAccounts();
   }
 
   async function loadRegistrations() {
@@ -358,43 +394,57 @@
     }
   }
 
-  function createDeletionRequestRow(request, onDeleted) {
+  function createDeletionRequestRow(request, onUpdated) {
     const row = document.createElement("div");
-    row.className = "pending-account-row";
+    row.className = "pending-account-row deletion-request-row";
 
     const info = document.createElement("div");
     const title = document.createElement("strong");
     title.textContent = [request.first_name, request.last_name].filter(Boolean).join(" ") || request.email;
-    const meta = document.createElement("span");
-    meta.textContent = (request.email || "") + (request.reason ? " · " + request.reason : "");
-    info.append(title, meta);
+    const email = document.createElement("span");
+    email.textContent = request.email || "";
+    const reason = document.createElement("small");
+    reason.textContent = "Motivo: " + (request.reason || "Non indicato");
+    info.append(title, email, reason);
 
     const actions = document.createElement("div");
     actions.className = "pending-account-actions";
-    const approveButton = document.createElement("button");
-    approveButton.type = "button";
-    approveButton.className = "account-button danger";
-    approveButton.textContent = "ELIMINA DEFINITIVAMENTE";
-    approveButton.addEventListener("click", async function () {
-      const confirmed = window.confirm(
-        "Eliminare definitivamente questo account? L’operazione non può essere annullata."
-      );
-      if (!confirmed) return;
 
-      approveButton.disabled = true;
-      setStatus("deletionAdminStatus", "Eliminazione in corso...", "sending");
+    const cancelButton = adminActionButton("ANNULLA RICHIESTA", "secondary", async function () {
+      if (!window.confirm("Annullare la richiesta e mantenere attivo l’account?")) return;
+      cancelButton.disabled = true;
+      deleteButton.disabled = true;
+      setStatus("deletionAdminStatus", "Annullamento e invio mail...", "sending");
       try {
-        await auth.adminDeleteUser(request.id);
+        await auth.adminCancelDeletion(request.id);
         row.remove();
-        setStatus("deletionAdminStatus", "Account eliminato definitivamente.", "success");
-        if (typeof onDeleted === "function") onDeleted();
+        setStatus("deletionAdminStatus", "Richiesta annullata. Mail inviata all’utente.", "success");
+        if (typeof onUpdated === "function") await onUpdated();
       } catch (error) {
-        approveButton.disabled = false;
+        cancelButton.disabled = false;
+        deleteButton.disabled = false;
         setStatus("deletionAdminStatus", auth.friendlyError(error), "error");
       }
     });
 
-    actions.appendChild(approveButton);
+    const deleteButton = adminActionButton("ELIMINA DEFINITIVAMENTE", "danger", async function () {
+      if (!window.confirm("Eliminare definitivamente questo account? L’operazione non può essere annullata.")) return;
+      cancelButton.disabled = true;
+      deleteButton.disabled = true;
+      setStatus("deletionAdminStatus", "Invio conferma ed eliminazione account...", "sending");
+      try {
+        await auth.adminDeleteUser(request.id);
+        row.remove();
+        setStatus("deletionAdminStatus", "Account eliminato definitivamente. Mail inviata.", "success");
+        if (typeof onUpdated === "function") await onUpdated();
+      } catch (error) {
+        cancelButton.disabled = false;
+        deleteButton.disabled = false;
+        setStatus("deletionAdminStatus", auth.friendlyError(error), "error");
+      }
+    });
+
+    actions.append(cancelButton, deleteButton);
     row.append(info, actions);
     return row;
   }
@@ -408,7 +458,7 @@
       const requests = await auth.listDeletionRequests();
       list.replaceChildren();
       requests.forEach(function (request) {
-        list.appendChild(createDeletionRequestRow(request));
+        list.appendChild(createDeletionRequestRow(request, loadAdminDashboard));
       });
 
       if (!requests.length) {
@@ -583,11 +633,17 @@
     }
 
     if (profile.role === "admin" && profile.status === "active") {
+      const dashboardSection = byId("adminDashboardSection");
       const adminSection = byId("adminAccountsSection");
-    const adminDeletionSection = byId("adminDeletionSection");
+      const adminDeletionSection = byId("adminDeletionSection");
+      if (dashboardSection) dashboardSection.hidden = false;
       if (adminSection) adminSection.hidden = false;
-      loadAdminPanel();
-      loadDeletionRequests();
+      if (adminDeletionSection) adminDeletionSection.hidden = false;
+      const filter = byId("adminAccountFilter");
+      if (filter) filter.addEventListener("change", loadManagedAccounts);
+      const refresh = byId("refreshAdminDashboard");
+      if (refresh) refresh.addEventListener("click", loadAdminDashboard);
+      loadAdminDashboard();
     }
 
     loadRegistrations();
@@ -631,7 +687,7 @@
     const page = document.body && document.body.getAttribute("data-account-page");
     if (page === "account") {
       loadRegistrations();
-      if (lastProfile && lastProfile.role === "admin" && lastProfile.status === "active") loadAdminPanel();
+      if (lastProfile && lastProfile.role === "admin" && lastProfile.status === "active") loadAdminDashboard();
     }
   });
 

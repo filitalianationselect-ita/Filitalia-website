@@ -186,3 +186,19 @@
   opacity: .6;
   cursor: not-allowed;
 }
+
+
+/* ===== ADMIN DASHBOARD V2 ===== */
+.admin-dashboard { background: linear-gradient(145deg, #f8fbf9 0%, #ffffff 65%); }
+.admin-dashboard-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+.admin-kicker { display:block; margin-bottom:6px; color:#0e6b3c; font-size:.74rem; font-weight:900; letter-spacing:.12em; }
+.admin-stat-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:18px; }
+.admin-stat { border:1px solid #dce7e1; border-radius:16px; padding:16px; background:#fff; display:grid; gap:8px; }
+.admin-stat span { color:#66736d; font-weight:700; font-size:.86rem; }
+.admin-stat strong { color:#173428; font-size:2rem; line-height:1; }
+.admin-filter-row { display:flex; justify-content:flex-end; margin:0 0 10px; }
+.admin-filter-row label { width:min(260px,100%); }
+.managed-account-row small, .deletion-request-row small { color:#66736d; overflow-wrap:anywhere; }
+.account-button.warning-button { background:#9a6500; color:#fff; }
+@media (max-width:900px){ .admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:560px){ .admin-stat-grid{grid-template-columns:1fr;} .admin-dashboard-head{display:grid;} }

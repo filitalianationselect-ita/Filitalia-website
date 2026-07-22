@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
-<link rel="stylesheet" href="account.css?v=901">
+<link rel="stylesheet" href="account.css?v=920">
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body data-account-page="account">
@@ -129,21 +129,37 @@
       <p id="deletionStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
-    <section id="adminDeletionSection" class="account-card" hidden>
-      <h2 class="account-section-title">Richieste eliminazione account</h2>
-      <p class="account-muted">
-        Controlla con attenzione prima di eliminare un utente. L’azione rimuove definitivamente
-        l’account Supabase e tutti i dati collegati tramite eliminazione a cascata.
-      </p>
-      <div id="deletionRequestsList"></div>
-      <p id="deletionAdminStatus" class="account-status" role="status" aria-live="polite"></p>
+    <section id="adminDashboardSection" class="account-card admin-dashboard" hidden>
+      <div class="admin-dashboard-head">
+        <div><span class="admin-kicker">FIL-ITALIA CONTROL ROOM</span><h2 class="account-section-title">Dashboard amministratore</h2></div>
+        <button id="refreshAdminDashboard" class="account-button compact secondary" type="button">AGGIORNA</button>
+      </div>
+      <div class="admin-stat-grid">
+        <article class="admin-stat"><span>Da approvare</span><strong id="adminPendingCount">0</strong></article>
+        <article class="admin-stat"><span>Richieste eliminazione</span><strong id="adminDeletionCount">0</strong></article>
+        <article class="admin-stat"><span>Utenti attivi</span><strong id="adminActiveCount">0</strong></article>
+        <article class="admin-stat"><span>Utenti sospesi</span><strong id="adminSuspendedCount">0</strong></article>
+      </div>
+      <p id="adminDashboardStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
     <section id="adminAccountsSection" class="account-card" hidden>
-      <h2 class="account-section-title">Approvazione account</h2>
-      <p class="account-muted">Il ruolo scelto dall’utente è solo una richiesta. L’account diventa operativo esclusivamente dopo l’approvazione dell’amministratore.</p>
-      <div id="pendingAccountsList"></div>
+      <h2 class="account-section-title">Gestione account</h2>
+      <p class="account-muted">Approva, rifiuta, sospendi o riattiva gli account. Ogni cambiamento invia automaticamente una mail all’utente.</p>
+      <div class="admin-filter-row">
+        <label>Mostra
+          <select id="adminAccountFilter"><option value="pending">Da approvare</option><option value="active">Attivi</option><option value="suspended">Sospesi</option><option value="rejected">Rifiutati</option><option value="all">Tutti</option></select>
+        </label>
+      </div>
+      <div id="managedAccountsList"></div>
       <p id="adminStatus" class="account-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="adminDeletionSection" class="account-card" hidden>
+      <h2 class="account-section-title">Richieste eliminazione account</h2>
+      <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. In entrambi i casi l’utente riceverà una mail.</p>
+      <div id="deletionRequestsList"></div>
+      <p id="deletionAdminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
   </div>
 </main>
@@ -152,7 +168,7 @@
 <script src="filitalia-i18n.js?v=800"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=800"></script>
-<script src="auth-client.js?v=901"></script>
-<script src="auth-pages.js?v=901"></script>
+<script src="auth-client.js?v=920"></script>
+<script src="auth-pages.js?v=920"></script>
 </body>
 </html>

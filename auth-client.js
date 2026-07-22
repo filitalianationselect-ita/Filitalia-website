@@ -128,6 +128,10 @@
     return invokeFunction("admin-delete-user", { request_id: requestId });
   }
 
+  async function adminCancelDeletion(requestId) {
+    return invokeFunction("admin-cancel-deletion", { request_id: requestId });
+  }
+
   async function signIn(email, password) {
     if (!isEmail(email)) throw new Error("INVALID_EMAIL");
     return requireClient().auth.signInWithPassword({
@@ -496,29 +500,29 @@
     return waitForProfileSyncStatus(endpoint, submissionId);
   }
 
-  async function listPendingAccounts() {
-    const result = await requireClient()
+  async function listManagedAccounts(status) {
+    let query = requireClient()
       .from("profiles")
-      .select("id,email,first_name,last_name,requested_role,role,status,created_at")
-      .eq("status", "pending")
-      .order("created_at", { ascending: true });
-
+      .select("id,email,first_name,last_name,requested_role,role,status,created_at,updated_at")
+      .order("created_at", { ascending: false });
+    if (status && status !== "all") query = query.eq("status", status);
+    const result = await query;
     if (result.error) throw result.error;
     return result.data || [];
+  }
+
+  async function listPendingAccounts() {
+    return listManagedAccounts("pending");
   }
 
   async function adminSetAccountStatus(userId, role, status) {
     if (!allowedAdminRoles.has(role)) throw new Error("INVALID_ROLE");
     if (!allowedStatuses.has(status)) throw new Error("INVALID_STATUS");
-
-    const result = await requireClient().rpc("admin_set_account_status", {
-      target_user_id: userId,
-      new_role: role,
-      new_status: status
+    return invokeFunction("admin-update-account-status", {
+      user_id: userId,
+      role: role,
+      status: status
     });
-
-    if (result.error) throw result.error;
-    return result.data;
   }
 
   async function getOwnRegistrations() {
@@ -555,6 +559,8 @@
     if (code === "DELETE_REQUEST_EXISTS") return "Hai già inviato una richiesta di eliminazione.";
     if (code === "CANNOT_DELETE_ADMIN") return "L’account amministratore principale non può essere eliminato.";
     if (code === "NOT_AUTHORIZED") return "Non sei autorizzato a eseguire questa operazione.";
+    if (code === "CANNOT_CHANGE_SELF") return "Per sicurezza non puoi modificare lo stato del tuo stesso account admin.";
+    if (code === "REQUEST_NOT_FOUND") return "La richiesta non è più disponibile.";
     if (lower.includes("invalid login credentials")) return t("errorLogin");
     if (lower.includes("email not confirmed")) return t("errorEmailConfirm");
     if (lower.includes("user already registered")) return t("errorRegistered");
@@ -571,6 +577,7 @@
     requestAccountDeletion,
     listDeletionRequests,
     adminDeleteUser,
+    adminCancelDeletion,
     signIn,
     signOut,
     sendPasswordReset,
@@ -586,6 +593,7 @@
     getCampProfileData,
     syncOwnProfileToSheet,
     listPendingAccounts,
+    listManagedAccounts,
     adminSetAccountStatus,
     getOwnRegistrations,
     onAuthStateChange,
