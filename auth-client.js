@@ -17,9 +17,6 @@
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: true
-        },
-        global: {
-          headers: { "x-application-name": "filitalia-web" }
         }
       })
     : null;
