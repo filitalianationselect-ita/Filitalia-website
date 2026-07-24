@@ -154,6 +154,18 @@
       <p id="adminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
+    <section id="adminPlayerCardsSection" class="account-card" hidden>
+      <div class="admin-dashboard-head">
+        <div>
+          <h2 class="account-section-title">Player Card pubbliche</h2>
+          <p class="account-muted">Controlla i dati del giocatore e pubblica la card nella pagina Players. Email, telefono, peso e dati privati non vengono mostrati.</p>
+        </div>
+        <button id="refreshAdminPlayerCards" class="account-button compact secondary" type="button">AGGIORNA</button>
+      </div>
+      <div id="adminPlayerCardsList"><p class="account-muted">Caricamento...</p></div>
+      <p id="adminPlayerCardsStatus" class="account-status" role="status" aria-live="polite"></p>
+    </section>
+
     <section id="adminDeletionSection" class="account-card" hidden>
       <h2 class="account-section-title">Richieste eliminazione account</h2>
       <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. In entrambi i casi l’utente riceverà una mail.</p>
@@ -170,5 +182,6 @@
 <script src="auth-client.js?v=1001"></script>
 <script src="auth-admin-fix.js?v=1001"></script>
 <script src="auth-pages.js?v=1001"></script>
+<script src="player-card-admin.js?v=1"></script>
 </body>
 </html>
