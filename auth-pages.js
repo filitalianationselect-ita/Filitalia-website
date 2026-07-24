@@ -198,7 +198,6 @@
     });
   }
 
-
   function booleanSelectValue(value) {
     if (value === true) return "true";
     if (value === false) return "false";
@@ -283,11 +282,28 @@
     async function update(status, question) {
       if (question && !window.confirm(question)) return;
       Array.from(actions.querySelectorAll("button,select")).forEach(function (el) { el.disabled = true; });
-      setStatus("adminStatus", "Aggiornamento e invio mail...", "sending");
+      setStatus("adminStatus", "Aggiornamento account...", "sending");
+
       try {
-        await auth.adminSetAccountStatus(profile.id, roleSelect.value, status);
-        setStatus("adminStatus", "Account aggiornato. Mail inviata all’utente.", "success");
-        if (typeof onUpdated === "function") await onUpdated();
+        const result = await auth.adminSetAccountStatus(profile.id, roleSelect.value, status);
+        const updatedProfile = result && result.profile;
+
+        if (!updatedProfile || updatedProfile.id !== profile.id || updatedProfile.status !== status) {
+          throw new Error("PROFILE_UPDATE_NOT_CONFIRMED");
+        }
+
+        if (typeof onUpdated === "function") {
+          await onUpdated();
+        }
+
+        const emailSent = result.email_sent !== false;
+        setStatus(
+          "adminStatus",
+          emailSent
+            ? "Account aggiornato correttamente. Mail inviata all’utente."
+            : "Account aggiornato correttamente, ma la mail non è stata inviata.",
+          emailSent ? "success" : "warning"
+        );
       } catch (error) {
         Array.from(actions.querySelectorAll("button,select")).forEach(function (el) { el.disabled = false; });
         setStatus("adminStatus", auth.friendlyError(error), "error");
@@ -311,16 +327,21 @@
     return row;
   }
 
-  async function loadManagedAccounts() {
+  async function loadManagedAccounts(options) {
+    const settings = options && options.silent ? options : { silent: false };
     const list = byId("managedAccountsList");
     const filter = byId("adminAccountFilter");
     if (!list) return [];
-    setStatus("adminStatus", "Caricamento account...", "sending");
+
+    if (!settings.silent) {
+      setStatus("adminStatus", "Caricamento account...", "sending");
+    }
+
     try {
       const profiles = await auth.listManagedAccounts(filter ? filter.value : "pending");
       list.replaceChildren();
       profiles.forEach(function (profile) {
-        list.appendChild(createManagedAccountRow(profile, loadAdminDashboard));
+        list.appendChild(createManagedAccountRow(profile, refreshAfterAccountAction));
       });
       if (!profiles.length) {
         const empty = document.createElement("p");
@@ -328,7 +349,9 @@
         empty.textContent = "Nessun account in questa categoria.";
         list.appendChild(empty);
       }
-      setStatus("adminStatus", "", "");
+      if (!settings.silent) {
+        setStatus("adminStatus", "", "");
+      }
       return profiles;
     } catch (error) {
       setStatus("adminStatus", auth.friendlyError(error), "error");
@@ -336,20 +359,41 @@
     }
   }
 
+  async function refreshAdminSummary() {
+    const results = await Promise.all([
+      auth.listManagedAccounts("all"),
+      auth.listDeletionRequests()
+    ]);
+    const profiles = results[0];
+    const deletions = results[1];
+    const count = function (status) {
+      return profiles.filter(function (profile) {
+        return profile.status === status;
+      }).length;
+    };
+
+    if (byId("adminPendingCount")) byId("adminPendingCount").textContent = String(count("pending"));
+    if (byId("adminDeletionCount")) byId("adminDeletionCount").textContent = String(deletions.length);
+    if (byId("adminActiveCount")) byId("adminActiveCount").textContent = String(count("active"));
+    if (byId("adminSuspendedCount")) byId("adminSuspendedCount").textContent = String(count("suspended"));
+
+    return { profiles: profiles, deletions: deletions };
+  }
+
+  async function refreshAfterAccountAction() {
+    await refreshAdminSummary();
+    await loadManagedAccounts({ silent: true });
+  }
+
+  async function refreshAfterDeletionAction() {
+    await refreshAdminSummary();
+    await loadDeletionRequests({ silent: true });
+  }
+
   async function loadAdminDashboard() {
     setStatus("adminDashboardStatus", "Aggiornamento dashboard...", "sending");
     try {
-      const results = await Promise.all([
-        auth.listManagedAccounts("all"),
-        auth.listDeletionRequests()
-      ]);
-      const profiles = results[0];
-      const deletions = results[1];
-      const count = function (status) { return profiles.filter(function (p) { return p.status === status; }).length; };
-      if (byId("adminPendingCount")) byId("adminPendingCount").textContent = String(count("pending"));
-      if (byId("adminDeletionCount")) byId("adminDeletionCount").textContent = String(deletions.length);
-      if (byId("adminActiveCount")) byId("adminActiveCount").textContent = String(count("active"));
-      if (byId("adminSuspendedCount")) byId("adminSuspendedCount").textContent = String(count("suspended"));
+      await refreshAdminSummary();
       setStatus("adminDashboardStatus", "", "");
       await Promise.all([loadManagedAccounts(), loadDeletionRequests()]);
     } catch (error) {
@@ -416,10 +460,18 @@
       deleteButton.disabled = true;
       setStatus("deletionAdminStatus", "Annullamento e invio mail...", "sending");
       try {
-        await auth.adminCancelDeletion(request.id);
+        const result = await auth.adminCancelDeletion(request.id);
         row.remove();
-        setStatus("deletionAdminStatus", "Richiesta annullata. Mail inviata all’utente.", "success");
         if (typeof onUpdated === "function") await onUpdated();
+
+        const emailSent = result.email_sent !== false;
+        setStatus(
+          "deletionAdminStatus",
+          emailSent
+            ? "Richiesta annullata. Mail inviata all’utente."
+            : "Richiesta annullata, ma la mail non è stata inviata.",
+          emailSent ? "success" : "warning"
+        );
       } catch (error) {
         cancelButton.disabled = false;
         deleteButton.disabled = false;
@@ -433,10 +485,23 @@
       deleteButton.disabled = true;
       setStatus("deletionAdminStatus", "Invio conferma ed eliminazione account...", "sending");
       try {
-        await auth.adminDeleteUser(request.id);
+        const result = await auth.adminDeleteUser(request.id);
+
+        if (!result || result.deleted !== true) {
+          throw new Error("USER_DELETION_NOT_CONFIRMED");
+        }
+
         row.remove();
-        setStatus("deletionAdminStatus", "Account eliminato definitivamente. Mail inviata.", "success");
         if (typeof onUpdated === "function") await onUpdated();
+
+        const emailSent = result.email_sent !== false;
+        setStatus(
+          "deletionAdminStatus",
+          emailSent
+            ? "Account eliminato definitivamente. Mail inviata all’utente."
+            : "Account eliminato definitivamente, ma la mail non è stata inviata.",
+          emailSent ? "success" : "warning"
+        );
       } catch (error) {
         cancelButton.disabled = false;
         deleteButton.disabled = false;
@@ -449,16 +514,20 @@
     return row;
   }
 
-  async function loadDeletionRequests() {
+  async function loadDeletionRequests(options) {
+    const settings = options && options.silent ? options : { silent: false };
     const list = byId("deletionRequestsList");
     if (!list) return;
-    setStatus("deletionAdminStatus", "Caricamento richieste...", "sending");
+
+    if (!settings.silent) {
+      setStatus("deletionAdminStatus", "Caricamento richieste...", "sending");
+    }
 
     try {
       const requests = await auth.listDeletionRequests();
       list.replaceChildren();
       requests.forEach(function (request) {
-        list.appendChild(createDeletionRequestRow(request, loadAdminDashboard));
+        list.appendChild(createDeletionRequestRow(request, refreshAfterDeletionAction));
       });
 
       if (!requests.length) {
@@ -467,7 +536,9 @@
         empty.textContent = "Nessuna richiesta di eliminazione in attesa.";
         list.appendChild(empty);
       }
-      setStatus("deletionAdminStatus", "", "");
+      if (!settings.silent) {
+        setStatus("deletionAdminStatus", "", "");
+      }
     } catch (error) {
       setStatus("deletionAdminStatus", auth.friendlyError(error), "error");
     }
@@ -640,9 +711,9 @@
       if (adminSection) adminSection.hidden = false;
       if (adminDeletionSection) adminDeletionSection.hidden = false;
       const filter = byId("adminAccountFilter");
-      if (filter) filter.addEventListener("change", loadManagedAccounts);
+      if (filter) filter.addEventListener("change", function () { loadManagedAccounts(); });
       const refresh = byId("refreshAdminDashboard");
-      if (refresh) refresh.addEventListener("click", loadAdminDashboard);
+      if (refresh) refresh.addEventListener("click", function () { loadAdminDashboard(); });
       loadAdminDashboard();
     }
 
