@@ -34,17 +34,19 @@ const eventsData = [
       en:"Via Ser Lapo Gavacciani 9, Florence, Italy",
       ph:"Via Ser Lapo Gavacciani 9, Florence, Italy"
     },
-    image: "images/ita.jpg",
+    image: "images/camp-firenze-2026.jpg",
     excerpt: {
       it:"Talent ID Camp Firenze, 20 settembre 2026 dalle 09:00 alle 14:00.",
       en:"Florence Talent ID Camp on September 20, 2026, from 9:00 AM to 2:00 PM.",
       ph:"Florence Talent ID Camp sa Setyembre 20, 2026, mula 09:00 hanggang 14:00."
     },
     description: {
-      it:"FIL-ITALIA Talent ID Camp a Firenze, domenica 20 settembre 2026 dalle 09:00 alle 14:00, presso Via Ser Lapo Gavacciani 9, Firenze. Il camp è dedicato alla valutazione, allo sviluppo e alle future opportunità del programma FIL-ITALIA Nation Select.",
-      en:"FIL-ITALIA Talent ID Camp in Florence on Sunday, September 20, 2026, from 9:00 AM to 2:00 PM, at Via Ser Lapo Gavacciani 9, Florence. The camp is focused on player evaluation, development and future opportunities within the FIL-ITALIA Nation Select program.",
-      ph:"FIL-ITALIA Talent ID Camp sa Florence sa Linggo, Setyembre 20, 2026, mula 09:00 hanggang 14:00, sa Via Ser Lapo Gavacciani 9, Florence. Nakatuon ang camp sa player evaluation, development at future opportunities sa FIL-ITALIA Nation Select program."
-    },
+  it:"Dopo il rinvio della precedente data, il FIL-EURO Talent ID Camp torna a Firenze domenica 20 settembre 2026, dalle 10:00 alle 15:00, presso Via Ser Lapo Gavacciani 9. Il camp sarà organizzato in collaborazione con FILCOM Tuscany e con il supporto di Coach Manuel San Pedro, Firenze Head Coach, insieme allo staff FIL-EURO Nation Select. Una nuova giornata dedicata allo sviluppo, alla valutazione e alla crescita dei giovani atleti di Firenze, della Toscana e del Centro Italia.",
+
+  en:"Following the postponement of the previous date, the FIL-EURO Talent ID Camp returns to Florence on Sunday, September 20, 2026, from 10:00 AM to 3:00 PM, at Via Ser Lapo Gavacciani 9. The camp will be organized in collaboration with FILCOM Tuscany, with the support of Coach Manuel San Pedro, Florence Head Coach, and the FIL-EURO Nation Select staff. A new day dedicated to the development, evaluation and growth of young athletes from Florence, Tuscany and Central Italy.",
+
+  ph:"Matapos ma-postpone ang naunang petsa, magbabalik ang FIL-EURO Talent ID Camp sa Florence sa Linggo, Setyembre 20, 2026, mula 10:00 hanggang 15:00, sa Via Ser Lapo Gavacciani 9. Ang camp ay isasagawa katuwang ang FILCOM Tuscany, sa suporta ni Coach Manuel San Pedro, Florence Head Coach, at ng FIL-EURO Nation Select staff. Isang bagong araw para sa development, evaluation at paglago ng mga batang atleta mula Florence, Tuscany at Central Italy."
+},
     page: "firenze-camp.html"
   },
   {
@@ -52,49 +54,77 @@ const eventsData = [
     title: { it:"Talent ID Camp Roma", en:"Talent ID Camp Rome", ph:"Talent ID Camp Rome" },
     date: { it:"5 Agosto 2026", en:"August 5, 2026", ph:"Agosto 5, 2026" },
     sortDate: "2026-08-05",
-    time: "16:00 - 20:00",
+    time: "15:00 - 20:00",
     campCity: "Roma",
     campDate: { it:"5 Agosto 2026", en:"August 5, 2026", ph:"Agosto 5, 2026" },
     location: { it:"Campo Stella Azzurra, Roma", en:"Campo Stella Azzurra, Rome", ph:"Campo Stella Azzurra, Rome" },
-    image: "images/ita.jpg",
+    image: "images/camp-roma-2026.jpg",
     excerpt: {
-      it:"FIL-ITALIA Talent ID Camp a Roma dalle 16:00 alle 20:00.",
-      en:"FIL-ITALIA Talent ID Camp in Rome from 4:00 PM to 8:00 PM.",
-      ph:"FIL-ITALIA Talent ID Camp sa Rome, 16:00 hanggang 20:00."
+      it:"FIL-ITALIA Talent ID Camp a Roma dalle 15:00 alle 20:00.",
+      en:"FIL-ITALIA Talent ID Camp in Rome from 3:00 PM to 8:00 PM.",
+      ph:"FIL-ITALIA Talent ID Camp sa Rome, 15:00 hanggang 20:00."
     },
     description: {
-      it:"FIL-ITALIA Talent ID Camp a Roma presso Campo Stella Azzurra, 5 agosto 2026, dalle 16:00 alle 20:00. Il camp è dedicato alla valutazione, allo sviluppo e alle future opportunità con il programma FIL-ITALIA.",
-      en:"FIL-ITALIA Talent ID Camp in Rome at Campo Stella Azzurra, August 5, 2026, from 4:00 PM to 8:00 PM. The camp is focused on player evaluation, development and future opportunities with the FIL-ITALIA program.",
-      ph:"FIL-ITALIA Talent ID Camp sa Rome sa Campo Stella Azzurra, Agosto 5, 2026, mula 16:00 hanggang 20:00. Focus ang camp sa player evaluation, development at future opportunities sa FIL-ITALIA program."
-    },
+  it:"FIL-EURO Nation torna a Roma mercoledì 5 agosto 2026, dalle 15:00 alle 20:00, presso la Palestra Stella Azzurra Roma, per una nuova giornata dedicata allo sviluppo, alla valutazione e alla crescita dei giovani atleti. Il camp sarà organizzato con il supporto di Steven Cariaga, nuovo coordinatore FIL-EURO per Roma. Grazie all’esperienza maturata all’interno di Stella Azzurra Roma, Steven contribuirà a creare nuove opportunità e a rafforzare il percorso dedicato ai giovani talenti della Capitale.",
+
+  en:"FIL-EURO Nation returns to Rome on Wednesday, August 5, 2026, from 3:00 PM to 8:00 PM, at Stella Azzurra Roma for a new day dedicated to player development, evaluation, and growth opportunities for young athletes. The camp will be organized with the support of Steven Cariaga, the new FIL-EURO Rome Coordinator. Through his experience within Stella Azzurra Roma, Steven will help create new opportunities and strengthen the pathway available to young talents in the capital.",
+
+  ph:"Magbabalik ang FIL-EURO Nation sa Rome sa Miyerkules, Agosto 5, 2026, mula 15:00 hanggang 20:00, sa Stella Azzurra Roma para sa isang bagong araw na nakatuon sa player development, evaluation at paglago ng mga batang atleta. Isasagawa ang camp sa suporta ni Steven Cariaga, ang bagong FIL-EURO Rome Coordinator. Sa pamamagitan ng kanyang karanasan sa Stella Azzurra Roma, makatutulong si Steven sa paglikha ng mga bagong oportunidad at sa pagpapalakas ng pathway para sa mga batang talento sa Rome."
+},
     page: "roma-camp.html"
   },
-  {
-    id: "idcamp-venezia-2026",
-    title: { it:"Talent ID Camp Venezia", en:"Talent ID Camp Venice", ph:"Talent ID Camp Venice" },
-    date: { it:"13 Settembre 2026", en:"September 13, 2026", ph:"Setyembre 13, 2026" },
-    sortDate: "2026-09-13",
-    time: "15:00 - 20:00",
-    campCity: "Venezia",
-    campDate: { it:"13 Settembre 2026", en:"September 13, 2026", ph:"Setyembre 13, 2026" },
-    location: {
-      it:"Venezia, palestra confermata, indirizzo in arrivo",
-      en:"Venice, gym confirmed, exact address coming soon",
-      ph:"Venice, kumpirmado ang gym, malapit nang ianunsyo ang eksaktong address"
-    },
-    image: "images/ita.jpg",
-    excerpt: {
-      it:"Talent ID Camp Venezia, 13 settembre 2026 dalle 15:00 alle 20:00. Indirizzo esatto in arrivo.",
-      en:"Venice Talent ID Camp on September 13, 2026, from 3:00 PM to 8:00 PM. Exact address coming soon.",
-      ph:"Venice Talent ID Camp sa Setyembre 13, 2026, mula 15:00 hanggang 20:00. Malapit nang ianunsyo ang eksaktong address."
-    },
-    description: {
-      it:"FIL-ITALIA Talent ID Camp a Venezia, domenica 13 settembre 2026 dalle 15:00 alle 20:00. La palestra è confermata; l’indirizzo esatto verrà comunicato appena sarà definita quale delle due strutture disponibili verrà assegnata.",
-      en:"FIL-ITALIA Talent ID Camp in Venice on Sunday, September 13, 2026, from 3:00 PM to 8:00 PM. The gym is confirmed; the exact address will be announced once the final venue is selected between the two available facilities.",
-      ph:"FIL-ITALIA Talent ID Camp sa Venice sa Linggo, Setyembre 13, 2026, mula 15:00 hanggang 20:00. Kumpirmado na ang gym; iaanunsyo ang eksaktong address kapag napili na kung alin sa dalawang available na venue ang gagamitin."
-    },
-    page: "venezia-camp.html"
+ {
+  id: "idcamp-venezia-2026",
+
+  title: {
+    it: "Talent ID Camp Venezia",
+    en: "Talent ID Camp Venice",
+    ph: "Talent ID Camp Venice"
   },
+
+  date: {
+    it: "13 Settembre 2026",
+    en: "September 13, 2026",
+    ph: "Setyembre 13, 2026"
+  },
+
+  sortDate: "2026-09-13",
+  time: "15:00 - 20:00",
+
+  campCity: "Venezia",
+
+  campDate: {
+    it: "13 Settembre 2026",
+    en: "September 13, 2026",
+    ph: "Setyembre 13, 2026"
+  },
+
+  location: {
+    it: "Corso del Popolo 82, Venezia Mestre",
+    en: "Corso del Popolo 82, Venezia Mestre, Italy",
+    ph: "Corso del Popolo 82, Venezia Mestre, Italy"
+  },
+
+  image: "images/camp-venezia-2026.jpg",
+
+  excerpt: {
+    it: "Per la prima volta FIL-EURO Nation Select arriva a Venezia. Camp aperto alle categorie maschili U12, U14, U16, U18 e U19 e femminili U16 e U19.",
+
+    en: "For the first time, FIL-EURO Nation Select is coming to Venice. Open to the U12, U14, U16, U18 and U19 boys divisions and the U16 and U19 girls divisions.",
+
+    ph: "Sa unang pagkakataon, darating ang FIL-EURO Nation Select sa Venice. Bukas para sa boys divisions na U12, U14, U16, U18 at U19 at girls divisions na U16 at U19."
+  },
+
+  description: {
+    it: "Per la prima volta FIL-EURO Nation Select arriva a Venezia domenica 13 settembre 2026, dalle 15:00 alle 20:00, presso Corso del Popolo 82, Venezia Mestre. Una tappa speciale nella città di Mico, Karl e Andrei, organizzata con il supporto di Coach Ocid “Coach K” Manliclic, coordinatore FIL-EURO per Venezia. Il camp è aperto alle categorie maschili U12, U14, U16, U18 e U19 e alle categorie femminili U16 e U19. Invitiamo tutti i giocatori e le giocatrici del Nord Est Italia a partecipare a una giornata dedicata allo sviluppo, alla valutazione e alla scoperta di nuovi talenti.",
+
+    en: "For the first time, FIL-EURO Nation Select is coming to Venice on Sunday, September 13, 2026, from 3:00 PM to 8:00 PM, at Corso del Popolo 82, Venezia Mestre. A special stop in the city of Mico, Karl and Andrei, organized with the support of Coach Ocid “Coach K” Manliclic, FIL-EURO Venice Coordinator. The camp is open to the U12, U14, U16, U18 and U19 boys divisions and the U16 and U19 girls divisions. Players from across Northeastern Italy are invited to join a day focused on development, evaluation and the discovery of new talent.",
+
+    ph: "Sa unang pagkakataon, darating ang FIL-EURO Nation Select sa Venice sa Linggo, Setyembre 13, 2026, mula 15:00 hanggang 20:00, sa Corso del Popolo 82, Venezia Mestre. Isang espesyal na camp sa lungsod nina Mico, Karl at Andrei, na isasagawa sa suporta ni Coach Ocid “Coach K” Manliclic, FIL-EURO Venice Coordinator. Bukas ang camp para sa boys divisions na U12, U14, U16, U18 at U19 at sa girls divisions na U16 at U19. Inaanyayahan ang mga manlalaro mula sa buong Northeastern Italy para sa isang araw ng player development, evaluation at pagtuklas ng mga bagong talento."
+  },
+
+  page: "venezia-camp.html"
+},
   {
     id: "idcamp-bologna-2026",
     title: { it:"Talent ID Camp Bologna", en:"Talent ID Camp Bologna", ph:"Talent ID Camp Bologna" },
