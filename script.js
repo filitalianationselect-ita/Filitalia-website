@@ -323,18 +323,27 @@ function safeRun(fn, label){
 }
 
 function setLanguage(language){
-  if(!translations[language]) language = "it";
+  if(!translations[language]) {
+    language = "it";
+  }
+
   saveLanguage(language);
   document.documentElement.lang = language === "ph" ? "tl" : language;
 
   document.querySelectorAll("[data-key]").forEach(el => {
     const key = el.dataset.key;
-    if(translations[language][key]) el.innerText = translations[language][key];
+
+    if(translations[language][key]) {
+      el.innerText = translations[language][key];
+    }
   });
 
   document.querySelectorAll("[data-key-placeholder]").forEach(el => {
     const key = el.dataset.keyPlaceholder;
-    if(translations[language][key]) el.placeholder = translations[language][key];
+
+    if(translations[language][key]) {
+      el.placeholder = translations[language][key];
+    }
   });
 
   safeRun(translateStaticPages, "translateStaticPages");
@@ -343,6 +352,22 @@ function setLanguage(language){
   safeRun(renderHomeStaff, "renderHomeStaff");
   safeRun(renderStaffPage, "renderStaffPage");
   safeRun(renderEvents, "renderEvents");
+
+  // Aggiorna immediatamente anche l'evento aperto nel popup
+  const infoModal = document.getElementById("infoModal");
+  const currentOpenInfo = currentInfoList[currentInfoIndex];
+
+  if(
+    infoModal &&
+    infoModal.style.display === "flex" &&
+    currentOpenInfo
+  ){
+    safeRun(
+      () => openInfo(currentOpenInfo),
+      "refreshOpenEventModal"
+    );
+  }
+
   safeRun(renderNews, "renderNews");
   safeRun(renderGalleryHome, "renderGalleryHome");
   safeRun(renderGalleryCategory, "renderGalleryCategory");
