@@ -4,11 +4,12 @@ on:
   pull_request:
     paths:
       - "admin-*.js"
+      - "admin-*.html"
       - "admin-light.html"
       - "preview-auth-routing-v1.js"
       - "public-content-bridge-v1.js"
       - "supabase-config.js"
-      - "scripts/generate-runtime-config.js"
+      - "scripts/*.js"
       - "package.json"
       - "netlify.toml"
       - "login.html"
@@ -48,6 +49,7 @@ jobs:
           node --check public-content-bridge-v1.js
           node --check preview-auth-routing-v1.js
           node --check scripts/generate-runtime-config.js
+          node --check scripts/audit-admin-assets.js
 
       - name: Verify admin script references
         run: |
@@ -81,6 +83,9 @@ jobs:
           }
           console.log(`${refs.length} local admin script references verified.`);
           NODE
+
+      - name: Report admin asset usage
+        run: node scripts/audit-admin-assets.js
 
       - name: Verify public dynamic bridge
         run: |
