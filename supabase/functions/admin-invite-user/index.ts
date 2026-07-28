@@ -6,6 +6,22 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
 
+function safeReturnOrigin(request: Request) {
+  const productionOrigin = String(Deno.env.get("ADMIN_SITE_ORIGIN") || "https://www.filitalianationselect.com").replace(/\/$/, "");
+  const requestOrigin = String(request.headers.get("Origin") || "").replace(/\/$/, "");
+  if (!requestOrigin) return productionOrigin;
+  try {
+    const candidate = new URL(requestOrigin);
+    const production = new URL(productionOrigin);
+    const isPreview = candidate.hostname.endsWith(".netlify.app");
+    const isLocal = candidate.hostname === "localhost" || candidate.hostname === "127.0.0.1";
+    if (candidate.origin === production.origin || isPreview || isLocal) return candidate.origin;
+  } catch (_) {
+    // Mantiene l'origine ufficiale predefinita.
+  }
+  return productionOrigin;
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -32,7 +48,7 @@ Deno.serve(async (request) => {
     if (role === "super_admin" && profile.role !== "super_admin") throw new Error("SUPER_ADMIN_REQUIRED");
 
     const adminClient = createClient(supabaseUrl, serviceKey);
-    const siteUrl = String(Deno.env.get("ADMIN_SITE_ORIGIN") || "https://www.filitalianationselect.com").replace(/\/$/, "");
+    const siteUrl = safeReturnOrigin(request);
     const invite = await adminClient.auth.admin.inviteUserByEmail(email, {
       redirectTo: siteUrl + "/reset-password.html",
       data: { first_name: firstName, last_name: lastName, requested_role: role, invited_by_admin: profile.id }
@@ -54,7 +70,7 @@ Deno.serve(async (request) => {
         user_id: invitedUser.id,
         scope,
         permissions: body.permissions && typeof body.permissions === "object" ? body.permissions : {},
-        access_level: ["admin","super_admin"].includes(role) ? "full" : (String(body.access_level || "custom")),
+        access_level: ["admin","super_admin"].includes(role) ? "full" : String(body.access_level || "custom"),
         updated_by: profile.id
       }, { onConflict: "user_id" });
       if (permissionUpdate.error) throw permissionUpdate.error;
@@ -63,7 +79,7 @@ Deno.serve(async (request) => {
       email, first_name: firstName || null, last_name: lastName || null, role, scope, status: "pending", invited_by: profile.id
     });
 
-    return new Response(JSON.stringify({ ok: true, user_id: invitedUser?.id || null, email, role }), {
+    return new Response(JSON.stringify({ ok: true, user_id: invitedUser?.id || null, email, role, return_origin: siteUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (error) {
