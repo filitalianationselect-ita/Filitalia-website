@@ -19,15 +19,17 @@ Deno.serve(async (request) => {
     const { data: userResult, error: userError } = await callerClient.auth.getUser();
     if (userError || !userResult.user) throw new Error("NOT_AUTHENTICATED");
     const { data: profile, error: profileError } = await callerClient.from("profiles").select("id,role,status").eq("id", userResult.user.id).maybeSingle();
-    if (profileError || !profile || profile.role !== "admin" || profile.status !== "active") throw new Error("NOT_AUTHORIZED");
+    if (profileError || !profile || !["admin","super_admin"].includes(String(profile.role)) || profile.status !== "active") throw new Error("NOT_AUTHORIZED");
 
     const body = await request.json();
     const email = String(body.email || "").trim().toLowerCase();
     const firstName = String(body.first_name || "").trim().slice(0, 100);
     const lastName = String(body.last_name || "").trim().slice(0, 100);
-    const role = ["admin","coordinator","coach","staff","player","parent"].includes(String(body.role)) ? String(body.role) : "staff";
+    const requestedRole = String(body.role || "staff");
+    const role = ["super_admin","admin","coordinator","coach","staff","player","parent"].includes(requestedRole) ? requestedRole : "staff";
     const scope = Array.isArray(body.scope) ? body.scope.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0, 30) : [];
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw new Error("INVALID_EMAIL");
+    if (role === "super_admin" && profile.role !== "super_admin") throw new Error("SUPER_ADMIN_REQUIRED");
 
     const adminClient = createClient(supabaseUrl, serviceKey);
     const siteUrl = String(Deno.env.get("ADMIN_SITE_ORIGIN") || "https://www.filitalianationselect.com").replace(/\/$/, "");
@@ -52,6 +54,7 @@ Deno.serve(async (request) => {
         user_id: invitedUser.id,
         scope,
         permissions: body.permissions && typeof body.permissions === "object" ? body.permissions : {},
+        access_level: ["admin","super_admin"].includes(role) ? "full" : (String(body.access_level || "custom")),
         updated_by: profile.id
       }, { onConflict: "user_id" });
       if (permissionUpdate.error) throw permissionUpdate.error;
@@ -60,12 +63,13 @@ Deno.serve(async (request) => {
       email, first_name: firstName || null, last_name: lastName || null, role, scope, status: "pending", invited_by: profile.id
     });
 
-    return new Response(JSON.stringify({ ok: true, user_id: invitedUser?.id || null, email }), {
+    return new Response(JSON.stringify({ ok: true, user_id: invitedUser?.id || null, email, role }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }), {
-      status: 400,
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), {
+      status: message === "NOT_AUTHENTICATED" ? 401 : ["NOT_AUTHORIZED","SUPER_ADMIN_REQUIRED"].includes(message) ? 403 : 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
