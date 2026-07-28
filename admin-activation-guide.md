@@ -9,12 +9,13 @@ Eseguire nell’ordine:
 1. `supabase/migrations/20260728_admin_light_console.sql`
 2. `supabase/migrations/20260728_admin_documents.sql`
 3. `supabase/migrations/20260728_admin_events_dynamic_pricing.sql`
-4. `supabase/migrations/20260728_admin_events_public_read.sql`
-5. `supabase/migrations/20260728_admin_content_suite.sql`
-6. `supabase/migrations/20260728_admin_roles_freedom.sql`
+4. `supabase/migrations/20260728_admin_event_content.sql`
+5. `supabase/migrations/20260728_admin_events_public_read.sql`
+6. `supabase/migrations/20260728_admin_content_suite.sql`
 7. `supabase/migrations/20260728_admin_event_links.sql`
+8. `supabase/migrations/20260728_admin_roles_freedom.sql`
 
-La tabella `admin_event_links` collega uno stesso evento a più membri staff, giocatori e News. Le schede possono appartenere contemporaneamente a più eventi senza duplicare i profili.
+La migrazione `admin_event_content` aggiunge copertina, testo breve e descrizione multilingua agli eventi. `admin_event_links` collega ogni evento alle relative News, ai giocatori e allo staff senza usare nomi o città come collegamento fragile.
 
 ## Funzioni Supabase
 
@@ -52,20 +53,20 @@ Non inserire credenziali service-role nel frontend o nel repository.
 
 Il profilo deve avere `status = active` e ruolo `admin` oppure `super_admin`.
 
-## Propagazione degli eventi
+## Eventi e schede collegate
 
-Quando un evento viene creato, modificato o eliminato, il catalogo invia un aggiornamento unico al pannello. Le sezioni interessate ricaricano automaticamente:
+Ogni nuovo evento alimenta automaticamente Dashboard, Registrazioni, Comunicazioni, Pagamenti e sito pubblico. Nelle schede News, Giocatori e Staff è possibile selezionare uno o più eventi collegati.
 
-- schede evento nella Dashboard;
-- selettori di Registrazioni e Comunicazioni;
-- vista evento di Pagamenti;
-- vista evento di Staff e Giocatori;
-- categorie e statistiche della registrazione;
-- contenuti pubblici quando lo stato è `published`.
+La scheda evento comprende:
 
-I nuovi eventi partono con la categoria neutra `Open`. Le categorie Under restano soltanto negli eventi storici o quando vengono aggiunte volontariamente.
+- categorie libere e prezzi specifici;
+- codici promo con scadenza e limite massimo di utilizzi;
+- copertina pubblica;
+- testo breve italiano e inglese;
+- descrizione completa italiana e inglese;
+- stato bozza, pubblicato, chiuso o cancellato.
 
-Dentro le schede Staff, Giocatore e News è presente il blocco **Eventi collegati**. Il collegamento esplicito ha priorità sui suggerimenti automatici basati su città o nome.
+I collegamenti obsoleti vengono ripuliti automaticamente quando un evento o una scheda viene eliminata.
 
 ## Comunicazioni
 
@@ -82,14 +83,18 @@ La finestra **Nuova comunicazione** permette:
 
 Il vecchio pulsante **Apri nell’app Mail** non viene usato: l’invio ufficiale parte dal gestionale tramite Gmail OAuth e la funzione server-side.
 
+## Controlli automatici
+
+La sezione Impostazioni contiene **Controllo completo progetto**, che verifica moduli, eventi, categorie, listini, promo, collegamenti, comunicazioni e ruoli. La Pull Request esegue inoltre il workflow GitHub `FIL-ITALIA Admin Quality`, che controlla sintassi JavaScript, file caricati dal pannello e ponte dinamico sulle pagine pubbliche.
+
 ## Collaudo minimo
 
-1. Creare un evento con categoria personalizzata e codice promo.
-2. Verificare che compaia in Dashboard, Registrazioni, Comunicazioni, Pagamenti, Staff e Giocatori.
+1. Creare un evento con categoria personalizzata, copertina e codice promo limitato.
+2. Verificare che l’evento compaia in Dashboard, Registrazioni, Comunicazioni e Pagamenti.
 3. Creare una registrazione e verificare il prezzo storico.
 4. Caricare certificato, foto e ricevuta.
-5. Collegare una News, un giocatore e un membro Staff allo stesso evento.
-6. Controllare i filtri evento e le etichette sulle rispettive schede.
+5. Collegare una News, un giocatore e un membro Staff all’evento.
+6. Pubblicare l’evento e controllare copertina e testi sul sito.
 7. Pubblicare una News e controllare Home, lista e dettaglio.
 8. Rendere attivo un giocatore e un membro Staff e controllare il sito.
 9. Invitare un Admin e verificare l’accesso completo.
@@ -97,12 +102,13 @@ Il vecchio pulsante **Apri nell’app Mail** non viene usato: l’invio ufficial
 11. Collegare Gmail e inviare una comunicazione a un singolo giocatore.
 12. Controllare logo, sfondo, dettagli evento e footer nella mail ricevuta.
 13. Inviare una comunicazione a un camp completo e verificare che gli indirizzi restino privati.
-14. Verificare `Stato sistema FIL-ITALIA` nelle Impostazioni.
+14. Aprire Impostazioni ed eseguire **Controllo completo progetto**.
 
 ## Stato attuale
 
 - Interfaccia e logica applicativa: presenti nella Pull Request.
 - Preview demo: disponibile su Netlify.
+- Controlli automatici GitHub: attivi sulla Pull Request.
 - Migrazioni, funzioni e segreti: da distribuire su Supabase.
 - Test browser completi: da eseguire prima della pubblicazione.
 
