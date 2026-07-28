@@ -23,3 +23,6 @@ verify_jwt = true
 
 [functions.admin-update-account-status]
 verify_jwt = true
+
+[functions.sign-in-alias]
+verify_jwt = false
