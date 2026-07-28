@@ -25,6 +25,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   quality:
@@ -128,6 +129,23 @@ jobs:
           path: browser-smoke-output
           if-no-files-found: warn
           retention-days: 7
+
+  browser_report:
+    name: Chromium diagnostic report
+    needs: browser_smoke
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Chromium result
+        uses: actions/download-artifact@v4
+        with:
+          name: browser-smoke-result
+          path: browser-smoke-output
+      - name: Print concise result
+        run: |
+          echo "===== FIL-ITALIA CHROMIUM RESULT ====="
+          cat browser-smoke-output/result.txt
+          echo "======================================"
 
   asset_audit:
     name: Unused admin files
