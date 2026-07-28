@@ -16,7 +16,7 @@
     ["eventContent", "Scheda evento", "Copertina, descrizioni e collegamenti"],
     ["publicRead", "Lettura pubblica", "Contenuti pubblicati leggibili senza login"],
     ["account", "Account Admin", "Ruolo attivo con permessi di gestione"],
-    ["functions", "Funzioni server", "Email, Gmail e gestione utenti"],
+    ["functions", "Funzioni server", "Email grafica, Gmail e gestione utenti"],
     ["gmail", "Gmail ufficiale", "Mittente collegato al gestionale"],
     ["content", "Contenuti pubblicati", "Eventi, News, giocatori e staff visibili"]
   ];
@@ -68,7 +68,7 @@
       <div class="site-connect-grid">${checks.map(([key, title, subtitle]) => `
         <article class="site-connect-item"><div class="site-connect-item-head"><div><h3>${escapeHtml(title)}</h3><div class="muted">${escapeHtml(subtitle)}</div></div><span class="pill orange" data-site-state="${key}">ATTESA</span></div><p data-site-detail="${key}">Controllo non eseguito.</p></article>
       `).join("")}</div>
-      <div id="siteConnectionNext" class="site-connect-next"><h3>Prossima azione</h3><p>Esegui il controllo per vedere il primo passaggio necessario.</p><div class="site-connect-steps"><div class="site-connect-step"><b>1. Database</b>Migrazione unica e RLS.</div><div class="site-connect-step"><b>2. Funzioni</b>Email, inviti e Gmail OAuth.</div><div class="site-connect-step"><b>3. Contenuti</b>Elementi pubblicati di prova.</div><div class="site-connect-step"><b>4. Collaudo</b>Test completo sulla preview.</div></div></div>
+      <div id="siteConnectionNext" class="site-connect-next"><h3>Prossima azione</h3><p>Esegui il controllo per vedere il primo passaggio necessario.</p><div class="site-connect-steps"><div class="site-connect-step"><b>1. Database</b>Migrazione unica e RLS.</div><div class="site-connect-step"><b>2. Funzioni</b>Email grafica, inviti e Gmail OAuth.</div><div class="site-connect-step"><b>3. Contenuti</b>Elementi pubblicati di prova.</div><div class="site-connect-step"><b>4. Collaudo</b>Test completo sulla preview.</div></div></div>
       <div id="siteConnectionFoot" class="site-connect-foot">Il controllo è in sola lettura: non modifica dati e non invia email.</div>
     `;
     section.insertAdjacentElement("afterbegin", node);
@@ -129,7 +129,7 @@
         eventContent: ["Completare lo schema eventi", "La migrazione unica deve creare copertine, descrizioni e collegamenti con News, staff e giocatori."],
         publicRead: ["Attivare la lettura pubblica", "Le policy RLS devono permettere ai visitatori di leggere soltanto contenuti pubblicati o attivi."],
         account: ["Attivare un account amministrativo", "Accedi con un profilo Admin o Super Admin con status active."],
-        functions: ["Pubblicare le funzioni Supabase", "Distribuisci le sei funzioni Gmail, email e gestione utenti sul progetto di collaudo."],
+        functions: ["Pubblicare le funzioni Supabase", "Distribuisci le cinque funzioni Gmail, email grafica e gestione utenti sul progetto di collaudo."],
         gmail: ["Collegare il Gmail ufficiale", "Configura i segreti Google e completa il collegamento OAuth dalla sezione Comunicazioni."],
         content: ["Pubblicare contenuti di prova", "Imposta come pubblicato o attivo almeno un evento, una News, un giocatore o uno staff per verificarne la comparsa sulla preview."]
       };
@@ -220,10 +220,10 @@
       } catch (error) { accountDetail = String(error.message || error); }
       setResult("account", accountLevel, accountDetail);
 
-      const functionNames = ["gmail-oauth-start", "gmail-oauth-callback", "send-filitalia-email", "send-filitalia-branded-email", "admin-invite-user", "admin-update-account-status"];
+      const functionNames = ["gmail-oauth-start", "gmail-oauth-callback", "send-filitalia-branded-email", "admin-invite-user", "admin-update-account-status"];
       const functionResults = await Promise.all(functionNames.map(functionCheck));
       const missingFunctions = functionNames.filter((_, index) => !functionResults[index]);
-      setResult("functions", missingFunctions.length ? "bad" : "ok", missingFunctions.length ? `Funzioni non rilevate: ${missingFunctions.join(", ")}.` : "Tutte le funzioni server richieste rispondono.");
+      setResult("functions", missingFunctions.length ? "bad" : "ok", missingFunctions.length ? `Funzioni non rilevate: ${missingFunctions.join(", ")}.` : "Tutte le cinque funzioni server richieste rispondono.");
 
       let gmailLevel = "warn";
       let gmailDetail = "Gmail non collegato oppure account non autenticato.";
