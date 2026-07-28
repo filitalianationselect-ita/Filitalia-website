@@ -53,6 +53,10 @@ jobs:
           node --check preview-auth-routing-v1.js
           node --check scripts/generate-runtime-config.js
           node --check scripts/audit-admin-assets.js
+          node --check scripts/audit-edge-functions.js
+
+      - name: Verify Edge Function configuration
+        run: node scripts/audit-edge-functions.js
 
       - name: Verify admin script references
         run: |
