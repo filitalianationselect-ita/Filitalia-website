@@ -16,31 +16,30 @@ function report(message) {
 
 async function shellDiagnostics(page) {
   return page.evaluate(() => {
-    const exactNodes = [...document.querySelectorAll('*')].filter(element => (element.textContent || '').trim().toLowerCase() === 'comunicazioni');
-    const paths = exactNodes.map(node => {
-      const chain = [];
-      let current = node;
-      while (current && current !== document.body && chain.length < 8) {
-        chain.push({ tag: current.tagName, id: current.id, className: String(current.className || ''), text: (current.textContent || '').trim().slice(0, 120) });
-        current = current.parentElement;
-      }
-      return chain;
-    });
+    const realSection = document.getElementById('emails');
+    const legacySection = document.getElementById('communications');
     return {
       readyState: document.readyState,
       openPageSource: typeof window.openPage === 'function' ? String(window.openPage).slice(0, 2400) : null,
-      communicationsElement: document.getElementById('communications') ? {
-        tag: document.getElementById('communications').tagName,
-        className: document.getElementById('communications').className,
-        hidden: document.getElementById('communications').hidden,
-        display: getComputedStyle(document.getElementById('communications')).display
+      emailsElement: realSection ? {
+        tag: realSection.tagName,
+        className: realSection.className,
+        hidden: realSection.hidden,
+        display: getComputedStyle(realSection).display
       } : null,
-      communicationLikeIds: [...document.querySelectorAll('[id]')].map(element => element.id).filter(id => /comm|mail|message|email/i.test(id)).slice(0, 100),
-      exactTextPaths: paths,
-      communicationScripts: [...document.scripts].map(script => script.src).filter(src => /communications|direct-mail/i.test(src)),
+      legacyLookupResolves: Boolean(legacySection),
+      legacyLookupMatchesEmails: Boolean(realSection && legacySection === realSection),
+      communicationLikeIds: [...document.querySelectorAll('[id]')]
+        .map(element => element.id)
+        .filter(id => /comm|mail|message|email/i.test(id))
+        .slice(0, 100),
+      communicationScripts: [...document.scripts]
+        .map(script => script.src)
+        .filter(src => /communications|email-page-alias|direct-mail/i.test(src)),
       unifiedReady: Boolean(window.FilitaliaCommunicationsReady),
       unifiedApi: Boolean(window.FilitaliaCommunications),
-      brandedApi: Boolean(window.FilitaliaBrandedMail)
+      brandedApi: Boolean(window.FilitaliaBrandedMail),
+      pageAlias: window.FilitaliaEmailPageAlias || null
     };
   });
 }
@@ -51,10 +50,10 @@ async function openCommunications(page) {
   const result = await page.evaluate(() => {
     if (typeof window.openPage !== 'function') return { opened: false, error: 'openPage missing' };
     try {
-      window.openPage('communications');
-      return { opened: true, method: 'openPage', arity: window.openPage.length };
+      window.openPage('emails');
+      return { opened: true, method: 'openPage', page: 'emails', arity: window.openPage.length };
     } catch (error) {
-      return { opened: false, method: 'openPage', error: String(error) };
+      return { opened: false, method: 'openPage', page: 'emails', error: String(error) };
     }
   });
   report(`Navigation diagnostic: ${JSON.stringify(result)}`);
@@ -86,11 +85,11 @@ async function main() {
     report('4/9 Opening the Communications section');
     await openCommunications(page);
     try {
-      await page.waitForSelector('[data-unified-communications="1"]', { timeout: 6000 });
+      await page.waitForSelector('#emails [data-unified-communications="1"], [data-unified-communications="1"]', { timeout: 8000 });
     } catch (error) {
       report(`Shell diagnostic after open: ${JSON.stringify(await shellDiagnostics(page))}`);
       report(`Page errors: ${JSON.stringify(pageErrors.slice(0, 20))}`);
-      report(`Relevant console errors: ${JSON.stringify(consoleErrors.filter(value => /commun|syntax|reference|typeerror|undefined|null/i.test(value)).slice(0, 20))}`);
+      report(`Relevant console errors: ${JSON.stringify(consoleErrors.filter(value => /commun|email|syntax|reference|typeerror|undefined|null/i.test(value)).slice(0, 20))}`);
       throw error;
     }
     report(`Communications mounted at ${page.url()}`);
@@ -120,13 +119,17 @@ async function main() {
     if (!srcdoc.includes('FIL-ITALIA NATION SELECT')) throw new Error('FIL-ITALIA header missing from branded preview');
     if (!srcdoc.includes('Preview Test')) throw new Error('Recipient personalization missing from branded preview');
 
+    const diagnostics = await shellDiagnostics(page);
+    if (!diagnostics.emailsElement) throw new Error('Real emails section is missing');
+    if (!diagnostics.legacyLookupMatchesEmails) throw new Error('Legacy Communications lookup does not resolve to the real emails section');
+
     const oldResources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name).filter(name => /communications-force|communications-modal|direct-mail-branded/.test(name)));
     if (oldResources.length) throw new Error(`Obsolete communications scripts loaded: ${oldResources.join(', ')}`);
     if (await page.getByText('Apri nell’app Mail', { exact: true }).count()) throw new Error('Obsolete mail client button is visible');
 
     report(`9/9 Success. Page errors: ${pageErrors.length}; console errors: ${consoleErrors.length}; failed requests: ${failedRequests.length}`);
     await page.screenshot({ path: path.join(outputDir, 'success.png'), fullPage: true });
-    fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
+    fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics, pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
   } catch (error) {
     report(`FAILURE: ${error && error.stack ? error.stack : String(error)}`);
     if (page) {
