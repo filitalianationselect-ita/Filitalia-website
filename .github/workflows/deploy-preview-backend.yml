@@ -42,11 +42,16 @@ jobs:
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "SUPABASE_PREVIEW_ACCESS_TOKEN mancante"; exit 1; }
           test -n "$SUPABASE_DB_PASSWORD" || { echo "SUPABASE_PREVIEW_DB_PASSWORD mancante"; exit 1; }
           test -n "$PROJECT_REF" || { echo "SUPABASE_PREVIEW_PROJECT_REF mancante"; exit 1; }
-          test -n "$GMAIL_CLIENT_ID" || { echo "GMAIL_PREVIEW_CLIENT_ID mancante"; exit 1; }
-          test -n "$GMAIL_CLIENT_SECRET" || { echo "GMAIL_PREVIEW_CLIENT_SECRET mancante"; exit 1; }
-          test -n "$GMAIL_TOKEN_ENCRYPTION_KEY" || { echo "GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY mancante"; exit 1; }
           [[ "$PREVIEW_ORIGIN" == https://*--filitalia.netlify.app ]] || { echo "L'origine non è una Deploy Preview FIL-ITALIA"; exit 1; }
-          [[ ${#GMAIL_TOKEN_ENCRYPTION_KEY} -ge 40 ]] || { echo "La chiave di cifratura Gmail non sembra valida"; exit 1; }
+          if [[ -n "$GMAIL_CLIENT_ID" || -n "$GMAIL_CLIENT_SECRET" || -n "$GMAIL_TOKEN_ENCRYPTION_KEY" ]]; then
+            test -n "$GMAIL_CLIENT_ID" || { echo "GMAIL_PREVIEW_CLIENT_ID mancante"; exit 1; }
+            test -n "$GMAIL_CLIENT_SECRET" || { echo "GMAIL_PREVIEW_CLIENT_SECRET mancante"; exit 1; }
+            test -n "$GMAIL_TOKEN_ENCRYPTION_KEY" || { echo "GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY mancante"; exit 1; }
+            [[ ${#GMAIL_TOKEN_ENCRYPTION_KEY} -ge 40 ]] || { echo "La chiave di cifratura Gmail non sembra valida"; exit 1; }
+            echo "Backend core e Gmail pronti."
+          else
+            echo "Backend core pronto. Gmail verrà configurato in seguito."
+          fi
           echo "Ambiente preview verificato: $PREVIEW_ORIGIN"
 
       - name: Install Supabase CLI
@@ -60,16 +65,21 @@ jobs:
       - name: Preview database changes
         run: supabase db push --dry-run
 
-      - name: Apply consolidated database migration
+      - name: Apply all database migrations
         run: supabase db push
 
-      - name: Configure preview Edge Function secrets
+      - name: Configure preview core secrets
+        run: |
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            ADMIN_SITE_ORIGIN="$PREVIEW_ORIGIN"
+
+      - name: Configure optional Gmail secrets
+        if: ${{ env.GMAIL_CLIENT_ID != '' && env.GMAIL_CLIENT_SECRET != '' && env.GMAIL_TOKEN_ENCRYPTION_KEY != '' }}
         shell: bash
         run: |
           set -euo pipefail
           CALLBACK="https://${PROJECT_REF}.supabase.co/functions/v1/gmail-oauth-callback"
           supabase secrets set --project-ref "$PROJECT_REF" \
-            ADMIN_SITE_ORIGIN="$PREVIEW_ORIGIN" \
             GMAIL_CLIENT_ID="$GMAIL_CLIENT_ID" \
             GMAIL_CLIENT_SECRET="$GMAIL_CLIENT_SECRET" \
             GMAIL_REDIRECT_URI="$CALLBACK" \
@@ -84,5 +94,7 @@ jobs:
           echo "Deploy Preview backend completato."
           echo "Supabase project ref: $PROJECT_REF"
           echo "Netlify origin: $PREVIEW_ORIGIN"
-          echo "Migrazione: 20260728090000_filitalia_admin_complete.sql"
+          echo "Migrazioni applicate: tutte quelle presenti in supabase/migrations"
+          echo "Funzioni pubblicate: tutte quelle presenti in supabase/functions"
+          if [[ -n "$GMAIL_CLIENT_ID" ]]; then echo "Gmail: configurato"; else echo "Gmail: non ancora configurato"; fi
           echo "Produzione non modificata."
