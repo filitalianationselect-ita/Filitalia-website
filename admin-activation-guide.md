@@ -1,116 +1,126 @@
 # FIL-ITALIA Admin: attivazione Deploy Preview
 
-Il pannello unico è `admin-light.html`. Prima del sito ufficiale, tutto deve essere collegato e collaudato sulla Deploy Preview Netlify.
+Il sito pubblico, l’Account e il pannello `admin-light.html` restano nello stesso progetto. Prima della pubblicazione ufficiale, il backend deve essere collegato e collaudato sulla Deploy Preview Netlify.
 
-## Struttura semplificata
+## Stato della Preview
 
-Non esistono più console parallele o migrazioni da eseguire in un ordine manuale.
+Senza credenziali Supabase dedicate, la Deploy Preview funziona in modalità demo/statica e non utilizza il database di produzione.
 
-- Pannello amministrativo: `admin-light.html`
-- Migrazione database unica: `supabase/migrations/20260728090000_filitalia_admin_complete.sql`
-- Configurazione Supabase: `supabase/config.toml`
-- Configurazione runtime Netlify: generata automaticamente da `scripts/generate-runtime-config.js`
-- Controlli: workflow GitHub `FIL-ITALIA Admin Quality`
-- Deploy backend di collaudo: workflow manuale `Deploy Preview Backend`
+Per attivare account, recupero password, alias privati e dati reali servono:
 
-## 1. Ambiente Supabase di collaudo
+- un progetto Supabase separato per il collaudo;
+- due variabili Netlify per il contesto Deploy Previews;
+- tre segreti GitHub per il deploy del backend.
 
-La Deploy Preview deve usare un progetto Supabase separato da quello ufficiale.
+Gmail è facoltativo e può essere configurato in un secondo momento.
 
-Impostare su Netlify, nel contesto **Deploy Previews**, queste variabili pubblicabili:
+## 1. Variabili Netlify
+
+Nel contesto **Deploy Previews** impostare:
 
 - `FILITALIA_PREVIEW_SUPABASE_URL`
 - `FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY`
 
-La build genera automaticamente `supabase-config.js` con:
+La build genera `supabase-config.js` con:
 
 - URL della Deploy Preview come `siteUrl`;
 - progetto Supabase di collaudo;
 - `environment = deploy-preview`;
 - `usesPreviewDatabase = true`.
 
-Senza queste due variabili la preview usa il progetto configurato come fallback e il pannello mostra **DATABASE NON ISOLATO**.
+Senza entrambe le variabili, la Preview resta intenzionalmente in modalità demo e non contatta Supabase.
 
-## 2. Deploy automatico del backend preview
+## 2. Segreti GitHub obbligatori
 
-Il workflow GitHub `.github/workflows/deploy-preview-backend.yml` viene avviato soltanto manualmente. Richiede la conferma esatta `DEPLOY PREVIEW` e rifiuta URL che non appartengono alla Deploy Preview FIL-ITALIA.
-
-Creare l'environment GitHub `filitalia-preview` e inserire questi segreti:
+Creare l’environment GitHub `filitalia-preview` e inserire:
 
 - `SUPABASE_PREVIEW_ACCESS_TOKEN`
 - `SUPABASE_PREVIEW_PROJECT_REF`
 - `SUPABASE_PREVIEW_DB_PASSWORD`
-- `GMAIL_PREVIEW_CLIENT_ID`
-- `GMAIL_PREVIEW_CLIENT_SECRET`
-- `GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY`
 
-Il workflow:
+Il workflow manuale `.github/workflows/deploy-preview-backend.yml`:
 
-1. collega esclusivamente il progetto Supabase preview;
-2. mostra in anteprima le modifiche database;
-3. applica la migrazione unica;
-4. configura i segreti delle Edge Functions;
-5. pubblica tutte le funzioni presenti in `supabase/functions`;
-6. non modifica il progetto ufficiale né `main`.
+1. accetta soltanto la conferma `DEPLOY PREVIEW`;
+2. rifiuta origini diverse dalla Deploy Preview FIL-ITALIA;
+3. collega esclusivamente il progetto Supabase Preview;
+4. mostra in anteprima le modifiche database;
+5. applica tutte le migrazioni presenti in `supabase/migrations`;
+6. pubblica tutte le Edge Functions presenti in `supabase/functions`;
+7. non modifica `main` né il progetto di produzione.
 
-## 3. Migrazione database unica
+## 3. Migrazioni database
 
-Viene applicato soltanto:
+Il deploy applica tutte le migrazioni in ordine cronologico. Le principali sono:
 
-```text
-supabase/migrations/20260728090000_filitalia_admin_complete.sql
-```
+- `20260728090000_filitalia_admin_complete.sql`
+- `20260728211500_login_aliases.sql`
 
-La migrazione crea o aggiorna:
+Creano o aggiornano:
 
 - Admin e Super Admin;
-- eventi, categorie, prezzi e codici promo;
-- registrazioni operative, pagamenti e documenti;
+- eventi, categorie, listini, promozioni e codici promo;
+- registrazioni, pagamenti e documenti;
 - News, giocatori e staff;
-- collegamenti fra eventi e schede;
 - utenti, inviti e permessi;
-- campagne email e collegamento Gmail;
-- bucket privato documenti e bucket pubblico contenuti;
-- policy RLS e lettura pubblica;
-- trigger e registro attività.
+- audit e campagne email;
+- bucket e policy RLS;
+- alias privati per il login tramite nome utente.
 
-Il workflow `FIL-ITALIA Admin Quality` la applica due volte su PostgreSQL 16 per verificarne sintassi e idempotenza.
+La tabella `login_aliases` non consente letture pubbliche. L’associazione fra alias e account viene letta soltanto dalla Edge Function server-side `sign-in-alias`.
 
-## 4. Funzioni Supabase
+## 4. Edge Functions
 
-Il deploy manuale pubblica queste cinque funzioni sul progetto di collaudo:
+Il deploy pubblica tutte le funzioni presenti, incluse:
 
 - `gmail-oauth-start`
 - `gmail-oauth-callback`
 - `send-filitalia-branded-email`
 - `admin-invite-user`
 - `admin-update-account-status`
+- `sign-in-alias`
 
-Tutte le comunicazioni passano da `send-filitalia-branded-email`: non esiste più un secondo motore testuale separato. Anche le chiamate generiche `sendEmail()` vengono indirizzate al template ufficiale con logo e grafica FIL-ITALIA.
+`sign-in-alias` permette di accedere con un nome utente privato senza mostrare nel frontend l’email associata o gli alias disponibili.
 
-La configurazione JWT è definita centralmente in `supabase/config.toml`.
+## 5. Creazione degli account amministrativi
 
-## 5. Gmail preview
+Creare gli account reali in Supabase Auth usando email private e password robuste. Nei profili impostare:
 
-Il workflow configura automaticamente nel progetto Supabase di collaudo:
+- `status = active`
+- `role = admin` oppure `role = super_admin`
 
-- `GMAIL_CLIENT_ID`
-- `GMAIL_CLIENT_SECRET`
-- `GMAIL_REDIRECT_URI`
-- `GMAIL_TOKEN_ENCRYPTION_KEY`
-- `ADMIN_SITE_ORIGIN=https://deploy-preview-1--filitalia.netlify.app`
+Admin e Super Admin hanno accesso operativo. Soltanto il Super Admin può assegnare, modificare o rimuovere il ruolo Super Admin.
 
-Il callback Google da autorizzare è:
+## 6. Collegamento degli alias privati
 
-```text
-https://<PROJECT_REF_PREVIEW>.supabase.co/functions/v1/gmail-oauth-callback
+Dopo aver creato gli account, recuperare i rispettivi UUID da Supabase Auth e inserire gli alias con SQL Editor:
+
+```sql
+insert into public.login_aliases (alias, user_id)
+values ('<alias-privato>', '<uuid-account>')
+on conflict (alias) do update
+set user_id = excluded.user_id;
 ```
 
-La chiave di cifratura deve rappresentare 32 byte casuali codificati Base64. Nessuna service-role key deve essere inserita nel frontend o nel repository.
+Regole alias:
 
-## 6. Redirect Auth della preview
+- da 4 a 40 caratteri;
+- lettere minuscole, numeri, punto, trattino e underscore;
+- un alias per account;
+- non inserirli nel codice pubblico o nella documentazione condivisa.
 
-Nel progetto Supabase di collaudo autorizzare:
+Il campo del sito resta genericamente **Email o nome utente**.
+
+## 7. Recupero password
+
+Il recupero password utilizza sempre l’email privata collegata all’account:
+
+1. aprire `login.html?mode=reset`;
+2. inserire l’email;
+3. Supabase invia il collegamento;
+4. il collegamento apre `reset-password.html`;
+5. scegliere una nuova password di almeno 10 caratteri.
+
+Autorizzare nel progetto Supabase Preview:
 
 ```text
 https://deploy-preview-1--filitalia.netlify.app/account.html
@@ -118,50 +128,40 @@ https://deploy-preview-1--filitalia.netlify.app/reset-password.html
 https://deploy-preview-1--filitalia.netlify.app/**
 ```
 
-`supabase/config.toml` include inoltre il pattern Netlify:
+## 8. Gmail facoltativo
+
+Il backend core può essere attivato anche senza Gmail. Per abilitare le Comunicazioni aggiungere successivamente nell’environment GitHub:
+
+- `GMAIL_PREVIEW_CLIENT_ID`
+- `GMAIL_PREVIEW_CLIENT_SECRET`
+- `GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY`
+
+Quando tutti e tre sono presenti, il workflow configura automaticamente:
+
+- `GMAIL_CLIENT_ID`
+- `GMAIL_CLIENT_SECRET`
+- `GMAIL_REDIRECT_URI`
+- `GMAIL_TOKEN_ENCRYPTION_KEY`
+- `ADMIN_SITE_ORIGIN`
+
+Callback Google:
 
 ```text
-https://**--filitalia.netlify.app/**
+https://<PROJECT_REF_PREVIEW>.supabase.co/functions/v1/gmail-oauth-callback
 ```
 
-Registrazione, conferma account, recupero password, inviti e ritorno Gmail rimangono così all’interno della Deploy Preview.
+## 9. Collaudo finale
 
-## 7. Account amministrativo
+1. Aprire la Deploy Preview.
+2. Verificare il login con email.
+3. Verificare il login con alias privato.
+4. Provare il recupero password.
+5. Accedere come Admin o Super Admin.
+6. Creare un evento di prova con categoria, prezzo e copertina.
+7. Creare una registrazione e controllare pagamento e documenti.
+8. Pubblicare una News e verificare che i Talent ID esistenti restino visibili.
+9. Controllare Players, Staff e Comunicazioni.
+10. Se Gmail è configurato, inviare un’email di prova.
+11. Eliminare o archiviare i dati di collaudo.
 
-Il profilo di collaudo deve avere:
-
-- `status = active`;
-- `role = admin` oppure `role = super_admin`.
-
-Admin e Super Admin hanno accesso operativo completo. Soltanto il Super Admin può creare, modificare, sospendere o retrocedere un altro Super Admin.
-
-## 8. Collegamento dei contenuti al sito preview
-
-Home, Eventi, News, Giocatori e Staff caricano `public-content-bridge-v1.js`. Quando un contenuto viene impostato come pubblicato o attivo, il ponte legge Supabase e aggiorna le schede pubbliche della preview.
-
-Ogni nuovo evento alimenta automaticamente:
-
-- Dashboard;
-- Registrazioni;
-- Pagamenti;
-- Documenti;
-- Comunicazioni;
-- Staff e giocatori collegati;
-- pagina Eventi pubblica.
-
-## 9. Collaudo completo
-
-1. Aprire **Impostazioni → Attivazione Deploy Preview**.
-2. Verificare che compaia **DATABASE PREVIEW ISOLATO**.
-3. Eseguire **Collegamento al sito**.
-4. Accedere come Admin o Super Admin.
-5. Creare un evento di prova con categoria, prezzo, promo e copertina.
-6. Verificare le schede in tutte le sezioni.
-7. Creare una registrazione e controllare il prezzo storico.
-8. Caricare certificato, foto e ricevuta.
-9. Pubblicare News, giocatore e staff di prova.
-10. Collegare Gmail e inviare una mail grafica a un indirizzo di prova.
-11. Eseguire **Controllo completo progetto**.
-12. Eliminare o archiviare i dati di prova.
-
-Soltanto dopo questo collaudo si potrà approvare l’unione della Pull Request in `main`. La branch `main` e il sito ufficiale non devono essere modificati prima dell’approvazione esplicita.
+Soltanto dopo il collaudo la Pull Request potrà essere approvata e unita a `main`.
