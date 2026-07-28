@@ -84,9 +84,6 @@ jobs:
           console.log(`${refs.length} local admin script references verified.`);
           NODE
 
-      - name: Report admin asset usage
-        run: node scripts/audit-admin-assets.js
-
       - name: Verify public dynamic bridge
         run: |
           node <<'NODE'
@@ -141,3 +138,12 @@ jobs:
           if (!admin.includes('preview-auth-routing-v1.js')) throw new Error('Preview auth routing missing from admin-light.html');
           console.log('Preview auth routing verified.');
           NODE
+
+  asset_audit:
+    name: Unused admin files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: List unreferenced admin assets
+        run: node scripts/audit-admin-assets.js
