@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Accedi o crea il tuo account FIL-ITALIA Nation Select.">
 <meta name="robots" content="noindex,follow">
-<title>Account | FIL-ITALIA Nation Select</title>
+<title>Account Workspace | FIL-ITALIA Nation Select</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
 <link rel="stylesheet" href="account.css?v=800">
-<link rel="stylesheet" href="login-control-room-v1.css?v=2">
+<link rel="stylesheet" href="login-control-room-v1.css?v=3">
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body data-account-page="login">
@@ -24,80 +24,114 @@
   </div>
   <div class="language-switch"><button onclick="setLanguage('it')">IT</button><button onclick="setLanguage('en')">EN</button><button onclick="setLanguage('ph')">PH</button></div>
 </nav>
-<main class="account-main">
-  <div class="account-shell account-narrow">
-    <section class="account-card login-control-card">
-      <header class="login-command-header">
-        <div class="login-command-copy">
-          <span class="login-kicker">FIL-ITALIA CONTROL ROOM</span>
-          <h1 class="account-title">AREA RISERVATA</h1>
-          <p class="account-subtitle">Un solo accesso per profilo, camp, staff e amministrazione FIL-ITALIA.</p>
-        </div>
-        <div class="login-command-mark" aria-hidden="true">
-          <img src="images/logo.png" alt="">
-          <span>Secure Access</span>
-        </div>
-      </header>
 
-      <div class="login-control-body">
-        <p id="accountConfigWarning" class="account-config-warning" hidden>Il sistema account è pronto, ma deve essere collegato al progetto Supabase inserendo URL e chiave pubblicabile in <strong>supabase-config.js</strong>.</p>
-
-        <div class="account-tabs" role="tablist" aria-label="Account">
-          <button class="account-tab" type="button" data-auth-tab="login">Accedi</button>
-          <button class="account-tab" type="button" data-auth-tab="signup">Crea account</button>
-          <button class="account-tab" type="button" data-auth-tab="reset">Password</button>
-        </div>
-
-        <section data-auth-panel="login">
-          <form id="loginForm" class="account-form" data-requires-auth novalidate>
-            <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
-            <label>Password<input type="password" name="password" autocomplete="current-password" minlength="10" required></label>
-            <button class="account-button" type="submit">ACCEDI</button>
-            <p id="loginStatus" class="account-status" role="status" aria-live="polite"></p>
-          </form>
-        </section>
-
-        <section data-auth-panel="signup" hidden>
-          <form id="signupForm" class="account-form" data-requires-auth novalidate>
-            <div class="account-grid">
-              <label>Nome<input name="firstName" autocomplete="given-name" maxlength="100" required></label>
-              <label>Cognome<input name="lastName" autocomplete="family-name" maxlength="100" required></label>
-            </div>
-            <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
-            <label>Tipo di account richiesto
-              <select name="requestedRole" required>
-                <option value="player">Giocatore</option>
-                <option value="parent">Genitore / Tutore</option>
-                <option value="coach">Coach</option>
-                <option value="coordinator">Coordinatore</option>
-                <option value="staff">Staff</option>
-              </select>
-            </label>
-            <div class="account-grid">
-              <label>Password<input type="password" name="password" autocomplete="new-password" minlength="10" required></label>
-              <label>Ripeti password<input type="password" name="passwordConfirm" autocomplete="new-password" minlength="10" required></label>
-            </div>
-            <label class="account-check"><input type="checkbox" name="privacy" required><span>Ho letto e accetto la <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
-            <button class="account-button" type="submit">CREA ACCOUNT</button>
-            <p id="signupStatus" class="account-status" role="status" aria-live="polite"></p>
-          </form>
-        </section>
-
-        <section data-auth-panel="reset" hidden>
-          <form id="resetRequestForm" class="account-form" data-requires-auth novalidate>
-            <p class="account-muted">Inserisci l’email dell’account. Per sicurezza, il messaggio mostrato sarà uguale anche se l’indirizzo non è registrato.</p>
-            <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
-            <button class="account-button" type="submit">INVIA LINK</button>
-            <p id="resetRequestStatus" class="account-status" role="status" aria-live="polite"></p>
-          </form>
-        </section>
-
-        <p class="login-access-note">L’area Amministrazione appare automaticamente solo agli account Admin attivi.</p>
+<main class="account-main login-workspace-main">
+  <div class="login-workspace">
+    <section class="login-workspace-hero">
+      <div class="login-hero-copy">
+        <span class="login-kicker">FIL-ITALIA CONTROL ROOM</span>
+        <h1>Account Workspace</h1>
+        <p>Un solo accesso per profilo, camp, comunicazioni e amministrazione FIL-ITALIA.</p>
+      </div>
+      <div class="login-hero-actions">
+        <a class="login-hero-button" href="index.html">Torna al sito</a>
+        <div class="login-command-mark" aria-hidden="true"><img src="images/logo.png" alt=""></div>
       </div>
     </section>
+
+    <section class="login-summary-grid" aria-label="Funzioni account">
+      <article class="login-summary-card"><span>ACCESSO</span><strong>UNICO</strong><small>Un account per tutto</small></article>
+      <article class="login-summary-card"><span>PROFILO</span><strong>1 VOLTA</strong><small>Dati riutilizzabili</small></article>
+      <article class="login-summary-card"><span>CAMP</span><strong>VELOCI</strong><small>Iscrizioni semplificate</small></article>
+      <article class="login-summary-card"><span>ADMIN</span><strong>PROTETTO</strong><small>Solo ruoli autorizzati</small></article>
+    </section>
+
+    <section class="login-access-panel">
+      <header class="login-panel-head">
+        <div>
+          <span class="login-panel-eyebrow">AREA RISERVATA</span>
+          <h2>Accedi al tuo workspace</h2>
+          <p>Entra, crea un account oppure recupera la password.</p>
+        </div>
+        <span class="login-security-pill">Accesso sicuro</span>
+      </header>
+
+      <p id="accountConfigWarning" class="account-config-warning" hidden>Il sistema account è pronto, ma deve essere collegato al progetto Supabase inserendo URL e chiave pubblicabile in <strong>supabase-config.js</strong>.</p>
+
+      <div class="account-tabs" role="tablist" aria-label="Account">
+        <button class="account-tab" type="button" data-auth-tab="login">Accedi</button>
+        <button class="account-tab" type="button" data-auth-tab="signup">Crea account</button>
+        <button class="account-tab" type="button" data-auth-tab="reset">Password</button>
+      </div>
+
+      <div class="login-panel-grid">
+        <div class="login-form-card">
+          <section data-auth-panel="login">
+            <div class="login-section-heading"><span>LOGIN</span><h3>Bentornato</h3><p>Inserisci le credenziali del tuo account FIL-ITALIA.</p></div>
+            <form id="loginForm" class="account-form" data-requires-auth novalidate>
+              <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
+              <label>Password<input type="password" name="password" autocomplete="current-password" minlength="10" required></label>
+              <button class="account-button" type="submit">ACCEDI</button>
+              <p id="loginStatus" class="account-status" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section data-auth-panel="signup" hidden>
+            <div class="login-section-heading"><span>NUOVO ACCOUNT</span><h3>Crea il tuo profilo</h3><p>Compila i dati principali. Potrai completarli dopo l’accesso.</p></div>
+            <form id="signupForm" class="account-form" data-requires-auth novalidate>
+              <div class="account-grid">
+                <label>Nome<input name="firstName" autocomplete="given-name" maxlength="100" required></label>
+                <label>Cognome<input name="lastName" autocomplete="family-name" maxlength="100" required></label>
+              </div>
+              <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
+              <label>Tipo di account richiesto
+                <select name="requestedRole" required>
+                  <option value="player">Giocatore</option>
+                  <option value="parent">Genitore / Tutore</option>
+                  <option value="coach">Coach</option>
+                  <option value="coordinator">Coordinatore</option>
+                  <option value="staff">Staff</option>
+                </select>
+              </label>
+              <div class="account-grid">
+                <label>Password<input type="password" name="password" autocomplete="new-password" minlength="10" required></label>
+                <label>Ripeti password<input type="password" name="passwordConfirm" autocomplete="new-password" minlength="10" required></label>
+              </div>
+              <label class="account-check"><input type="checkbox" name="privacy" required><span>Ho letto e accetto la <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
+              <button class="account-button" type="submit">CREA ACCOUNT</button>
+              <p id="signupStatus" class="account-status" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section data-auth-panel="reset" hidden>
+            <div class="login-section-heading"><span>RECUPERO ACCESSO</span><h3>Reimposta la password</h3><p>Riceverai un collegamento sicuro all’indirizzo indicato.</p></div>
+            <form id="resetRequestForm" class="account-form" data-requires-auth novalidate>
+              <p class="account-muted">Per sicurezza, il messaggio mostrato sarà uguale anche se l’indirizzo non è registrato.</p>
+              <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
+              <button class="account-button" type="submit">INVIA LINK</button>
+              <p id="resetRequestStatus" class="account-status" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+        </div>
+
+        <aside class="login-side-card">
+          <span class="login-panel-eyebrow">NEL TUO ACCOUNT</span>
+          <h3>Tutto nello stesso posto</h3>
+          <div class="login-side-list">
+            <div><b>Profilo personale</b><small>Aggiorna i dati una sola volta.</small></div>
+            <div><b>Iscrizioni ai camp</b><small>Controlla registrazioni e stato.</small></div>
+            <div><b>Documenti e pagamenti</b><small>Segui ciò che manca prima dell’evento.</small></div>
+            <div><b>Amministrazione</b><small>Compare soltanto agli Admin attivi.</small></div>
+          </div>
+          <p class="login-access-note">L’area Amministrazione appare automaticamente solo agli account autorizzati.</p>
+        </aside>
+      </div>
+    </section>
+
     <p class="account-footer-link"><a href="index.html">← Torna al sito</a></p>
   </div>
 </main>
+
 <footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
 <script src="script.js?v=801"></script>
 <script src="filitalia-i18n.js?v=800"></script>
