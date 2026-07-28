@@ -14,7 +14,8 @@ const expected = [
   'admin-update-account-status',
   'gmail-oauth-callback',
   'gmail-oauth-start',
-  'send-filitalia-branded-email'
+  'send-filitalia-branded-email',
+  'sign-in-alias'
 ].sort();
 
 const errors = [];
@@ -49,7 +50,8 @@ for (const file of textFiles) {
   }
 }
 
-for (const name of expected.filter(name => name !== 'gmail-oauth-callback')) {
+const adminProtected = expected.filter(name => !['gmail-oauth-callback', 'sign-in-alias'].includes(name));
+for (const name of adminProtected) {
   const content = fs.readFileSync(path.join(functionsRoot, name, 'index.ts'), 'utf8');
   if (!content.includes('NOT_AUTHENTICATED')) errors.push(`${name} does not expose authentication failure handling`);
   if (!content.includes('admin') || !content.includes('super_admin')) errors.push(`${name} does not visibly handle Admin and Super Admin`);
@@ -58,10 +60,18 @@ for (const name of expected.filter(name => name !== 'gmail-oauth-callback')) {
 if (!config.includes('[functions.gmail-oauth-callback]\nverify_jwt = false')) {
   errors.push('gmail-oauth-callback must remain public for the Google redirect');
 }
+if (!config.includes('[functions.sign-in-alias]\nverify_jwt = false')) {
+  errors.push('sign-in-alias must accept unauthenticated login requests');
+}
+
+const aliasFunction = fs.readFileSync(path.join(functionsRoot, 'sign-in-alias', 'index.ts'), 'utf8');
+if (!aliasFunction.includes('INVALID_LOGIN')) errors.push('sign-in-alias must return a generic login failure');
+if (!aliasFunction.includes('login_aliases')) errors.push('sign-in-alias does not use the private alias table');
+if (!aliasFunction.includes('signInWithPassword')) errors.push('sign-in-alias does not delegate password verification to Supabase Auth');
 
 console.log(`Edge Functions: ${activeFunctions.join(', ')}`);
 if (errors.length) {
   errors.forEach(error => console.error(`- ${error}`));
   process.exit(1);
 }
-console.log('Edge Function configuration is consistent and branded-email only.');
+console.log('Edge Function configuration is consistent, private-alias aware and branded-email only.');
