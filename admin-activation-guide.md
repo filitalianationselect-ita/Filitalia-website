@@ -11,6 +11,7 @@ Eseguire nell’ordine:
 3. `supabase/migrations/20260728_admin_events_dynamic_pricing.sql`
 4. `supabase/migrations/20260728_admin_events_public_read.sql`
 5. `supabase/migrations/20260728_admin_content_suite.sql`
+6. `supabase/migrations/20260728_admin_roles_freedom.sql`
 
 ## Funzioni Supabase
 
@@ -19,6 +20,7 @@ supabase functions deploy gmail-oauth-start
 supabase functions deploy gmail-oauth-callback --no-verify-jwt
 supabase functions deploy send-filitalia-email
 supabase functions deploy admin-invite-user
+supabase functions deploy admin-update-account-status
 ```
 
 ## Segreti Gmail
@@ -35,9 +37,28 @@ Callback OAuth:
 
 Non inserire credenziali service-role nel frontend o nel repository.
 
-## Account amministratore
+## Ruoli amministrativi
 
-Il profilo deve avere `role = admin` e `status = active`.
+- `super_admin`: accesso completo, inclusa la gestione degli altri Super Admin.
+- `admin`: accesso operativo completo a eventi, registrazioni, giocatori, staff, pagamenti, comunicazioni, News e utenti.
+- Soltanto un Super Admin può creare, modificare, sospendere o retrocedere un altro Super Admin.
+- Il sistema impedisce di rimuovere l’ultimo Super Admin attivo.
+
+Il profilo deve avere `status = active` e ruolo `admin` oppure `super_admin`.
+
+## Comunicazioni
+
+La sezione permette:
+
+- invio a tutti gli iscritti di un evento;
+- invio a una singola persona;
+- filtri per categoria, pagamento, documenti e presenza;
+- invio a tutto lo staff o a un singolo membro;
+- filtro staff per BLSD confermato, da verificare o mancante;
+- modifica immediata dello stato BLSD;
+- email manuale e invio di prova;
+- oggetto e testo sempre modificabili;
+- invii superiori a 100 destinatari suddivisi automaticamente in gruppi.
 
 ## Collaudo minimo
 
@@ -46,9 +67,11 @@ Il profilo deve avere `role = admin` e `status = active`.
 3. Caricare certificato, foto e ricevuta.
 4. Pubblicare una News e controllare Home, lista e dettaglio.
 5. Rendere attivo un giocatore e un membro Staff e controllare il sito.
-6. Invitare un utente con ambito limitato.
-7. Collegare Gmail e inviare un test.
-8. Verificare `Stato sistema FIL-ITALIA` nelle Impostazioni.
+6. Invitare un Admin e verificare l’accesso completo.
+7. Verificare che un Admin non possa modificare un Super Admin.
+8. Modificare uno stato BLSD e filtrare i destinatari nella sezione Comunicazioni.
+9. Collegare Gmail e inviare prima una prova, poi un messaggio singolo.
+10. Verificare `Stato sistema FIL-ITALIA` nelle Impostazioni.
 
 ## Stato attuale
 
