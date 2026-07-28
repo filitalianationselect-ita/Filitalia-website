@@ -55,7 +55,7 @@
       </form>
     </section>
 
-    <section class="account-card" data-role-section="player,parent,coach,coordinator,staff,admin" hidden>
+    <section class="account-card" data-role-section="player,parent,coach,coordinator,staff,admin,super_admin" hidden>
       <h2 class="account-section-title">Le mie registrazioni</h2>
       <div id="accountRegistrations"><p class="account-muted">Caricamento...</p></div>
     </section>
@@ -115,53 +115,28 @@
 
     <section class="account-card account-danger-zone">
       <h2 class="account-section-title">Eliminazione account</h2>
-      <p class="account-muted">
-        La richiesta verrà inviata all’amministratore. Dopo la verifica saranno eliminati
-        account, profilo giocatore, foto e dati collegati. L’operazione definitiva non è reversibile.
-      </p>
-      <label>Motivo facoltativo
-        <textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea>
-      </label>
-      <button id="requestDeletionButton" class="account-button danger" type="button">
-        RICHIEDI ELIMINAZIONE ACCOUNT
-      </button>
+      <p class="account-muted">La richiesta verrà inviata all’amministratore. Dopo la verifica saranno eliminati account, profilo giocatore, foto e dati collegati. L’operazione definitiva non è reversibile.</p>
+      <label>Motivo facoltativo<textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea></label>
+      <button id="requestDeletionButton" class="account-button danger" type="button">RICHIEDI ELIMINAZIONE ACCOUNT</button>
       <p id="deletionStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
     <section id="adminDashboardSection" class="account-card admin-dashboard" hidden>
-      <div class="admin-dashboard-head">
-        <div><span class="admin-kicker">FIL-ITALIA CONTROL ROOM</span><h2 class="account-section-title">Dashboard amministratore</h2></div>
-        <button id="refreshAdminDashboard" class="account-button compact secondary" type="button">AGGIORNA</button>
-      </div>
-      <div class="admin-stat-grid">
-        <article class="admin-stat"><span>Da approvare</span><strong id="adminPendingCount">0</strong></article>
-        <article class="admin-stat"><span>Richieste eliminazione</span><strong id="adminDeletionCount">0</strong></article>
-        <article class="admin-stat"><span>Utenti attivi</span><strong id="adminActiveCount">0</strong></article>
-        <article class="admin-stat"><span>Utenti sospesi</span><strong id="adminSuspendedCount">0</strong></article>
-      </div>
+      <div class="admin-dashboard-head"><div><span class="admin-kicker">FIL-ITALIA CONTROL ROOM</span><h2 class="account-section-title">Dashboard amministratore</h2></div><button id="refreshAdminDashboard" class="account-button compact secondary" type="button">AGGIORNA</button></div>
+      <div class="admin-stat-grid"><article class="admin-stat"><span>Da approvare</span><strong id="adminPendingCount">0</strong></article><article class="admin-stat"><span>Richieste eliminazione</span><strong id="adminDeletionCount">0</strong></article><article class="admin-stat"><span>Utenti attivi</span><strong id="adminActiveCount">0</strong></article><article class="admin-stat"><span>Utenti sospesi</span><strong id="adminSuspendedCount">0</strong></article></div>
       <p id="adminDashboardStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
     <section id="adminAccountsSection" class="account-card" hidden>
       <h2 class="account-section-title">Gestione account</h2>
       <p class="account-muted">Approva, rifiuta, sospendi o riattiva gli account. Ogni cambiamento invia automaticamente una mail all’utente.</p>
-      <div class="admin-filter-row">
-        <label>Mostra
-          <select id="adminAccountFilter"><option value="pending">Da approvare</option><option value="active">Attivi</option><option value="suspended">Sospesi</option><option value="rejected">Rifiutati</option><option value="all">Tutti</option></select>
-        </label>
-      </div>
+      <div class="admin-filter-row"><label>Mostra<select id="adminAccountFilter"><option value="pending">Da approvare</option><option value="active">Attivi</option><option value="suspended">Sospesi</option><option value="rejected">Rifiutati</option><option value="all">Tutti</option></select></label></div>
       <div id="managedAccountsList"></div>
       <p id="adminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
     <section id="adminPlayerCardsSection" class="account-card" hidden>
-      <div class="admin-dashboard-head">
-        <div>
-          <h2 class="account-section-title">Player Card pubbliche</h2>
-          <p class="account-muted">Controlla i dati del giocatore e pubblica la card nella pagina Players. Email, telefono, peso e dati privati non vengono mostrati.</p>
-        </div>
-        <button id="refreshAdminPlayerCards" class="account-button compact secondary" type="button">AGGIORNA</button>
-      </div>
+      <div class="admin-dashboard-head"><div><h2 class="account-section-title">Player Card pubbliche</h2><p class="account-muted">Controlla i dati del giocatore e pubblica la card nella pagina Players. Email, telefono, peso e dati privati non vengono mostrati.</p></div><button id="refreshAdminPlayerCards" class="account-button compact secondary" type="button">AGGIORNA</button></div>
       <div id="adminPlayerCardsList"><p class="account-muted">Caricamento...</p></div>
       <p id="adminPlayerCardsStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
@@ -179,9 +154,10 @@
 <script src="filitalia-i18n.js?v=800"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=800"></script>
-<script src="auth-client.js?v=1001"></script>
+<script src="auth-client.js?v=1002"></script>
 <script src="auth-admin-fix.js?v=1001"></script>
 <script src="auth-pages.js?v=1001"></script>
+<script src="unified-access-v1.js?v=1"></script>
 <script src="player-card-admin.js?v=1"></script>
 </body>
 </html>
