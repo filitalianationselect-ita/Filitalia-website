@@ -5,23 +5,122 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FIL-ITALIA Admin Roma · Demo</title>
 <style>
-:root{--bg:#eef2f7;--card:#fff;--ink:#182235;--muted:#6d788a;--line:#d7dee8;--blue:#27518f;--blue2:#e8f0fb;--green:#17784a;--green2:#e5f5ec;--amber:#9a6410;--amber2:#fff2d6;--shadow:0 12px 32px rgba(25,45,75,.08)}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit}.wrap{max-width:1180px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:14px;align-items:center}.crumb,.muted{color:var(--muted)}h1{margin:4px 0 0}.badge{background:var(--amber2);color:var(--amber);padding:8px 12px;border-radius:999px;font-weight:800;font-size:12px}.hero,.panel,.notice{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.hero{padding:20px;margin:18px 0 12px}.meta{color:var(--muted);margin-top:7px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:17px}.stat{padding:14px;border:1px solid var(--line);border-radius:14px}.stat span{display:block;color:var(--muted);font-size:13px}.stat strong{font-size:26px}.notice{padding:12px 15px;margin-bottom:12px;color:var(--green);font-weight:800}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:10px 13px;font-weight:800}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.grid{display:grid;grid-template-columns:370px 1fr;gap:16px}.head{padding:15px;border-bottom:1px solid var(--line)}.search{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px}.filters{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.filters button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px}.filters .active{background:var(--blue2);color:var(--blue);font-weight:800}.list{padding:10px;display:grid;gap:8px}.player{width:100%;text-align:left;color:var(--ink);padding:12px;border:1px solid transparent;border-radius:14px;background:#f7f9fc}.player.active{border-color:#8ba8d2;background:#eaf1fb}.player small{color:var(--muted)}.pill{float:right;font-size:11px;padding:5px 8px;border-radius:999px;font-weight:800}.done{background:var(--green2);color:var(--green)}.pending{background:var(--amber2);color:var(--amber)}.detail{padding:20px}.profile{display:flex;justify-content:space-between;gap:12px;align-items:start;padding-bottom:15px;border-bottom:1px solid var(--line)}.profile h2{margin:0}.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}.info,.task{border:1px solid var(--line);border-radius:13px;padding:12px}.info span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.tasks{display:grid;gap:9px}.task{display:flex;justify-content:space-between;align-items:center;gap:12px}.task button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-weight:800}.task button.on{background:var(--green2);color:var(--green)}.notes{width:100%;min-height:86px;margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:12px}.empty{padding:34px 20px;color:var(--muted);text-align:center}.modal{position:fixed;inset:0;background:rgba(20,30,45,.55);display:none;place-items:center;padding:18px}.modal.show{display:grid}.modal-card{width:min(580px,100%);background:#fff;border-radius:18px;padding:20px}.modal-card h2{margin-top:0}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form label{font-size:12px;color:var(--muted)}.form input,.form select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin-top:4px}.full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.toast{position:fixed;right:20px;bottom:20px;background:#182235;color:#fff;padding:12px 15px;border-radius:12px;opacity:0;transform:translateY(12px);transition:.2s}.toast.show{opacity:1;transform:none}
-@media(max-width:800px){.wrap{padding:14px}.top{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.profile{flex-direction:column}.profile .btn{width:100%}}
+:root{--bg:#eef2f7;--card:#fff;--ink:#182235;--muted:#6d788a;--line:#d7dee8;--blue:#27518f;--blue2:#e8f0fb;--green:#17784a;--green2:#e5f5ec;--amber:#9a6410;--amber2:#fff2d6;--red:#a33b42;--red2:#fdebed;--shadow:0 12px 32px rgba(25,45,75,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer}.wrap{max-width:1180px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:14px;align-items:center}.crumb,.muted{color:var(--muted)}h1{margin:4px 0 0}.badge{background:var(--amber2);color:var(--amber);padding:8px 12px;border-radius:999px;font-weight:800;font-size:12px}.hero,.panel,.notice,.gmail-card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.hero{padding:20px;margin:18px 0 12px}.meta{color:var(--muted);margin-top:7px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:17px}.stat{padding:14px;border:1px solid var(--line);border-radius:14px}.stat span{display:block;color:var(--muted);font-size:13px}.stat strong{font-size:26px}.notice{padding:12px 15px;margin-bottom:12px;color:var(--green);font-weight:800}.gmail-card{padding:14px 16px;margin-bottom:14px;display:flex;justify-content:space-between;gap:12px;align-items:center}.gmail-state{display:flex;gap:10px;align-items:center}.gmail-dot{width:11px;height:11px;border-radius:50%;background:var(--amber)}.gmail-dot.connected{background:var(--green)}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:10px 13px;font-weight:800}.btn:hover{border-color:#9aabc1}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.green{background:var(--green);color:#fff;border-color:var(--green)}.btn.danger{color:var(--red)}.grid{display:grid;grid-template-columns:370px 1fr;gap:16px}.head{padding:15px;border-bottom:1px solid var(--line)}.search{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px}.filters{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.filters button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px}.filters .active{background:var(--blue2);color:var(--blue);font-weight:800}.list{padding:10px;display:grid;gap:8px;max-height:650px;overflow:auto}.player{width:100%;text-align:left;color:var(--ink);padding:12px;border:1px solid transparent;border-radius:14px;background:#f7f9fc}.player.active{border-color:#8ba8d2;background:#eaf1fb}.player small{color:var(--muted)}.pill{float:right;font-size:11px;padding:5px 8px;border-radius:999px;font-weight:800}.done{background:var(--green2);color:var(--green)}.pending{background:var(--amber2);color:var(--amber)}.detail{padding:20px}.profile{display:flex;justify-content:space-between;gap:12px;align-items:start;padding-bottom:15px;border-bottom:1px solid var(--line)}.profile h2{margin:0}.profile-actions{display:flex;gap:7px;flex-wrap:wrap}.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}.info,.task{border:1px solid var(--line);border-radius:13px;padding:12px}.info span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.tasks{display:grid;gap:9px}.task{display:flex;justify-content:space-between;align-items:center;gap:12px}.task button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-weight:800}.task button.on{background:var(--green2);color:var(--green)}.notes{width:100%;min-height:86px;margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:12px}.empty{padding:34px 20px;color:var(--muted);text-align:center}.modal{position:fixed;inset:0;background:rgba(20,30,45,.58);display:none;place-items:center;padding:18px;z-index:30}.modal.show{display:grid}.modal-card{width:min(620px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 24px 70px rgba(10,20,40,.25)}.modal-card.wide{width:min(760px,100%)}.modal-card h2{margin:0 0 6px}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.form label,.mail-form label{font-size:12px;color:var(--muted);font-weight:700}.form input,.form select,.mail-form input,.mail-form select,.mail-form textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin-top:4px;color:var(--ink);background:#fff}.full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}.mail-head{display:flex;justify-content:space-between;gap:12px;align-items:start;border-bottom:1px solid var(--line);padding-bottom:14px}.sender-chip{background:var(--green2);color:var(--green);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800}.sender-chip.off{background:var(--amber2);color:var(--amber)}.mail-form{display:grid;gap:11px;margin-top:16px}.mail-form textarea{min-height:210px;resize:vertical;line-height:1.5}.mail-preview-note{background:var(--blue2);color:var(--blue);padding:11px 12px;border-radius:12px;font-size:13px}.history{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}.history-item{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:8px;font-size:13px}.toast{position:fixed;right:20px;bottom:20px;background:#182235;color:#fff;padding:12px 15px;border-radius:12px;opacity:0;transform:translateY(12px);transition:.2s;z-index:50}.toast.show{opacity:1;transform:none}
+@media(max-width:800px){.wrap{padding:14px}.top,.gmail-card{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.profile{flex-direction:column}.profile-actions,.profile-actions .btn{width:100%}.mail-head{flex-direction:column}.modal-actions .btn{flex:1}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="top"><div><div class="crumb">Eventi / Roma 2026</div><h1>Talent ID Camp Roma</h1></div><div class="badge">DEMO VISIBILE · DATI DI PROVA</div></div>
-<section class="hero"><strong>FIL-EURO Talent ID Camp</strong><div class="meta">📅 5 agosto 2026 · 15:00–20:00 &nbsp; 📍 Stella Azzurra Roma</div><div class="stats"><div class="stat"><span>Iscritti</span><strong id="sTotal">0</strong></div><div class="stat"><span>Pagati</span><strong id="sPaid">0</strong></div><div class="stat"><span>Check-in</span><strong id="sCheck">0</strong></div><div class="stat"><span>Maglie consegnate</span><strong id="sShirt">0</strong></div></div></section>
-<div class="notice">● Anteprima interattiva attiva. Non richiede login e non modifica il sito ufficiale.</div>
-<div class="toolbar"><button id="addBtn" class="btn primary">＋ Nuova registrazione</button><button id="editBtn" class="btn">✎ Modifica partecipante</button><button id="emailBtn" class="btn">✉️ Prepara email</button><button id="resetBtn" class="btn">↺ Ripristina demo</button></div>
-<section class="grid"><div class="panel"><div class="head"><input id="search" class="search" placeholder="Cerca giocatore, email, categoria…"><div class="filters"><button class="active" data-f="all">Tutti</button><button data-f="pending">Da pagare</button><button data-f="checked">Arrivati</button><button data-f="U12">U12</button><button data-f="U14">U14</button><button data-f="U16">U16</button><button data-f="U18">U18</button></div></div><div id="list" class="list"></div></div><div id="detail" class="panel"></div></section>
+  <div class="top">
+    <div><div class="crumb">Eventi / Roma 2026</div><h1>Talent ID Camp Roma</h1></div>
+    <div class="badge">DEMO VISIBILE · DATI DI PROVA</div>
+  </div>
+
+  <section class="hero">
+    <strong>FIL-EURO Talent ID Camp</strong>
+    <div class="meta">📅 5 agosto 2026 · 15:00–20:00 &nbsp; 📍 Stella Azzurra Roma</div>
+    <div class="stats">
+      <div class="stat"><span>Iscritti</span><strong id="sTotal">0</strong></div>
+      <div class="stat"><span>Pagati</span><strong id="sPaid">0</strong></div>
+      <div class="stat"><span>Check-in</span><strong id="sCheck">0</strong></div>
+      <div class="stat"><span>Maglie consegnate</span><strong id="sShirt">0</strong></div>
+    </div>
+  </section>
+
+  <div class="notice">● Anteprima interattiva attiva. Non richiede login e non modifica il sito ufficiale.</div>
+
+  <section class="gmail-card">
+    <div class="gmail-state">
+      <span id="gmailDot" class="gmail-dot"></span>
+      <div><strong id="gmailTitle">Gmail FIL-ITALIA non collegato</strong><div id="gmailText" class="muted">Nella versione reale collegheremo esclusivamente l’account ufficiale FIL-ITALIA.</div></div>
+    </div>
+    <button id="connectGmailBtn" class="btn green" type="button">Collega Gmail FIL-ITALIA</button>
+  </section>
+
+  <div class="toolbar">
+    <button id="addBtn" class="btn primary" type="button">＋ Nuova registrazione</button>
+    <button id="editBtn" class="btn" type="button">✎ Modifica partecipante</button>
+    <button id="emailBtn" class="btn" type="button">✉️ Scrivi email interna</button>
+    <button id="resetBtn" class="btn" type="button">↺ Ripristina demo</button>
+  </div>
+
+  <section class="grid">
+    <div class="panel">
+      <div class="head">
+        <input id="search" class="search" placeholder="Cerca giocatore, email, categoria…">
+        <div class="filters">
+          <button class="active" type="button" data-f="all">Tutti</button>
+          <button type="button" data-f="pending">Da pagare</button>
+          <button type="button" data-f="checked">Arrivati</button>
+          <button type="button" data-f="U12">U12</button>
+          <button type="button" data-f="U14">U14</button>
+          <button type="button" data-f="U16">U16</button>
+          <button type="button" data-f="U18">U18</button>
+        </div>
+      </div>
+      <div id="list" class="list"></div>
+    </div>
+    <div id="detail" class="panel"></div>
+  </section>
 </div>
-<div id="modal" class="modal"><div class="modal-card"><h2 id="modalTitle">Nuova registrazione</h2><div class="form"><label>Nome<input id="fName"></label><label>Anno<input id="fYear" maxlength="4"></label><label>Categoria<select id="fCat"><option>U12</option><option>U14</option><option>U16</option><option>U18</option><option>U19</option></select></label><label>Taglia<select id="fShirt"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><label class="full">Email<input id="fEmail" type="email"></label><label class="full">Genitore / riferimento<input id="fParent"></label></div><div class="modal-actions"><button id="cancelBtn" class="btn">Annulla</button><button id="saveBtn" class="btn primary">Salva nella demo</button></div></div></div>
+
+<div id="playerModal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <h2 id="playerModalTitle">Nuova registrazione</h2>
+    <div class="muted">In questa demo i dati restano solo nel tuo browser.</div>
+    <div class="form">
+      <label>Nome<input id="fName"></label>
+      <label>Anno<input id="fYear" maxlength="4" inputmode="numeric"></label>
+      <label>Categoria<select id="fCat"><option>U12</option><option>U14</option><option>U16</option><option>U18</option><option>U19</option></select></label>
+      <label>Taglia<select id="fShirt"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label>
+      <label class="full">Email<input id="fEmail" type="email"></label>
+      <label class="full">Genitore / riferimento<input id="fParent"></label>
+    </div>
+    <div class="modal-actions">
+      <button id="cancelPlayerBtn" class="btn" type="button">Annulla</button>
+      <button id="savePlayerBtn" class="btn primary" type="button">Salva nella demo</button>
+    </div>
+  </div>
+</div>
+
+<div id="emailModal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-card wide">
+    <div class="mail-head">
+      <div><h2>Nuova email FIL-ITALIA</h2><div class="muted">Componi e invia senza aprire la tua casella personale.</div></div>
+      <span id="senderChip" class="sender-chip off">Gmail non collegato</span>
+    </div>
+    <div class="mail-form">
+      <label>Mittente<input id="mailFrom" value="Account Gmail FIL-ITALIA" readonly></label>
+      <label>Destinatario<input id="mailTo" type="email"></label>
+      <label>Modello rapido
+        <select id="mailTemplate">
+          <option value="custom">Messaggio personalizzato</option>
+          <option value="confirmation">Conferma iscrizione Roma</option>
+          <option value="payment">Promemoria pagamento</option>
+          <option value="certificate">Richiesta certificato medico</option>
+          <option value="details">Dettagli finali del camp</option>
+        </select>
+      </label>
+      <label>Oggetto<input id="mailSubject"></label>
+      <label>Messaggio<textarea id="mailBody"></textarea></label>
+      <div class="mail-preview-note">Nella preview il pulsante registra un invio simulato. Nella versione reale userà soltanto il Gmail FIL-ITALIA autorizzato.</div>
+    </div>
+    <div class="modal-actions">
+      <button id="cancelEmailBtn" class="btn" type="button">Annulla</button>
+      <button id="sendEmailBtn" class="btn primary" type="button">Invia da FIL-ITALIA</button>
+    </div>
+    <div id="mailHistory" class="history"></div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 <script>
-const KEY='filitalia-roma-demo-v2';
+(function(){
+'use strict';
+const DATA_KEY='filitalia-roma-demo-v3';
+const GMAIL_KEY='filitalia-gmail-demo-connected';
+const MAIL_KEY='filitalia-mail-demo-history';
 const seed=[
 {id:'1',name:'Marco Rossi',year:'2011',cat:'U16',shirt:'XL',email:'marco.rossi@email.it',parent:'Andrea Rossi',payment:'paid',certificate:true,checked:true,shirtDone:true,present:true,notes:'Buon ball handling.'},
 {id:'2',name:'Luca Bianchi',year:'2013',cat:'U14',shirt:'M',email:'famiglia.bianchi@email.it',parent:'Paolo Bianchi',payment:'pending',certificate:false,checked:false,shirtDone:false,present:false,notes:''},
@@ -29,19 +128,69 @@ const seed=[
 {id:'4',name:'Jayson Mendoza',year:'2014',cat:'U12',shirt:'S',email:'mendoza.family@email.it',parent:'Carlo Mendoza',payment:'not_required',certificate:false,checked:false,shirtDone:false,present:false,notes:''},
 {id:'5',name:'Nico De Luca',year:'2009',cat:'U18',shirt:'XL',email:'nico.deluca@email.it',parent:'Elena De Luca',payment:'pending',certificate:false,checked:false,shirtDone:false,present:false,notes:'Certificato da controllare.'}
 ];
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||seed.map(x=>({...x})),selected=data[0]?.id||null,filter='all',editing=null;
-const $=id=>document.getElementById(id); const complete=p=>['paid','not_required','waived'].includes(p.payment);
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1500)}
-function visible(){const q=$('search').value.toLowerCase();return data.filter(p=>(filter==='all'||filter===p.cat||(filter==='pending'&&!complete(p))||(filter==='checked'&&p.checked))&&`${p.name} ${p.email} ${p.cat} ${p.year}`.toLowerCase().includes(q))}
-function render(){const rows=visible();$('list').innerHTML=rows.length?rows.map(p=>`<button class="player ${p.id===selected?'active':''}" data-id="${p.id}"><span class="pill ${p.checked?'done':'pending'}">${p.checked?'Arrivato':'Da registrare'}</span><strong>${p.name}</strong><br><small>${p.cat} · ${p.year} · Maglia ${p.shirt}</small></button>`).join(''):'<div class="empty">Nessun risultato</div>';$('list').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{selected=b.dataset.id;render()});const p=data.find(x=>x.id===selected);$('detail').innerHTML=p?`<div class="detail"><div class="profile"><div><h2>${p.name}</h2><div class="muted">${p.cat} · ${p.year} · ${complete(p)?'Pagamento completato':'Pagamento in attesa'}</div></div><button class="btn" id="detailEdit">Modifica</button></div><div class="info-grid"><div class="info"><span>Email</span><strong>${p.email||'—'}</strong></div><div class="info"><span>Genitore</span><strong>${p.parent||'—'}</strong></div><div class="info"><span>Categoria</span><strong>${p.cat}</strong></div><div class="info"><span>Taglia</span><strong>${p.shirt}</strong></div></div><div class="tasks">${task('payment','Pagamento verificato',complete(p))}${task('certificate','Certificato medico',p.certificate)}${task('checked','Check-in',p.checked)}${task('shirtDone','Maglia consegnata',p.shirtDone)}${task('present','Presenza confermata',p.present)}</div><textarea id="notes" class="notes" placeholder="Note rapide…">${p.notes||''}</textarea></div>`:'<div class="empty">Seleziona un partecipante</div>';if(p){$('detailEdit').onclick=()=>openModal('edit');$('notes').onchange=e=>{p.notes=e.target.value;save();toast('Nota salvata')};$('detail').querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>toggle(p,b.dataset.task))}updateStats()}
-function task(k,l,on){return `<div class="task"><strong>${l}</strong><button class="${on?'on':''}" data-task="${k}">${on?'✓ Fatto':'Segna fatto'}</button></div>`}
-function toggle(p,k){if(k==='payment')p.payment=complete(p)?'pending':'paid';else p[k]=!p[k];save();render();toast('Operazione salvata')}
-function updateStats(){$('sTotal').textContent=data.length;$('sPaid').textContent=data.filter(complete).length;$('sCheck').textContent=data.filter(x=>x.checked).length;$('sShirt').textContent=data.filter(x=>x.shirtDone).length}
-function openModal(mode){editing=mode==='edit'?selected:null;const p=editing?data.find(x=>x.id===editing):{name:'',year:'',cat:'U12',shirt:'S',email:'',parent:''};$('modalTitle').textContent=editing?'Modifica partecipante':'Nuova registrazione';$('fName').value=p.name;$('fYear').value=p.year;$('fCat').value=p.cat;$('fShirt').value=p.shirt;$('fEmail').value=p.email;$('fParent').value=p.parent;$('modal').classList.add('show')}
-function closeModal(){$('modal').classList.remove('show')}
-function saveModal(){const payload={name:$('fName').value.trim()||'Nuovo partecipante',year:$('fYear').value.trim()||'—',cat:$('fCat').value,shirt:$('fShirt').value,email:$('fEmail').value.trim(),parent:$('fParent').value.trim()};if(editing){Object.assign(data.find(x=>x.id===editing),payload);toast('Partecipante modificato')}else{const p={id:String(Date.now()),...payload,payment:'pending',certificate:false,checked:false,shirtDone:false,present:false,notes:''};data.push(p);selected=p.id;toast('Registrazione aggiunta')}save();closeModal();render()}
-$('search').oninput=render;document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-f]').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.f;render()});$('addBtn').onclick=()=>openModal('add');$('editBtn').onclick=()=>openModal('edit');$('emailBtn').onclick=()=>{const p=data.find(x=>x.id===selected);if(!p?.email)return toast('Email non disponibile');location.href=`mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent('FIL-ITALIA · Talent ID Camp Roma')}&body=${encodeURIComponent('Ciao '+p.name+',\n\nqui puoi inserire la comunicazione relativa al camp di Roma.\n\nFIL-ITALIA Nation Select')}`};$('resetBtn').onclick=()=>{localStorage.removeItem(KEY);data=seed.map(x=>({...x}));selected=data[0].id;render();toast('Demo ripristinata')};$('cancelBtn').onclick=closeModal;$('saveBtn').onclick=saveModal;$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};render();
+const templates={
+confirmation:{subject:'FIL-ITALIA · Conferma iscrizione Talent ID Camp Roma',body:name=>'Ciao '+name+',\n\nla tua iscrizione al Talent ID Camp di Roma è stata registrata correttamente.\n\nData: 5 agosto 2026\nOrario: 15:00 - 20:00\nLuogo: Stella Azzurra Roma\n\nFIL-ITALIA Nation Select'},
+payment:{subject:'FIL-ITALIA · Promemoria pagamento Camp Roma',body:name=>'Ciao '+name+',\n\nrisulta ancora in attesa il pagamento relativo al Talent ID Camp di Roma.\n\nRispondi a questa email se hai già effettuato il pagamento o se hai bisogno di assistenza.\n\nFIL-ITALIA Nation Select'},
+certificate:{subject:'FIL-ITALIA · Certificato medico Camp Roma',body:name=>'Ciao '+name+',\n\nper completare la registrazione al Talent ID Camp di Roma abbiamo bisogno del certificato medico valido.\n\nPuoi rispondere a questa email allegando il documento.\n\nFIL-ITALIA Nation Select'},
+details:{subject:'FIL-ITALIA · Dettagli finali Talent ID Camp Roma',body:name=>'Ciao '+name+',\n\necco i dettagli finali del Talent ID Camp di Roma.\n\nData: 5 agosto 2026\nOrario: 15:00 - 20:00\nLuogo: Stella Azzurra Roma\n\nPorta abbigliamento da allenamento, scarpe da basket, borraccia e certificato medico se non ancora inviato.\n\nFIL-ITALIA Nation Select'}
+};
+const $=id=>document.getElementById(id);
+let data=readJson(DATA_KEY,seed.map(x=>({...x})));
+let selected=data[0]?data[0].id:null;
+let filter='all';
+let editing=null;
+let gmailConnected=localStorage.getItem(GMAIL_KEY)==='true';
+let mailHistory=readJson(MAIL_KEY,[]);
+function readJson(key,fallback){try{const value=JSON.parse(localStorage.getItem(key)||'null');return value||fallback}catch(_){return fallback}}
+function saveData(){localStorage.setItem(DATA_KEY,JSON.stringify(data))}
+function saveMailHistory(){localStorage.setItem(MAIL_KEY,JSON.stringify(mailHistory))}
+function complete(player){return ['paid','not_required','waived'].includes(player.payment)}
+function selectedPlayer(){return data.find(player=>player.id===selected)||null}
+function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]))}
+function toast(message){$('toast').textContent=message;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1700)}
+function visible(){const q=$('search').value.toLowerCase().trim();return data.filter(player=>{const matchFilter=filter==='all'||filter===player.cat||(filter==='pending'&&!complete(player))||(filter==='checked'&&player.checked);const matchSearch=[player.name,player.email,player.cat,player.year,player.parent].join(' ').toLowerCase().includes(q);return matchFilter&&matchSearch})}
+function task(key,label,on){return '<div class="task"><strong>'+escapeHtml(label)+'</strong><button type="button" class="'+(on?'on':'')+'" data-task="'+escapeHtml(key)+'">'+(on?'✓ Fatto':'Segna fatto')+'</button></div>'}
+function render(){
+ const rows=visible();
+ $('list').innerHTML=rows.length?rows.map(player=>'<button type="button" class="player '+(player.id===selected?'active':'')+'" data-id="'+escapeHtml(player.id)+'"><span class="pill '+(player.checked?'done':'pending')+'">'+(player.checked?'Arrivato':'Da registrare')+'</span><strong>'+escapeHtml(player.name)+'</strong><br><small>'+escapeHtml(player.cat)+' · '+escapeHtml(player.year)+' · Maglia '+escapeHtml(player.shirt)+'</small></button>').join(''):'<div class="empty">Nessun risultato</div>';
+ $('list').querySelectorAll('[data-id]').forEach(button=>button.onclick=()=>{selected=button.dataset.id;render()});
+ const player=selectedPlayer();
+ $('detail').innerHTML=player?'<div class="detail"><div class="profile"><div><h2>'+escapeHtml(player.name)+'</h2><div class="muted">'+escapeHtml(player.cat)+' · '+escapeHtml(player.year)+' · '+(complete(player)?'Pagamento completato':'Pagamento in attesa')+'</div></div><div class="profile-actions"><button class="btn" id="detailEmail" type="button">✉️ Email</button><button class="btn" id="detailEdit" type="button">Modifica</button></div></div><div class="info-grid"><div class="info"><span>Email</span><strong>'+escapeHtml(player.email||'—')+'</strong></div><div class="info"><span>Genitore</span><strong>'+escapeHtml(player.parent||'—')+'</strong></div><div class="info"><span>Categoria</span><strong>'+escapeHtml(player.cat)+'</strong></div><div class="info"><span>Taglia</span><strong>'+escapeHtml(player.shirt)+'</strong></div></div><div class="tasks">'+task('payment','Pagamento verificato',complete(player))+task('certificate','Certificato medico',player.certificate)+task('checked','Check-in',player.checked)+task('shirtDone','Maglia consegnata',player.shirtDone)+task('present','Presenza confermata',player.present)+'</div><textarea id="notes" class="notes" placeholder="Note rapide…">'+escapeHtml(player.notes||'')+'</textarea></div>':'<div class="empty">Seleziona un partecipante</div>';
+ if(player){$('detailEdit').onclick=()=>openPlayerModal('edit');$('detailEmail').onclick=openEmailModal;$('notes').onchange=event=>{player.notes=event.target.value;saveData();toast('Nota salvata')};$('detail').querySelectorAll('[data-task]').forEach(button=>button.onclick=()=>toggleTask(player,button.dataset.task))}
+ updateStats();renderGmail();
+}
+function toggleTask(player,key){if(key==='payment')player.payment=complete(player)?'pending':'paid';else player[key]=!player[key];saveData();render();toast('Operazione salvata')}
+function updateStats(){$('sTotal').textContent=data.length;$('sPaid').textContent=data.filter(complete).length;$('sCheck').textContent=data.filter(player=>player.checked).length;$('sShirt').textContent=data.filter(player=>player.shirtDone).length}
+function renderGmail(){
+ $('gmailDot').classList.toggle('connected',gmailConnected);
+ $('gmailTitle').textContent=gmailConnected?'Gmail FIL-ITALIA collegato nella demo':'Gmail FIL-ITALIA non collegato';
+ $('gmailText').textContent=gmailConnected?'Le email della demo risultano inviate dall’account ufficiale FIL-ITALIA.':'Nella versione reale collegheremo esclusivamente l’account ufficiale FIL-ITALIA.';
+ $('connectGmailBtn').textContent=gmailConnected?'Disconnetti demo':'Collega Gmail FIL-ITALIA';
+ $('connectGmailBtn').classList.toggle('danger',gmailConnected);
+ $('senderChip').textContent=gmailConnected?'Gmail FIL-ITALIA collegato':'Gmail non collegato';
+ $('senderChip').classList.toggle('off',!gmailConnected);
+}
+function openPlayerModal(mode){editing=mode==='edit'?selected:null;const player=editing?selectedPlayer():{name:'',year:'',cat:'U12',shirt:'S',email:'',parent:''};if(!player)return;$('playerModalTitle').textContent=editing?'Modifica partecipante':'Nuova registrazione';$('fName').value=player.name;$('fYear').value=player.year;$('fCat').value=player.cat;$('fShirt').value=player.shirt;$('fEmail').value=player.email;$('fParent').value=player.parent;$('playerModal').classList.add('show')}
+function closePlayerModal(){$('playerModal').classList.remove('show')}
+function savePlayer(){const payload={name:$('fName').value.trim()||'Nuovo partecipante',year:$('fYear').value.trim()||'—',cat:$('fCat').value,shirt:$('fShirt').value,email:$('fEmail').value.trim(),parent:$('fParent').value.trim()};if(editing){Object.assign(selectedPlayer(),payload);toast('Partecipante modificato')}else{const player={id:String(Date.now()),...payload,payment:'pending',certificate:false,checked:false,shirtDone:false,present:false,notes:''};data.push(player);selected=player.id;toast('Registrazione aggiunta')}saveData();closePlayerModal();render()}
+function openEmailModal(){const player=selectedPlayer();if(!player)return;if(!player.email){toast('Email del partecipante mancante');return}$('mailTo').value=player.email;$('mailTemplate').value='confirmation';applyTemplate();renderMailHistory();$('emailModal').classList.add('show')}
+function closeEmailModal(){$('emailModal').classList.remove('show')}
+function applyTemplate(){const player=selectedPlayer();const key=$('mailTemplate').value;if(key==='custom'){return}const template=templates[key];if(!template)return;$('mailSubject').value=template.subject;$('mailBody').value=template.body(player?player.name:'partecipante')}
+function renderMailHistory(){if(!mailHistory.length){$('mailHistory').innerHTML='<strong>Ultimi invii demo</strong><div class="muted" style="margin-top:6px">Nessuna email inviata nella demo.</div>';return}$('mailHistory').innerHTML='<strong>Ultimi invii demo</strong>'+mailHistory.slice(0,3).map(item=>'<div class="history-item"><strong>'+escapeHtml(item.to)+'</strong><br>'+escapeHtml(item.subject)+'<div class="muted">'+escapeHtml(item.date)+'</div></div>').join('')}
+function sendEmail(){if(!gmailConnected){toast('Prima collega Gmail FIL-ITALIA');return}const to=$('mailTo').value.trim();const subject=$('mailSubject').value.trim();const body=$('mailBody').value.trim();if(!to||!subject||!body){toast('Completa destinatario, oggetto e messaggio');return}mailHistory.unshift({to,subject,date:new Date().toLocaleString('it-IT')});saveMailHistory();renderMailHistory();closeEmailModal();toast('Email FIL-ITALIA inviata nella demo')}
+$('search').oninput=render;
+document.querySelectorAll('[data-f]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-f]').forEach(item=>item.classList.remove('active'));button.classList.add('active');filter=button.dataset.f;render()});
+$('addBtn').onclick=()=>openPlayerModal('add');
+$('editBtn').onclick=()=>openPlayerModal('edit');
+$('emailBtn').onclick=openEmailModal;
+$('resetBtn').onclick=()=>{localStorage.removeItem(DATA_KEY);localStorage.removeItem(MAIL_KEY);data=seed.map(item=>({...item}));mailHistory=[];selected=data[0].id;render();toast('Demo ripristinata')};
+$('connectGmailBtn').onclick=()=>{gmailConnected=!gmailConnected;localStorage.setItem(GMAIL_KEY,String(gmailConnected));renderGmail();toast(gmailConnected?'Gmail FIL-ITALIA collegato nella demo':'Gmail demo disconnesso')};
+$('cancelPlayerBtn').onclick=closePlayerModal;$('savePlayerBtn').onclick=savePlayer;
+$('cancelEmailBtn').onclick=closeEmailModal;$('sendEmailBtn').onclick=sendEmail;$('mailTemplate').onchange=applyTemplate;
+[$('playerModal'),$('emailModal')].forEach(modal=>modal.onclick=event=>{if(event.target===modal)modal.classList.remove('show')});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePlayerModal();closeEmailModal()}});
+render();
+})();
 </script>
 </body>
 </html>
