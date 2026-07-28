@@ -1,34 +1,18 @@
 (function(){
 'use strict';
 const d=document,$=id=>d.getElementById(id),original=window.FilitaliaEventCatalog;if(!original)return;
+let currentId='';
 const clean=v=>String(v==null?'':v).trim();
-function currentEvent(){const name=clean($('evName3')?.value);return original.events?.().find(e=>clean(e.name)===name)||null}
+function currentEvent(){return currentId?original.get?.(currentId):(original.events?.().find(e=>clean(e.name)===clean($('evName3')?.value))||null)}
 function maxFor(code){const event=currentEvent(),promo=event?.pricing?.promoCodes?.find(p=>clean(p.code)===clean(code));return promo?.maxUses==null?'':String(promo.maxUses)}
-function enhance(){
- d.querySelectorAll('.promo-row').forEach(row=>{
-  if(row.querySelector('.pc-max'))return;
-  const grid=row.querySelector('.promo-grid');if(!grid)return;
-  const code=row.querySelector('.pc-code');
-  const label=d.createElement('label');label.className='pc-max-wrap';label.innerHTML='<span>Utilizzi massimi</span><input class="pc-max" type="number" min="1" step="1" placeholder="Illimitati">';
-  grid.appendChild(label);
-  label.querySelector('.pc-max').value=maxFor(code?.value||'');
-  code?.addEventListener('input',()=>{const input=label.querySelector('.pc-max');if(!input.dataset.touched)input.value=maxFor(code.value)});
-  label.querySelector('.pc-max').addEventListener('input',e=>e.target.dataset.touched='1');
- });
-}
-async function save(input){
- const data=JSON.parse(JSON.stringify(input||{}));
- const rows=[...d.querySelectorAll('.promo-row')];
- const promos=data?.pricing?.promoCodes;
- if(Array.isArray(promos))promos.forEach((promo,index)=>{
-  const field=rows[index]?.querySelector('.pc-max');
-  const value=clean(field?.value);
-  promo.maxUses=value===''?null:Math.max(1,Math.floor(Number(value)||1));
- });
- return original.save(data);
-}
+function addStatusOptions(){const select=$('evStatus3');if(!select)return;if(![...select.options].some(o=>o.value==='cancelled'))select.insertAdjacentHTML('beforeend','<option value="cancelled">Cancellato</option>')}
+function addPublicFields(){const form=d.querySelector('#eventEditorV3 .event-form-grid');if(!form||$('evPublicContent'))return;const section=d.createElement('section');section.id='evPublicContent';section.className='event-section';section.innerHTML=`<h3>Contenuto pubblico dell’evento</h3><div class="muted">Copertina e testi utilizzati automaticamente nelle schede del sito.</div><div class="event-form-grid" style="margin-top:14px"><label class="full">URL copertina<input id="evImageUrl3" placeholder="images/... oppure URL pubblico"></label><label class="full">Carica copertina<input id="evImageFile3" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="full" style="display:flex;justify-content:center"><img id="evImagePreview3" alt="Anteprima evento" style="display:none;width:min(420px,100%);max-height:220px;object-fit:cover;border-radius:16px;border:1px solid #c9ddd2"></div><label class="full">Testo breve italiano<textarea id="evExcerptIt3" rows="3" placeholder="Breve presentazione per la card"></textarea></label><label class="full">Testo breve inglese<textarea id="evExcerptEn3" rows="3"></textarea></label><label class="full">Descrizione italiana<textarea id="evDescriptionIt3" rows="6" placeholder="Informazioni complete sul camp o torneo"></textarea></label><label class="full">Descrizione inglese<textarea id="evDescriptionEn3" rows="6"></textarea></label></div>`;form.appendChild(section);$('evImageUrl3').addEventListener('input',preview);$('evImageFile3').addEventListener('change',()=>{const file=$('evImageFile3').files[0];if(file){const img=$('evImagePreview3');img.src=URL.createObjectURL(file);img.style.display='block'}})}
+function preview(){const img=$('evImagePreview3'),url=clean($('evImageUrl3')?.value);if(!img)return;if(url){img.src=url;img.style.display='block'}else if(!$('evImageFile3')?.files?.length){img.removeAttribute('src');img.style.display='none'}}
+function populate(){addStatusOptions();addPublicFields();const field=$('evPublicContent');if(!field)return;const key=currentId||'__new__';if(field.dataset.loadedFor===key)return;const e=currentEvent();$('evImageUrl3').value=e?.imageUrl||'';$('evExcerptIt3').value=e?.excerpt?.it||'';$('evExcerptEn3').value=e?.excerpt?.en||'';$('evDescriptionIt3').value=e?.description?.it||'';$('evDescriptionEn3').value=e?.description?.en||'';$('evImageFile3').value='';field.dataset.loadedFor=key;preview()}
+function enhance(){addStatusOptions();addPublicFields();d.querySelectorAll('.promo-row').forEach(row=>{if(row.querySelector('.pc-max'))return;const grid=row.querySelector('.promo-grid');if(!grid)return;const code=row.querySelector('.pc-code');const label=d.createElement('label');label.className='pc-max-wrap';label.innerHTML='<span>Utilizzi massimi</span><input class="pc-max" type="number" min="1" step="1" placeholder="Illimitati">';grid.appendChild(label);label.querySelector('.pc-max').value=maxFor(code?.value||'');code?.addEventListener('input',()=>{const input=label.querySelector('.pc-max');if(!input.dataset.touched)input.value=maxFor(code.value)});label.querySelector('.pc-max').addEventListener('input',e=>e.target.dataset.touched='1')});if($('eventEditorV3')?.classList.contains('show'))populate()}
+async function save(input){const data=JSON.parse(JSON.stringify(input||{})),existing=data.id?original.get?.(data.id):currentEvent();const rows=[...d.querySelectorAll('.promo-row')],promos=data?.pricing?.promoCodes;if(Array.isArray(promos))promos.forEach((promo,index)=>{const field=rows[index]?.querySelector('.pc-max'),value=clean(field?.value);promo.maxUses=value===''?null:Math.max(1,Math.floor(Number(value)||1))});data.imageUrl=clean($('evImageUrl3')?.value)||existing?.imageUrl||'';data.excerpt={it:clean($('evExcerptIt3')?.value),en:clean($('evExcerptEn3')?.value),ph:existing?.excerpt?.ph||''};data.description={it:clean($('evDescriptionIt3')?.value),en:clean($('evDescriptionEn3')?.value),ph:existing?.description?.ph||''};const file=$('evImageFile3')?.files?.[0];if(file&&window.FilitaliaCore?.uploadPublicAsset)data.imageUrl=await window.FilitaliaCore.uploadPublicAsset(file,'events');const saved=await original.save(data);currentId=saved.id;return saved}
 window.FilitaliaEventCatalog=Object.freeze(Object.assign({},original,{save}));
-const style=d.createElement('style');style.textContent='.promo-grid{grid-template-columns:1.15fr .75fr .7fr 1fr 1fr .85fr!important}@media(max-width:850px){.promo-grid{grid-template-columns:1fr!important}}';d.head.appendChild(style);
-const observer=new MutationObserver(enhance);observer.observe(d.documentElement,{childList:true,subtree:true});d.addEventListener('click',()=>setTimeout(enhance,20));setInterval(enhance,900);
-window.FilitaliaPromoLimits=Object.freeze({enhance});
+const style=d.createElement('style');style.textContent='.promo-grid{grid-template-columns:1.15fr .75fr .7fr 1fr 1fr .85fr!important}#evPublicContent textarea{margin-top:7px;width:100%;padding:12px 14px;font-size:15px;border:1px solid #b9d1c4;border-radius:13px;background:#fff;resize:vertical}@media(max-width:850px){.promo-grid{grid-template-columns:1fr!important}}';d.head.appendChild(style);
+d.addEventListener('click',event=>{const target=event.target.closest?.('button,a');if(!target)return;if(target.matches('.event-edit-v3'))currentId=clean(target.dataset.id);else if(target.id==='eventNewV3')currentId='';if(target.matches('.event-edit-v3,#eventNewV3'))setTimeout(()=>{const field=$('evPublicContent');if(field)delete field.dataset.loadedFor;populate()},50)},true);
+const observer=new MutationObserver(enhance);observer.observe(d.documentElement,{childList:true,subtree:true});d.addEventListener('click',()=>setTimeout(enhance,20));setInterval(enhance,900);window.FilitaliaPromoLimits=Object.freeze({enhance,populate});
 })();
