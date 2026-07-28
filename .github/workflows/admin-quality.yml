@@ -34,56 +34,38 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-
       - name: Check JavaScript syntax
         shell: bash
         run: |
           set -euo pipefail
           while IFS= read -r -d '' file; do node --check "$file"; done < <(find . -maxdepth 1 -type f -name '*.js' -print0 | sort -z)
           while IFS= read -r -d '' file; do node --check "$file"; done < <(find scripts -type f -name '*.js' -print0 | sort -z)
-
       - name: Verify Edge Function configuration
         run: node scripts/audit-edge-functions.js
-
       - name: Verify admin modules
         run: |
           node <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('admin-light.html', 'utf8');
-          const refs = [...html.matchAll(/src="([^"]+\.js(?:\?[^\"]*)?)"/g)]
-            .map(match => match[1])
-            .filter(src => !/^https?:\/\//.test(src))
-            .map(src => src.split('?')[0]);
-          const missing = [...new Set(refs)].filter(file => !fs.existsSync(file));
+          const refs = [...html.matchAll(/src="([^"]+\.js(?:\?[^\"]*)?)"/g)].map(m=>m[1]).filter(s=>!/^https?:\/\//.test(s)).map(s=>s.split('?')[0]);
+          const missing = [...new Set(refs)].filter(file=>!fs.existsSync(file));
           if (missing.length) throw new Error(`Missing admin scripts: ${missing.join(', ')}`);
-          const required = [
-            'preview-auth-routing-v1.js',
-            'admin-event-catalog-v3.js',
-            'admin-core-service-v1.js',
-            'admin-event-links-v1.js',
-            'admin-event-propagation-v1.js',
-            'admin-communications-v1.js',
-            'admin-project-audit-v1.js',
-            'admin-site-connection-v1.js',
-            'admin-deploy-preview-center-v1.js'
-          ];
-          const absent = required.filter(file => !refs.includes(file));
+          const required = ['preview-auth-routing-v1.js','admin-event-catalog-v3.js','admin-core-service-v1.js','admin-event-links-v1.js','admin-event-propagation-v1.js','admin-communications-v1.js','admin-project-audit-v1.js','admin-site-connection-v1.js','admin-deploy-preview-center-v1.js'];
+          const absent = required.filter(file=>!refs.includes(file));
           if (absent.length) throw new Error(`Required modules not loaded: ${absent.join(', ')}`);
           const obsolete = ['admin-communications-force-v1.js','admin-communications-modal-v1.js','admin-direct-mail-branded-v2.js'];
-          const oldLoaded = obsolete.filter(file => refs.includes(file));
+          const oldLoaded = obsolete.filter(file=>refs.includes(file));
           if (oldLoaded.length) throw new Error(`Obsolete communications modules loaded: ${oldLoaded.join(', ')}`);
           console.log(`${refs.length} local admin scripts verified.`);
           NODE
-
       - name: Verify public dynamic bridge
         run: |
           node <<'NODE'
           const fs = require('fs');
           const pages = ['index.html','events.html','news.html','players.html','staff.html'];
-          const broken = pages.filter(page => !fs.existsSync(page) || !fs.readFileSync(page,'utf8').includes('public-content-bridge-v1.js'));
+          const broken = pages.filter(page=>!fs.existsSync(page)||!fs.readFileSync(page,'utf8').includes('public-content-bridge-v1.js'));
           if (broken.length) throw new Error(`Public bridge missing from: ${broken.join(', ')}`);
           NODE
-
       - name: Verify deploy preview runtime config
         env:
           CONTEXT: deploy-preview
@@ -98,7 +80,6 @@ jobs:
           grep -F '"isPreview": true' supabase-config.js
           grep -F '"usesPreviewDatabase": true' supabase-config.js
           mv /tmp/supabase-config.original.js supabase-config.js
-
       - name: Verify preview auth routing
         run: |
           grep -F 'preview-auth-routing-v1.js' login.html
@@ -107,6 +88,7 @@ jobs:
   browser_smoke:
     name: Chromium communications flow
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -114,8 +96,9 @@ jobs:
           node-version: "22"
       - name: Install Chromium test runner
         run: |
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npm install --no-save --silent playwright >/tmp/playwright-npm.log 2>&1
+          npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
+          echo "Chromium installed."
       - name: Generate local preview configuration
         env:
           CONTEXT: deploy-preview
@@ -124,7 +107,6 @@ jobs:
       - name: Start static preview
         run: |
           python3 -m http.server 4173 >/tmp/filitalia-http.log 2>&1 &
-          echo $! >/tmp/filitalia-http.pid
           for i in {1..20}; do curl -fsS http://127.0.0.1:4173/admin-light.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/filitalia-http.log
           exit 1
@@ -133,36 +115,46 @@ jobs:
           node <<'NODE'
           const { chromium } = require('playwright');
           (async () => {
-            const browser = await chromium.launch({ headless: true });
-            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-            const pageErrors = [];
-            page.on('pageerror', error => pageErrors.push(error.message));
-            await page.goto('http://127.0.0.1:4173/admin-light.html', { waitUntil: 'domcontentloaded', timeout: 60000 });
-            await page.waitForSelector('[data-unified-communications="1"]', { timeout: 60000 });
-            await page.click('#ucNewTop');
-            await page.waitForSelector('#ucOverlay.show', { timeout: 10000 });
-            const options = await page.locator('#ucAudience option').allTextContents();
-            for (const required of ['Tutto un camp','Giocatore singolo','Categoria del camp','Email manuale']) {
-              if (!options.includes(required)) throw new Error(`Audience missing: ${required}`);
+            let browser;
+            try {
+              console.log('1/7 Launching Chromium');
+              browser = await chromium.launch({ headless: true });
+              const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+              const pageErrors = [];
+              page.on('pageerror', error => pageErrors.push(error.message));
+              page.on('console', message => { if (message.type() === 'error') console.log('PAGE CONSOLE ERROR:', message.text()); });
+              console.log('2/7 Opening admin-light.html');
+              await page.goto('http://127.0.0.1:4173/admin-light.html', { waitUntil: 'domcontentloaded', timeout: 60000 });
+              console.log('3/7 Waiting for unified Communications');
+              await page.waitForSelector('[data-unified-communications="1"]', { timeout: 60000 });
+              console.log('4/7 Opening New Communication modal');
+              await page.click('#ucNewTop');
+              await page.waitForSelector('#ucOverlay.show', { timeout: 10000 });
+              const options = await page.locator('#ucAudience option').allTextContents();
+              for (const required of ['Tutto un camp','Giocatore singolo','Categoria del camp','Email manuale']) if (!options.includes(required)) throw new Error(`Audience missing: ${required}`);
+              console.log('5/7 Filling manual recipient');
+              await page.selectOption('#ucAudience', 'manual');
+              await page.fill('#ucManualEmail', 'preview-test@example.com');
+              await page.fill('#ucManualName', 'Preview Test');
+              await page.fill('#ucSubject', 'Test grafico FIL-ITALIA');
+              await page.fill('#ucBody', 'Ciao {nome},\nquesta è una prova per {evento}.');
+              console.log('6/7 Rendering branded preview');
+              await page.click('#ucPreviewButton');
+              await page.waitForSelector('#ucPreview.show', { timeout: 10000 });
+              const srcdoc = await page.locator('#ucPreviewFrame').getAttribute('srcdoc');
+              if (!srcdoc || !srcdoc.includes('FIL-ITALIA NATION SELECT') || !srcdoc.includes('Preview Test')) throw new Error('Branded preview was not generated correctly');
+              const oldResources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry=>entry.name).filter(name=>/communications-force|communications-modal|direct-mail-branded/.test(name)));
+              if (oldResources.length) throw new Error(`Obsolete communications scripts loaded: ${oldResources.join(', ')}`);
+              if (await page.getByText('Apri nell’app Mail', { exact: true }).count()) throw new Error('Obsolete mail client button is visible');
+              if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(' | ')}`);
+              console.log('7/7 Unified Communications browser flow verified');
+            } catch (error) {
+              console.error('BROWSER_TEST_FAILURE:', error && error.stack ? error.stack : error);
+              process.exitCode = 1;
+            } finally {
+              if (browser) await browser.close();
             }
-            await page.selectOption('#ucAudience', 'manual');
-            await page.fill('#ucManualEmail', 'preview-test@example.com');
-            await page.fill('#ucManualName', 'Preview Test');
-            await page.fill('#ucSubject', 'Test grafico FIL-ITALIA');
-            await page.fill('#ucBody', 'Ciao {nome},\nquesta è una prova per {evento}.');
-            await page.click('#ucPreviewButton');
-            await page.waitForSelector('#ucPreview.show');
-            const srcdoc = await page.locator('#ucPreviewFrame').getAttribute('srcdoc');
-            if (!srcdoc || !srcdoc.includes('FIL-ITALIA NATION SELECT') || !srcdoc.includes('Preview Test')) {
-              throw new Error('Branded preview was not generated correctly');
-            }
-            const oldResources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name).filter(name => /communications-force|communications-modal|direct-mail-branded/.test(name)));
-            if (oldResources.length) throw new Error(`Obsolete communications scripts loaded: ${oldResources.join(', ')}`);
-            if (await page.locator('text=Apri nell’app Mail').count()) throw new Error('Obsolete mail client button is visible');
-            if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(' | ')}`);
-            await browser.close();
-            console.log('Unified Communications browser flow verified.');
-          })().catch(error => { console.error(error); process.exit(1); });
+          })();
           NODE
 
   asset_audit:
