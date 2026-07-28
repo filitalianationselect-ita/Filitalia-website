@@ -78,14 +78,15 @@ Il workflow `FIL-ITALIA Admin Quality` la applica due volte su PostgreSQL 16 per
 
 ## 4. Funzioni Supabase
 
-Il deploy manuale pubblica queste sei funzioni sul progetto di collaudo:
+Il deploy manuale pubblica queste cinque funzioni sul progetto di collaudo:
 
 - `gmail-oauth-start`
 - `gmail-oauth-callback`
-- `send-filitalia-email`
 - `send-filitalia-branded-email`
 - `admin-invite-user`
 - `admin-update-account-status`
+
+Tutte le comunicazioni passano da `send-filitalia-branded-email`: non esiste più un secondo motore testuale separato. Anche le chiamate generiche `sendEmail()` vengono indirizzate al template ufficiale con logo e grafica FIL-ITALIA.
 
 La configurazione JWT è definita centralmente in `supabase/config.toml`.
 
