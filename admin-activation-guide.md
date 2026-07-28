@@ -39,6 +39,8 @@ Callback OAuth:
 
 `https://exwykgaotochaguizxxt.supabase.co/functions/v1/gmail-oauth-callback`
 
+Non inserire credenziali service-role nel frontend o nel repository.
+
 ## 4. Account amministratore
 
 Il profilo deve avere:
@@ -59,6 +61,13 @@ Il pannello passa automaticamente dalla demo ai dati reali dopo l’accesso ammi
 7. Collegare Gmail e inviare un messaggio di prova.
 8. Verificare il centro `Stato sistema FIL-ITALIA` nelle Impostazioni.
 
-## 6. Pubblicazione
+## 6. Stato attuale
+
+- Interfaccia e logica applicativa: presenti nella Pull Request.
+- Preview demo: disponibile su Netlify.
+- Migrazioni, funzioni e segreti: da distribuire nel progetto Supabase.
+- Test browser completi: da eseguire prima della pubblicazione definitiva.
+
+## 7. Pubblicazione
 
 La Pull Request deve restare in bozza finché i test non sono completati. Non unire a `main` senza approvazione esplicita.
