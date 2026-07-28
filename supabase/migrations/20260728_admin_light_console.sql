@@ -32,16 +32,18 @@ create table if not exists public.event_admin_operations (
     check (certificate_status in ('missing','received','approved','expired','rejected')),
   certificate_path text,
   player_photo_path text,
-  checked_in boolean not null default false,
-  checked_in_at timestamptz,
-  shirt_delivered boolean not null default false,
-  shirt_delivered_at timestamptz,
   present boolean not null default false,
   notes text,
   updated_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Rimuove eventuali colonne create da una versione precedente della migrazione.
+alter table public.event_admin_operations drop column if exists checked_in;
+alter table public.event_admin_operations drop column if exists checked_in_at;
+alter table public.event_admin_operations drop column if exists shirt_delivered;
+alter table public.event_admin_operations drop column if exists shirt_delivered_at;
 
 create index if not exists event_admin_operations_event_idx
   on public.event_admin_operations(event_id);
@@ -215,16 +217,6 @@ as $$
 begin
   new.updated_at = now();
   new.updated_by = auth.uid();
-  if new.checked_in and (old.checked_in is distinct from true) then
-    new.checked_in_at = now();
-  elsif not new.checked_in then
-    new.checked_in_at = null;
-  end if;
-  if new.shirt_delivered and (old.shirt_delivered is distinct from true) then
-    new.shirt_delivered_at = now();
-  elsif not new.shirt_delivered then
-    new.shirt_delivered_at = null;
-  end if;
   return new;
 end;
 $$;
