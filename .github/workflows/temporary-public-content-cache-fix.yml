@@ -1,0 +1,49 @@
+name: Temporary Public Content Cache Fix
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths: [".github/workflows/temporary-public-content-cache-fix.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/admin-panel-demo
+          fetch-depth: 0
+
+      - name: Verify bridge and refresh browser cache keys
+        run: |
+          node --check public-content-bridge-v1.js
+          python3 <<'PY'
+          from pathlib import Path
+
+          files = ["index.html", "news.html", "events.html", "players.html", "staff.html"]
+          old = "public-content-bridge-v1.js?v=2"
+          new = "public-content-bridge-v1.js?v=3"
+
+          for name in files:
+              path = Path(name)
+              text = path.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected one bridge reference in {name}, found {count}")
+              path.write_text(text.replace(old, new, 1))
+              print(f"Updated {name}")
+
+          Path(".github/workflows/temporary-public-content-cache-fix.yml").unlink()
+          PY
+          test ! -e .github/workflows/temporary-public-content-cache-fix.yml
+
+      - name: Commit verified cache refresh
+        run: |
+          git config user.name "FIL-ITALIA Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Refresh public content bridge and preserve legacy content"
+          git push origin HEAD:agent/admin-panel-demo
