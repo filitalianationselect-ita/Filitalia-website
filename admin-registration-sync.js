@@ -2,11 +2,33 @@
 'use strict';
 const d=document,$=id=>d.getElementById(id),KEY='filitalia_admin_light_eventday_v2';
 const events=[['idcamp-roma-2026','Roma','Roma · 5 agosto 2026'],['idcamp-firenze-2026','Firenze','Firenze · 6 settembre 2026'],['idcamp-venezia-2026','Venezia','Venezia · 13 settembre 2026'],['idcamp-milano-2026','Milano','Milano · data da confermare']];
+const seed={
+'idcamp-roma-2026':[
+{id:'demo-1',name:'Marco Rossi',year:'2011',cat:'U16',shirt:'XL',email:'marco.rossi@email.it',phone:'',parent:'Andrea Rossi',payment:'paid',amount:50,certificate:true,checked:true,shirtDone:true,present:true,notes:'Buon ball handling.'},
+{id:'demo-2',name:'Luca Bianchi',year:'2013',cat:'U14',shirt:'M',email:'famiglia.bianchi@email.it',phone:'',parent:'Paolo Bianchi',payment:'pending',amount:50,certificate:false,checked:false,shirtDone:false,present:false,notes:''},
+{id:'demo-3',name:'David Panopio',year:'2010',cat:'U16',shirt:'L',email:'d.panopio@email.it',phone:'',parent:'Maria Panopio',payment:'paid',amount:50,certificate:true,checked:false,shirtDone:false,present:false,notes:'Gruppo avanzato.'},
+{id:'demo-4',name:'Jayson Mendoza',year:'2014',cat:'U12',shirt:'Nessuna',email:'mendoza.family@email.it',phone:'',parent:'Carlo Mendoza',payment:'not_required',amount:0,certificate:false,checked:false,shirtDone:false,present:false,notes:'U12 gratuito senza maglia.'},
+{id:'demo-5',name:'Nico De Luca',year:'2009',cat:'U18',shirt:'XL',email:'nico.deluca@email.it',phone:'',parent:'Elena De Luca',payment:'pending',amount:50,certificate:false,checked:false,shirtDone:false,present:false,notes:'Certificato da controllare.'}
+],
+'idcamp-firenze-2026':[],
+'idcamp-venezia-2026':[],
+'idcamp-milano-2026':[]
+};
 let rows=[],busy=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const eventId=()=>$('lightEventSelect')?.value||events[0][0];
 const eventInfo=()=>events.find(e=>e[0]===eventId())||events[0];
-const demo=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')[eventId()]||[]}catch(_){return[]}};
+function demo(){
+ try{
+  const stored=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(stored&&Array.isArray(stored[eventId()]))return stored[eventId()];
+  const fallback=JSON.parse(JSON.stringify(seed[eventId()]||[]));
+  const next=stored&&typeof stored==='object'?stored:{};
+  next[eventId()]=fallback;
+  localStorage.setItem(KEY,JSON.stringify(next));
+  return fallback;
+ }catch(_){return JSON.parse(JSON.stringify(seed[eventId()]||[]));}
+}
 const complete=p=>['paid','not_required','waived'].includes(p.payment);
 function payLabel(p){if(p.payment==='paid')return'Pagato';if(p.payment==='not_required'||p.payment==='waived')return p.cat==='U12'&&Number(p.amount||0)===20?'Maglia €20':'Gratuito';if(p.payment==='refunded')return'Rimborsato';if(p.payment==='pending')return'Da pagare';return'Da verificare'}
 function payClass(v){return v==='Pagato'||v==='Gratuito'?'green':v==='Da pagare'||v==='Rimborsato'?'red':'orange'}
