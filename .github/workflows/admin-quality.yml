@@ -177,6 +177,16 @@ jobs:
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
           create extension if not exists pgcrypto;
+          do $$
+          begin
+            if not exists (select 1 from pg_roles where rolname = 'anon') then
+              execute 'create role anon nologin';
+            end if;
+            if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+              execute 'create role authenticated nologin';
+            end if;
+          end
+          $$;
           create schema if not exists auth;
           create schema if not exists storage;
           create table if not exists auth.users (
