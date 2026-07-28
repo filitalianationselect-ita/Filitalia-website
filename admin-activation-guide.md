@@ -1,34 +1,61 @@
-# FIL-ITALIA Admin: attivazione reale
+# FIL-ITALIA Admin: attivazione Deploy Preview
 
-Il pannello unico è disponibile in `admin-light.html`. La preview funziona anche in modalità demo. I passaggi seguenti abilitano dati condivisi, pubblicazione dinamica, inviti ed email reali.
+Il pannello unico è `admin-light.html`. Prima del sito ufficiale, tutto deve essere collegato e collaudato sulla Deploy Preview Netlify.
 
-## Cosa significa collegarlo al sito
+## Struttura semplificata
 
-Il collegamento completo è formato da quattro livelli distinti:
+Non esistono più console parallele o migrazioni da eseguire in un ordine manuale.
 
-1. **Codice pubblico collegato**: Home, Eventi, News, Giocatori e Staff caricano `public-content-bridge-v1.js`.
-2. **Supabase attivo**: tabelle, colonne e policy pubbliche sono presenti nello stesso progetto configurato dal sito.
-3. **Servizi reali attivi**: funzioni Gmail, email e gestione utenti sono distribuite e i segreti sono configurati.
-4. **Produzione pubblicata**: la Pull Request viene collaudata, unita a `main` e distribuita sul dominio definitivo.
+- Pannello amministrativo: `admin-light.html`
+- Migrazione database unica: `supabase/migrations/20260728090000_filitalia_admin_complete.sql`
+- Configurazione Supabase: `supabase/config.toml`
+- Configurazione runtime Netlify: generata automaticamente da `scripts/generate-runtime-config.js`
+- Controlli: workflow GitHub `FIL-ITALIA Admin Quality`
 
-In **Impostazioni → Collegamento al sito** il pannello controlla automaticamente questi livelli e mostra il primo passaggio mancante.
+## 1. Ambiente Supabase di collaudo
 
-## Migrazioni Supabase
+La Deploy Preview dovrebbe usare un progetto Supabase separato da quello ufficiale.
 
-Eseguire nell’ordine:
+Impostare su Netlify, nel contesto **Deploy Previews**, queste variabili pubblicabili:
 
-1. `supabase/migrations/20260728_admin_light_console.sql`
-2. `supabase/migrations/20260728_admin_documents.sql`
-3. `supabase/migrations/20260728_admin_events_dynamic_pricing.sql`
-4. `supabase/migrations/20260728_admin_event_content.sql`
-5. `supabase/migrations/20260728_admin_events_public_read.sql`
-6. `supabase/migrations/20260728_admin_content_suite.sql`
-7. `supabase/migrations/20260728_admin_event_links.sql`
-8. `supabase/migrations/20260728_admin_roles_freedom.sql`
+- `FILITALIA_PREVIEW_SUPABASE_URL`
+- `FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY`
 
-La migrazione `admin_event_content` aggiunge copertina, testo breve e descrizione multilingua agli eventi. `admin_event_links` collega ogni evento alle relative News, ai giocatori e allo staff senza usare nomi o città come collegamento fragile.
+La build genera automaticamente `supabase-config.js` con:
 
-## Funzioni Supabase
+- URL della Deploy Preview come `siteUrl`;
+- progetto Supabase di collaudo;
+- `environment = deploy-preview`;
+- `usesPreviewDatabase = true`.
+
+Senza queste due variabili la preview usa il progetto configurato come fallback e il pannello lo segnala come ambiente non isolato.
+
+## 2. Migrazione database unica
+
+Eseguire soltanto:
+
+```text
+supabase/migrations/20260728090000_filitalia_admin_complete.sql
+```
+
+La migrazione crea o aggiorna:
+
+- Admin e Super Admin;
+- eventi, categorie, prezzi e codici promo;
+- registrazioni operative, pagamenti e documenti;
+- News, giocatori e staff;
+- collegamenti fra eventi e schede;
+- utenti, inviti e permessi;
+- campagne email e collegamento Gmail;
+- bucket privato documenti e bucket pubblico contenuti;
+- policy RLS e lettura pubblica;
+- trigger e registro attività.
+
+Il workflow GitHub la applica due volte su PostgreSQL 16 per verificarne sintassi e idempotenza.
+
+## 3. Funzioni Supabase
+
+Pubblicare queste sei funzioni sul progetto di collaudo:
 
 ```bash
 supabase functions deploy gmail-oauth-start
@@ -39,95 +66,78 @@ supabase functions deploy admin-invite-user
 supabase functions deploy admin-update-account-status
 ```
 
-`send-filitalia-branded-email` è la funzione usata dalla finestra **Nuova comunicazione**. Invia una versione HTML ufficiale con logo, intestazione verde, contenuto personalizzato, dettagli del camp, pulsante al sito e footer FIL-ITALIA. Include anche una versione testuale alternativa per i client email meno recenti.
+## 4. Segreti Gmail
 
-## Segreti Gmail
+Configurare nel progetto Supabase di collaudo:
 
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`
 - `GMAIL_REDIRECT_URI`
 - `GMAIL_TOKEN_ENCRYPTION_KEY`
-- `ADMIN_SITE_ORIGIN=https://www.filitalianationselect.com`
+- `ADMIN_SITE_ORIGIN=https://deploy-preview-1--filitalia.netlify.app`
 
-Callback OAuth:
+Il callback Google deve essere:
 
-`https://exwykgaotochaguizxxt.supabase.co/functions/v1/gmail-oauth-callback`
+```text
+https://<PROJECT_REF_PREVIEW>.supabase.co/functions/v1/gmail-oauth-callback
+```
 
-Non inserire credenziali service-role nel frontend o nel repository.
+La chiave di cifratura deve essere una chiave casuale AES da 32 byte codificata Base64. Nessun service-role key deve essere inserito nel frontend o nel repository.
 
-## Ruoli amministrativi
+## 5. Redirect Auth della preview
 
-- `super_admin`: accesso completo, inclusa la gestione degli altri Super Admin.
-- `admin`: accesso operativo completo a eventi, registrazioni, giocatori, staff, pagamenti, comunicazioni, News e utenti.
-- Soltanto un Super Admin può creare, modificare, sospendere o retrocedere un altro Super Admin.
-- Il sistema impedisce di rimuovere l’ultimo Super Admin attivo.
+Nel progetto Supabase di collaudo autorizzare:
 
-Il profilo deve avere `status = active` e ruolo `admin` oppure `super_admin`.
+```text
+https://deploy-preview-1--filitalia.netlify.app/account.html
+https://deploy-preview-1--filitalia.netlify.app/reset-password.html
+https://deploy-preview-1--filitalia.netlify.app/**
+```
 
-## Eventi e schede collegate
+`supabase/config.toml` include inoltre il pattern Netlify:
 
-Ogni nuovo evento alimenta automaticamente Dashboard, Registrazioni, Comunicazioni, Pagamenti e sito pubblico. Nelle schede News, Giocatori e Staff è possibile selezionare uno o più eventi collegati.
+```text
+https://**--filitalia.netlify.app/**
+```
 
-La scheda evento comprende:
+Registrazione, conferma account, recupero password, inviti e ritorno Gmail rimangono così all’interno della Deploy Preview.
 
-- categorie libere e prezzi specifici;
-- codici promo con scadenza e limite massimo di utilizzi;
-- copertina pubblica;
-- testo breve italiano e inglese;
-- descrizione completa italiana e inglese;
-- stato bozza, pubblicato, chiuso o cancellato.
+## 6. Account amministrativo
 
-I collegamenti obsoleti vengono ripuliti automaticamente quando un evento o una scheda viene eliminata.
+Il profilo di collaudo deve avere:
 
-## Comunicazioni
+- `status = active`;
+- `role = admin` oppure `role = super_admin`.
 
-La finestra **Nuova comunicazione** permette:
+Admin e Super Admin hanno accesso operativo completo. Soltanto il Super Admin può creare, modificare, sospendere o retrocedere un altro Super Admin.
 
-- invio a tutti gli iscritti di un evento;
-- invio a un singolo giocatore;
-- invio a un indirizzo inserito manualmente;
-- oggetto e testo sempre modificabili;
-- variabili `{nome}`, `{evento}`, `{citta}`, `{data}`, `{orario}` e `{luogo}`;
-- template HTML FIL-ITALIA con logo ufficiale `/images/logo.png`;
-- invio individuale, così ogni destinatario non vede gli indirizzi degli altri;
-- gruppi automatici da massimo 100 destinatari per chiamata server.
+## 7. Collegamento dei contenuti al sito preview
 
-Il vecchio pulsante **Apri nell’app Mail** non viene usato: l’invio ufficiale parte dal gestionale tramite Gmail OAuth e la funzione server-side.
+Home, Eventi, News, Giocatori e Staff caricano `public-content-bridge-v1.js`. Quando un contenuto viene impostato come pubblicato o attivo, il ponte legge Supabase e aggiorna le schede pubbliche della preview.
 
-## Controlli automatici
+Ogni nuovo evento alimenta automaticamente:
 
-La sezione Impostazioni contiene:
+- Dashboard;
+- Registrazioni;
+- Pagamenti;
+- Documenti;
+- Comunicazioni;
+- Staff e giocatori collegati;
+- pagina Eventi pubblica.
 
-- **Collegamento al sito**, che controlla dominio, Supabase, pagine pubbliche, tabelle, policy RLS, funzioni, Gmail, contenuti pubblicati e stato preview/produzione;
-- **Controllo completo progetto**, che verifica moduli, eventi, categorie, listini, promo, collegamenti, comunicazioni e ruoli.
+## 8. Collaudo completo
 
-La Pull Request esegue inoltre il workflow GitHub `FIL-ITALIA Admin Quality`, che controlla sintassi JavaScript, file caricati dal pannello e ponte dinamico sulle pagine pubbliche.
-
-## Collaudo minimo
-
-1. Aprire Impostazioni ed eseguire **Collegamento al sito**.
-2. Eseguire tutte le migrazioni segnalate come mancanti.
-3. Pubblicare tutte le funzioni Supabase segnalate.
-4. Accedere con un Admin o Super Admin attivo.
-5. Creare un evento con categoria personalizzata, copertina e codice promo limitato.
-6. Verificare che l’evento compaia in Dashboard, Registrazioni, Comunicazioni e Pagamenti.
-7. Creare una registrazione e verificare il prezzo storico.
+1. Aprire **Impostazioni → Attivazione Deploy Preview**.
+2. Verificare che il database preview risulti isolato.
+3. Eseguire **Collegamento al sito**.
+4. Accedere come Admin o Super Admin.
+5. Creare un evento di prova con categoria, prezzo, promo e copertina.
+6. Verificare le schede in tutte le sezioni.
+7. Creare una registrazione e controllare il prezzo storico.
 8. Caricare certificato, foto e ricevuta.
-9. Collegare una News, un giocatore e un membro Staff all’evento.
-10. Pubblicare l’evento e controllare copertina e testi sul sito.
-11. Collegare Gmail e inviare una comunicazione a un singolo giocatore.
-12. Controllare logo, sfondo, dettagli evento e footer nella mail ricevuta.
-13. Inviare una comunicazione a un camp completo e verificare che gli indirizzi restino privati.
-14. Eseguire **Controllo completo progetto**.
-15. Solo dopo il collaudo, unire la Pull Request a `main` e verificare il deploy di produzione.
+9. Pubblicare News, giocatore e staff di prova.
+10. Collegare Gmail e inviare una mail grafica a un indirizzo di prova.
+11. Eseguire **Controllo completo progetto**.
+12. Eliminare o archiviare i dati di prova.
 
-## Stato attuale
-
-- Interfaccia e logica applicativa: presenti nella Pull Request.
-- Pagine pubbliche: predisposte per il ponte dinamico.
-- Preview demo: disponibile su Netlify.
-- Controlli automatici GitHub: attivi sulla Pull Request.
-- Migrazioni, funzioni, account e segreti: verificabili direttamente da **Collegamento al sito**.
-- Test browser completi: da eseguire prima della pubblicazione.
-
-La Pull Request deve restare in bozza e non deve essere unita a `main` senza approvazione esplicita.
+Soltanto dopo questo collaudo si potrà approvare l’unione della Pull Request in `main`. La branch `main` e il sito ufficiale non devono essere modificati prima dell’approvazione esplicita.
