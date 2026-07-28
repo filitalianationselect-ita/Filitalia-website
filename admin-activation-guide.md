@@ -12,6 +12,9 @@ Eseguire nell’ordine:
 4. `supabase/migrations/20260728_admin_events_public_read.sql`
 5. `supabase/migrations/20260728_admin_content_suite.sql`
 6. `supabase/migrations/20260728_admin_roles_freedom.sql`
+7. `supabase/migrations/20260728_admin_event_links.sql`
+
+La tabella `admin_event_links` collega uno stesso evento a più membri staff, giocatori e News. Le schede possono appartenere contemporaneamente a più eventi senza duplicare i profili.
 
 ## Funzioni Supabase
 
@@ -49,6 +52,21 @@ Non inserire credenziali service-role nel frontend o nel repository.
 
 Il profilo deve avere `status = active` e ruolo `admin` oppure `super_admin`.
 
+## Propagazione degli eventi
+
+Quando un evento viene creato, modificato o eliminato, il catalogo invia un aggiornamento unico al pannello. Le sezioni interessate ricaricano automaticamente:
+
+- schede evento nella Dashboard;
+- selettori di Registrazioni e Comunicazioni;
+- vista evento di Pagamenti;
+- vista evento di Staff e Giocatori;
+- categorie e statistiche della registrazione;
+- contenuti pubblici quando lo stato è `published`.
+
+I nuovi eventi partono con la categoria neutra `Open`. Le categorie Under restano soltanto negli eventi storici o quando vengono aggiunte volontariamente.
+
+Dentro le schede Staff, Giocatore e News è presente il blocco **Eventi collegati**. Il collegamento esplicito ha priorità sui suggerimenti automatici basati su città o nome.
+
 ## Comunicazioni
 
 La finestra **Nuova comunicazione** permette:
@@ -67,16 +85,19 @@ Il vecchio pulsante **Apri nell’app Mail** non viene usato: l’invio ufficial
 ## Collaudo minimo
 
 1. Creare un evento con categoria personalizzata e codice promo.
-2. Creare una registrazione e verificare il prezzo storico.
-3. Caricare certificato, foto e ricevuta.
-4. Pubblicare una News e controllare Home, lista e dettaglio.
-5. Rendere attivo un giocatore e un membro Staff e controllare il sito.
-6. Invitare un Admin e verificare l’accesso completo.
-7. Verificare che un Admin non possa modificare un Super Admin.
-8. Collegare Gmail e inviare una comunicazione a un singolo giocatore.
-9. Controllare logo, sfondo, dettagli evento e footer nella mail ricevuta.
-10. Inviare una comunicazione a un camp completo e verificare che gli indirizzi restino privati.
-11. Verificare `Stato sistema FIL-ITALIA` nelle Impostazioni.
+2. Verificare che compaia in Dashboard, Registrazioni, Comunicazioni, Pagamenti, Staff e Giocatori.
+3. Creare una registrazione e verificare il prezzo storico.
+4. Caricare certificato, foto e ricevuta.
+5. Collegare una News, un giocatore e un membro Staff allo stesso evento.
+6. Controllare i filtri evento e le etichette sulle rispettive schede.
+7. Pubblicare una News e controllare Home, lista e dettaglio.
+8. Rendere attivo un giocatore e un membro Staff e controllare il sito.
+9. Invitare un Admin e verificare l’accesso completo.
+10. Verificare che un Admin non possa modificare un Super Admin.
+11. Collegare Gmail e inviare una comunicazione a un singolo giocatore.
+12. Controllare logo, sfondo, dettagli evento e footer nella mail ricevuta.
+13. Inviare una comunicazione a un camp completo e verificare che gli indirizzi restino privati.
+14. Verificare `Stato sistema FIL-ITALIA` nelle Impostazioni.
 
 ## Stato attuale
 
