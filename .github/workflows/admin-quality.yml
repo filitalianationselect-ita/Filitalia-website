@@ -9,6 +9,9 @@ on:
       - "preview-auth-routing-v1.js"
       - "public-content-bridge-v1.js"
       - "supabase-config.js"
+      - "supabase/config.toml"
+      - "supabase/migrations/*.sql"
+      - "supabase/functions/**"
       - "scripts/*.js"
       - "package.json"
       - "netlify.toml"
@@ -147,3 +150,78 @@ jobs:
         uses: actions/checkout@v4
       - name: List unreferenced admin assets
         run: node scripts/audit-admin-assets.js
+
+  migration_sql:
+    name: Supabase migration SQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      PGPASSWORD: postgres
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare minimal Supabase schemas
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          create extension if not exists pgcrypto;
+          create schema if not exists auth;
+          create schema if not exists storage;
+          create table if not exists auth.users (
+            id uuid primary key default gen_random_uuid(),
+            email text
+          );
+          create or replace function auth.uid()
+          returns uuid language sql stable as $$ select null::uuid $$;
+          create table if not exists public.profiles (
+            id uuid primary key references auth.users(id) on delete cascade,
+            email text,
+            role text not null default 'player'
+              check (role in ('player','parent','coach','coordinator','staff','admin')),
+            status text not null default 'pending'
+              check (status in ('pending','active','suspended','rejected'))
+          );
+          create table if not exists storage.buckets (
+            id text primary key,
+            name text not null,
+            public boolean not null default false,
+            file_size_limit bigint,
+            allowed_mime_types text[]
+          );
+          create table if not exists storage.objects (
+            id uuid primary key default gen_random_uuid(),
+            bucket_id text not null,
+            name text
+          );
+          SQL
+
+      - name: Apply consolidated migration twice
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260728090000_filitalia_admin_complete.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260728090000_filitalia_admin_complete.sql
+
+      - name: Verify final database objects
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          select public.is_active_admin();
+          select public.is_active_super_admin();
+          select to_regclass('public.admin_events') as admin_events;
+          select to_regclass('public.admin_news') as admin_news;
+          select to_regclass('public.admin_players') as admin_players;
+          select to_regclass('public.admin_staff') as admin_staff;
+          select to_regclass('public.admin_event_links') as admin_event_links;
+          select to_regclass('public.admin_email_campaigns') as admin_email_campaigns;
+          select to_regclass('public.event_admin_operations') as event_admin_operations;
+          SQL
