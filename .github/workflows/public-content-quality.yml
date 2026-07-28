@@ -10,14 +10,18 @@ on:
       - "events.html"
       - "news.html"
       - "login.html"
+      - "reset-password.html"
       - "account.html"
       - "login-control-room-v1.css"
       - "login-admin-workspace-v1.css"
       - "login-form-polish-v1.css"
       - "login-form-polish-v1.js"
+      - "reset-password-polish-v1.css"
+      - "reset-password-polish-v1.js"
       - "login-identifier-v1.js"
       - "auth-super-admin-compat-v1.js"
       - "unified-access-v1.js"
+      - "supabase/config.toml"
       - "supabase/functions/**"
       - "supabase/migrations/**"
       - "scripts/generate-runtime-config.js"
@@ -36,14 +40,18 @@ on:
       - "events.html"
       - "news.html"
       - "login.html"
+      - "reset-password.html"
       - "account.html"
       - "login-control-room-v1.css"
       - "login-admin-workspace-v1.css"
       - "login-form-polish-v1.css"
       - "login-form-polish-v1.js"
+      - "reset-password-polish-v1.css"
+      - "reset-password-polish-v1.js"
       - "login-identifier-v1.js"
       - "auth-super-admin-compat-v1.js"
       - "unified-access-v1.js"
+      - "supabase/config.toml"
       - "supabase/functions/**"
       - "supabase/migrations/**"
       - "scripts/generate-runtime-config.js"
@@ -68,6 +76,7 @@ jobs:
         run: |
           node --check public-content-bridge-v1.js
           node --check login-form-polish-v1.js
+          node --check reset-password-polish-v1.js
           node --check login-identifier-v1.js
           node --check auth-super-admin-compat-v1.js
           node --check scripts/generate-runtime-config.js
@@ -80,20 +89,20 @@ jobs:
         run: node scripts/audit-preview-isolation.js
       - name: Protect Admin and Super Admin roles
         run: node scripts/audit-role-consistency.js
-      - name: Verify private normal login layout
+      - name: Verify private login and reset flow
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const html = fs.readFileSync('login.html', 'utf8');
-          const required = [
-            'Area riservata',
-            'Email o nome utente',
-            'login-form-polish-v1.css?v=1',
-            'login-identifier-v1.js?v=1',
-            'loginPasswordToggle'
-          ];
-          const missing = required.filter(value => !html.includes(value));
-          if (missing.length) throw new Error(`Login references missing: ${missing.join(', ')}`);
-          if (/CONTROL ROOM|ADMIN PROTETTO|Solo ruoli autorizzati/i.test(html)) throw new Error('Public login reveals administrative hints');
-          console.log('Private generic login verified.');
+          const login = fs.readFileSync('login.html', 'utf8');
+          const reset = fs.readFileSync('reset-password.html', 'utf8');
+          const config = fs.readFileSync('supabase/config.toml', 'utf8');
+          const migration = fs.readFileSync('supabase/migrations/20260728211500_login_aliases.sql', 'utf8');
+          const requiredLogin = ['Area riservata','Email o nome utente','login-form-polish-v1.css?v=1','login-identifier-v1.js?v=1','loginPasswordToggle'];
+          const requiredReset = ['Nuova password','reset-password-polish-v1.css?v=1','resetPasswordToggle','resetPasswordConfirmToggle'];
+          const missing = requiredLogin.filter(value => !login.includes(value)).concat(requiredReset.filter(value => !reset.includes(value)));
+          if (missing.length) throw new Error(`Auth references missing: ${missing.join(', ')}`);
+          if (/CONTROL ROOM|ADMIN PROTETTO|Solo ruoli autorizzati/i.test(login)) throw new Error('Public login reveals administrative hints');
+          if (!config.includes('[functions.sign-in-alias]') || !config.includes('verify_jwt = false')) throw new Error('Alias function configuration missing');
+          if (!migration.includes('enable row level security')) throw new Error('Private alias table RLS missing');
+          console.log('Private login, alias and password reset verified.');
           NODE
