@@ -1,0 +1,88 @@
+name: FIL-ITALIA Admin Quality
+
+on:
+  pull_request:
+    paths:
+      - "admin-*.js"
+      - "admin-light.html"
+      - "public-content-bridge-v1.js"
+      - "index.html"
+      - "events.html"
+      - "news.html"
+      - "players.html"
+      - "staff.html"
+      - ".github/workflows/admin-quality.yml"
+  push:
+    branches:
+      - "agent/admin-panel-demo"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find . -maxdepth 1 -type f -name 'admin-*.js' -print0 | sort -z)
+          node --check public-content-bridge-v1.js
+
+      - name: Verify admin script references
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('admin-light.html', 'utf8');
+          const refs = [...html.matchAll(/src="([^"]+\.js(?:\?[^"]*)?)"/g)]
+            .map(match => match[1])
+            .filter(src => !/^https?:\/\//.test(src))
+            .map(src => src.split('?')[0]);
+          const missing = [...new Set(refs)].filter(file => !fs.existsSync(file));
+          if (missing.length) {
+            console.error('Local scripts missing from admin-light.html:', missing.join(', '));
+            process.exit(1);
+          }
+          const required = [
+            'admin-event-catalog-v3.js',
+            'admin-core-service-v1.js',
+            'admin-event-links-v1.js',
+            'admin-event-propagation-v1.js',
+            'admin-direct-mail-branded-v2.js',
+            'admin-project-audit-v1.js'
+          ];
+          const notLoaded = required.filter(file => !refs.includes(file));
+          if (notLoaded.length) {
+            console.error('Required admin modules are not loaded:', notLoaded.join(', '));
+            process.exit(1);
+          }
+          console.log(`${refs.length} local admin script references verified.`);
+          NODE
+
+      - name: Verify public dynamic bridge
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const pages = ['index.html', 'events.html', 'news.html', 'players.html', 'staff.html'];
+          const broken = pages.filter(page => {
+            if (!fs.existsSync(page)) return true;
+            return !fs.readFileSync(page, 'utf8').includes('public-content-bridge-v1.js');
+          });
+          if (broken.length) {
+            console.error('Dynamic public content bridge missing from:', broken.join(', '));
+            process.exit(1);
+          }
+          console.log('Dynamic public bridge verified on all public pages.');
+          NODE
