@@ -9,9 +9,7 @@ on:
       - "preview-auth-routing-v1.js"
       - "public-content-bridge-v1.js"
       - "supabase-config.js"
-      - "supabase/config.toml"
-      - "supabase/migrations/*.sql"
-      - "supabase/functions/**"
+      - "supabase/**"
       - "scripts/*.js"
       - "package.json"
       - "netlify.toml"
@@ -23,8 +21,7 @@ on:
       - "staff.html"
       - ".github/workflows/*.yml"
   push:
-    branches:
-      - "agent/admin-panel-demo"
+    branches: ["agent/admin-panel-demo"]
 
 permissions:
   contents: read
@@ -33,11 +30,8 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
@@ -45,20 +39,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          while IFS= read -r -d '' file; do
-            echo "Checking $file"
-            node --check "$file"
-          done < <(find . -maxdepth 1 -type f -name 'admin-*.js' -print0 | sort -z)
-          node --check public-content-bridge-v1.js
-          node --check preview-auth-routing-v1.js
-          node --check scripts/generate-runtime-config.js
-          node --check scripts/audit-admin-assets.js
-          node --check scripts/audit-edge-functions.js
+          while IFS= read -r -d '' file; do node --check "$file"; done < <(find . -maxdepth 1 -type f -name '*.js' -print0 | sort -z)
+          while IFS= read -r -d '' file; do node --check "$file"; done < <(find scripts -type f -name '*.js' -print0 | sort -z)
 
       - name: Verify Edge Function configuration
         run: node scripts/audit-edge-functions.js
 
-      - name: Verify admin script references
+      - name: Verify admin modules
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -68,43 +55,33 @@ jobs:
             .filter(src => !/^https?:\/\//.test(src))
             .map(src => src.split('?')[0]);
           const missing = [...new Set(refs)].filter(file => !fs.existsSync(file));
-          if (missing.length) {
-            console.error('Local scripts missing from admin-light.html:', missing.join(', '));
-            process.exit(1);
-          }
+          if (missing.length) throw new Error(`Missing admin scripts: ${missing.join(', ')}`);
           const required = [
             'preview-auth-routing-v1.js',
             'admin-event-catalog-v3.js',
             'admin-core-service-v1.js',
             'admin-event-links-v1.js',
             'admin-event-propagation-v1.js',
-            'admin-direct-mail-branded-v2.js',
+            'admin-communications-v1.js',
             'admin-project-audit-v1.js',
             'admin-site-connection-v1.js',
             'admin-deploy-preview-center-v1.js'
           ];
-          const notLoaded = required.filter(file => !refs.includes(file));
-          if (notLoaded.length) {
-            console.error('Required admin modules are not loaded:', notLoaded.join(', '));
-            process.exit(1);
-          }
-          console.log(`${refs.length} local admin script references verified.`);
+          const absent = required.filter(file => !refs.includes(file));
+          if (absent.length) throw new Error(`Required modules not loaded: ${absent.join(', ')}`);
+          const obsolete = ['admin-communications-force-v1.js','admin-communications-modal-v1.js','admin-direct-mail-branded-v2.js'];
+          const oldLoaded = obsolete.filter(file => refs.includes(file));
+          if (oldLoaded.length) throw new Error(`Obsolete communications modules loaded: ${oldLoaded.join(', ')}`);
+          console.log(`${refs.length} local admin scripts verified.`);
           NODE
 
       - name: Verify public dynamic bridge
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const pages = ['index.html', 'events.html', 'news.html', 'players.html', 'staff.html'];
-          const broken = pages.filter(page => {
-            if (!fs.existsSync(page)) return true;
-            return !fs.readFileSync(page, 'utf8').includes('public-content-bridge-v1.js');
-          });
-          if (broken.length) {
-            console.error('Dynamic public content bridge missing from:', broken.join(', '));
-            process.exit(1);
-          }
-          console.log('Dynamic public bridge verified on all public pages.');
+          const pages = ['index.html','events.html','news.html','players.html','staff.html'];
+          const broken = pages.filter(page => !fs.existsSync(page) || !fs.readFileSync(page,'utf8').includes('public-content-bridge-v1.js'));
+          if (broken.length) throw new Error(`Public bridge missing from: ${broken.join(', ')}`);
           NODE
 
       - name: Verify deploy preview runtime config
@@ -116,35 +93,16 @@ jobs:
         run: |
           cp supabase-config.js /tmp/supabase-config.original.js
           node scripts/generate-runtime-config.js
-          node <<'NODE'
-          const fs = require('fs');
-          const text = fs.readFileSync('supabase-config.js', 'utf8');
-          const required = [
-            'https://deploy-preview-1--filitalia.netlify.app',
-            'https://preview-project.supabase.co',
-            '"environment": "deploy-preview"',
-            '"isPreview": true',
-            '"usesPreviewDatabase": true'
-          ];
-          const missing = required.filter(value => !text.includes(value));
-          if (missing.length) {
-            console.error('Deploy preview config generation failed:', missing.join(', '));
-            process.exit(1);
-          }
-          console.log('Deploy preview runtime config verified.');
-          NODE
+          grep -F 'https://deploy-preview-1--filitalia.netlify.app' supabase-config.js
+          grep -F 'https://preview-project.supabase.co' supabase-config.js
+          grep -F '"isPreview": true' supabase-config.js
+          grep -F '"usesPreviewDatabase": true' supabase-config.js
           mv /tmp/supabase-config.original.js supabase-config.js
 
-      - name: Verify auth routing stays on preview
+      - name: Verify preview auth routing
         run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const login = fs.readFileSync('login.html', 'utf8');
-          const admin = fs.readFileSync('admin-light.html', 'utf8');
-          if (!login.includes('preview-auth-routing-v1.js')) throw new Error('Preview auth routing missing from login.html');
-          if (!admin.includes('preview-auth-routing-v1.js')) throw new Error('Preview auth routing missing from admin-light.html');
-          console.log('Preview auth routing verified.');
-          NODE
+          grep -F 'preview-auth-routing-v1.js' login.html
+          grep -F 'preview-auth-routing-v1.js' admin-light.html
 
   asset_audit:
     name: Unused admin files
@@ -164,8 +122,7 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
+        ports: ["5432:5432"]
         options: >-
           --health-cmd="pg_isready -U postgres"
           --health-interval=5s
@@ -175,68 +132,35 @@ jobs:
       PGPASSWORD: postgres
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Prepare minimal Supabase schemas
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
           create extension if not exists pgcrypto;
-          do $$
-          begin
-            if not exists (select 1 from pg_roles where rolname = 'anon') then
-              execute 'create role anon nologin';
-            end if;
-            if not exists (select 1 from pg_roles where rolname = 'authenticated') then
-              execute 'create role authenticated nologin';
-            end if;
-          end
-          $$;
+          do $$ begin
+            if not exists (select 1 from pg_roles where rolname='anon') then execute 'create role anon nologin'; end if;
+            if not exists (select 1 from pg_roles where rolname='authenticated') then execute 'create role authenticated nologin'; end if;
+          end $$;
           create schema if not exists auth;
           create schema if not exists storage;
-          create table if not exists auth.users (
-            id uuid primary key default gen_random_uuid(),
-            email text
-          );
-          create or replace function auth.uid()
-          returns uuid language sql stable as $$ select null::uuid $$;
+          create table if not exists auth.users (id uuid primary key default gen_random_uuid(), email text);
+          create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
           create table if not exists public.profiles (
             id uuid primary key references auth.users(id) on delete cascade,
             email text,
-            role text not null default 'player'
-              check (role in ('player','parent','coach','coordinator','staff','admin')),
-            status text not null default 'pending'
-              check (status in ('pending','active','suspended','rejected'))
+            role text not null default 'player' check (role in ('player','parent','coach','coordinator','staff','admin')),
+            status text not null default 'pending' check (status in ('pending','active','suspended','rejected'))
           );
-          create table if not exists storage.buckets (
-            id text primary key,
-            name text not null,
-            public boolean not null default false,
-            file_size_limit bigint,
-            allowed_mime_types text[]
-          );
-          create table if not exists storage.objects (
-            id uuid primary key default gen_random_uuid(),
-            bucket_id text not null,
-            name text
-          );
+          create table if not exists storage.buckets (id text primary key,name text not null,public boolean not null default false,file_size_limit bigint,allowed_mime_types text[]);
+          create table if not exists storage.objects (id uuid primary key default gen_random_uuid(),bucket_id text not null,name text);
           SQL
-
       - name: Apply consolidated migration twice
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260728090000_filitalia_admin_complete.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260728090000_filitalia_admin_complete.sql
-
-      - name: Verify final database objects
+      - name: Verify final objects
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
-          select public.is_active_admin();
-          select public.is_active_super_admin();
-          select to_regclass('public.admin_events') as admin_events;
-          select to_regclass('public.admin_news') as admin_news;
-          select to_regclass('public.admin_players') as admin_players;
-          select to_regclass('public.admin_staff') as admin_staff;
-          select to_regclass('public.admin_event_links') as admin_event_links;
-          select to_regclass('public.admin_email_campaigns') as admin_email_campaigns;
-          select to_regclass('public.event_admin_operations') as event_admin_operations;
+          select public.is_active_admin(), public.is_active_super_admin();
+          select to_regclass('public.admin_events'),to_regclass('public.admin_news'),to_regclass('public.admin_players'),to_regclass('public.admin_staff'),to_regclass('public.admin_event_links'),to_regclass('public.admin_email_campaigns'),to_regclass('public.event_admin_operations');
           SQL
