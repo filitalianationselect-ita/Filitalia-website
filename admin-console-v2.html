@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FIL-ITALIA Admin Console</title>
+  <link rel="stylesheet" href="admin-console-v2.css?v=1">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">FI</div><div><strong>FIL-ITALIA</strong><small>Admin Console</small></div></div>
+    <nav class="nav">
+      <button class="active" type="button" data-view="dashboard">⌂ Dashboard</button>
+      <button type="button" data-view="event">🏀 Gestione evento</button>
+      <button type="button" data-view="email">✉️ Centro Email</button>
+      <button type="button" data-view="audit">🕘 Storico</button>
+    </nav>
+    <div class="sidebar-foot">Branch di prova<br><strong>Il sito pubblico non viene modificato.</strong></div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div><div id="crumb" class="crumb">Admin / Dashboard</div><h1 id="pageTitle">Dashboard</h1></div>
+      <div class="top-actions">
+        <select id="eventSelect" class="btn" aria-label="Evento"></select>
+        <button id="refreshBtn" class="btn" type="button">↻ Aggiorna</button>
+        <button id="eventModeBtn" class="btn" type="button">🎯 Event Day</button>
+      </div>
+    </header>
+
+    <div id="modeBanner" class="banner demo"><div><strong>Modalità demo</strong><div>La console resta utilizzabile mentre prepariamo il database reale.</div></div></div>
+
+    <section id="dashboardView" class="view active">
+      <div class="stats">
+        <div class="card stat"><span>Iscritti evento</span><strong id="dashTotal">0</strong></div>
+        <div class="card stat"><span>Pagamenti completati</span><strong id="dashPaid">0</strong></div>
+        <div class="card stat"><span>Certificati pronti</span><strong id="dashCertificates">0</strong></div>
+        <div class="card stat"><span>Check-in</span><strong id="dashCheckin">0</strong></div>
+      </div>
+      <div class="dashboard-grid">
+        <section class="card section-card">
+          <h2>Eventi</h2><div class="muted">Apri rapidamente un camp e controlla lo stato operativo.</div>
+          <div id="eventCards" class="event-cards"></div>
+        </section>
+        <section class="card section-card">
+          <h2>Stato configurazione</h2><div class="muted">I passaggi tecnici necessari per attivare tutte le funzioni reali.</div>
+          <div id="setupList" class="setup-list"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="eventView" class="view">
+      <section class="card event-head">
+        <div class="event-head-top">
+          <div><strong id="eventName">Talent ID Camp</strong><div id="eventMeta" class="event-meta"></div></div>
+          <div class="event-controls management-only">
+            <button id="newRegistrationBtn" class="btn primary" type="button">＋ Nuova registrazione</button>
+            <button id="exportBtn" class="btn" type="button">⇩ Esporta CSV</button>
+            <button id="openBulkEmailBtn" class="btn" type="button">✉️ Email multiple</button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span>Iscritti</span><strong id="eventTotal">0</strong></div>
+          <div class="stat"><span>Pagati</span><strong id="eventPaid">0</strong></div>
+          <div class="stat"><span>Check-in</span><strong id="eventCheckin">0</strong></div>
+          <div class="stat"><span>Maglie consegnate</span><strong id="eventShirts">0</strong></div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="card">
+          <div class="panel-head">
+            <input id="search" class="search" placeholder="Cerca giocatore, email, categoria…">
+            <div class="filters">
+              <button class="filter active" type="button" data-filter="all">Tutti</button>
+              <button class="filter" type="button" data-filter="pending">Da pagare</button>
+              <button class="filter" type="button" data-filter="certificate">Senza certificato</button>
+              <button class="filter" type="button" data-filter="checked">Arrivati</button>
+              <button class="filter" type="button" data-filter="U12">U12</button>
+              <button class="filter" type="button" data-filter="U14">U14</button>
+              <button class="filter" type="button" data-filter="U16">U16</button>
+              <button class="filter" type="button" data-filter="U18">U18</button>
+              <button class="filter" type="button" data-filter="U19">U19</button>
+            </div>
+          </div>
+          <div id="playerList" class="player-list"></div>
+        </div>
+        <div id="playerDetail" class="card"></div>
+      </section>
+    </section>
+
+    <section id="emailView" class="view">
+      <section class="card gmail-card">
+        <div class="gmail-state"><span id="gmailDot" class="dot"></span><div><strong id="gmailTitle">Gmail FIL-ITALIA non collegato</strong><div id="gmailText" class="muted">Collega soltanto l’account ufficiale.</div></div></div>
+        <button id="connectGmailBtn" class="btn green" type="button">Collega Gmail FIL-ITALIA</button>
+      </section>
+      <div class="email-layout">
+        <aside class="card email-side">
+          <h2>Destinatari</h2><div class="muted">Ogni email parte separatamente e gli indirizzi restano privati.</div>
+          <div class="field"><label>Gruppo</label><select id="audienceSelect"><option value="all">Tutti gli iscritti</option><option value="pending">Solo da pagare</option><option value="certificate">Solo senza certificato</option><option value="U12">Categoria U12</option><option value="U14">Categoria U14</option><option value="U16">Categoria U16</option><option value="U18">Categoria U18</option><option value="U19">Categoria U19</option></select></div>
+          <div class="recipient-count"><span class="muted">Destinatari selezionati</span><br><strong id="recipientCount">0</strong></div>
+          <div id="recipientList" class="recipients"></div>
+          <div class="privacy">🔒 Nessun destinatario vedrà gli indirizzi degli altri.</div>
+        </aside>
+        <section class="card composer">
+          <h2>Componi messaggio</h2><div class="muted">Usa <strong>{nome}</strong> per inserire automaticamente il nome del partecipante.</div>
+          <div class="field"><label>Modello</label><select id="templateSelect"><option value="details">Dettagli finali</option><option value="confirmation">Conferma iscrizione</option><option value="payment">Promemoria pagamento</option><option value="certificate">Richiesta certificato</option><option value="custom">Personalizzato</option></select></div>
+          <div class="field"><label>Oggetto</label><input id="emailSubject"></div>
+          <div class="field"><label>Messaggio</label><textarea id="emailBody"></textarea></div>
+          <div class="send-actions"><span id="sendSummary" class="muted">0 email pronte</span><button id="sendEmailsBtn" class="btn primary" type="button">Invia da FIL-ITALIA</button></div>
+          <div id="emailProgress" class="progress"><div id="emailProgressBar" class="progress-bar"></div></div>
+          <div id="emailResult" class="banner real" hidden></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="auditView" class="view">
+      <section class="card section-card">
+        <div class="event-head-top"><div><h2>Storico modifiche</h2><div class="muted">Chi ha modificato cosa e quando.</div></div><button id="reloadAuditBtn" class="btn" type="button">↻ Ricarica storico</button></div>
+        <div id="auditList" class="audit-list"></div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div id="registrationModal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <h2 id="registrationModalTitle">Nuova registrazione</h2><div class="muted">I dati verranno salvati nell’evento selezionato.</div>
+    <div class="form-grid">
+      <div class="field"><label>Nome e cognome</label><input id="formName"></div>
+      <div class="field"><label>Anno di nascita</label><input id="formYear" maxlength="4" inputmode="numeric"></div>
+      <div class="field"><label>Categoria</label><select id="formCategory"><option>U12</option><option>U14</option><option>U16</option><option>U18</option><option>U19</option></select></div>
+      <div class="field"><label>Taglia</label><select id="formShirt"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
+      <div class="field full"><label>Email</label><input id="formEmail" type="email"></div>
+      <div class="field"><label>Telefono</label><input id="formPhone"></div>
+      <div class="field"><label>Genitore / riferimento</label><input id="formParent"></div>
+    </div>
+    <div class="modal-actions"><button id="cancelRegistrationBtn" class="btn" type="button">Annulla</button><button id="saveRegistrationBtn" class="btn primary" type="button">Salva</button></div>
+  </div>
+</div>
+
+<div id="paymentModal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <h2>Gestione pagamento</h2><div class="muted">Importo, metodo, data e riferimento.</div>
+    <div class="form-grid">
+      <div class="field"><label>Stato</label><select id="paymentStatus"><option value="pending">In attesa</option><option value="paid">Pagato</option><option value="waived">Esente</option><option value="refunded">Rimborsato</option><option value="not_required">Non richiesto</option></select></div>
+      <div class="field"><label>Importo (€)</label><input id="paymentAmount" inputmode="decimal"></div>
+      <div class="field"><label>Metodo</label><select id="paymentMethod"><option value="">Non indicato</option><option>Bonifico</option><option>Carta</option><option>Contanti</option><option>PayPal</option><option>Altro</option></select></div>
+      <div class="field"><label>Data</label><input id="paymentDate" type="date"></div>
+      <div class="field full"><label>Riferimento / ricevuta</label><input id="paymentReference"></div>
+    </div>
+    <div class="modal-actions"><button id="cancelPaymentBtn" class="btn" type="button">Annulla</button><button id="savePaymentBtn" class="btn primary" type="button">Salva pagamento</button></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=800"></script>
+<script src="auth-client.js?v=801"></script>
+<script src="admin-data-service.js?v=1"></script>
+<script src="admin-console-v2.js?v=1"></script>
+</body>
+</html>
