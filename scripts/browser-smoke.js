@@ -16,6 +16,15 @@ function report(message) {
 
 async function openCommunications(page) {
   const result = await page.evaluate(() => {
+    if (typeof window.openPage === 'function') {
+      try {
+        window.openPage('communications');
+        return { clicked: true, method: 'openPage', arity: window.openPage.length };
+      } catch (error) {
+        return { clicked: false, method: 'openPage', error: String(error), source: String(window.openPage).slice(0, 1000) };
+      }
+    }
+
     const visible = (element) => {
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
@@ -41,7 +50,7 @@ async function openCommunications(page) {
           });
           if (visible(current)) {
             current.click();
-            return { clicked: true, control: inspected[inspected.length - 1], exactNodes: exactNodes.length };
+            return { clicked: true, method: 'visible-control', control: inspected[inspected.length - 1], exactNodes: exactNodes.length };
           }
         }
         current = current.parentElement;
@@ -55,7 +64,7 @@ async function openCommunications(page) {
     };
   });
   report(`Navigation diagnostic: ${JSON.stringify(result)}`);
-  if (!result.clicked) throw new Error('No visible interactive Communications navigation control was found');
+  if (!result.clicked) throw new Error('The Communications page could not be opened');
 }
 
 async function main() {
@@ -77,7 +86,7 @@ async function main() {
 
     report('3/9 Waiting for the admin shell');
     await page.waitForLoadState('load', { timeout: 60000 }).catch(() => null);
-    await page.waitForTimeout(1500);
+    await page.waitForFunction(() => typeof window.openPage === 'function', { timeout: 30000 });
 
     report('4/9 Opening the Communications section');
     await openCommunications(page);
@@ -132,6 +141,7 @@ async function main() {
           url: location.href,
           communicationsExists: Boolean(document.getElementById('communications')),
           unifiedExists: Boolean(document.querySelector('[data-unified-communications="1"]')),
+          openPageSource: typeof window.openPage === 'function' ? String(window.openPage).slice(0, 2000) : null,
           bodyText: document.body.innerText.slice(0, 5000),
           scripts: [...document.scripts].map(script => script.src || '[inline]')
         })).catch(evaluationError => ({ evaluationError: String(evaluationError) }));
