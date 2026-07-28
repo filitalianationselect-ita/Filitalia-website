@@ -127,7 +127,7 @@ Deno.serve(async (request) => {
       .eq("id", user.id)
       .maybeSingle();
     if (profileResult.error) throw profileResult.error;
-    if (!profileResult.data || profileResult.data.role !== "admin" || profileResult.data.status !== "active") {
+    if (!profileResult.data || !["admin","super_admin"].includes(String(profileResult.data.role)) || profileResult.data.status !== "active") {
       throw new Error("NOT_AUTHORIZED");
     }
 
