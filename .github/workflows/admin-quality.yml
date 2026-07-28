@@ -21,7 +21,7 @@ on:
       - "news.html"
       - "players.html"
       - "staff.html"
-      - ".github/workflows/admin-quality.yml"
+      - ".github/workflows/*.yml"
   push:
     branches:
       - "agent/admin-panel-demo"
@@ -146,9 +146,10 @@ jobs:
     name: Unused admin files
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: List unreferenced admin assets
+      - name: Clone preview branch quietly
+        run: git clone --quiet --depth 1 --branch agent/admin-panel-demo https://github.com/filitalianationselect-ita/Filitalia-website.git source
+      - name: Reject unreferenced admin assets
+        working-directory: source
         run: node scripts/audit-admin-assets.js
 
   migration_sql:
