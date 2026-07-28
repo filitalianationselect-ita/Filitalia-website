@@ -12,10 +12,14 @@ on:
       - "login.html"
       - "account.html"
       - "login-control-room-v1.css"
+      - "login-admin-workspace-v1.css"
+      - "login-form-polish-v1.css"
+      - "login-form-polish-v1.js"
+      - "login-identifier-v1.js"
       - "auth-super-admin-compat-v1.js"
       - "unified-access-v1.js"
-      - "supabase/functions/admin-update-account-status/index.ts"
-      - "supabase/migrations/20260728090000_filitalia_admin_complete.sql"
+      - "supabase/functions/**"
+      - "supabase/migrations/**"
       - "scripts/generate-runtime-config.js"
       - "scripts/audit-public-content.js"
       - "scripts/audit-preview-isolation.js"
@@ -34,10 +38,14 @@ on:
       - "login.html"
       - "account.html"
       - "login-control-room-v1.css"
+      - "login-admin-workspace-v1.css"
+      - "login-form-polish-v1.css"
+      - "login-form-polish-v1.js"
+      - "login-identifier-v1.js"
       - "auth-super-admin-compat-v1.js"
       - "unified-access-v1.js"
-      - "supabase/functions/admin-update-account-status/index.ts"
-      - "supabase/migrations/20260728090000_filitalia_admin_complete.sql"
+      - "supabase/functions/**"
+      - "supabase/migrations/**"
       - "scripts/generate-runtime-config.js"
       - "scripts/audit-public-content.js"
       - "scripts/audit-preview-isolation.js"
@@ -59,6 +67,8 @@ jobs:
       - name: Check public scripts syntax
         run: |
           node --check public-content-bridge-v1.js
+          node --check login-form-polish-v1.js
+          node --check login-identifier-v1.js
           node --check auth-super-admin-compat-v1.js
           node --check scripts/generate-runtime-config.js
           node --check scripts/audit-public-content.js
@@ -70,24 +80,20 @@ jobs:
         run: node scripts/audit-preview-isolation.js
       - name: Protect Admin and Super Admin roles
         run: node scripts/audit-role-consistency.js
-      - name: Verify Admin workspace login layout
+      - name: Verify private normal login layout
         run: |
           node <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('login.html', 'utf8');
-          const css = fs.readFileSync('login-control-room-v1.css', 'utf8');
-          const requiredHtml = [
-            'login-control-room-v1.css?v=3',
-            'login-workspace-hero',
-            'login-summary-grid',
-            'login-access-panel',
-            'login-panel-grid'
+          const required = [
+            'Area riservata',
+            'Email o nome utente',
+            'login-form-polish-v1.css?v=1',
+            'login-identifier-v1.js?v=1',
+            'loginPasswordToggle'
           ];
-          const missing = requiredHtml.filter(value => !html.includes(value));
-          if (missing.length) throw new Error(`Login workspace references missing: ${missing.join(', ')}`);
-          if (!css.includes('width: min(1180px, 100%)')) throw new Error('Login workspace width missing');
-          if (!css.includes('grid-template-columns: repeat(4, minmax(0, 1fr))')) throw new Error('Login summary cards missing');
-          if (!css.includes('grid-template-columns: minmax(0, 1fr) 310px')) throw new Error('Login workspace content grid missing');
-          if (!css.includes('min-height: 44px')) throw new Error('Accessible login controls were removed');
-          console.log('Admin Event Workspace-style login verified.');
+          const missing = required.filter(value => !html.includes(value));
+          if (missing.length) throw new Error(`Login references missing: ${missing.join(', ')}`);
+          if (/CONTROL ROOM|ADMIN PROTETTO|Solo ruoli autorizzati/i.test(html)) throw new Error('Public login reveals administrative hints');
+          console.log('Private generic login verified.');
           NODE
