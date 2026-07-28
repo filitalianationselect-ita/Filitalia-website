@@ -5,7 +5,13 @@ on:
     paths:
       - "admin-*.js"
       - "admin-light.html"
+      - "preview-auth-routing-v1.js"
       - "public-content-bridge-v1.js"
+      - "supabase-config.js"
+      - "scripts/generate-runtime-config.js"
+      - "package.json"
+      - "netlify.toml"
+      - "login.html"
       - "index.html"
       - "events.html"
       - "news.html"
@@ -40,13 +46,15 @@ jobs:
             node --check "$file"
           done < <(find . -maxdepth 1 -type f -name 'admin-*.js' -print0 | sort -z)
           node --check public-content-bridge-v1.js
+          node --check preview-auth-routing-v1.js
+          node --check scripts/generate-runtime-config.js
 
       - name: Verify admin script references
         run: |
           node <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('admin-light.html', 'utf8');
-          const refs = [...html.matchAll(/src="([^"]+\.js(?:\?[^"]*)?)"/g)]
+          const refs = [...html.matchAll(/src="([^"]+\.js(?:\?[^\"]*)?)"/g)]
             .map(match => match[1])
             .filter(src => !/^https?:\/\//.test(src))
             .map(src => src.split('?')[0]);
@@ -56,12 +64,15 @@ jobs:
             process.exit(1);
           }
           const required = [
+            'preview-auth-routing-v1.js',
             'admin-event-catalog-v3.js',
             'admin-core-service-v1.js',
             'admin-event-links-v1.js',
             'admin-event-propagation-v1.js',
             'admin-direct-mail-branded-v2.js',
-            'admin-project-audit-v1.js'
+            'admin-project-audit-v1.js',
+            'admin-site-connection-v1.js',
+            'admin-deploy-preview-center-v1.js'
           ];
           const notLoaded = required.filter(file => !refs.includes(file));
           if (notLoaded.length) {
@@ -85,4 +96,43 @@ jobs:
             process.exit(1);
           }
           console.log('Dynamic public bridge verified on all public pages.');
+          NODE
+
+      - name: Verify deploy preview runtime config
+        env:
+          CONTEXT: deploy-preview
+          DEPLOY_PRIME_URL: https://deploy-preview-1--filitalia.netlify.app
+          FILITALIA_PREVIEW_SUPABASE_URL: https://preview-project.supabase.co
+          FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY: preview_publishable_key
+        run: |
+          cp supabase-config.js /tmp/supabase-config.original.js
+          node scripts/generate-runtime-config.js
+          node <<'NODE'
+          const fs = require('fs');
+          const text = fs.readFileSync('supabase-config.js', 'utf8');
+          const required = [
+            'https://deploy-preview-1--filitalia.netlify.app',
+            'https://preview-project.supabase.co',
+            '"environment": "deploy-preview"',
+            '"isPreview": true',
+            '"usesPreviewDatabase": true'
+          ];
+          const missing = required.filter(value => !text.includes(value));
+          if (missing.length) {
+            console.error('Deploy preview config generation failed:', missing.join(', '));
+            process.exit(1);
+          }
+          console.log('Deploy preview runtime config verified.');
+          NODE
+          mv /tmp/supabase-config.original.js supabase-config.js
+
+      - name: Verify auth routing stays on preview
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const login = fs.readFileSync('login.html', 'utf8');
+          const admin = fs.readFileSync('admin-light.html', 'utf8');
+          if (!login.includes('preview-auth-routing-v1.js')) throw new Error('Preview auth routing missing from login.html');
+          if (!admin.includes('preview-auth-routing-v1.js')) throw new Error('Preview auth routing missing from admin-light.html');
+          console.log('Preview auth routing verified.');
           NODE
