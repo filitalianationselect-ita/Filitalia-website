@@ -10,10 +10,16 @@ on:
       - "events.html"
       - "news.html"
       - "login.html"
+      - "account.html"
       - "login-control-room-v1.css"
+      - "auth-super-admin-compat-v1.js"
+      - "unified-access-v1.js"
+      - "supabase/functions/admin-update-account-status/index.ts"
+      - "supabase/migrations/20260728090000_filitalia_admin_complete.sql"
       - "scripts/generate-runtime-config.js"
       - "scripts/audit-public-content.js"
       - "scripts/audit-preview-isolation.js"
+      - "scripts/audit-role-consistency.js"
       - "package.json"
       - ".github/workflows/public-content-quality.yml"
   push:
@@ -26,10 +32,16 @@ on:
       - "events.html"
       - "news.html"
       - "login.html"
+      - "account.html"
       - "login-control-room-v1.css"
+      - "auth-super-admin-compat-v1.js"
+      - "unified-access-v1.js"
+      - "supabase/functions/admin-update-account-status/index.ts"
+      - "supabase/migrations/20260728090000_filitalia_admin_complete.sql"
       - "scripts/generate-runtime-config.js"
       - "scripts/audit-public-content.js"
       - "scripts/audit-preview-isolation.js"
+      - "scripts/audit-role-consistency.js"
       - "package.json"
       - ".github/workflows/public-content-quality.yml"
 
@@ -47,13 +59,17 @@ jobs:
       - name: Check public scripts syntax
         run: |
           node --check public-content-bridge-v1.js
+          node --check auth-super-admin-compat-v1.js
           node --check scripts/generate-runtime-config.js
           node --check scripts/audit-public-content.js
           node --check scripts/audit-preview-isolation.js
+          node --check scripts/audit-role-consistency.js
       - name: Protect News and Talent ID archives
         run: node scripts/audit-public-content.js
       - name: Protect deploy preview isolation
         run: node scripts/audit-preview-isolation.js
+      - name: Protect Admin and Super Admin roles
+        run: node scripts/audit-role-consistency.js
       - name: Verify compact login layout
         run: |
           node <<'NODE'
