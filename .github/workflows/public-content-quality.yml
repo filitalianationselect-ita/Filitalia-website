@@ -70,21 +70,24 @@ jobs:
         run: node scripts/audit-preview-isolation.js
       - name: Protect Admin and Super Admin roles
         run: node scripts/audit-role-consistency.js
-      - name: Verify compact login layout
+      - name: Verify Admin workspace login layout
         run: |
           node <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('login.html', 'utf8');
           const css = fs.readFileSync('login-control-room-v1.css', 'utf8');
-          const required = [
-            'login-control-room-v1.css?v=2',
-            'login-command-header',
-            'login-control-body'
+          const requiredHtml = [
+            'login-control-room-v1.css?v=3',
+            'login-workspace-hero',
+            'login-summary-grid',
+            'login-access-panel',
+            'login-panel-grid'
           ];
-          const missing = required.filter(value => !html.includes(value));
-          if (missing.length) throw new Error(`Login layout references missing: ${missing.join(', ')}`);
-          if (!css.includes('width: min(680px, 100%)')) throw new Error('Login card is no longer compact');
-          if (!css.includes('min-height: 44px')) throw new Error('Compact login controls were removed');
-          if (/width:\s*min\((8|9)\d\dpx/.test(css)) throw new Error('Oversized login width detected');
-          console.log('Compact Events/Communications-style login verified.');
+          const missing = requiredHtml.filter(value => !html.includes(value));
+          if (missing.length) throw new Error(`Login workspace references missing: ${missing.join(', ')}`);
+          if (!css.includes('width: min(1180px, 100%)')) throw new Error('Login workspace width missing');
+          if (!css.includes('grid-template-columns: repeat(4, minmax(0, 1fr))')) throw new Error('Login summary cards missing');
+          if (!css.includes('grid-template-columns: minmax(0, 1fr) 310px')) throw new Error('Login workspace content grid missing');
+          if (!css.includes('min-height: 44px')) throw new Error('Accessible login controls were removed');
+          console.log('Admin Event Workspace-style login verified.');
           NODE
