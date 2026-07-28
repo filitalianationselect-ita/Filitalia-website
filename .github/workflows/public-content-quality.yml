@@ -1,0 +1,64 @@
+name: FIL-ITALIA Public Content Quality
+
+on:
+  pull_request:
+    paths:
+      - "events-data.js"
+      - "news-data.js"
+      - "public-content-bridge-v1.js"
+      - "index.html"
+      - "events.html"
+      - "news.html"
+      - "login.html"
+      - "login-control-room-v1.css"
+      - "scripts/audit-public-content.js"
+      - "package.json"
+      - ".github/workflows/public-content-quality.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "events-data.js"
+      - "news-data.js"
+      - "public-content-bridge-v1.js"
+      - "index.html"
+      - "events.html"
+      - "news.html"
+      - "login.html"
+      - "login-control-room-v1.css"
+      - "scripts/audit-public-content.js"
+      - "package.json"
+      - ".github/workflows/public-content-quality.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  public-content:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check public bridge syntax
+        run: node --check public-content-bridge-v1.js
+      - name: Protect News and Talent ID archives
+        run: node scripts/audit-public-content.js
+      - name: Verify compact login layout
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('login.html', 'utf8');
+          const css = fs.readFileSync('login-control-room-v1.css', 'utf8');
+          const required = [
+            'login-control-room-v1.css?v=2',
+            'login-command-header',
+            'login-control-body'
+          ];
+          const missing = required.filter(value => !html.includes(value));
+          if (missing.length) throw new Error(`Login layout references missing: ${missing.join(', ')}`);
+          if (!css.includes('width: min(680px, 100%)')) throw new Error('Login card is no longer compact');
+          if (!css.includes('min-height: 44px')) throw new Error('Compact login controls were removed');
+          if (/width:\s*min\((8|9)\d\dpx/.test(css)) throw new Error('Oversized login width detected');
+          console.log('Compact Events/Communications-style login verified.');
+          NODE
