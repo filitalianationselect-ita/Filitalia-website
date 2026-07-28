@@ -110,52 +110,24 @@ jobs:
           for i in {1..20}; do curl -fsS http://127.0.0.1:4173/admin-light.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/filitalia-http.log
           exit 1
-      - name: Test Communications in a real browser
+      - name: Test Communications in Chromium
+        env:
+          BROWSER_TEST_URL: http://127.0.0.1:4173
+          BROWSER_TEST_OUTPUT: browser-smoke-output
         run: |
-          node <<'NODE'
-          const { chromium } = require('playwright');
-          (async () => {
-            let browser;
-            try {
-              console.log('1/7 Launching Chromium');
-              browser = await chromium.launch({ headless: true });
-              const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-              const pageErrors = [];
-              page.on('pageerror', error => pageErrors.push(error.message));
-              page.on('console', message => { if (message.type() === 'error') console.log('PAGE CONSOLE ERROR:', message.text()); });
-              console.log('2/7 Opening admin-light.html');
-              await page.goto('http://127.0.0.1:4173/admin-light.html', { waitUntil: 'domcontentloaded', timeout: 60000 });
-              console.log('3/7 Waiting for unified Communications');
-              await page.waitForSelector('[data-unified-communications="1"]', { timeout: 60000 });
-              console.log('4/7 Opening New Communication modal');
-              await page.click('#ucNewTop');
-              await page.waitForSelector('#ucOverlay.show', { timeout: 10000 });
-              const options = await page.locator('#ucAudience option').allTextContents();
-              for (const required of ['Tutto un camp','Giocatore singolo','Categoria del camp','Email manuale']) if (!options.includes(required)) throw new Error(`Audience missing: ${required}`);
-              console.log('5/7 Filling manual recipient');
-              await page.selectOption('#ucAudience', 'manual');
-              await page.fill('#ucManualEmail', 'preview-test@example.com');
-              await page.fill('#ucManualName', 'Preview Test');
-              await page.fill('#ucSubject', 'Test grafico FIL-ITALIA');
-              await page.fill('#ucBody', 'Ciao {nome},\nquesta è una prova per {evento}.');
-              console.log('6/7 Rendering branded preview');
-              await page.click('#ucPreviewButton');
-              await page.waitForSelector('#ucPreview.show', { timeout: 10000 });
-              const srcdoc = await page.locator('#ucPreviewFrame').getAttribute('srcdoc');
-              if (!srcdoc || !srcdoc.includes('FIL-ITALIA NATION SELECT') || !srcdoc.includes('Preview Test')) throw new Error('Branded preview was not generated correctly');
-              const oldResources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry=>entry.name).filter(name=>/communications-force|communications-modal|direct-mail-branded/.test(name)));
-              if (oldResources.length) throw new Error(`Obsolete communications scripts loaded: ${oldResources.join(', ')}`);
-              if (await page.getByText('Apri nell’app Mail', { exact: true }).count()) throw new Error('Obsolete mail client button is visible');
-              if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(' | ')}`);
-              console.log('7/7 Unified Communications browser flow verified');
-            } catch (error) {
-              console.error('BROWSER_TEST_FAILURE:', error && error.stack ? error.stack : error);
-              process.exitCode = 1;
-            } finally {
-              if (browser) await browser.close();
-            }
-          })();
-          NODE
+          node scripts/browser-smoke.js || {
+            echo "----- Chromium diagnostic -----"
+            cat browser-smoke-output/result.txt || true
+            exit 1
+          }
+      - name: Upload Chromium diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-smoke-result
+          path: browser-smoke-output
+          if-no-files-found: warn
+          retention-days: 7
 
   asset_audit:
     name: Unused admin files
