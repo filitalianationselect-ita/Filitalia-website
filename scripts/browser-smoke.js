@@ -14,57 +14,51 @@ function report(message) {
   fs.writeFileSync(path.join(outputDir, 'result.txt'), `${lines.join('\n')}\n`, 'utf8');
 }
 
-async function openCommunications(page) {
-  const result = await page.evaluate(() => {
-    if (typeof window.openPage === 'function') {
-      try {
-        window.openPage('communications');
-        return { clicked: true, method: 'openPage', arity: window.openPage.length };
-      } catch (error) {
-        return { clicked: false, method: 'openPage', error: String(error), source: String(window.openPage).slice(0, 1000) };
-      }
-    }
-
-    const visible = (element) => {
-      const style = getComputedStyle(element);
-      const rect = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0 && rect.width > 0 && rect.height > 0;
-    };
-    const interactiveSelector = 'button,a,[role="button"],[onclick],[data-section],[data-page],li,.nav-item,.menu-item,.sidebar-item,.side-item';
+async function shellDiagnostics(page) {
+  return page.evaluate(() => {
     const exactNodes = [...document.querySelectorAll('*')].filter(element => (element.textContent || '').trim().toLowerCase() === 'comunicazioni');
-    const inspected = [];
-    for (const node of exactNodes) {
+    const paths = exactNodes.map(node => {
+      const chain = [];
       let current = node;
-      while (current && current !== document.body) {
-        if (current.matches && current.matches(interactiveSelector)) {
-          inspected.push({
-            tag: current.tagName,
-            id: current.id,
-            className: current.className,
-            text: (current.textContent || '').trim(),
-            onclick: current.getAttribute('onclick'),
-            dataSection: current.getAttribute('data-section'),
-            dataPage: current.getAttribute('data-page'),
-            href: current.getAttribute('href'),
-            visible: visible(current)
-          });
-          if (visible(current)) {
-            current.click();
-            return { clicked: true, method: 'visible-control', control: inspected[inspected.length - 1], exactNodes: exactNodes.length };
-          }
-        }
+      while (current && current !== document.body && chain.length < 8) {
+        chain.push({ tag: current.tagName, id: current.id, className: String(current.className || ''), text: (current.textContent || '').trim().slice(0, 120) });
         current = current.parentElement;
       }
-    }
+      return chain;
+    });
     return {
-      clicked: false,
-      exactNodes: exactNodes.length,
-      inspected: inspected.slice(0, 30),
-      globalNavigationFunctions: Object.keys(window).filter(key => typeof window[key] === 'function' && /nav|page|section|view|screen|tab/i.test(key)).slice(0, 50)
+      readyState: document.readyState,
+      openPageSource: typeof window.openPage === 'function' ? String(window.openPage).slice(0, 2400) : null,
+      communicationsElement: document.getElementById('communications') ? {
+        tag: document.getElementById('communications').tagName,
+        className: document.getElementById('communications').className,
+        hidden: document.getElementById('communications').hidden,
+        display: getComputedStyle(document.getElementById('communications')).display
+      } : null,
+      communicationLikeIds: [...document.querySelectorAll('[id]')].map(element => element.id).filter(id => /comm|mail|message|email/i.test(id)).slice(0, 100),
+      exactTextPaths: paths,
+      communicationScripts: [...document.scripts].map(script => script.src).filter(src => /communications|direct-mail/i.test(src)),
+      unifiedReady: Boolean(window.FilitaliaCommunicationsReady),
+      unifiedApi: Boolean(window.FilitaliaCommunications),
+      brandedApi: Boolean(window.FilitaliaBrandedMail)
     };
   });
+}
+
+async function openCommunications(page) {
+  const before = await shellDiagnostics(page);
+  report(`Shell diagnostic before open: ${JSON.stringify(before)}`);
+  const result = await page.evaluate(() => {
+    if (typeof window.openPage !== 'function') return { opened: false, error: 'openPage missing' };
+    try {
+      window.openPage('communications');
+      return { opened: true, method: 'openPage', arity: window.openPage.length };
+    } catch (error) {
+      return { opened: false, method: 'openPage', error: String(error) };
+    }
+  });
   report(`Navigation diagnostic: ${JSON.stringify(result)}`);
-  if (!result.clicked) throw new Error('The Communications page could not be opened');
+  if (!result.opened) throw new Error('The Communications page could not be opened');
 }
 
 async function main() {
@@ -87,10 +81,18 @@ async function main() {
     report('3/9 Waiting for the admin shell');
     await page.waitForLoadState('load', { timeout: 60000 }).catch(() => null);
     await page.waitForFunction(() => typeof window.openPage === 'function', { timeout: 30000 });
+    await page.waitForTimeout(1000);
 
     report('4/9 Opening the Communications section');
     await openCommunications(page);
-    await page.waitForSelector('[data-unified-communications="1"]', { timeout: 30000 });
+    try {
+      await page.waitForSelector('[data-unified-communications="1"]', { timeout: 6000 });
+    } catch (error) {
+      report(`Shell diagnostic after open: ${JSON.stringify(await shellDiagnostics(page))}`);
+      report(`Page errors: ${JSON.stringify(pageErrors.slice(0, 20))}`);
+      report(`Relevant console errors: ${JSON.stringify(consoleErrors.filter(value => /commun|syntax|reference|typeerror|undefined|null/i.test(value)).slice(0, 20))}`);
+      throw error;
+    }
     report(`Communications mounted at ${page.url()}`);
 
     report('5/9 Opening New Communication modal');
@@ -118,10 +120,7 @@ async function main() {
     if (!srcdoc.includes('FIL-ITALIA NATION SELECT')) throw new Error('FIL-ITALIA header missing from branded preview');
     if (!srcdoc.includes('Preview Test')) throw new Error('Recipient personalization missing from branded preview');
 
-    const oldResources = await page.evaluate(() => performance
-      .getEntriesByType('resource')
-      .map(entry => entry.name)
-      .filter(name => /communications-force|communications-modal|direct-mail-branded/.test(name)));
+    const oldResources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name).filter(name => /communications-force|communications-modal|direct-mail-branded/.test(name)));
     if (oldResources.length) throw new Error(`Obsolete communications scripts loaded: ${oldResources.join(', ')}`);
     if (await page.getByText('Apri nell’app Mail', { exact: true }).count()) throw new Error('Obsolete mail client button is visible');
 
@@ -129,23 +128,12 @@ async function main() {
     await page.screenshot({ path: path.join(outputDir, 'success.png'), fullPage: true });
     fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
   } catch (error) {
-    const message = error && error.stack ? error.stack : String(error);
-    report(`FAILURE: ${message}`);
+    report(`FAILURE: ${error && error.stack ? error.stack : String(error)}`);
     if (page) {
       try {
         await page.screenshot({ path: path.join(outputDir, 'failure.png'), fullPage: true });
         fs.writeFileSync(path.join(outputDir, 'page.html'), await page.content(), 'utf8');
-        const diagnostics = await page.evaluate(() => ({
-          readyState: document.readyState,
-          title: document.title,
-          url: location.href,
-          communicationsExists: Boolean(document.getElementById('communications')),
-          unifiedExists: Boolean(document.querySelector('[data-unified-communications="1"]')),
-          openPageSource: typeof window.openPage === 'function' ? String(window.openPage).slice(0, 2000) : null,
-          bodyText: document.body.innerText.slice(0, 5000),
-          scripts: [...document.scripts].map(script => script.src || '[inline]')
-        })).catch(evaluationError => ({ evaluationError: String(evaluationError) }));
-        fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics, pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
+        fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics: await shellDiagnostics(page), pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
       } catch (captureError) {
         report(`DIAGNOSTIC_CAPTURE_FAILURE: ${captureError.message || captureError}`);
       }
