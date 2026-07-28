@@ -1,0 +1,28 @@
+project_id = "filitalia-website"
+
+[auth]
+enabled = true
+site_url = "https://www.filitalianationselect.com"
+additional_redirect_urls = [
+  "https://**--filitalia.netlify.app/**",
+  "http://localhost:3000/**",
+  "http://127.0.0.1:3000/**"
+]
+
+[functions.gmail-oauth-callback]
+verify_jwt = false
+
+[functions.gmail-oauth-start]
+verify_jwt = true
+
+[functions.send-filitalia-email]
+verify_jwt = true
+
+[functions.send-filitalia-branded-email]
+verify_jwt = true
+
+[functions.admin-invite-user]
+verify_jwt = true
+
+[functions.admin-update-account-status]
+verify_jwt = true
