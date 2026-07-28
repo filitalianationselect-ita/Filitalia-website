@@ -104,6 +104,67 @@ jobs:
           grep -F 'preview-auth-routing-v1.js' login.html
           grep -F 'preview-auth-routing-v1.js' admin-light.html
 
+  browser_smoke:
+    name: Chromium communications flow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium test runner
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Generate local preview configuration
+        env:
+          CONTEXT: deploy-preview
+          DEPLOY_PRIME_URL: http://127.0.0.1:4173
+        run: node scripts/generate-runtime-config.js
+      - name: Start static preview
+        run: |
+          python3 -m http.server 4173 >/tmp/filitalia-http.log 2>&1 &
+          echo $! >/tmp/filitalia-http.pid
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/admin-light.html >/dev/null && exit 0; sleep 1; done
+          cat /tmp/filitalia-http.log
+          exit 1
+      - name: Test Communications in a real browser
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            const pageErrors = [];
+            page.on('pageerror', error => pageErrors.push(error.message));
+            await page.goto('http://127.0.0.1:4173/admin-light.html', { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForSelector('[data-unified-communications="1"]', { timeout: 60000 });
+            await page.click('#ucNewTop');
+            await page.waitForSelector('#ucOverlay.show', { timeout: 10000 });
+            const options = await page.locator('#ucAudience option').allTextContents();
+            for (const required of ['Tutto un camp','Giocatore singolo','Categoria del camp','Email manuale']) {
+              if (!options.includes(required)) throw new Error(`Audience missing: ${required}`);
+            }
+            await page.selectOption('#ucAudience', 'manual');
+            await page.fill('#ucManualEmail', 'preview-test@example.com');
+            await page.fill('#ucManualName', 'Preview Test');
+            await page.fill('#ucSubject', 'Test grafico FIL-ITALIA');
+            await page.fill('#ucBody', 'Ciao {nome},\nquesta è una prova per {evento}.');
+            await page.click('#ucPreviewButton');
+            await page.waitForSelector('#ucPreview.show');
+            const srcdoc = await page.locator('#ucPreviewFrame').getAttribute('srcdoc');
+            if (!srcdoc || !srcdoc.includes('FIL-ITALIA NATION SELECT') || !srcdoc.includes('Preview Test')) {
+              throw new Error('Branded preview was not generated correctly');
+            }
+            const oldResources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name).filter(name => /communications-force|communications-modal|direct-mail-branded/.test(name)));
+            if (oldResources.length) throw new Error(`Obsolete communications scripts loaded: ${oldResources.join(', ')}`);
+            if (await page.locator('text=Apri nell’app Mail').count()) throw new Error('Obsolete mail client button is visible');
+            if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(' | ')}`);
+            await browser.close();
+            console.log('Unified Communications browser flow verified.');
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
+
   asset_audit:
     name: Unused admin files
     runs-on: ubuntu-latest
