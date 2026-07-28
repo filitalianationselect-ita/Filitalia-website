@@ -14,6 +14,50 @@ function report(message) {
   fs.writeFileSync(path.join(outputDir, 'result.txt'), `${lines.join('\n')}\n`, 'utf8');
 }
 
+async function openCommunications(page) {
+  const result = await page.evaluate(() => {
+    const visible = (element) => {
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0 && rect.width > 0 && rect.height > 0;
+    };
+    const interactiveSelector = 'button,a,[role="button"],[onclick],[data-section],[data-page],li,.nav-item,.menu-item,.sidebar-item,.side-item';
+    const exactNodes = [...document.querySelectorAll('*')].filter(element => (element.textContent || '').trim().toLowerCase() === 'comunicazioni');
+    const inspected = [];
+    for (const node of exactNodes) {
+      let current = node;
+      while (current && current !== document.body) {
+        if (current.matches && current.matches(interactiveSelector)) {
+          inspected.push({
+            tag: current.tagName,
+            id: current.id,
+            className: current.className,
+            text: (current.textContent || '').trim(),
+            onclick: current.getAttribute('onclick'),
+            dataSection: current.getAttribute('data-section'),
+            dataPage: current.getAttribute('data-page'),
+            href: current.getAttribute('href'),
+            visible: visible(current)
+          });
+          if (visible(current)) {
+            current.click();
+            return { clicked: true, control: inspected[inspected.length - 1], exactNodes: exactNodes.length };
+          }
+        }
+        current = current.parentElement;
+      }
+    }
+    return {
+      clicked: false,
+      exactNodes: exactNodes.length,
+      inspected: inspected.slice(0, 30),
+      globalNavigationFunctions: Object.keys(window).filter(key => typeof window[key] === 'function' && /nav|page|section|view|screen|tab/i.test(key)).slice(0, 50)
+    };
+  });
+  report(`Navigation diagnostic: ${JSON.stringify(result)}`);
+  if (!result.clicked) throw new Error('No visible interactive Communications navigation control was found');
+}
+
 async function main() {
   let browser;
   let page;
@@ -25,25 +69,18 @@ async function main() {
     browser = await chromium.launch({ headless: true });
     page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     page.on('pageerror', error => pageErrors.push(error.message));
-    page.on('console', message => {
-      if (message.type() === 'error') consoleErrors.push(message.text());
-    });
-    page.on('requestfailed', request => {
-      failedRequests.push(`${request.url()} · ${request.failure()?.errorText || 'unknown'}`);
-    });
+    page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+    page.on('requestfailed', request => failedRequests.push(`${request.url()} · ${request.failure()?.errorText || 'unknown'}`));
 
     report(`2/9 Opening ${baseUrl}/admin-light.html`);
     await page.goto(`${baseUrl}/admin-light.html`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
-    report('3/9 Waiting for the admin navigation');
+    report('3/9 Waiting for the admin shell');
     await page.waitForLoadState('load', { timeout: 60000 }).catch(() => null);
-    await page.waitForTimeout(1000);
-    let communicationsNav = page.locator('[data-section="communications"],[data-page="communications"],a[href="#communications"]').first();
-    if (await communicationsNav.count() === 0) communicationsNav = page.getByText('Comunicazioni', { exact: true }).first();
-    await communicationsNav.waitFor({ state: 'visible', timeout: 60000 });
+    await page.waitForTimeout(1500);
 
     report('4/9 Opening the Communications section');
-    await communicationsNav.click();
+    await openCommunications(page);
     await page.waitForSelector('[data-unified-communications="1"]', { timeout: 30000 });
     report(`Communications mounted at ${page.url()}`);
 
@@ -95,10 +132,6 @@ async function main() {
           url: location.href,
           communicationsExists: Boolean(document.getElementById('communications')),
           unifiedExists: Boolean(document.querySelector('[data-unified-communications="1"]')),
-          navigation: [...document.querySelectorAll('[data-section],[data-page],a,button')]
-            .filter(element => /comunicazioni/i.test(element.textContent || ''))
-            .slice(0, 20)
-            .map(element => ({ tag: element.tagName, text: element.textContent.trim(), dataSection: element.getAttribute('data-section'), dataPage: element.getAttribute('data-page'), href: element.getAttribute('href') })),
           bodyText: document.body.innerText.slice(0, 5000),
           scripts: [...document.scripts].map(script => script.src || '[inline]')
         })).catch(evaluationError => ({ evaluationError: String(evaluationError) }));
