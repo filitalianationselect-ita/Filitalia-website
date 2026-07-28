@@ -1,0 +1,119 @@
+name: Temporary Emails Page Fix
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths: [".github/workflows/temporary-fix-email-page.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/admin-panel-demo
+          fetch-depth: 0
+
+      - name: Patch the real emails page ID
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          def replace_required(path, old, new, expected=None):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count == 0:
+                  raise SystemExit(f"Pattern not found in {path}: {old[:100]}")
+              if expected is not None and count != expected:
+                  raise SystemExit(f"Expected {expected} occurrences in {path}, found {count}: {old[:100]}")
+              p.write_text(text.replace(old, new))
+              print(f"Patched {path}: {count} occurrence(s)")
+
+          communications = Path('admin-communications-v1.js')
+          text = communications.read_text()
+          marker = '  const notify = (message) => window.showToast ? window.showToast(message) : alert(message);\n'
+          helper = marker + '\n  function communicationsSection() {\n    return $("emails") || $("communications");\n  }\n'
+          if 'function communicationsSection()' not in text:
+              if marker not in text:
+                  raise SystemExit('Communications helper insertion point not found')
+              text = text.replace(marker, helper, 1)
+          count = text.count('    const section = $("communications");')
+          if count != 2:
+              raise SystemExit(f'Expected 2 communications section lookups, found {count}')
+          text = text.replace('    const section = $("communications");', '    const section = communicationsSection();')
+          old_selector = "'[data-section=\"communications\"],[data-page=\"communications\"],a[href=\"#communications\"]'"
+          new_selector = "'[data-section=\"emails\"],[data-page=\"emails\"],[data-section=\"communications\"],[data-page=\"communications\"],a[href=\"#emails\"],a[href=\"#communications\"]'"
+          if old_selector not in text:
+              raise SystemExit('Communications navigation selector not found')
+          text = text.replace(old_selector, new_selector, 1)
+          communications.write_text(text)
+
+          replace_required('scripts/browser-smoke.js', "window.openPage('communications');", "window.openPage('emails');", 1)
+
+          integration = Path('admin-light-integration.js')
+          text = integration.read_text()
+          old_dash = '''    $("dashComms").onclick = function () {
+              const button = d.querySelector('[data-section="communications"],[data-page="communications"],[data-section="email"],[data-page="email"]');
+              if (button) button.click();
+            };'''
+          new_dash = '''    $("dashComms").onclick = function () {
+              if (typeof window.openPage === "function") window.openPage("emails");
+              else {
+                const button = d.querySelector('[data-section="emails"],[data-page="emails"],[data-section="communications"],[data-page="communications"]');
+                if (button) button.click();
+              }
+            };'''
+          if old_dash not in text:
+              raise SystemExit('Dashboard Communications handler not found')
+          text = text.replace(old_dash, new_dash, 1)
+          if text.count('    const section = $("communications");') != 1:
+              raise SystemExit('Expected one Gmail Communications section lookup')
+          text = text.replace('    const section = $("communications");', '    const section = $("emails") || $("communications");', 1)
+          old_event = '''    $("eventDayEmail").onclick = function () {
+              $("eventDayLight").classList.remove("show");
+              const button = d.querySelector('[data-section="communications"],[data-page="communications"],[data-section="email"],[data-page="email"]');
+              if (button) button.click();
+            };'''
+          new_event = '''    $("eventDayEmail").onclick = function () {
+              $("eventDayLight").classList.remove("show");
+              if (typeof window.openPage === "function") window.openPage("emails");
+              else {
+                const button = d.querySelector('[data-section="emails"],[data-page="emails"],[data-section="communications"],[data-page="communications"]');
+                if (button) button.click();
+              }
+            };'''
+          if old_event not in text:
+              raise SystemExit('Event Day Communications handler not found')
+          text = text.replace(old_event, new_event, 1)
+          integration.write_text(text)
+
+          replace_required('admin-light-integration-loader-v2.js', 'admin-light-integration.js?v=6', 'admin-light-integration.js?v=7', 2)
+          replace_required('admin-light.html', 'admin-light-integration-loader-v2.js?v=2', 'admin-light-integration-loader-v2.js?v=3', 1)
+          replace_required('admin-light.html', 'admin-communications-v1.js?v=4', 'admin-communications-v1.js?v=5', 1)
+
+          # The temporary workflow removes itself so no maintenance file remains.
+          Path('.github/workflows/temporary-fix-email-page.yml').unlink()
+          PY
+
+      - name: Verify patched sources
+        run: |
+          node --check admin-communications-v1.js
+          node --check admin-light-integration.js
+          node --check admin-light-integration-loader-v2.js
+          node --check scripts/browser-smoke.js
+          grep -F 'return $("emails") || $("communications");' admin-communications-v1.js
+          grep -F 'window.openPage("emails")' admin-light-integration.js
+          grep -F "window.openPage('emails')" scripts/browser-smoke.js
+          test ! -e .github/workflows/temporary-fix-email-page.yml
+
+      - name: Commit the source fix and remove this workflow
+        run: |
+          git config user.name "FIL-ITALIA Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix Communications real page ID and remove temporary patch workflow"
+          git push origin HEAD:agent/admin-panel-demo
