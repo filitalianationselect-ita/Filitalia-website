@@ -231,7 +231,7 @@
 
   async function sendEmail(payload) {
     await requireAdmin();
-    const result = await client().functions.invoke("send-filitalia-email", { body: payload || {} });
+    const result = await client().functions.invoke("send-filitalia-branded-email", { body: payload || {} });
     if (result.error) throw result.error;
     if (result.data && result.data.error) throw new Error(result.data.error);
     return result.data || {};
