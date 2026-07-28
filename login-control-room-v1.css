@@ -1,0 +1,285 @@
+body[data-account-page="login"] {
+  background: #edf6f1;
+  color: #173d2e;
+}
+
+body[data-account-page="login"] .account-main {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 120px);
+  padding: 128px 20px 78px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(24, 115, 79, .18), transparent 34%),
+    radial-gradient(circle at 88% 86%, rgba(9, 61, 43, .12), transparent 36%),
+    linear-gradient(180deg, #f5faf7 0%, #e8f3ed 100%);
+}
+
+body[data-account-page="login"] .account-main::before,
+body[data-account-page="login"] .account-main::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 1px solid rgba(18, 104, 71, .13);
+}
+
+body[data-account-page="login"] .account-main::before {
+  top: 70px;
+  left: -150px;
+  box-shadow: 0 0 0 48px rgba(18, 104, 71, .035), 0 0 0 96px rgba(18, 104, 71, .025);
+}
+
+body[data-account-page="login"] .account-main::after {
+  right: -160px;
+  bottom: -120px;
+  box-shadow: 0 0 0 52px rgba(18, 104, 71, .035), 0 0 0 104px rgba(18, 104, 71, .025);
+}
+
+body[data-account-page="login"] .account-narrow {
+  width: min(820px, 100%);
+  max-width: none;
+}
+
+body[data-account-page="login"] .login-control-card {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #c9ddd2;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 32px 90px rgba(7, 54, 37, .18);
+}
+
+.login-command-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  align-items: center;
+  padding: clamp(25px, 5vw, 42px);
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.035), transparent 48%),
+    linear-gradient(135deg, #093d2b 0%, #126847 58%, #18734f 100%);
+  border-bottom: 1px solid rgba(255,255,255,.09);
+}
+
+.login-command-copy {
+  min-width: 0;
+}
+
+.login-kicker {
+  display: block;
+  margin-bottom: 9px;
+  color: #a9d7c1;
+  font-size: .74rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+body[data-account-page="login"] .login-command-header .account-title {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: clamp(2rem, 6vw, 3.45rem);
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+body[data-account-page="login"] .login-command-header .account-subtitle {
+  max-width: 590px;
+  margin: 0;
+  color: #cbe4d7;
+  font-size: .98rem;
+  line-height: 1.65;
+}
+
+.login-command-mark {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  min-width: 112px;
+  padding: 15px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  background: rgba(255,255,255,.075);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.login-command-mark img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,.18));
+}
+
+.login-command-mark span {
+  color: #d8eee3;
+  font-size: .67rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.login-control-body {
+  padding: clamp(24px, 5vw, 42px);
+  background: linear-gradient(180deg, #fff 0%, #f8fbf9 100%);
+}
+
+body[data-account-page="login"] .account-config-warning {
+  margin: 0 0 22px;
+  border: 1px solid #ead39a;
+  background: #fff3d6;
+  color: #725400;
+}
+
+body[data-account-page="login"] .account-tabs {
+  gap: 10px;
+  margin: 0 0 28px;
+  padding: 8px;
+  border: 1px solid #d5e5dc;
+  border-radius: 16px;
+  background: #edf6f1;
+}
+
+body[data-account-page="login"] .account-tab {
+  min-height: 46px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: #315747;
+  font-size: .88rem;
+  letter-spacing: .015em;
+  transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+
+body[data-account-page="login"] .account-tab:hover {
+  background: rgba(255,255,255,.72);
+}
+
+body[data-account-page="login"] .account-tab.active {
+  border-color: rgba(255,255,255,.12);
+  background: linear-gradient(135deg, #093d2b, #18734f);
+  color: #fff;
+  box-shadow: 0 9px 22px rgba(9, 61, 43, .18);
+  transform: translateY(-1px);
+}
+
+body[data-account-page="login"] .account-form {
+  gap: 18px;
+}
+
+body[data-account-page="login"] .account-form label {
+  color: #315747;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .025em;
+}
+
+body[data-account-page="login"] .account-form input,
+body[data-account-page="login"] .account-form select {
+  min-height: 52px;
+  border: 1px solid #b9d2c5;
+  border-radius: 13px;
+  padding: 13px 15px;
+  color: #183d2e;
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(9, 61, 43, .025);
+}
+
+body[data-account-page="login"] .account-form input:focus,
+body[data-account-page="login"] .account-form select:focus {
+  outline: none;
+  border-color: #3a966e;
+  box-shadow: 0 0 0 4px rgba(24, 115, 79, .12);
+}
+
+body[data-account-page="login"] .account-button {
+  min-height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #093d2b, #18734f);
+  box-shadow: 0 12px 25px rgba(9, 61, 43, .2);
+  letter-spacing: .035em;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+body[data-account-page="login"] .account-button:hover {
+  filter: none;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(9, 61, 43, .24);
+}
+
+.login-access-note {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  margin: 27px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid #dce8e1;
+  color: #60766c;
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.login-access-note::before {
+  content: "✓";
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fff;
+  background: #126847;
+  font-weight: 900;
+}
+
+body[data-account-page="login"] .account-footer-link {
+  margin-top: 20px;
+}
+
+body[data-account-page="login"] .account-footer-link a {
+  color: #126847;
+}
+
+@media (max-width: 680px) {
+  body[data-account-page="login"] .account-main {
+    padding: 104px 14px 55px;
+  }
+
+  .login-command-header {
+    align-items: flex-start;
+    padding: 25px 22px;
+  }
+
+  .login-command-mark {
+    min-width: auto;
+    padding: 10px;
+  }
+
+  .login-command-mark img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .login-command-mark span {
+    display: none;
+  }
+
+  .login-control-body {
+    padding: 23px 20px 27px;
+  }
+}
+
+@media (max-width: 460px) {
+  .login-command-mark {
+    display: none;
+  }
+
+  body[data-account-page="login"] .account-tabs {
+    grid-template-columns: 1fr;
+  }
+}
