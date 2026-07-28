@@ -4,12 +4,10 @@ const d=document,$=id=>d.getElementById(id),KEY='filitalia_admin_light_eventday_
 let refreshing=false;
 function readDemo(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(_){return {}}}
 function events(){return catalog?.events?.()||[]}
-function currentEventId(){return $('cEvent')?.value||window.FilitaliaAdminLight?.getCurrentEvent?.()?.id||events()[0]?.id||''}
+function selectedEventId(){return $('regEvent')?.value||$('cEvent')?.value||window.FilitaliaAdminLight?.getCurrentEvent?.()?.id||events()[0]?.id||''}
 async function rowsFor(id){
  if(!id)return [];
- try{
-  if(window.FilitaliaAdminLight?.getMode?.()==='real'&&window.FilitaliaAdminData)return await window.FilitaliaAdminData.loadEvent(id);
- }catch(e){console.warn(e)}
+ try{if(window.FilitaliaAdminLight?.getMode?.()==='real'&&window.FilitaliaAdminData)return await window.FilitaliaAdminData.loadEvent(id)}catch(e){console.warn(e)}
  const store=readDemo();return Array.isArray(store[id])?store[id]:[];
 }
 async function allRows(){const lists=await Promise.all(events().map(e=>rowsFor(e.id)));return lists.flat()}
@@ -23,6 +21,16 @@ async function updateDashboard(){
  setStat(cards[1],'REGISTRAZIONI',rows.length,'su tutti gli eventi');
  setStat(cards[2],'PAGAMENTI DA COMPLETARE',pending,pending?'richiedono attenzione':'tutto regolare');
  setStat(cards[3],'DOCUMENTI MANCANTI',missing,missing?'certificati da raccogliere':'documenti completi');
+}
+async function updateRegistrations(){
+ const sec=$('registrations');if(!sec)return;
+ const cards=[...sec.querySelectorAll('.grid4 .stat')].slice(0,4);if(cards.length<4)return;
+ const ev=catalog?.get?.(selectedEventId())||events()[0],rows=await rowsFor(ev?.id),categories=[...new Set(rows.map(p=>p.cat).filter(Boolean))];
+ const incomplete=rows.filter(p=>!paid(p)||!p.certificate).length,pending=rows.filter(p=>!paid(p)).length;
+ setStat(cards[0],'REGISTRAZIONI',rows.length,ev?.name||'Evento selezionato');
+ setStat(cards[1],'DA COMPLETARE',incomplete,'dati, documenti o pagamento');
+ setStat(cards[2],'PAGAMENTI MANCANTI',pending,'da verificare o incassare');
+ setStat(cards[3],'CATEGORIE ATTIVE',categories.length,categories.join(' · ')||((ev?.categories||[]).join(' · ')||'Nessuna categoria'));
 }
 function eventOptions(){
  const select=$('cEvent');if(!select)return;
@@ -51,7 +59,7 @@ function filterRows(rows,group){
 async function updateCommunications(){
  const sec=$('communications');if(!sec||!$('cEvent')||!$('cGroup'))return;
  eventOptions();
- const ev=catalog?.get?.(currentEventId())||events()[0];groupOptions(ev);
+ const ev=catalog?.get?.($('cEvent').value)||events()[0];groupOptions(ev);
  const rows=await rowsFor(ev?.id),selected=filterRows(rows,$('cGroup').value),cards=[...sec.querySelectorAll('.grid4 .stat')].slice(0,4);
  setStat(cards[0],'DESTINATARI DISPONIBILI',rows.filter(p=>p.email).length,ev?.name||'Evento selezionato');
  setStat(cards[1],'PAGAMENTI MANCANTI',rows.filter(p=>!paid(p)).length,'partecipanti da sollecitare');
@@ -61,15 +69,16 @@ async function updateCommunications(){
  if($('cCountSub'))$('cCountSub').textContent=(ev?.name||'Evento')+' · '+($('cGroup').selectedOptions[0]?.textContent||'Tutti');
  if($('pCount'))$('pCount').textContent=selected.length;
 }
-async function refresh(){if(refreshing)return;refreshing=true;try{await updateDashboard();await updateCommunications()}finally{refreshing=false}}
+async function refresh(){if(refreshing)return;refreshing=true;try{await updateDashboard();await updateRegistrations();await updateCommunications()}finally{refreshing=false}}
 function bind(){
  if($('cEvent')&&!$('cEvent').dataset.live){$('cEvent').dataset.live='1';$('cEvent').addEventListener('change',async()=>{await window.FilitaliaAdminLight?.setEvent?.($('cEvent').value);await refresh()})}
  if($('cGroup')&&!$('cGroup').dataset.live){$('cGroup').dataset.live='1';$('cGroup').addEventListener('change',refresh)}
+ if($('regEvent')&&!$('regEvent').dataset.liveOps){$('regEvent').dataset.liveOps='1';$('regEvent').addEventListener('change',refresh)}
 }
 let tries=0;const timer=setInterval(()=>{tries++;if(catalog&&window.FilitaliaAdminLight){bind();refresh();if(tries>20)clearInterval(timer)}if(tries>80)clearInterval(timer)},250);
 window.addEventListener('filitalia:events-updated',()=>{bind();refresh()});
 window.addEventListener('storage',refresh);
-d.addEventListener('click',e=>{if(e.target.closest?.('[data-section="dashboard"],[data-page="dashboard"],[data-section="communications"],[data-page="communications"]'))setTimeout(()=>{bind();refresh()},100)});
+d.addEventListener('click',e=>{if(e.target.closest?.('[data-section="dashboard"],[data-page="dashboard"],[data-section="registrations"],[data-page="registrations"],[data-section="communications"],[data-page="communications"]'))setTimeout(()=>{bind();refresh()},100)});
 setInterval(()=>{bind();refresh()},5000);
 window.FilitaliaLiveOperations=Object.freeze({refresh});
 })();
