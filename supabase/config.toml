@@ -15,9 +15,6 @@ verify_jwt = false
 [functions.gmail-oauth-start]
 verify_jwt = true
 
-[functions.send-filitalia-email]
-verify_jwt = true
-
 [functions.send-filitalia-branded-email]
 verify_jwt = true
 
