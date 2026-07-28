@@ -45,7 +45,8 @@ if (process.argv.includes('--json')) {
   console.log(JSON.stringify({ report, unused }, null, 2));
 }
 
-if (process.argv.includes('--fail-unused') && unused.length) {
+const strict = !process.argv.includes('--allow-unused');
+if (strict && unused.length) {
   console.error('\nRemove or explicitly reference these obsolete admin files:');
   unused.forEach(item => console.error(`- ${item.asset}`));
   process.exit(1);
