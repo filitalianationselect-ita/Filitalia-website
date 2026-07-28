@@ -19,49 +19,52 @@ async function main() {
   let page;
   const pageErrors = [];
   const consoleErrors = [];
+  const failedRequests = [];
   try {
-    report('1/8 Launching Chromium');
+    report('1/9 Launching Chromium');
     browser = await chromium.launch({ headless: true });
     page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    page.on('pageerror', error => {
-      pageErrors.push(error.message);
-      report(`PAGE_ERROR: ${error.message}`);
-    });
+    page.on('pageerror', error => pageErrors.push(error.message));
     page.on('console', message => {
-      if (message.type() === 'error') {
-        consoleErrors.push(message.text());
-        report(`CONSOLE_ERROR: ${message.text()}`);
-      }
+      if (message.type() === 'error') consoleErrors.push(message.text());
     });
     page.on('requestfailed', request => {
-      report(`REQUEST_FAILED: ${request.url()} · ${request.failure()?.errorText || 'unknown'}`);
+      failedRequests.push(`${request.url()} · ${request.failure()?.errorText || 'unknown'}`);
     });
 
-    report(`2/8 Opening ${baseUrl}/admin-light.html`);
+    report(`2/9 Opening ${baseUrl}/admin-light.html`);
     await page.goto(`${baseUrl}/admin-light.html`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
-    report('3/8 Waiting for the unified Communications section');
-    await page.waitForSelector('[data-unified-communications="1"]', { timeout: 60000 });
-    report(`Current URL: ${page.url()}`);
+    report('3/9 Waiting for the admin navigation');
+    await page.waitForLoadState('load', { timeout: 60000 }).catch(() => null);
+    await page.waitForTimeout(1000);
+    let communicationsNav = page.locator('[data-section="communications"],[data-page="communications"],a[href="#communications"]').first();
+    if (await communicationsNav.count() === 0) communicationsNav = page.getByText('Comunicazioni', { exact: true }).first();
+    await communicationsNav.waitFor({ state: 'visible', timeout: 60000 });
 
-    report('4/8 Opening New Communication modal');
+    report('4/9 Opening the Communications section');
+    await communicationsNav.click();
+    await page.waitForSelector('[data-unified-communications="1"]', { timeout: 30000 });
+    report(`Communications mounted at ${page.url()}`);
+
+    report('5/9 Opening New Communication modal');
     await page.click('#ucNewTop');
     await page.waitForSelector('#ucOverlay.show', { timeout: 10000 });
 
-    report('5/8 Verifying audience options');
+    report('6/9 Verifying audience options');
     const options = await page.locator('#ucAudience option').allTextContents();
     for (const required of ['Tutto un camp', 'Giocatore singolo', 'Categoria del camp', 'Email manuale']) {
       if (!options.includes(required)) throw new Error(`Audience missing: ${required}. Available: ${options.join(' | ')}`);
     }
 
-    report('6/8 Filling manual recipient and content');
+    report('7/9 Filling manual recipient and content');
     await page.selectOption('#ucAudience', 'manual');
     await page.fill('#ucManualEmail', 'preview-test@example.com');
     await page.fill('#ucManualName', 'Preview Test');
     await page.fill('#ucSubject', 'Test grafico FIL-ITALIA');
     await page.fill('#ucBody', 'Ciao {nome},\nquesta è una prova per {evento}.');
 
-    report('7/8 Rendering branded preview');
+    report('8/9 Rendering branded preview');
     await page.click('#ucPreviewButton');
     await page.waitForSelector('#ucPreview.show', { timeout: 10000 });
     const srcdoc = await page.locator('#ucPreviewFrame').getAttribute('srcdoc');
@@ -76,8 +79,9 @@ async function main() {
     if (oldResources.length) throw new Error(`Obsolete communications scripts loaded: ${oldResources.join(', ')}`);
     if (await page.getByText('Apri nell’app Mail', { exact: true }).count()) throw new Error('Obsolete mail client button is visible');
 
-    report(`8/8 Success. Page errors: ${pageErrors.length}; console errors: ${consoleErrors.length}`);
+    report(`9/9 Success. Page errors: ${pageErrors.length}; console errors: ${consoleErrors.length}; failed requests: ${failedRequests.length}`);
     await page.screenshot({ path: path.join(outputDir, 'success.png'), fullPage: true });
+    fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
   } catch (error) {
     const message = error && error.stack ? error.stack : String(error);
     report(`FAILURE: ${message}`);
@@ -91,10 +95,14 @@ async function main() {
           url: location.href,
           communicationsExists: Boolean(document.getElementById('communications')),
           unifiedExists: Boolean(document.querySelector('[data-unified-communications="1"]')),
+          navigation: [...document.querySelectorAll('[data-section],[data-page],a,button')]
+            .filter(element => /comunicazioni/i.test(element.textContent || ''))
+            .slice(0, 20)
+            .map(element => ({ tag: element.tagName, text: element.textContent.trim(), dataSection: element.getAttribute('data-section'), dataPage: element.getAttribute('data-page'), href: element.getAttribute('href') })),
           bodyText: document.body.innerText.slice(0, 5000),
           scripts: [...document.scripts].map(script => script.src || '[inline]')
         })).catch(evaluationError => ({ evaluationError: String(evaluationError) }));
-        fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics, pageErrors, consoleErrors }, null, 2), 'utf8');
+        fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics, pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
       } catch (captureError) {
         report(`DIAGNOSTIC_CAPTURE_FAILURE: ${captureError.message || captureError}`);
       }
