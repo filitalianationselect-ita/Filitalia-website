@@ -17,17 +17,13 @@
     return window.FilitaliaAuth;
   }
 
-  function client() {
-    return auth().client;
-  }
+  function client() { return auth().client; }
 
   async function requireAdmin() {
     const session = await auth().getSession();
     if (!session) throw new Error("NOT_AUTHENTICATED");
     const profile = await auth().getOwnProfile();
-    if (!profile || profile.role !== "admin" || profile.status !== "active") {
-      throw new Error("NOT_AUTHORIZED");
-    }
+    if (!profile || profile.role !== "admin" || profile.status !== "active") throw new Error("NOT_AUTHORIZED");
     return { session, profile };
   }
 
@@ -61,8 +57,6 @@
       certificateStatus: certificateStatus,
       certificateFile: clean(op.certificate_path, 600),
       photo: clean(op.player_photo_path, 600),
-      checked: Boolean(op.checked_in),
-      shirtDone: Boolean(op.shirt_delivered),
       present: Boolean(op.present),
       notes: clean(op.notes, 5000),
       status: clean(row.status, 40) || "received",
@@ -84,16 +78,12 @@
 
     const operationsResult = await client()
       .from("event_admin_operations")
-      .select("registration_id,event_id,payment_status,payment_amount,payment_method,payment_date,payment_reference,certificate_status,certificate_path,player_photo_path,checked_in,shirt_delivered,present,notes,updated_at")
+      .select("registration_id,event_id,payment_status,payment_amount,payment_method,payment_date,payment_reference,certificate_status,certificate_path,player_photo_path,present,notes,updated_at")
       .eq("event_id", safeEventId);
     if (operationsResult.error) throw operationsResult.error;
 
-    const operations = new Map((operationsResult.data || []).map(function (row) {
-      return [String(row.registration_id), row];
-    }));
-    return (registrationsResult.data || []).map(function (row) {
-      return mapRegistration(row, operations.get(String(row.id)));
-    });
+    const operations = new Map((operationsResult.data || []).map(function (row) { return [String(row.registration_id), row]; }));
+    return (registrationsResult.data || []).map(function (row) { return mapRegistration(row, operations.get(String(row.id))); });
   }
 
   async function addAudit(eventId, registrationId, action, details) {
@@ -112,8 +102,7 @@
     const admin = await requireAdmin();
     const allowed = [
       "payment_status", "payment_amount", "payment_method", "payment_date", "payment_reference",
-      "certificate_status", "certificate_path", "player_photo_path", "checked_in",
-      "shirt_delivered", "present", "notes"
+      "certificate_status", "certificate_path", "player_photo_path", "present", "notes"
     ];
     const record = {
       registration_id: clean(registrationId, 160),
@@ -140,12 +129,7 @@
     allowed.forEach(function (key) {
       if (Object.prototype.hasOwnProperty.call(changes || {}, key)) record[key] = changes[key];
     });
-    const result = await client()
-      .from("camp_registrations")
-      .update(record)
-      .eq("id", registrationId)
-      .select("*")
-      .single();
+    const result = await client().from("camp_registrations").update(record).eq("id", registrationId).select("*").single();
     if (result.error) throw result.error;
     await addAudit(eventId || result.data.event_id, String(registrationId), "registration_updated", changes || {});
     return result.data;
@@ -200,9 +184,7 @@
       contentType: file.type
     });
     if (result.error) throw result.error;
-    const changes = kind === "certificate"
-      ? { certificate_path: path, certificate_status: "received" }
-      : { player_photo_path: path };
+    const changes = kind === "certificate" ? { certificate_path: path, certificate_status: "received" } : { player_photo_path: path };
     await saveOperation(eventId, registrationId, changes, kind + "_uploaded");
     return path;
   }
@@ -258,18 +240,15 @@
   function exportCsv(rows, filename) {
     const columns = [
       ["Nome", "name"], ["Email", "email"], ["Telefono", "phone"], ["Anno", "year"],
-      ["Categoria", "cat"], ["Taglia", "shirt"], ["Pagamento", "payment"], ["Importo", "amount"],
-      ["Certificato", "certificate"], ["Check-in", "checked"], ["Maglia consegnata", "shirtDone"],
-      ["Presente", "present"], ["Note", "notes"]
+      ["Categoria", "cat"], ["Taglia maglia", "shirt"], ["Pagamento", "payment"], ["Importo", "amount"],
+      ["Certificato", "certificate"], ["Presente", "present"], ["Note", "notes"]
     ];
     function cell(value) {
       const text = typeof value === "boolean" ? (value ? "Sì" : "No") : String(value == null ? "" : value);
       return '"' + text.replace(/"/g, '""') + '"';
     }
     const lines = [columns.map(function (column) { return cell(column[0]); }).join(";")];
-    (rows || []).forEach(function (row) {
-      lines.push(columns.map(function (column) { return cell(row[column[1]]); }).join(";"));
-    });
+    (rows || []).forEach(function (row) { lines.push(columns.map(function (column) { return cell(row[column[1]]); }).join(";")); });
     const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
