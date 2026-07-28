@@ -2,6 +2,17 @@
 
 Il pannello unico è disponibile in `admin-light.html`. La preview funziona anche in modalità demo. I passaggi seguenti abilitano dati condivisi, pubblicazione dinamica, inviti ed email reali.
 
+## Cosa significa collegarlo al sito
+
+Il collegamento completo è formato da quattro livelli distinti:
+
+1. **Codice pubblico collegato**: Home, Eventi, News, Giocatori e Staff caricano `public-content-bridge-v1.js`.
+2. **Supabase attivo**: tabelle, colonne e policy pubbliche sono presenti nello stesso progetto configurato dal sito.
+3. **Servizi reali attivi**: funzioni Gmail, email e gestione utenti sono distribuite e i segreti sono configurati.
+4. **Produzione pubblicata**: la Pull Request viene collaudata, unita a `main` e distribuita sul dominio definitivo.
+
+In **Impostazioni → Collegamento al sito** il pannello controlla automaticamente questi livelli e mostra il primo passaggio mancante.
+
 ## Migrazioni Supabase
 
 Eseguire nell’ordine:
@@ -79,37 +90,44 @@ La finestra **Nuova comunicazione** permette:
 - variabili `{nome}`, `{evento}`, `{citta}`, `{data}`, `{orario}` e `{luogo}`;
 - template HTML FIL-ITALIA con logo ufficiale `/images/logo.png`;
 - invio individuale, così ogni destinatario non vede gli indirizzi degli altri;
-- massimo 100 destinatari per singolo invio della funzione.
+- gruppi automatici da massimo 100 destinatari per chiamata server.
 
 Il vecchio pulsante **Apri nell’app Mail** non viene usato: l’invio ufficiale parte dal gestionale tramite Gmail OAuth e la funzione server-side.
 
 ## Controlli automatici
 
-La sezione Impostazioni contiene **Controllo completo progetto**, che verifica moduli, eventi, categorie, listini, promo, collegamenti, comunicazioni e ruoli. La Pull Request esegue inoltre il workflow GitHub `FIL-ITALIA Admin Quality`, che controlla sintassi JavaScript, file caricati dal pannello e ponte dinamico sulle pagine pubbliche.
+La sezione Impostazioni contiene:
+
+- **Collegamento al sito**, che controlla dominio, Supabase, pagine pubbliche, tabelle, policy RLS, funzioni, Gmail, contenuti pubblicati e stato preview/produzione;
+- **Controllo completo progetto**, che verifica moduli, eventi, categorie, listini, promo, collegamenti, comunicazioni e ruoli.
+
+La Pull Request esegue inoltre il workflow GitHub `FIL-ITALIA Admin Quality`, che controlla sintassi JavaScript, file caricati dal pannello e ponte dinamico sulle pagine pubbliche.
 
 ## Collaudo minimo
 
-1. Creare un evento con categoria personalizzata, copertina e codice promo limitato.
-2. Verificare che l’evento compaia in Dashboard, Registrazioni, Comunicazioni e Pagamenti.
-3. Creare una registrazione e verificare il prezzo storico.
-4. Caricare certificato, foto e ricevuta.
-5. Collegare una News, un giocatore e un membro Staff all’evento.
-6. Pubblicare l’evento e controllare copertina e testi sul sito.
-7. Pubblicare una News e controllare Home, lista e dettaglio.
-8. Rendere attivo un giocatore e un membro Staff e controllare il sito.
-9. Invitare un Admin e verificare l’accesso completo.
-10. Verificare che un Admin non possa modificare un Super Admin.
+1. Aprire Impostazioni ed eseguire **Collegamento al sito**.
+2. Eseguire tutte le migrazioni segnalate come mancanti.
+3. Pubblicare tutte le funzioni Supabase segnalate.
+4. Accedere con un Admin o Super Admin attivo.
+5. Creare un evento con categoria personalizzata, copertina e codice promo limitato.
+6. Verificare che l’evento compaia in Dashboard, Registrazioni, Comunicazioni e Pagamenti.
+7. Creare una registrazione e verificare il prezzo storico.
+8. Caricare certificato, foto e ricevuta.
+9. Collegare una News, un giocatore e un membro Staff all’evento.
+10. Pubblicare l’evento e controllare copertina e testi sul sito.
 11. Collegare Gmail e inviare una comunicazione a un singolo giocatore.
 12. Controllare logo, sfondo, dettagli evento e footer nella mail ricevuta.
 13. Inviare una comunicazione a un camp completo e verificare che gli indirizzi restino privati.
-14. Aprire Impostazioni ed eseguire **Controllo completo progetto**.
+14. Eseguire **Controllo completo progetto**.
+15. Solo dopo il collaudo, unire la Pull Request a `main` e verificare il deploy di produzione.
 
 ## Stato attuale
 
 - Interfaccia e logica applicativa: presenti nella Pull Request.
+- Pagine pubbliche: predisposte per il ponte dinamico.
 - Preview demo: disponibile su Netlify.
 - Controlli automatici GitHub: attivi sulla Pull Request.
-- Migrazioni, funzioni e segreti: da distribuire su Supabase.
+- Migrazioni, funzioni, account e segreti: verificabili direttamente da **Collegamento al sito**.
 - Test browser completi: da eseguire prima della pubblicazione.
 
 La Pull Request deve restare in bozza e non deve essere unita a `main` senza approvazione esplicita.
