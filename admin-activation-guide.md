@@ -19,9 +19,12 @@ Eseguire nell’ordine:
 supabase functions deploy gmail-oauth-start
 supabase functions deploy gmail-oauth-callback --no-verify-jwt
 supabase functions deploy send-filitalia-email
+supabase functions deploy send-filitalia-branded-email
 supabase functions deploy admin-invite-user
 supabase functions deploy admin-update-account-status
 ```
+
+`send-filitalia-branded-email` è la funzione usata dalla finestra **Nuova comunicazione**. Invia una versione HTML ufficiale con logo, intestazione verde, contenuto personalizzato, dettagli del camp, pulsante al sito e footer FIL-ITALIA. Include anche una versione testuale alternativa per i client email meno recenti.
 
 ## Segreti Gmail
 
@@ -48,17 +51,18 @@ Il profilo deve avere `status = active` e ruolo `admin` oppure `super_admin`.
 
 ## Comunicazioni
 
-La sezione permette:
+La finestra **Nuova comunicazione** permette:
 
 - invio a tutti gli iscritti di un evento;
-- invio a una singola persona;
-- filtri per categoria, pagamento, documenti e presenza;
-- invio a tutto lo staff o a un singolo membro;
-- filtro staff per BLSD confermato, da verificare o mancante;
-- modifica immediata dello stato BLSD;
-- email manuale e invio di prova;
+- invio a un singolo giocatore;
+- invio a un indirizzo inserito manualmente;
 - oggetto e testo sempre modificabili;
-- invii superiori a 100 destinatari suddivisi automaticamente in gruppi.
+- variabili `{nome}`, `{evento}`, `{citta}`, `{data}`, `{orario}` e `{luogo}`;
+- template HTML FIL-ITALIA con logo ufficiale `/images/logo.png`;
+- invio individuale, così ogni destinatario non vede gli indirizzi degli altri;
+- massimo 100 destinatari per singolo invio della funzione.
+
+Il vecchio pulsante **Apri nell’app Mail** non viene usato: l’invio ufficiale parte dal gestionale tramite Gmail OAuth e la funzione server-side.
 
 ## Collaudo minimo
 
@@ -69,9 +73,10 @@ La sezione permette:
 5. Rendere attivo un giocatore e un membro Staff e controllare il sito.
 6. Invitare un Admin e verificare l’accesso completo.
 7. Verificare che un Admin non possa modificare un Super Admin.
-8. Modificare uno stato BLSD e filtrare i destinatari nella sezione Comunicazioni.
-9. Collegare Gmail e inviare prima una prova, poi un messaggio singolo.
-10. Verificare `Stato sistema FIL-ITALIA` nelle Impostazioni.
+8. Collegare Gmail e inviare una comunicazione a un singolo giocatore.
+9. Controllare logo, sfondo, dettagli evento e footer nella mail ricevuta.
+10. Inviare una comunicazione a un camp completo e verificare che gli indirizzi restino privati.
+11. Verificare `Stato sistema FIL-ITALIA` nelle Impostazioni.
 
 ## Stato attuale
 
