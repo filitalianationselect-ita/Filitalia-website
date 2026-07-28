@@ -11,10 +11,11 @@ Non esistono più console parallele o migrazioni da eseguire in un ordine manual
 - Configurazione Supabase: `supabase/config.toml`
 - Configurazione runtime Netlify: generata automaticamente da `scripts/generate-runtime-config.js`
 - Controlli: workflow GitHub `FIL-ITALIA Admin Quality`
+- Deploy backend di collaudo: workflow manuale `Deploy Preview Backend`
 
 ## 1. Ambiente Supabase di collaudo
 
-La Deploy Preview dovrebbe usare un progetto Supabase separato da quello ufficiale.
+La Deploy Preview deve usare un progetto Supabase separato da quello ufficiale.
 
 Impostare su Netlify, nel contesto **Deploy Previews**, queste variabili pubblicabili:
 
@@ -28,11 +29,33 @@ La build genera automaticamente `supabase-config.js` con:
 - `environment = deploy-preview`;
 - `usesPreviewDatabase = true`.
 
-Senza queste due variabili la preview usa il progetto configurato come fallback e il pannello lo segnala come ambiente non isolato.
+Senza queste due variabili la preview usa il progetto configurato come fallback e il pannello mostra **DATABASE NON ISOLATO**.
 
-## 2. Migrazione database unica
+## 2. Deploy automatico del backend preview
 
-Eseguire soltanto:
+Il workflow GitHub `.github/workflows/deploy-preview-backend.yml` viene avviato soltanto manualmente. Richiede la conferma esatta `DEPLOY PREVIEW` e rifiuta URL che non appartengono alla Deploy Preview FIL-ITALIA.
+
+Creare l'environment GitHub `filitalia-preview` e inserire questi segreti:
+
+- `SUPABASE_PREVIEW_ACCESS_TOKEN`
+- `SUPABASE_PREVIEW_PROJECT_REF`
+- `SUPABASE_PREVIEW_DB_PASSWORD`
+- `GMAIL_PREVIEW_CLIENT_ID`
+- `GMAIL_PREVIEW_CLIENT_SECRET`
+- `GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY`
+
+Il workflow:
+
+1. collega esclusivamente il progetto Supabase preview;
+2. mostra in anteprima le modifiche database;
+3. applica la migrazione unica;
+4. configura i segreti delle Edge Functions;
+5. pubblica tutte le funzioni presenti in `supabase/functions`;
+6. non modifica il progetto ufficiale né `main`.
+
+## 3. Migrazione database unica
+
+Viene applicato soltanto:
 
 ```text
 supabase/migrations/20260728090000_filitalia_admin_complete.sql
@@ -51,24 +74,24 @@ La migrazione crea o aggiorna:
 - policy RLS e lettura pubblica;
 - trigger e registro attività.
 
-Il workflow GitHub la applica due volte su PostgreSQL 16 per verificarne sintassi e idempotenza.
+Il workflow `FIL-ITALIA Admin Quality` la applica due volte su PostgreSQL 16 per verificarne sintassi e idempotenza.
 
-## 3. Funzioni Supabase
+## 4. Funzioni Supabase
 
-Pubblicare queste sei funzioni sul progetto di collaudo:
+Il deploy manuale pubblica queste sei funzioni sul progetto di collaudo:
 
-```bash
-supabase functions deploy gmail-oauth-start
-supabase functions deploy gmail-oauth-callback --no-verify-jwt
-supabase functions deploy send-filitalia-email
-supabase functions deploy send-filitalia-branded-email
-supabase functions deploy admin-invite-user
-supabase functions deploy admin-update-account-status
-```
+- `gmail-oauth-start`
+- `gmail-oauth-callback`
+- `send-filitalia-email`
+- `send-filitalia-branded-email`
+- `admin-invite-user`
+- `admin-update-account-status`
 
-## 4. Segreti Gmail
+La configurazione JWT è definita centralmente in `supabase/config.toml`.
 
-Configurare nel progetto Supabase di collaudo:
+## 5. Gmail preview
+
+Il workflow configura automaticamente nel progetto Supabase di collaudo:
 
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`
@@ -76,15 +99,15 @@ Configurare nel progetto Supabase di collaudo:
 - `GMAIL_TOKEN_ENCRYPTION_KEY`
 - `ADMIN_SITE_ORIGIN=https://deploy-preview-1--filitalia.netlify.app`
 
-Il callback Google deve essere:
+Il callback Google da autorizzare è:
 
 ```text
 https://<PROJECT_REF_PREVIEW>.supabase.co/functions/v1/gmail-oauth-callback
 ```
 
-La chiave di cifratura deve essere una chiave casuale AES da 32 byte codificata Base64. Nessun service-role key deve essere inserito nel frontend o nel repository.
+La chiave di cifratura deve rappresentare 32 byte casuali codificati Base64. Nessuna service-role key deve essere inserita nel frontend o nel repository.
 
-## 5. Redirect Auth della preview
+## 6. Redirect Auth della preview
 
 Nel progetto Supabase di collaudo autorizzare:
 
@@ -102,7 +125,7 @@ https://**--filitalia.netlify.app/**
 
 Registrazione, conferma account, recupero password, inviti e ritorno Gmail rimangono così all’interno della Deploy Preview.
 
-## 6. Account amministrativo
+## 7. Account amministrativo
 
 Il profilo di collaudo deve avere:
 
@@ -111,7 +134,7 @@ Il profilo di collaudo deve avere:
 
 Admin e Super Admin hanno accesso operativo completo. Soltanto il Super Admin può creare, modificare, sospendere o retrocedere un altro Super Admin.
 
-## 7. Collegamento dei contenuti al sito preview
+## 8. Collegamento dei contenuti al sito preview
 
 Home, Eventi, News, Giocatori e Staff caricano `public-content-bridge-v1.js`. Quando un contenuto viene impostato come pubblicato o attivo, il ponte legge Supabase e aggiorna le schede pubbliche della preview.
 
@@ -125,10 +148,10 @@ Ogni nuovo evento alimenta automaticamente:
 - Staff e giocatori collegati;
 - pagina Eventi pubblica.
 
-## 8. Collaudo completo
+## 9. Collaudo completo
 
 1. Aprire **Impostazioni → Attivazione Deploy Preview**.
-2. Verificare che il database preview risulti isolato.
+2. Verificare che compaia **DATABASE PREVIEW ISOLATO**.
 3. Eseguire **Collegamento al sito**.
 4. Accedere come Admin o Super Admin.
 5. Creare un evento di prova con categoria, prezzo, promo e copertina.
