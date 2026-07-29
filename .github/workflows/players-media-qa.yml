@@ -6,6 +6,7 @@ on:
       - "players.html"
       - "gallery.html"
       - "site-players-media-v1.css"
+      - "players-mobile-filters-v1.css"
       - "site-final-pass-v1.css"
       - "site-final-pass-v1.js"
       - "site-final-priority-v2.css"
@@ -16,6 +17,7 @@ on:
       - "players.html"
       - "gallery.html"
       - "site-players-media-v1.css"
+      - "players-mobile-filters-v1.css"
       - "site-final-pass-v1.css"
       - "site-final-pass-v1.js"
       - "site-final-priority-v2.css"
@@ -44,6 +46,12 @@ jobs:
           const fs = require('fs');
           const root='https://deploy-preview-1--filitalia.netlify.app';
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          const rgb=value=>{
+            const m=String(value).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+            return m?[+m[1],+m[2],+m[3]]:null;
+          };
+          const luminance=channels=>channels.map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}).reduce((sum,v,index)=>sum+v*[.2126,.7152,.0722][index],0);
+          const contrast=(a,b)=>{const l1=luminance(a),l2=luminance(b);return (Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05)};
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1280,height:800}});
@@ -87,9 +95,25 @@ jobs:
             const mobile=await browser.newPage({viewport:{width:390,height:844}});
             await mobile.goto(`${root}/players?pmqa=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
             await mobile.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+            await mobile.waitForSelector('.fil-player-page-tools select',{timeout:20000});
             const mobileMenu=await mobile.locator('.mobile-menu-button').evaluate(el=>getComputedStyle(el).display);
             if(mobileMenu==='none')throw new Error('Players mobile hamburger missing');
-            fs.writeFileSync('players-media-qa.json',JSON.stringify({players,media,mobileMenu},null,2));
+            const filters=await mobile.evaluate(()=>[...document.querySelectorAll('.fil-player-page-tools select')].map(el=>({
+              text:el.options[el.selectedIndex]?.textContent.trim()||'',
+              color:getComputedStyle(el).color,
+              background:getComputedStyle(el).backgroundColor,
+              fontSize:parseFloat(getComputedStyle(el).fontSize),
+              height:el.getBoundingClientRect().height
+            })));
+            if(filters.length<2)throw new Error(`Players mobile filters missing: ${filters.length}`);
+            for(const filter of filters){
+              const fg=rgb(filter.color),bg=rgb(filter.background);
+              if(!filter.text||!fg||!bg)throw new Error(`Invalid mobile filter: ${JSON.stringify(filter)}`);
+              if(contrast(fg,bg)<4.5)throw new Error(`Low mobile filter contrast: ${JSON.stringify(filter)}`);
+              if(filter.fontSize<16||filter.height<48)throw new Error(`Mobile filter too small: ${JSON.stringify(filter)}`);
+            }
+            await mobile.screenshot({path:'players-mobile.jpg',type:'jpeg',quality:80,fullPage:true});
+            fs.writeFileSync('players-media-qa.json',JSON.stringify({players,media,mobileMenu,filters},null,2));
             await browser.close();
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
@@ -101,6 +125,7 @@ jobs:
           path: |
             players.jpg
             gallery.jpg
+            players-mobile.jpg
             players-media-qa.json
           if-no-files-found: warn
           retention-days: 7
