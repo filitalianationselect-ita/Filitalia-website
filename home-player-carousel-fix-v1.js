@@ -41,9 +41,7 @@ function ensureAllPlayerCards(grid){
   grid.innerHTML=source.map(function(player,index){return builder(player,index);}).join('');
 }
 
-function cards(grid){
-  return grid?Array.from(grid.querySelectorAll(':scope > .player-card')):[];
-}
+function cards(grid){return grid?Array.from(grid.querySelectorAll(':scope > .player-card')):[];}
 
 function sizeCards(grid,list){
   if(!grid)return;
@@ -70,23 +68,16 @@ function visibleCount(grid,list){
   const gap=parseFloat(getComputedStyle(grid).columnGap||getComputedStyle(grid).gap||'18')||18;
   return Math.max(1,Math.floor((grid.clientWidth+gap)/Math.max(1,width+gap)));
 }
-
-function maxIndex(grid,list){
-  return Math.max(0,list.length-visibleCount(grid,list));
-}
-
+function maxIndex(grid,list){return Math.max(0,list.length-visibleCount(grid,list));}
 function step(grid,list){
   if(!grid||!list.length)return 0;
   const gap=parseFloat(getComputedStyle(grid).columnGap||getComputedStyle(grid).gap||'18')||18;
   return list[0].getBoundingClientRect().width+gap;
 }
-
 function applyPosition(grid,list){
   if(!grid||!list.length)return;
   const offset=activeIndex*step(grid,list);
-  list.forEach(function(card){
-    card.style.setProperty('transform','translate3d(-'+offset+'px,0,0)','important');
-  });
+  list.forEach(function(card){card.style.setProperty('transform','translate3d(-'+offset+'px,0,0)','important');});
   grid.dataset.filCarouselIndex=String(activeIndex);
 }
 
@@ -124,14 +115,11 @@ function bind(){
   sizeCards(grid,list);
   if(!grid.dataset.filReliableCarousel){
     grid.dataset.filReliableCarousel='true';
-    grid.addEventListener('touchstart',function(event){
-      touchStartX=event.touches&&event.touches[0]?event.touches[0].clientX:null;
-    },{passive:true});
+    grid.addEventListener('touchstart',function(event){touchStartX=event.touches&&event.touches[0]?event.touches[0].clientX:null;},{passive:true});
     grid.addEventListener('touchend',function(event){
       if(touchStartX==null)return;
       const endX=event.changedTouches&&event.changedTouches[0]?event.changedTouches[0].clientX:touchStartX;
-      const delta=endX-touchStartX;
-      touchStartX=null;
+      const delta=endX-touchStartX;touchStartX=null;
       if(Math.abs(delta)>42)go(delta<0?1:-1);
     },{passive:true});
     new MutationObserver(function(){window.setTimeout(update,60);}).observe(grid,{childList:true});
@@ -139,9 +127,10 @@ function bind(){
   update();
 }
 
-document.addEventListener('click',function(event){
-  const previous=event.target.closest('[data-fil-player-prev]');
-  const next=event.target.closest('[data-fil-player-next]');
+window.addEventListener('click',function(event){
+  const target=event.target instanceof Element?event.target:null;
+  const previous=target&&target.closest('[data-fil-player-prev]');
+  const next=target&&target.closest('[data-fil-player-next]');
   if(!previous&&!next)return;
   event.preventDefault();
   event.stopImmediatePropagation();
