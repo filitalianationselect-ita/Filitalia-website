@@ -13,6 +13,15 @@ on:
       - "home-horizontal-mobile-v1.css"
       - "home-content-v2.css"
       - "home-content-v2.js"
+      - "home-concept2-final-v1.css"
+      - "home-concept2-final-v1.js"
+      - "public-concept2-final-v1.css"
+      - "public-pages-v1.js"
+      - "players.html"
+      - "gallery.html"
+      - "staff.html"
+      - "news.html"
+      - "events.html"
 
 permissions:
   contents: write
@@ -31,12 +40,13 @@ jobs:
         run: |
           npm install --no-save --silent playwright
           npx playwright install --with-deps chromium
-      - name: Capture live horizontal panels
+      - name: Capture Concept 2 pages
         run: |
           node <<'NODE'
           const { chromium } = require('playwright');
           const fs = require('fs');
-          const base='https://deploy-preview-1--filitalia.netlify.app/?visual-review=content-v2';
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const base=root+'/?visual-review=concept2-final';
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const desktop=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
@@ -44,29 +54,45 @@ jobs:
             for(let attempt=0;attempt<70;attempt++){
               await desktop.goto(base+'&attempt='+attempt,{waitUntil:'domcontentloaded',timeout:120000});
               try{
-                await desktop.waitForSelector('body[data-horizontal-ready="true"]',{timeout:2200});
-                await desktop.waitForSelector('.fil-player-panel-controls',{timeout:2200});
+                await desktop.waitForSelector('body.fil-concept2[data-horizontal-ready="true"]',{timeout:2200});
+                await desktop.waitForSelector('.home-program-cta',{timeout:2200});
                 await desktop.waitForSelector('#homeEventsGrid .fil-event-card-v2',{timeout:2200});
                 ready=true;
                 break;
               }catch(error){await desktop.waitForTimeout(1500);}
             }
-            if(!ready)throw new Error('Redesigned horizontal homepage was not available on Deploy Preview');
-            await desktop.waitForTimeout(2200);
+            if(!ready)throw new Error('Concept 2 homepage was not available on Deploy Preview');
+            await desktop.waitForTimeout(1800);
 
             async function go(page,id){
               await page.evaluate(target=>{
                 const link=document.querySelector(`.nav-links a[href="#${target}"]`);
-                if(link)link.click();
-                else location.hash=target;
+                if(link)link.click(); else location.hash=target;
               },id);
               await page.waitForTimeout(850);
             }
 
-            const panels=['top','players','gallery','staff','news','events'];
+            const panels=['top','about','players','gallery','staff','news','events'];
             for(const id of panels){
               await go(desktop,id);
               await desktop.screenshot({path:`/tmp/panel-${id}.jpg`,type:'jpeg',quality:76,fullPage:false});
+            }
+
+            const routes=['players','gallery','staff','news','events'];
+            const standalone={};
+            for(const route of routes){
+              const page=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
+              await page.goto(`${root}/${route}?visual-review=concept2-final`,{waitUntil:'networkidle',timeout:120000});
+              await page.waitForSelector(`body.fil-public-body.fil-page-${route}`,{timeout:15000});
+              await page.waitForTimeout(900);
+              await page.screenshot({path:`/tmp/standalone-${route}.jpg`,type:'jpeg',quality:76,fullPage:false});
+              standalone[route]={
+                bodyClass:await page.locator('body').getAttribute('class'),
+                title:await page.title(),
+                background:await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundImage),
+                navLinks:await page.locator('.nav-links a').count()
+              };
+              await page.close();
             }
 
             const metrics={
@@ -77,29 +103,31 @@ jobs:
               bodyClientWidth:await desktop.evaluate(()=>document.documentElement.clientWidth),
               stageScrollWidth:await desktop.locator('.home-horizontal-stage').evaluate(node=>node.scrollWidth),
               panelCount:await desktop.locator('.home-horizontal-panel').count(),
+              navLabels:await desktop.locator('.nav-links a').allTextContents(),
+              programCta:await desktop.locator('.home-program-cta').count(),
+              visiblePageControls:await desktop.locator('.home-horizontal-controls:visible,.home-nav-page-controls:visible').count(),
               playerCards:await desktop.locator('#homePlayersGrid .player-card').count(),
               eventOrder:await desktop.locator('#homeEventsGrid .fil-event-card-v2').evaluateAll(cards=>cards.map(card=>({
-                id:card.dataset.eventId||'',
-                date:card.querySelector('time')?.textContent?.trim()||'',
-                title:card.querySelector('h3')?.textContent?.trim()||'',
-                status:card.querySelector('.fil-event-status')?.textContent?.trim()||''
-              })))
+                id:card.dataset.eventId||'',date:card.querySelector('time')?.textContent?.trim()||'',title:card.querySelector('h3')?.textContent?.trim()||'',status:card.querySelector('.fil-event-status')?.textContent?.trim()||''
+              }))),
+              standalone
             };
+            if(metrics.visiblePageControls!==0)throw new Error('Horizontal arrow controls are still visible');
+            if(!metrics.navLabels.some(label=>/chi siamo/i.test(label)))throw new Error('Chi siamo is missing from the top menu');
+            if(metrics.programCta!==1)throw new Error('Join-program CTA missing or duplicated');
 
             const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
             await mobile.goto(base+'&mobile=1',{waitUntil:'networkidle',timeout:120000});
-            await mobile.waitForSelector('.fil-player-panel-controls',{timeout:15000});
-            await mobile.waitForTimeout(1000);
+            await mobile.waitForSelector('.home-program-cta',{timeout:15000});
+            await mobile.waitForTimeout(800);
             await mobile.screenshot({path:'/tmp/panel-mobile-home.jpg',type:'jpeg',quality:76,fullPage:false});
-            await go(mobile,'events');
-            await mobile.screenshot({path:'/tmp/panel-mobile-events.jpg',type:'jpeg',quality:76,fullPage:false});
             metrics.mobile={
               bodyScrollWidth:await mobile.evaluate(()=>document.documentElement.scrollWidth),
               bodyClientWidth:await mobile.evaluate(()=>document.documentElement.clientWidth),
               heroShell:await mobile.locator('.home-hero-shell').boundingBox(),
-              playerCardWidth:await mobile.locator('#homePlayersGrid .player-card').first().evaluate(node=>node.getBoundingClientRect().width)
+              menuButton:await mobile.locator('.mobile-menu-button').boundingBox(),
+              loginButton:await mobile.locator('.home-auth-login').boundingBox()
             };
-
             fs.writeFileSync('/tmp/home-metrics.json',JSON.stringify(metrics,null,2));
             await browser.close();
           })().catch(error=>{console.error(error);process.exit(1)});
@@ -109,17 +137,20 @@ jobs:
           python3 -m pip install --quiet pillow
           python3 <<'PY'
           from PIL import Image, ImageOps, ImageDraw
-          names=['top','players','gallery','staff','news','events']
-          labels=['HOME','PLAYERS','MEDIA','STAFF','NEWS','EVENTI']
-          canvas=Image.new('RGB',(1280,1320),'white')
-          for index,(name,label) in enumerate(zip(names,labels)):
-              image=Image.open(f'/tmp/panel-{name}.jpg').convert('RGB')
+          files=[
+            ('panel-top.jpg','HOME'),('panel-about.jpg','CHI SIAMO'),('panel-players.jpg','PLAYERS'),('panel-gallery.jpg','MEDIA'),
+            ('panel-staff.jpg','STAFF'),('panel-news.jpg','NEWS'),('panel-events.jpg','EVENTI'),
+            ('standalone-players.jpg','TUTTI I GIOCATORI'),('standalone-gallery.jpg','GALLERIA COMPLETA'),
+            ('standalone-staff.jpg','STAFF COMPLETO'),('standalone-news.jpg','NEWS COMPLETE'),('standalone-events.jpg','EVENTI COMPLETI')]
+          canvas=Image.new('RGB',(1280,2640),'white')
+          draw=ImageDraw.Draw(canvas)
+          for index,(filename,label) in enumerate(files):
+              image=Image.open('/tmp/'+filename).convert('RGB')
               image=ImageOps.fit(image,(620,380),method=Image.Resampling.LANCZOS)
               x=20+(index%2)*640
               y=20+(index//2)*430
-              canvas.paste(image,(x,y+30))
-              draw=ImageDraw.Draw(canvas)
               draw.text((x,y+5),label,fill='black')
+              canvas.paste(image,(x,y+30))
           canvas.save('/tmp/panel-contact-sheet.jpg',quality=58,optimize=True)
           PY
       - name: Save visual evidence
@@ -127,11 +158,12 @@ jobs:
           rm -rf visual-review
           mkdir -p visual-review
           cp /tmp/panel-*.jpg visual-review/
+          cp /tmp/standalone-*.jpg visual-review/
           cp /tmp/home-metrics.json visual-review/home-metrics.json
           base64 -w 0 /tmp/panel-contact-sheet.jpg > /tmp/panel-contact-sheet.b64
           split -b 18000 -d -a 2 /tmp/panel-contact-sheet.b64 visual-review/contact-sheet-part-
           git config user.name "filitalia-visual-bot"
           git config user.email "actions@users.noreply.github.com"
           git add -A visual-review
-          git commit -m "test: capture redesigned horizontal panels"
+          git commit -m "test: capture final concept 2 pages"
           git push origin HEAD:agent/admin-panel-demo
