@@ -14,17 +14,20 @@
   function replaceVolunteerText(node){
     if(!node)return;
     const value=String(node.textContent||'');
-    if(!/\bvolunteer\b/i.test(value))return;
-    node.textContent=value.replace(/\bvolunteer\b/gi,label());
+    if(!/\b(volunteer|volontario)\b/i.test(value))return;
+    node.textContent=value.replace(/\b(volunteer|volontario)\b/gi,label());
   }
 
   function ensureRoleOption(select,row){
-    if(!select||select.querySelector('option[value="volunteer"]'))return;
-    const option=d.createElement('option');
-    option.value='volunteer';
+    if(!select)return;
+    let option=select.querySelector('option[value="volunteer"]');
+    if(!option){
+      option=d.createElement('option');
+      option.value='volunteer';
+      const admin=select.querySelector('option[value="admin"]');
+      select.insertBefore(option,admin||null);
+    }
     option.textContent=label();
-    const admin=select.querySelector('option[value="admin"]');
-    select.insertBefore(option,admin||null);
     const rowText=String(row?.textContent||'');
     if(/richiesta:\s*(volunteer|volontario)/i.test(rowText))select.value='volunteer';
   }
@@ -40,5 +43,6 @@
   const observer=new MutationObserver(function(){apply();});
   observer.observe(d.documentElement,{subtree:true,childList:true,characterData:true});
   d.addEventListener('click',function(event){if(event.target.closest('.language-switch button'))setTimeout(apply,0);});
+  window.addEventListener('storage',apply);
   apply();
 })();
