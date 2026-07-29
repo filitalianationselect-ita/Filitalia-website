@@ -18,8 +18,7 @@
     "News",
     "Eventi",
     "Registrazione Camp",
-    "Contatti",
-    "Account"
+    "Contatti"
   ],
   "programCta": 1,
   "visiblePageControls": 0,
@@ -93,12 +92,12 @@
     },
     "menuButton": {
       "x": 10,
-      "y": -6.5,
-      "width": 46,
+      "y": 15.5,
+      "width": 44,
       "height": 44
     },
     "loginButton": {
-      "x": 66,
+      "x": 64,
       "y": 15.5,
       "width": 38,
       "height": 44
