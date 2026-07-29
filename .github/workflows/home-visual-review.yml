@@ -54,10 +54,18 @@ jobs:
             if(!ready)throw new Error('Redesigned horizontal homepage was not available on Deploy Preview');
             await desktop.waitForTimeout(2200);
 
+            async function go(page,id){
+              await page.evaluate(target=>{
+                const link=document.querySelector(`.nav-links a[href="#${target}"]`);
+                if(link)link.click();
+                else location.hash=target;
+              },id);
+              await page.waitForTimeout(850);
+            }
+
             const panels=['top','players','gallery','staff','news','events'];
             for(const id of panels){
-              await desktop.locator(`.nav-links a[href="#${id}"]`).click();
-              await desktop.waitForTimeout(850);
+              await go(desktop,id);
               await desktop.screenshot({path:`/tmp/panel-${id}.jpg`,type:'jpeg',quality:76,fullPage:false});
             }
 
@@ -83,8 +91,7 @@ jobs:
             await mobile.waitForSelector('.fil-player-panel-controls',{timeout:15000});
             await mobile.waitForTimeout(1000);
             await mobile.screenshot({path:'/tmp/panel-mobile-home.jpg',type:'jpeg',quality:76,fullPage:false});
-            await mobile.locator('.nav-links a[href="#events"]').click();
-            await mobile.waitForTimeout(900);
+            await go(mobile,'events');
             await mobile.screenshot({path:'/tmp/panel-mobile-events.jpg',type:'jpeg',quality:76,fullPage:false});
             metrics.mobile={
               bodyScrollWidth:await mobile.evaluate(()=>document.documentElement.scrollWidth),
