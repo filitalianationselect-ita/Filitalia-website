@@ -27,32 +27,35 @@ permissions:
 jobs:
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Install Chromium
+      - name: Prepare system Chrome
         run: |
-          npm install --no-save --silent playwright
-          npx playwright install --with-deps chromium
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          "$CHROME_PATH" --version
       - name: Verify carousel and registration redesign
         run: |
           node <<'NODE'
-          const { chromium } = require('playwright');
+          const { chromium } = require('playwright-core');
           const fs = require('fs');
           const root='https://deploy-preview-1--filitalia.netlify.app';
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
           (async()=>{
-            const browser=await chromium.launch({headless:true});
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
             const page=await browser.newPage({viewport:{width:1050,height:820}});
 
             async function waitDeploy(path,selector){
-              for(let i=0;i<80;i++){
+              for(let i=0;i<50;i++){
                 await page.goto(`${root}/${path}${path.includes('?')?'&':'?'}hcqa=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
-                try{await page.waitForSelector(selector,{timeout:2500});return}catch(_){await sleep(1500)}
+                try{await page.waitForSelector(selector,{timeout:2500});return}catch(_){await sleep(1200)}
               }
               throw new Error(`${path}: deploy not ready`);
             }
