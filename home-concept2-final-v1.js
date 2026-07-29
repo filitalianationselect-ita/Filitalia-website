@@ -10,15 +10,6 @@ function loadFinalFixes(){
   document.head.appendChild(style);
 }
 
-function loadPlayerCarouselFix(){
-  if(document.querySelector('script[data-filitalia-player-carousel-fix]'))return;
-  const script=document.createElement('script');
-  script.src='home-player-carousel-fix-v1.js?v=4';
-  script.defer=true;
-  script.dataset.filitaliaPlayerCarouselFix='true';
-  document.head.appendChild(script);
-}
-
 function addAboutLink(){
   const nav=document.getElementById('navLinks');
   if(!nav||nav.querySelector('a[href="#about"]'))return;
@@ -99,7 +90,6 @@ function closeMenuAfterNavigation(){
 
 function apply(){
   loadFinalFixes();
-  loadPlayerCarouselFix();
   document.body.classList.add('fil-concept2');
   addAboutLink();
   removePublicAccountLink();
