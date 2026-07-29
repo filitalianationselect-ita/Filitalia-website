@@ -2,6 +2,7 @@
 'use strict';
 
 let activeIndex=0;
+let touchStartX=null;
 
 function getParts(){
   const section=document.getElementById('players');
@@ -31,8 +32,12 @@ function ensureAllPlayerCards(grid){
   if(!grid)return;
   const source=activePlayers();
   const current=grid.querySelectorAll(':scope > .player-card').length;
-  if(source.length<=current||typeof window.buildPlayerCard!=='function'&&typeof buildPlayerCard!=='function')return;
-  const builder=typeof window.buildPlayerCard==='function'?window.buildPlayerCard:buildPlayerCard;
+  let builder=null;
+  try{
+    if(typeof window.buildPlayerCard==='function')builder=window.buildPlayerCard;
+    else if(typeof buildPlayerCard==='function')builder=buildPlayerCard;
+  }catch(_){}
+  if(source.length<=current||!builder)return;
   grid.innerHTML=source.map(function(player,index){return builder(player,index);}).join('');
 }
 
@@ -44,17 +49,18 @@ function sizeCards(grid,list){
   if(!grid)return;
   grid.style.setProperty('display','flex','important');
   grid.style.setProperty('gap','18px','important');
-  grid.style.setProperty('overflow-x','auto','important');
+  grid.style.setProperty('overflow-x','hidden','important');
   grid.style.setProperty('overflow-y','hidden','important');
-  grid.style.setProperty('scroll-behavior','smooth','important');
-  grid.style.setProperty('-webkit-overflow-scrolling','touch');
+  grid.style.setProperty('scroll-snap-type','none','important');
+  grid.style.setProperty('touch-action','pan-y','important');
   const viewport=window.innerWidth;
   const basis=viewport<=620?'84%':viewport<=900?'calc((100% - 18px)/2)':'calc((100% - 36px)/3)';
   list.forEach(function(card){
     card.style.setProperty('flex','0 0 '+basis,'important');
     card.style.setProperty('width',basis,'important');
     card.style.setProperty('min-width','0','important');
-    card.style.setProperty('scroll-snap-align','start','important');
+    card.style.setProperty('transition','transform .38s cubic-bezier(.22,.8,.25,1)','important');
+    card.style.setProperty('will-change','transform','important');
   });
 }
 
@@ -69,10 +75,19 @@ function maxIndex(grid,list){
   return Math.max(0,list.length-visibleCount(grid,list));
 }
 
-function targetLeft(grid,card){
-  const gridBox=grid.getBoundingClientRect();
-  const cardBox=card.getBoundingClientRect();
-  return Math.max(0,grid.scrollLeft+(cardBox.left-gridBox.left));
+function step(grid,list){
+  if(!grid||!list.length)return 0;
+  const gap=parseFloat(getComputedStyle(grid).columnGap||getComputedStyle(grid).gap||'18')||18;
+  return list[0].getBoundingClientRect().width+gap;
+}
+
+function applyPosition(grid,list){
+  if(!grid||!list.length)return;
+  const offset=activeIndex*step(grid,list);
+  list.forEach(function(card){
+    card.style.setProperty('transform','translate3d(-'+offset+'px,0,0)','important');
+  });
+  grid.dataset.filCarouselIndex=String(activeIndex);
 }
 
 function update(){
@@ -83,6 +98,7 @@ function update(){
   if(!list.length)return;
   sizeCards(grid,list);
   activeIndex=Math.min(Math.max(0,activeIndex),maxIndex(grid,list));
+  applyPosition(grid,list);
   if(count)count.textContent=String(activeIndex+1).padStart(2,'0')+' / '+String(list.length).padStart(2,'0');
   if(prev)prev.disabled=activeIndex<=0;
   if(next)next.disabled=activeIndex>=maxIndex(grid,list);
@@ -96,14 +112,7 @@ function go(delta){
   if(!list.length)return;
   sizeCards(grid,list);
   activeIndex=Math.min(Math.max(0,activeIndex+delta),maxIndex(grid,list));
-  const target=list[activeIndex];
-  const left=targetLeft(grid,target);
-  const before=grid.scrollLeft;
-  try{grid.scrollTo({left,behavior:'smooth'});}catch(_){grid.scrollLeft=left;}
-  window.setTimeout(function(){
-    if(Math.abs(grid.scrollLeft-before)<2&&Math.abs(left-before)>2)grid.scrollLeft=left;
-    update();
-  },220);
+  applyPosition(grid,list);
   update();
 }
 
@@ -115,17 +124,15 @@ function bind(){
   sizeCards(grid,list);
   if(!grid.dataset.filReliableCarousel){
     grid.dataset.filReliableCarousel='true';
-    grid.addEventListener('scroll',function(){
-      const current=cards(grid);
-      if(!current.length)return;
-      let best=0;
-      let distance=Infinity;
-      current.forEach(function(card,index){
-        const value=Math.abs(targetLeft(grid,card)-grid.scrollLeft);
-        if(value<distance){distance=value;best=index;}
-      });
-      activeIndex=Math.min(best,maxIndex(grid,current));
-      window.requestAnimationFrame(update);
+    grid.addEventListener('touchstart',function(event){
+      touchStartX=event.touches&&event.touches[0]?event.touches[0].clientX:null;
+    },{passive:true});
+    grid.addEventListener('touchend',function(event){
+      if(touchStartX==null)return;
+      const endX=event.changedTouches&&event.changedTouches[0]?event.changedTouches[0].clientX:touchStartX;
+      const delta=endX-touchStartX;
+      touchStartX=null;
+      if(Math.abs(delta)>42)go(delta<0?1:-1);
     },{passive:true});
     new MutationObserver(function(){window.setTimeout(update,60);}).observe(grid,{childList:true});
   }
