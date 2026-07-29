@@ -1,0 +1,10 @@
+@media(min-width:961px){
+  body[data-horizontal-ready="true"] .home-horizontal-stage{
+    top:88px!important;
+    height:calc(100vh - 88px)!important;
+  }
+  body[data-horizontal-ready="true"] .home-horizontal-panel{
+    min-height:calc(100vh - 88px)!important;
+    height:calc(100vh - 88px)!important;
+  }
+}
