@@ -10,6 +10,8 @@ on:
       - "public-content-layout-v1.js"
       - "public-media-v1.js"
       - "public-media-v1.css"
+      - "public-pages-v1.js"
+      - "public-pages-v1.css"
       - "admin-content-layout-v1.js"
       - "admin-light.html"
       - "index.html"
@@ -49,6 +51,8 @@ on:
       - "public-content-layout-v1.js"
       - "public-media-v1.js"
       - "public-media-v1.css"
+      - "public-pages-v1.js"
+      - "public-pages-v1.css"
       - "admin-content-layout-v1.js"
       - "admin-light.html"
       - "index.html"
@@ -95,6 +99,7 @@ jobs:
           node --check public-content-bridge-v1.js
           node --check public-content-layout-v1.js
           node --check public-media-v1.js
+          node --check public-pages-v1.js
           node --check admin-content-layout-v1.js
           node --check login-form-polish-v1.js
           node --check reset-password-polish-v1.js
@@ -104,29 +109,32 @@ jobs:
           node --check scripts/audit-public-content.js
           node --check scripts/audit-preview-isolation.js
           node --check scripts/audit-role-consistency.js
-      - name: Verify ordering and media wiring
+      - name: Verify ordering media and page redesign wiring
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const files = {
-            index: fs.readFileSync('index.html','utf8'),
-            gallery: fs.readFileSync('gallery.html','utf8'),
-            admin: fs.readFileSync('admin-light.html','utf8'),
-            migration: fs.readFileSync('supabase/migrations/20260729132000_content_layout_media.sql','utf8')
-          };
+          const names = ['index','players','gallery','staff','news','events'];
+          const files = Object.fromEntries(names.map(name => [name, fs.readFileSync(`${name}.html`, 'utf8')]));
+          const migration = fs.readFileSync('supabase/migrations/20260729132000_content_layout_media.sql','utf8');
+          const admin = fs.readFileSync('admin-light.html','utf8');
           const required = [
             [files.index,'id="homeMediaGrid"'],
             [files.index,'public-content-layout-v1.js?v=1'],
             [files.index,'public-media-v1.js?v=1'],
+            [files.players,'public-pages-v1.js?v=1'],
+            [files.gallery,'public-pages-v1.js?v=1'],
+            [files.staff,'public-pages-v1.js?v=1'],
+            [files.news,'public-pages-v1.js?v=1'],
+            [files.events,'public-pages-v1.js?v=1'],
             [files.gallery,'public-media-v1.js?v=1'],
-            [files.admin,'admin-content-layout-v1.js?v=1'],
-            [files.migration,'create table if not exists public.admin_content_layout'],
-            [files.migration,'create table if not exists public.admin_media'],
-            [files.migration,'Public read published FIL-ITALIA media']
+            [admin,'admin-content-layout-v1.js?v=1'],
+            [migration,'create table if not exists public.admin_content_layout'],
+            [migration,'create table if not exists public.admin_media'],
+            [migration,'Public read published FIL-ITALIA media']
           ];
           const missing = required.filter(([body,value]) => !body.includes(value)).map(([,value]) => value);
-          if (missing.length) throw new Error(`Content layout/media wiring missing: ${missing.join(', ')}`);
-          console.log('Content ordering and media wiring verified.');
+          if (missing.length) throw new Error(`Content layout/media/page wiring missing: ${missing.join(', ')}`);
+          console.log('Content ordering, media and public page redesign verified.');
           NODE
       - name: Protect News and Talent ID archives
         run: node scripts/audit-public-content.js
