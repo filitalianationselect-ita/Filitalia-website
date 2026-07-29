@@ -16,6 +16,24 @@ function cards(grid){
   return grid?Array.from(grid.querySelectorAll(':scope > .player-card')):[];
 }
 
+function sizeCards(grid,list){
+  if(!grid)return;
+  grid.style.setProperty('display','flex','important');
+  grid.style.setProperty('gap','18px','important');
+  grid.style.setProperty('overflow-x','auto','important');
+  grid.style.setProperty('overflow-y','hidden','important');
+  grid.style.setProperty('scroll-behavior','smooth','important');
+  grid.style.setProperty('-webkit-overflow-scrolling','touch');
+  const viewport=window.innerWidth;
+  const basis=viewport<=620?'84%':viewport<=900?'calc((100% - 18px)/2)':'calc((100% - 36px)/3)';
+  list.forEach(function(card){
+    card.style.setProperty('flex','0 0 '+basis,'important');
+    card.style.setProperty('width',basis,'important');
+    card.style.setProperty('min-width','0','important');
+    card.style.setProperty('scroll-snap-align','start','important');
+  });
+}
+
 function visibleCount(grid,list){
   if(!grid||!list.length)return 1;
   const width=list[0].getBoundingClientRect().width;
@@ -37,6 +55,7 @@ function update(){
   const {grid,prev,next,count}=getParts();
   const list=cards(grid);
   if(!grid||!list.length)return;
+  sizeCards(grid,list);
   activeIndex=Math.min(Math.max(0,activeIndex),maxIndex(grid,list));
   if(count)count.textContent=String(activeIndex+1).padStart(2,'0')+' / '+String(list.length).padStart(2,'0');
   if(prev)prev.disabled=activeIndex<=0;
@@ -47,6 +66,7 @@ function go(delta){
   const {grid}=getParts();
   const list=cards(grid);
   if(!grid||!list.length)return;
+  sizeCards(grid,list);
   activeIndex=Math.min(Math.max(0,activeIndex+delta),maxIndex(grid,list));
   const target=list[activeIndex];
   const left=targetLeft(grid,target);
@@ -55,31 +75,30 @@ function go(delta){
   window.setTimeout(function(){
     if(Math.abs(grid.scrollLeft-before)<2&&Math.abs(left-before)>2)grid.scrollLeft=left;
     update();
-  },180);
+  },220);
   update();
 }
 
 function bind(){
   const {grid}=getParts();
   if(!grid)return;
-  grid.style.overflowX='auto';
-  grid.style.scrollBehavior='smooth';
-  grid.style.webkitOverflowScrolling='touch';
+  const list=cards(grid);
+  sizeCards(grid,list);
   if(!grid.dataset.filReliableCarousel){
     grid.dataset.filReliableCarousel='true';
     grid.addEventListener('scroll',function(){
-      const list=cards(grid);
-      if(!list.length)return;
+      const current=cards(grid);
+      if(!current.length)return;
       let best=0;
       let distance=Infinity;
-      list.forEach(function(card,index){
+      current.forEach(function(card,index){
         const value=Math.abs(targetLeft(grid,card)-grid.scrollLeft);
         if(value<distance){distance=value;best=index;}
       });
-      activeIndex=Math.min(best,maxIndex(grid,list));
+      activeIndex=Math.min(best,maxIndex(grid,current));
       window.requestAnimationFrame(update);
     },{passive:true});
-    new MutationObserver(function(){window.setTimeout(update,60);}).observe(grid,{childList:true});
+    new MutationObserver(function(){window.setTimeout(bind,60);}).observe(grid,{childList:true});
   }
   update();
 }
@@ -93,7 +112,7 @@ document.addEventListener('click',function(event){
   go(previous?-1:1);
 },true);
 
-window.addEventListener('resize',function(){window.setTimeout(update,80);});
+window.addEventListener('resize',function(){window.setTimeout(bind,100);});
 window.addEventListener('filitalia:public-content-updated',function(){window.setTimeout(bind,80);});
 window.addEventListener('filitalia:content-updated',function(){window.setTimeout(bind,80);});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
