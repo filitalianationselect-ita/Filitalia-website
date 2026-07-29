@@ -78,7 +78,7 @@
             <form id="signupForm" class="account-form" data-requires-auth novalidate>
               <div class="account-grid"><label>Nome<input name="firstName" autocomplete="given-name" maxlength="100" required></label><label>Cognome<input name="lastName" autocomplete="family-name" maxlength="100" required></label></div>
               <label>Email<input type="email" name="email" autocomplete="email" maxlength="254" required></label>
-              <label>Tipo di account richiesto<select name="requestedRole" required><option value="player">Giocatore</option><option value="parent">Genitore / Tutore</option><option value="coach">Coach</option><option value="coordinator">Coordinatore</option><option value="staff">Staff</option></select></label>
+              <label>Tipo di account richiesto<select name="requestedRole" required><option value="player">Giocatore</option><option value="parent">Genitore / Tutore</option><option value="coach">Coach</option><option value="coordinator">Coordinatore</option><option value="staff">Staff</option><option value="volunteer">Volontario</option></select></label>
               <div class="account-grid"><label>Password<input type="password" name="password" autocomplete="new-password" minlength="10" required></label><label>Ripeti password<input type="password" name="passwordConfirm" autocomplete="new-password" minlength="10" required></label></div>
               <label class="account-check"><input type="checkbox" name="privacy" required><span>Ho letto e accetto la <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
               <button class="account-button" type="submit">CREA ACCOUNT</button><p id="signupStatus" class="account-status" role="status" aria-live="polite"></p>
