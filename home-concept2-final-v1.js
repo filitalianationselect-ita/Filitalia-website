@@ -1,6 +1,15 @@
 (function(){
 'use strict';
 
+function loadFinalFixes(){
+  if(document.querySelector('link[data-filitalia-concept2-fixes]'))return;
+  const style=document.createElement('link');
+  style.rel='stylesheet';
+  style.href='home-concept2-fixes-v1.css?v=1';
+  style.dataset.filitaliaConcept2Fixes='true';
+  document.head.appendChild(style);
+}
+
 function addAboutLink(){
   const nav=document.getElementById('navLinks');
   if(!nav||nav.querySelector('a[href="#about"]'))return;
@@ -10,6 +19,12 @@ function addAboutLink(){
   link.textContent='Chi siamo';
   link.dataset.key='navAbout';
   if(home&&home.nextSibling)nav.insertBefore(link,home.nextSibling);else nav.prepend(link);
+}
+
+function removePublicAccountLink(){
+  const nav=document.getElementById('navLinks');
+  if(!nav)return;
+  nav.querySelectorAll('a[href*="account"],[data-filitalia-account-link]').forEach(function(link){link.remove()});
 }
 
 function addProgramCta(){
@@ -74,8 +89,10 @@ function closeMenuAfterNavigation(){
 }
 
 function apply(){
+  loadFinalFixes();
   document.body.classList.add('fil-concept2');
   addAboutLink();
+  removePublicAccountLink();
   addProgramCta();
   enrichAbout();
   removePageArrows();
