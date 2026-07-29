@@ -136,10 +136,32 @@
     renderEvents(lang);
   }
 
+  function loadHorizontalLayout(){
+    if(!document.querySelector('link[data-filitalia-horizontal]')){
+      const style=document.createElement('link');
+      style.rel='stylesheet';
+      style.href='home-horizontal-v1.css?v=1';
+      style.dataset.filitaliaHorizontal='true';
+      document.head.appendChild(style);
+    }
+    if(!document.querySelector('script[data-filitalia-horizontal]')){
+      const script=document.createElement('script');
+      script.src='home-horizontal-v1.js?v=1';
+      script.defer=true;
+      script.dataset.filitaliaHorizontal='true';
+      document.body.appendChild(script);
+    }
+  }
+
+  function boot(){
+    apply();
+    loadHorizontalLayout();
+  }
+
   document.addEventListener('click',function(event){
     if(event.target.closest('.language-switch button')) window.setTimeout(apply,0);
   });
   window.addEventListener('storage',apply);
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply);
-  else apply();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
 })();
