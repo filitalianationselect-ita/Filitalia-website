@@ -13,7 +13,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const allowedRoles = new Set(["player", "parent", "coach", "coordinator", "staff", "admin", "super_admin"]);
+const allowedRoles = new Set(["player", "parent", "coach", "coordinator", "staff", "volunteer", "admin", "super_admin"]);
 const allowedStatuses = new Set(["pending", "active", "suspended", "rejected"]);
 const adminRoles = new Set(["admin", "super_admin"]);
 
