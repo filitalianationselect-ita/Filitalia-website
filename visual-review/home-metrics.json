@@ -7,8 +7,8 @@
   },
   "bodyScrollWidth": 1280,
   "bodyClientWidth": 1280,
-  "stageScrollWidth": 12800,
-  "panelCount": 10,
+  "stageScrollWidth": 8960,
+  "panelCount": 7,
   "playerCards": 3,
   "eventOrder": [
     {
