@@ -104,12 +104,32 @@ jobs:
             await browser.close();
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
+      - name: Build contact sheet
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 <<'PY'
+          from PIL import Image, ImageOps, ImageDraw
+          names=['top','players','gallery','staff','news','events']
+          labels=['HOME','PLAYERS','MEDIA','STAFF','NEWS','EVENTI']
+          canvas=Image.new('RGB',(1280,1320),'white')
+          for index,(name,label) in enumerate(zip(names,labels)):
+              image=Image.open(f'/tmp/panel-{name}.jpg').convert('RGB')
+              image=ImageOps.fit(image,(620,380),method=Image.Resampling.LANCZOS)
+              x=20+(index%2)*640
+              y=20+(index//2)*430
+              canvas.paste(image,(x,y+30))
+              draw=ImageDraw.Draw(canvas)
+              draw.text((x,y+5),label,fill='black')
+          canvas.save('/tmp/panel-contact-sheet.jpg',quality=58,optimize=True)
+          PY
       - name: Save visual evidence
         run: |
           rm -rf visual-review
           mkdir -p visual-review
           cp /tmp/panel-*.jpg visual-review/
           cp /tmp/home-metrics.json visual-review/home-metrics.json
+          base64 -w 0 /tmp/panel-contact-sheet.jpg > /tmp/panel-contact-sheet.b64
+          split -b 18000 -d -a 2 /tmp/panel-contact-sheet.b64 visual-review/contact-sheet-part-
           git config user.name "filitalia-visual-bot"
           git config user.email "actions@users.noreply.github.com"
           git add -A visual-review
