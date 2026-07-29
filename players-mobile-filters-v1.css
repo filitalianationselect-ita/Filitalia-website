@@ -1,0 +1,47 @@
+/* FIL-ITALIA Players mobile filter readability */
+body.fil-page-players .fil-player-page-tools input,
+body.fil-page-players .fil-player-page-tools select{
+  background:#ffffff!important;
+  color:#17372a!important;
+  -webkit-text-fill-color:#17372a!important;
+  border:1px solid #c6d9cf!important;
+  opacity:1!important;
+  box-shadow:none!important;
+  color-scheme:light!important;
+}
+body.fil-page-players .fil-player-page-tools input::placeholder{
+  color:#5f8b76!important;
+  -webkit-text-fill-color:#5f8b76!important;
+  opacity:1!important;
+}
+body.fil-page-players .fil-player-page-tools select{
+  cursor:pointer!important;
+}
+body.fil-page-players .fil-player-page-tools select option{
+  background:#ffffff!important;
+  color:#17372a!important;
+  -webkit-text-fill-color:#17372a!important;
+}
+body.fil-page-players .fil-player-page-tools input:focus,
+body.fil-page-players .fil-player-page-tools select:focus{
+  border-color:#0a9a58!important;
+  outline:3px solid rgba(10,154,88,.18)!important;
+  outline-offset:1px!important;
+}
+@media(max-width:900px){
+  body.fil-page-players .fil-player-page-tools{
+    padding:18px!important;
+    border-radius:24px!important;
+    background:#f4f7f5!important;
+    border:1px solid #d7e4dd!important;
+  }
+  body.fil-page-players .fil-player-page-tools input,
+  body.fil-page-players .fil-player-page-tools select{
+    min-height:54px!important;
+    padding:0 16px!important;
+    border-radius:14px!important;
+    font-size:16px!important;
+    font-weight:800!important;
+    line-height:1.2!important;
+  }
+}
