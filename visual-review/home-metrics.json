@@ -1,0 +1,48 @@
+{
+  "url": "https://deploy-preview-1--filitalia.netlify.app/?visual-review=4",
+  "title": "FIL-ITALIA Nation Select",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "elements": {
+    ".navbar": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 75
+    },
+    ".home-hero-shell": {
+      "x": 24,
+      "y": 104,
+      "width": 635.640625,
+      "height": 1551.984375
+    },
+    ".home-hero-title": {
+      "x": 63,
+      "y": 219,
+      "width": 91.65625,
+      "height": 604.734375
+    },
+    ".home-player-frame": {
+      "x": 192.65625,
+      "y": 541.984375,
+      "width": 420,
+      "height": 520
+    },
+    ".home-event-rail": {
+      "x": 63,
+      "y": 1486.984375,
+      "width": 549.65625,
+      "height": 130
+    },
+    ".home-value-strip": {
+      "x": 659.640625,
+      "y": 817.296875,
+      "width": 596.359375,
+      "height": 140.375
+    }
+  },
+  "bodyScrollWidth": 1280,
+  "bodyClientWidth": 1280
+}
