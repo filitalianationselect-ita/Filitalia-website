@@ -1,9 +1,9 @@
 (function(){
 'use strict';
 
-const path=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-const page=path==='players.html'?'players':path==='gallery.html'?'gallery':path==='staff.html'?'staff':path==='news.html'?'news':path==='events.html'?'events':'';
-if(!page)return;
+const rawPath=(location.pathname.split('/').filter(Boolean).pop()||'index').toLowerCase();
+const page=rawPath.replace(/\.html$/,'');
+if(!['players','gallery','staff','news','events'].includes(page))return;
 document.body.classList.add('fil-public-body','fil-page-'+page);
 
 function language(){try{return localStorage.getItem('language')||document.documentElement.lang||'it'}catch(_){return'it'}}
