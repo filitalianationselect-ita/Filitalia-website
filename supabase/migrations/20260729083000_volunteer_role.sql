@@ -3,7 +3,7 @@
 
 do $$
 declare
-  column_name text;
+  target_column text;
   role_udt text;
   role_constraint record;
 begin
@@ -11,14 +11,14 @@ begin
     raise exception 'La tabella public.profiles deve esistere prima della migrazione volontari FIL-ITALIA';
   end if;
 
-  foreach column_name in array array['role','requested_role']
+  foreach target_column in array array['role','requested_role']
   loop
     select c.udt_name
     into role_udt
     from information_schema.columns c
     where c.table_schema='public'
       and c.table_name='profiles'
-      and c.column_name=column_name;
+      and c.column_name=target_column;
 
     if role_udt is null then
       continue;
@@ -35,15 +35,15 @@ begin
         where nsp.nspname='public'
           and rel.relname='profiles'
           and con.contype='c'
-          and pg_get_constraintdef(con.oid) ~ format(E'\\m%s\\M',column_name)
+          and pg_get_constraintdef(con.oid) ~ format(E'\\m%s\\M',target_column)
       loop
         execute format('alter table public.profiles drop constraint %I',role_constraint.conname);
       end loop;
 
       execute format(
         'alter table public.profiles add constraint profiles_%I_check check (%I in (%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L))',
-        column_name,
-        column_name,
+        target_column,
+        target_column,
         'player','parent','coach','coordinator','city_coordinator','staff',
         'volunteer','scout','media','user','admin','super_admin'
       );
