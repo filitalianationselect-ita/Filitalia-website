@@ -60,27 +60,54 @@ jobs:
               throw new Error(`${path}: deploy not ready`);
             }
 
-            await waitDeploy('?test=carousel','#players [data-fil-player-next]');
+            async function carouselState(){
+              return page.evaluate(()=>{
+                const grid=document.getElementById('homePlayersGrid');
+                const track=grid?.querySelector(':scope > .fil-player-carousel-inner');
+                const gridBox=grid?.getBoundingClientRect();
+                const all=[...(track?.querySelectorAll(':scope > .player-card')||[])];
+                const visible=all.filter(card=>{
+                  const box=card.getBoundingClientRect();
+                  return gridBox&&box.right>gridBox.left+8&&box.left<gridBox.right-8&&box.width>150&&box.height>220;
+                }).map(card=>({
+                  text:(card.textContent||'').trim().slice(0,120),
+                  left:card.getBoundingClientRect().left,
+                  width:card.getBoundingClientRect().width,
+                  imageWidth:card.querySelector('img')?.getBoundingClientRect().width||0
+                }));
+                return {
+                  cards:all.length,
+                  visible,
+                  index:Number(grid?.dataset.filCarouselIndex||-1),
+                  offset:Number(grid?.dataset.filCarouselOffset||0),
+                  trackLeft:track?.getBoundingClientRect().left||0,
+                  transform:track?getComputedStyle(track).transform:'none',
+                  disabled:document.querySelector('[data-fil-player-next]')?.disabled,
+                  count:document.querySelector('[data-fil-player-count]')?.textContent.trim()||''
+                };
+              });
+            }
+
+            await waitDeploy('?test=carousel-track','#players [data-fil-player-next]');
             await page.waitForTimeout(3600);
             await page.locator('#players').scrollIntoViewIfNeeded();
-            const before=await page.evaluate(()=>({
-              scrollLeft:document.getElementById('homePlayersGrid').scrollLeft,
-              firstLeft:document.querySelector('#homePlayersGrid > .player-card')?.getBoundingClientRect().left||0,
-              cards:document.querySelectorAll('#homePlayersGrid > .player-card').length,
-              disabled:document.querySelector('[data-fil-player-next]')?.disabled
-            }));
-            if(before.cards<2)throw new Error(`Home player cards missing: ${before.cards}`);
+            const before=await carouselState();
+            if(before.cards<4)throw new Error(`Home player cards missing: ${JSON.stringify(before)}`);
+            if(before.visible.length<3)throw new Error(`Initial player cards not visible: ${JSON.stringify(before)}`);
+            if(before.visible.some(card=>!card.text||card.imageWidth<120))throw new Error(`Initial player card content missing: ${JSON.stringify(before)}`);
             if(before.disabled)throw new Error('Home carousel next button disabled before first move');
+
             await page.click('[data-fil-player-next]');
-            await page.waitForTimeout(650);
-            const after=await page.evaluate(()=>({
-              scrollLeft:document.getElementById('homePlayersGrid').scrollLeft,
-              firstLeft:document.querySelector('#homePlayersGrid > .player-card')?.getBoundingClientRect().left||0,
-              count:document.querySelector('[data-fil-player-count]')?.textContent.trim()||''
-            }));
-            if(after.scrollLeft<=before.scrollLeft+4 && after.firstLeft>=before.firstLeft-4){
-              throw new Error(`Home carousel did not move: ${JSON.stringify({before,after})}`);
-            }
+            await page.waitForTimeout(700);
+            const afterOne=await carouselState();
+            if(afterOne.index!==1||afterOne.offset<=0||afterOne.trackLeft>=before.trackLeft-20)throw new Error(`Carousel first move failed: ${JSON.stringify({before,afterOne})}`);
+            if(afterOne.visible.length<3||afterOne.visible.some(card=>!card.text||card.imageWidth<120))throw new Error(`Cards disappeared after first move: ${JSON.stringify(afterOne)}`);
+
+            await page.click('[data-fil-player-next]');
+            await page.waitForTimeout(700);
+            const afterTwo=await carouselState();
+            if(afterTwo.index!==2||afterTwo.offset<=afterOne.offset||afterTwo.trackLeft>=afterOne.trackLeft-20)throw new Error(`Carousel second move failed: ${JSON.stringify({afterOne,afterTwo})}`);
+            if(afterTwo.visible.length<3||afterTwo.visible.some(card=>!card.text||card.imageWidth<120))throw new Error(`Cards disappeared after second move: ${JSON.stringify(afterTwo)}`);
             await page.screenshot({path:'home-carousel.jpg',type:'jpeg',quality:80,fullPage:true});
 
             await waitDeploy('camp-register.html','body.fil-page-camp-register .camp-registration-hero');
@@ -120,7 +147,7 @@ jobs:
             if(mobileCamp.hamburger==='none')throw new Error('Camp mobile hamburger missing');
             await mobile.screenshot({path:'camp-register-mobile.jpg',type:'jpeg',quality:80,fullPage:true});
 
-            fs.writeFileSync('home-carousel-camp-qa.json',JSON.stringify({before,after,camp,mobileCamp},null,2));
+            fs.writeFileSync('home-carousel-camp-qa.json',JSON.stringify({before,afterOne,afterTwo,camp,mobileCamp},null,2));
             await browser.close();
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
