@@ -1,12 +1,11 @@
 (function(){
 'use strict';
-
+(function loadAuthoritativePass(){if(!document.querySelector('link[data-filitalia-final-pass]')){const style=document.createElement('link');style.rel='stylesheet';style.href='site-final-pass-v1.css?v=1';style.dataset.filitaliaFinalPass='true';document.head.appendChild(style)}if(!document.querySelector('script[data-filitalia-final-pass]')){const script=document.createElement('script');script.src='site-final-pass-v1.js?v=1';script.defer=true;script.dataset.filitaliaFinalPass='true';document.body.appendChild(script)}})();
 const rawPath=(location.pathname.split('/').filter(Boolean).pop()||'index').toLowerCase();
 const page=rawPath.replace(/\.html$/,'');
 if(!['players','gallery','staff','news','events'].includes(page))return;
 document.body.classList.add('fil-public-body','fil-page-'+page);
 (function loadFinalTheme(){if(document.querySelector('link[data-filitalia-public-concept2]'))return;const style=document.createElement('link');style.rel='stylesheet';style.href='public-concept2-final-v1.css?v=1';style.dataset.filitaliaPublicConcept2='true';document.head.appendChild(style)})();
-
 function language(){try{return localStorage.getItem('language')||document.documentElement.lang||'it'}catch(_){return'it'}}
 function localized(value){if(value&&typeof value==='object')return value[language()]||value.it||value.en||value.ph||Object.values(value)[0]||'';return String(value==null?'':value)}
 function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
@@ -22,7 +21,6 @@ function eventLabel(item){return localized(item.date||item.campDate)||'Data da c
 function eventTitle(item){return localized(item.title)||item.name||item.campCity||'Evento FIL-ITALIA'}
 function eventLocation(item){return localized(item.location)||[item.venue,item.campCity||item.city].filter(Boolean).join(', ')}
 function eventLink(item){return item.page||item.ticket||('camp-register.html?event='+encodeURIComponent(item.id||''))}
-
 addBrand();
 let playerTimer=0;
 function renderPlayersPageV1(){
