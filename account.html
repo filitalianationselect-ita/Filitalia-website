@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
 <link rel="stylesheet" href="account.css?v=920">
-<link rel="stylesheet" href="account-workspace-v2.css?v=1">
+<link rel="stylesheet" href="account-workspace-v2.css?v=2">
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body data-account-page="account">
@@ -22,6 +22,7 @@
   <div class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="players.html">Players</a><a href="events.html">Events</a><a href="camp-register.html">Camp</a><a href="account.html" aria-current="page">Account</a></div>
   <div class="language-switch"><button onclick="setLanguage('it')">IT</button><button onclick="setLanguage('en')">EN</button><button onclick="setLanguage('ph')">PH</button></div>
 </nav>
+
 <main class="account-main">
   <div class="account-shell">
     <section class="account-workspace-hero">
@@ -50,7 +51,7 @@
 
     <p id="accountConfigWarning" class="account-config-warning" hidden>Collega Supabase in <strong>supabase-config.js</strong> prima di usare l’area riservata.</p>
 
-    <section class="account-card account-profile-card">
+    <section class="account-card account-profile-card" id="profilo-personale">
       <div class="account-head">
         <div>
           <h1 id="accountName" class="account-title">Account FIL-ITALIA</h1>
@@ -71,58 +72,39 @@
           <label>Cognome<input name="lastName" maxlength="100" autocomplete="family-name" required></label>
           <label>Telefono<input name="phone" maxlength="50" autocomplete="tel"></label>
           <label>Città<input name="city" maxlength="120" autocomplete="address-level2"></label>
-          <label>Lingua
-            <select name="language"><option value="it">Italiano</option><option value="en">English</option><option value="ph">Tagalog</option></select>
-          </label>
+          <label>Lingua<select name="language"><option value="it">Italiano</option><option value="en">English</option><option value="ph">Tagalog</option></select></label>
         </div>
         <button class="account-button" type="submit">SALVA PROFILO</button>
         <p id="profileStatus" class="account-status" role="status" aria-live="polite"></p>
       </form>
     </section>
 
-    <section class="account-card" data-role-section="player,parent,coach,coordinator,staff,admin,super_admin" hidden>
-      <h2 class="account-section-title">Le mie registrazioni</h2>
+    <section class="account-card" id="mie-registrazioni" data-role-section="player,parent,coach,coordinator,staff,volunteer,admin,super_admin" hidden>
+      <h2 class="account-section-title">Le mie registrazioni e attività</h2>
       <div id="accountRegistrations"><p class="account-muted">Caricamento...</p></div>
     </section>
 
     <section id="playerProfileSection" class="account-card" hidden>
       <h2 class="account-section-title">Profilo giocatore per i camp</h2>
       <p class="account-muted">Compila questi dati una sola volta. Nei camp verranno recuperati automaticamente insieme alla foto.</p>
-
       <form id="playerProfileForm" class="account-form" data-requires-auth>
         <div class="player-photo-editor">
           <img id="playerPhotoPreview" class="player-photo-preview" src="images/logo.png" alt="Anteprima foto giocatore">
-          <label>Foto giocatore <span aria-hidden="true">*</span>
-            <input id="playerPhotoInput" type="file" accept="image/jpeg,image/png,image/webp">
-            <small>JPG, PNG o WEBP. Massimo 5 MB. Se hai già una foto, non devi ricaricarla.</small>
-          </label>
+          <label>Foto giocatore <span aria-hidden="true">*</span><input id="playerPhotoInput" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG o WEBP. Massimo 5 MB. Se hai già una foto, non devi ricaricarla.</small></label>
         </div>
-
         <div class="account-grid">
           <label>Data di nascita <span aria-hidden="true">*</span><input type="date" name="birthDate" required></label>
-          <label>Sesso <span aria-hidden="true">*</span>
-            <select name="sex" required>
-              <option value="">Seleziona</option>
-              <option value="Maschio">Maschio</option>
-              <option value="Femmina">Femmina</option>
-              <option value="Altro">Altro / Preferisco non indicarlo</option>
-            </select>
-          </label>
+          <label>Sesso <span aria-hidden="true">*</span><select name="sex" required><option value="">Seleziona</option><option value="Maschio">Maschio</option><option value="Femmina">Femmina</option><option value="Altro">Altro / Preferisco non indicarlo</option></select></label>
           <label>Città di residenza <span aria-hidden="true">*</span><input name="residenceCity" maxlength="120" required></label>
           <label>Ruolo basket <span aria-hidden="true">*</span><input name="position" maxlength="30" placeholder="PG / SG / SF / PF / C" required></label>
           <label>Squadra attuale<input name="currentClub" maxlength="160"></label>
           <label>Altezza (cm)<input type="number" name="heightCm" min="80" max="250" inputmode="numeric"></label>
           <label>Peso (kg)<input type="number" name="weightKg" min="20" max="250" step="0.1" inputmode="decimal"></label>
-          <label>Passaporto italiano
-            <select name="italianPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
-          </label>
-          <label>Passaporto filippino
-            <select name="filipinoPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
-          </label>
+          <label>Passaporto italiano<select name="italianPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
+          <label>Passaporto filippino<select name="filipinoPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
           <label>Instagram<input name="instagram" maxlength="160" placeholder="@username"></label>
           <label>Highlights<input type="url" name="highlightsUrl" maxlength="500" placeholder="https://..."></label>
         </div>
-
         <button class="account-button" type="submit">SALVA PROFILO GIOCATORE</button>
         <p id="playerProfileStatus" class="account-status" role="status" aria-live="polite"></p>
       </form>
@@ -130,12 +112,48 @@
 
     <section class="account-card" data-role-section="parent" hidden>
       <h2 class="account-section-title">Area genitore</h2>
-      <div class="account-feature-grid"><article class="account-feature"><h3>Giocatori collegati</h3><p>Gestione dei figli o atleti minorenni associati.</p></article><article class="account-feature"><h3>Camp</h3><p>Iscrizioni, consensi e stato del pagamento.</p></article><article class="account-feature"><h3>Comunicazioni</h3><p>Aggiornamenti ufficiali FIL-ITALIA.</p></article></div>
+      <div class="account-feature-grid">
+        <article class="account-feature"><h3>Giocatori collegati</h3><p>Gestione dei figli o atleti minorenni associati.</p></article>
+        <article class="account-feature"><h3>Camp e consensi</h3><p>Iscrizioni, autorizzazioni e stato del pagamento.</p></article>
+        <article class="account-feature"><h3>Comunicazioni</h3><p>Aggiornamenti ufficiali riguardanti i giocatori collegati.</p></article>
+      </div>
     </section>
 
-    <section class="account-card" data-role-section="coach,coordinator,staff" hidden>
+    <section class="account-card" data-role-section="coach" hidden>
+      <h2 class="account-section-title">Area coach</h2>
+      <div class="account-feature-grid">
+        <article class="account-feature"><h3>Giocatori assegnati</h3><p>Consulta soltanto gli atleti autorizzati per la tua attività.</p></article>
+        <article class="account-feature"><h3>Valutazioni</h3><p>Presenze, note tecniche e osservazioni dello staff.</p></article>
+        <article class="account-feature"><h3>Eventi e convocazioni</h3><p>Calendario delle attività tecniche assegnate.</p></article>
+      </div>
+    </section>
+
+    <section class="account-card" data-role-section="coordinator" hidden>
+      <h2 class="account-section-title">Area coordinatore</h2>
+      <div class="account-feature-grid">
+        <article class="account-feature"><h3>Città assegnata</h3><p>Eventi, palestra, staff e attività della propria area.</p></article>
+        <article class="account-feature"><h3>Organizzazione</h3><p>Checklist palestra, BLSD, fotografo e materiale operativo.</p></article>
+        <article class="account-feature"><h3>Comunicazioni operative</h3><p>Aggiornamenti e richieste legate agli eventi assegnati.</p></article>
+      </div>
+    </section>
+
+    <section class="account-card" data-role-section="staff" hidden>
       <h2 class="account-section-title">Area staff</h2>
-      <div class="account-feature-grid"><article class="account-feature"><h3>Giocatori</h3><p>Accesso limitato agli atleti assegnati.</p></article><article class="account-feature"><h3>Valutazioni</h3><p>Inserimento note tecniche e presenze.</p></article><article class="account-feature"><h3>Attività</h3><p>Camp e convocazioni della propria area.</p></article></div>
+      <div class="account-feature-grid">
+        <article class="account-feature"><h3>Attività assegnate</h3><p>Camp, turni, orari e referente operativo.</p></article>
+        <article class="account-feature"><h3>Documenti personali</h3><p>Qualifiche, BLSD e certificazioni richieste.</p></article>
+        <article class="account-feature"><h3>Comunicazioni interne</h3><p>Informazioni necessarie per svolgere il proprio compito.</p></article>
+      </div>
+    </section>
+
+    <section class="account-card" data-role-section="volunteer" hidden>
+      <h2 class="account-section-title">Area volontario</h2>
+      <p class="account-muted">Questa area mostra soltanto informazioni operative personali. Non consente l’accesso a dati medici, pagamenti o profili riservati degli atleti.</p>
+      <div class="account-feature-grid">
+        <article class="account-feature"><h3>Disponibilità e turni</h3><p>Consulta data, orario e attività per cui sei stato assegnato.</p></article>
+        <article class="account-feature"><h3>Mansione e referente</h3><p>Indicazioni pratiche e contatto dello staff responsabile.</p></article>
+        <article class="account-feature"><h3>Checklist evento</h3><p>Compiti da completare prima, durante e dopo l’attività.</p></article>
+      </div>
     </section>
 
     <section class="account-card account-danger-zone">
@@ -174,6 +192,7 @@
     </section>
   </div>
 </main>
+
 <footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
 <script src="script.js?v=801"></script>
 <script src="filitalia-i18n.js?v=800"></script>
@@ -183,8 +202,9 @@
 <script src="auth-admin-fix.js?v=1001"></script>
 <script src="auth-super-admin-compat-v1.js?v=1"></script>
 <script src="auth-pages.js?v=1001"></script>
+<script src="volunteer-role-v1.js?v=1"></script>
 <script src="unified-access-v1.js?v=1"></script>
 <script src="player-card-admin.js?v=1"></script>
-<script src="account-role-dashboard-v1.js?v=1"></script>
+<script src="account-role-dashboard-v1.js?v=2"></script>
 </body>
 </html>
