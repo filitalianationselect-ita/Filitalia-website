@@ -23,57 +23,11 @@
     nav.classList.remove('active','open','show');
   }
 
-  function prepareHomeContent(first){
-    const account=document.getElementById('account-access');
-    if(account)account.remove();
-
-    const eyebrow=document.getElementById('homeHeroEyebrow');
-    if(eyebrow&&!eyebrow.querySelector('.home-hero-brand-logo')){
-      const logo=document.createElement('img');
-      logo.src='images/logo.png';
-      logo.alt='';
-      logo.className='home-hero-brand-logo';
-      eyebrow.prepend(logo);
-    }
-
-    const staffTitle=document.querySelector('#staff>h2');
-    if(staffTitle){
-      staffTitle.removeAttribute('data-key');
-      staffTitle.textContent='STAFF';
-    }
-
-    let connectZone=first.querySelector('.home-connect-zone');
-    const social=document.getElementById('social');
-    const contact=document.getElementById('contact');
-    const footer=document.querySelector('footer');
-
-    if(!connectZone&&(social||contact)){
-      connectZone=document.createElement('div');
-      connectZone.className='home-connect-zone';
-      connectZone.id='home-connect';
-      first.appendChild(connectZone);
-    }
-
-    if(connectZone&&social&&!connectZone.contains(social)){
-      social.classList.add('home-connect-social');
-      connectZone.appendChild(social);
-    }
-    if(connectZone&&contact&&!connectZone.contains(contact)){
-      contact.classList.add('home-connect-contact');
-      connectZone.appendChild(contact);
-    }
-    if(footer&&first&&!first.contains(footer)){
-      footer.classList.add('home-footer');
-      first.appendChild(footer);
-    }
-  }
-
   function init(){
     if(document.querySelector('.home-horizontal-stage'))return;
     const first=document.getElementById('top');
     if(!first)return;
 
-    prepareHomeContent(first);
     setNavHeight();
     document.body.dataset.horizontalReady='true';
 
@@ -107,7 +61,8 @@
     const controls=document.createElement('div');
     controls.className='home-horizontal-controls';
     controls.innerHTML='<button class="home-horizontal-control-button" type="button" data-horizontal-prev aria-label="Pagina precedente">‹</button><div class="home-horizontal-counter" aria-live="polite"></div><button class="home-horizontal-control-button" type="button" data-horizontal-next aria-label="Pagina successiva">›</button>';
-    document.body.appendChild(controls);
+    const controlsSlot=document.querySelector('[data-horizontal-controls-slot]');
+    if(controlsSlot)controlsSlot.appendChild(controls);else document.body.appendChild(controls);
 
     const prevButton=controls.querySelector('[data-horizontal-prev]');
     const nextButton=controls.querySelector('[data-horizontal-next]');
@@ -125,9 +80,7 @@
       prevButton.disabled=currentIndex===0;
       nextButton.disabled=currentIndex===panels.length-1;
       document.querySelectorAll('.nav-links a[href^="#"]').forEach(function(link){
-        const target=link.getAttribute('href');
-        const active=target==='#'+panel.id||(panel.id==='top'&&(target==='#contact'||target==='#social'||target==='#home-connect'));
-        link.classList.toggle('is-horizontal-active',active);
+        link.classList.toggle('is-horizontal-active',link.getAttribute('href')==='#'+panel.id);
       });
       const newHash='#'+panel.id;
       if(location.hash!==newHash)history.replaceState(null,'',newHash);
@@ -147,23 +100,10 @@
       if(index>=0)goTo(index,behavior);
     }
 
-    function goToHomeAnchor(id){
-      goToId('top','smooth');
-      window.setTimeout(function(){
-        const target=document.getElementById(id)||document.getElementById('home-connect');
-        if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
-      },520);
-    }
-
     document.addEventListener('click',function(event){
       const link=event.target.closest('a[href^="#"]');
       if(!link)return;
       const id=String(link.getAttribute('href')||'').slice(1);
-      if(id==='contact'||id==='social'||id==='home-connect'){
-        event.preventDefault();
-        goToHomeAnchor(id);
-        return;
-      }
       if(panelIndexById(id)<0)return;
       event.preventDefault();
       goToId(id,'smooth');
@@ -223,14 +163,12 @@
 
     window.addEventListener('hashchange',function(){
       const id=location.hash.slice(1);
-      if(id==='contact'||id==='social'||id==='home-connect')goToHomeAnchor(id);
-      else if(panelIndexById(id)>=0)goToId(id,'smooth');
+      if(panelIndexById(id)>=0)goToId(id,'smooth');
     });
 
     const initial=location.hash.slice(1);
     window.setTimeout(function(){
-      if(initial==='contact'||initial==='social'||initial==='home-connect')goToHomeAnchor(initial);
-      else goToId(panelIndexById(initial)>=0?initial:'top','auto');
+      goToId(panelIndexById(initial)>=0?initial:'top','auto');
     },80);
   }
 
