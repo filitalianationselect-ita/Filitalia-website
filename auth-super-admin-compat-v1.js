@@ -45,6 +45,19 @@
     return managedProfiles;
   }
 
+  async function adminSetAccountStatus(userId, role, status) {
+    if (role !== "volunteer") return base.adminSetAccountStatus(userId, role, status);
+    const session = await base.getSession();
+    if (!session || !session.access_token) throw new Error("NOT_AUTHENTICATED");
+    const result = await base.client.functions.invoke("admin-update-account-status", {
+      body: { user_id: userId, role: "volunteer", status: status },
+      headers: { Authorization: "Bearer " + session.access_token }
+    });
+    if (result.error) throw result.error;
+    if (result.data && result.data.error) throw new Error(result.data.error);
+    return result.data || {};
+  }
+
   function friendlyError(error) {
     const code = String(error && (error.code || error.message) || error || "").toUpperCase();
     if (code.includes("SUPER_ADMIN_REQUIRED")) {
@@ -62,10 +75,20 @@
     getOwnProfile,
     getActualOwnProfile,
     listManagedAccounts,
+    adminSetAccountStatus,
     friendlyError,
     isSuperAdmin: function () { return isSuperAdmin(actualOwnProfile); }
   }));
   window.FilitaliaAuth = patched;
+
+  function addVolunteerOption(select) {
+    if (!select || select.querySelector('option[value="volunteer"]')) return;
+    const option = document.createElement("option");
+    option.value = "volunteer";
+    option.textContent = "Volontario";
+    const adminOption = select.querySelector('option[value="admin"]');
+    select.insertBefore(option, adminOption || null);
+  }
 
   function addSuperAdminOption(select) {
     if (!select || select.querySelector('option[value="super_admin"]')) return;
@@ -77,15 +100,18 @@
 
   function enhanceManagedRows() {
     const list = document.getElementById("managedAccountsList");
-    if (!list || !isSuperAdmin(actualOwnProfile)) return;
+    if (!list) return;
 
     const rows = Array.from(list.querySelectorAll(".managed-account-row"));
     rows.forEach(function (row, index) {
       const select = row.querySelector("select");
       if (!select) return;
-      addSuperAdminOption(select);
+      addVolunteerOption(select);
+      if (isSuperAdmin(actualOwnProfile)) addSuperAdminOption(select);
+
       const profile = managedProfiles[index];
-      if (profile && profile.role === "super_admin") {
+      if (profile && profile.role === "volunteer") select.value = "volunteer";
+      if (profile && profile.role === "super_admin" && isSuperAdmin(actualOwnProfile)) {
         select.value = "super_admin";
         row.setAttribute("data-super-admin-account", "true");
       }
@@ -118,7 +144,7 @@
       await getActualOwnProfile();
       scheduleEnhance();
     } catch (error) {
-      console.warn("FIL-ITALIA Super Admin compatibility unavailable", error);
+      console.warn("FIL-ITALIA role compatibility unavailable", error);
       return;
     }
 
