@@ -3,6 +3,8 @@
 
 let activeIndex=0;
 let touchStartX=null;
+let observer=null;
+let syncing=false;
 
 function getParts(){
   const section=document.getElementById('players');
@@ -17,7 +19,7 @@ function playerSource(){
   try{
     if(Array.isArray(window.playersData))return window.playersData;
     if(typeof playersData!=='undefined'&&Array.isArray(playersData))return playersData;
-  }catch(_){}
+  }catch(_){ }
   return [];
 }
 
@@ -28,101 +30,131 @@ function activePlayers(){
   });
 }
 
-function ensureAllPlayerCards(grid){
-  if(!grid)return;
-  const source=activePlayers();
-  const current=grid.querySelectorAll(':scope > .player-card').length;
-  let builder=null;
+function cardBuilder(){
   try{
-    if(typeof window.buildPlayerCard==='function')builder=window.buildPlayerCard;
-    else if(typeof buildPlayerCard==='function')builder=buildPlayerCard;
-  }catch(_){}
-  if(source.length<=current||!builder)return;
-  grid.innerHTML=source.map(function(player,index){return builder(player,index);}).join('');
+    if(typeof window.buildPlayerCard==='function')return window.buildPlayerCard;
+    if(typeof buildPlayerCard==='function')return buildPlayerCard;
+  }catch(_){ }
+  return null;
 }
 
-function cards(grid){return grid?Array.from(grid.querySelectorAll(':scope > .player-card')):[];}
+function ensureTrack(grid){
+  if(!grid)return null;
+  syncing=true;
+  let track=grid.querySelector(':scope > .fil-player-carousel-inner');
+  if(!track){
+    track=document.createElement('div');
+    track.className='fil-player-carousel-inner';
+    Array.from(grid.children).filter(function(node){return node.classList&&node.classList.contains('player-card');}).forEach(function(card){track.appendChild(card);});
+    grid.replaceChildren(track);
+  }else{
+    Array.from(grid.children).filter(function(node){return node!==track&&node.classList&&node.classList.contains('player-card');}).forEach(function(card){track.appendChild(card);});
+  }
 
-function sizeCards(grid,list){
-  if(!grid)return;
-  grid.style.setProperty('display','flex','important');
-  grid.style.setProperty('gap','18px','important');
-  grid.style.setProperty('overflow-x','hidden','important');
-  grid.style.setProperty('overflow-y','hidden','important');
-  grid.style.setProperty('scroll-snap-type','none','important');
+  const source=activePlayers();
+  const builder=cardBuilder();
+  const current=track.querySelectorAll(':scope > .player-card').length;
+  if(builder&&source.length>current){
+    track.innerHTML=source.map(function(player,index){return builder(player,index);}).join('');
+  }
+  syncing=false;
+  return track;
+}
+
+function cards(track){return track?Array.from(track.querySelectorAll(':scope > .player-card')):[];}
+function visibleCount(){return window.innerWidth<=620?1:(window.innerWidth<=900?2:3);}
+function gap(track){return parseFloat(getComputedStyle(track).columnGap||getComputedStyle(track).gap||'18')||18;}
+function maxIndex(list){return Math.max(0,list.length-visibleCount());}
+
+function layout(grid,track,list){
+  if(!grid||!track||!list.length)return;
+  grid.classList.add('fil-player-carousel-track');
+  grid.style.setProperty('display','block','important');
+  grid.style.setProperty('overflow','hidden','important');
+  grid.style.setProperty('position','relative','important');
   grid.style.setProperty('touch-action','pan-y','important');
-  const viewport=window.innerWidth;
-  const basis=viewport<=620?'84%':viewport<=900?'calc((100% - 18px)/2)':'calc((100% - 36px)/3)';
+  grid.style.setProperty('scroll-snap-type','none','important');
+  grid.scrollLeft=0;
+
+  track.style.setProperty('display','flex','important');
+  track.style.setProperty('align-items','stretch','important');
+  track.style.setProperty('gap','18px','important');
+  track.style.setProperty('width','max-content','important');
+  track.style.setProperty('max-width','none','important');
+  track.style.setProperty('transition','transform .42s cubic-bezier(.22,.8,.25,1)','important');
+  track.style.setProperty('will-change','transform','important');
+
+  const perView=visibleCount();
+  const available=Math.max(260,grid.clientWidth);
+  const cardWidth=perView===1?Math.min(available*.86,390):(available-(18*(perView-1)))/perView;
   list.forEach(function(card){
-    card.style.setProperty('flex','0 0 '+basis,'important');
-    card.style.setProperty('width',basis,'important');
-    card.style.setProperty('min-width','0','important');
-    card.style.setProperty('transition','transform .38s cubic-bezier(.22,.8,.25,1)','important');
-    card.style.setProperty('will-change','transform','important');
+    card.style.removeProperty('transform');
+    card.style.removeProperty('transition');
+    card.style.setProperty('flex','0 0 '+cardWidth+'px','important');
+    card.style.setProperty('width',cardWidth+'px','important');
+    card.style.setProperty('min-width',cardWidth+'px','important');
+    card.style.setProperty('max-width',cardWidth+'px','important');
   });
 }
 
-function visibleCount(grid,list){
-  if(!grid||!list.length)return 1;
-  const width=list[0].getBoundingClientRect().width;
-  const gap=parseFloat(getComputedStyle(grid).columnGap||getComputedStyle(grid).gap||'18')||18;
-  return Math.max(1,Math.floor((grid.clientWidth+gap)/Math.max(1,width+gap)));
-}
-function maxIndex(grid,list){return Math.max(0,list.length-visibleCount(grid,list));}
-function step(grid,list){
-  if(!grid||!list.length)return 0;
-  const gap=parseFloat(getComputedStyle(grid).columnGap||getComputedStyle(grid).gap||'18')||18;
-  return list[0].getBoundingClientRect().width+gap;
-}
-function applyPosition(grid,list){
-  if(!grid||!list.length)return;
-  const offset=activeIndex*step(grid,list);
-  list.forEach(function(card){card.style.setProperty('transform','translate3d(-'+offset+'px,0,0)','important');});
+function applyPosition(grid,track,list){
+  if(!grid||!track||!list.length)return;
+  const first=list[0];
+  const step=(first?first.offsetWidth:0)+gap(track);
+  const offset=activeIndex*step;
+  track.style.setProperty('transform','translate3d(-'+offset+'px,0,0)','important');
   grid.dataset.filCarouselIndex=String(activeIndex);
+  grid.dataset.filCarouselOffset=String(offset);
 }
 
 function update(){
-  const {grid,prev,next,count}=getParts();
+  const parts=getParts();
+  const grid=parts.grid;
   if(!grid)return;
-  ensureAllPlayerCards(grid);
-  const list=cards(grid);
+  const track=ensureTrack(grid);
+  const list=cards(track);
   if(!list.length)return;
-  sizeCards(grid,list);
-  activeIndex=Math.min(Math.max(0,activeIndex),maxIndex(grid,list));
-  applyPosition(grid,list);
-  if(count)count.textContent=String(activeIndex+1).padStart(2,'0')+' / '+String(list.length).padStart(2,'0');
-  if(prev)prev.disabled=activeIndex<=0;
-  if(next)next.disabled=activeIndex>=maxIndex(grid,list);
+  layout(grid,track,list);
+  activeIndex=Math.min(Math.max(0,activeIndex),maxIndex(list));
+  applyPosition(grid,track,list);
+  if(parts.count)parts.count.textContent=String(activeIndex+1).padStart(2,'0')+' / '+String(list.length).padStart(2,'0');
+  if(parts.prev)parts.prev.disabled=activeIndex<=0;
+  if(parts.next)parts.next.disabled=activeIndex>=maxIndex(list);
 }
 
 function go(delta){
-  const {grid}=getParts();
-  if(!grid)return;
-  ensureAllPlayerCards(grid);
-  const list=cards(grid);
+  const parts=getParts();
+  if(!parts.grid)return;
+  const track=ensureTrack(parts.grid);
+  const list=cards(track);
   if(!list.length)return;
-  sizeCards(grid,list);
-  activeIndex=Math.min(Math.max(0,activeIndex+delta),maxIndex(grid,list));
-  applyPosition(grid,list);
-  update();
+  layout(parts.grid,track,list);
+  activeIndex=Math.min(Math.max(0,activeIndex+delta),maxIndex(list));
+  applyPosition(parts.grid,track,list);
+  if(parts.count)parts.count.textContent=String(activeIndex+1).padStart(2,'0')+' / '+String(list.length).padStart(2,'0');
+  if(parts.prev)parts.prev.disabled=activeIndex<=0;
+  if(parts.next)parts.next.disabled=activeIndex>=maxIndex(list);
 }
 
 function bind(){
-  const {grid}=getParts();
-  if(!grid)return;
-  ensureAllPlayerCards(grid);
-  const list=cards(grid);
-  sizeCards(grid,list);
-  if(!grid.dataset.filReliableCarousel){
-    grid.dataset.filReliableCarousel='true';
-    grid.addEventListener('touchstart',function(event){touchStartX=event.touches&&event.touches[0]?event.touches[0].clientX:null;},{passive:true});
-    grid.addEventListener('touchend',function(event){
+  const parts=getParts();
+  if(!parts.grid)return;
+  ensureTrack(parts.grid);
+  if(!parts.grid.dataset.filReliableCarousel){
+    parts.grid.dataset.filReliableCarousel='true';
+    parts.grid.addEventListener('touchstart',function(event){touchStartX=event.touches&&event.touches[0]?event.touches[0].clientX:null;},{passive:true});
+    parts.grid.addEventListener('touchend',function(event){
       if(touchStartX==null)return;
       const endX=event.changedTouches&&event.changedTouches[0]?event.changedTouches[0].clientX:touchStartX;
-      const delta=endX-touchStartX;touchStartX=null;
+      const delta=endX-touchStartX;
+      touchStartX=null;
       if(Math.abs(delta)>42)go(delta<0?1:-1);
     },{passive:true});
-    new MutationObserver(function(){window.setTimeout(update,60);}).observe(grid,{childList:true});
+    observer=new MutationObserver(function(){
+      if(syncing)return;
+      window.setTimeout(update,60);
+    });
+    observer.observe(parts.grid,{childList:true,subtree:false});
   }
   update();
 }
@@ -133,13 +165,14 @@ window.addEventListener('click',function(event){
   const next=target&&target.closest('[data-fil-player-next]');
   if(!previous&&!next)return;
   event.preventDefault();
+  event.stopPropagation();
   event.stopImmediatePropagation();
   go(previous?-1:1);
 },true);
 
-window.addEventListener('resize',function(){window.setTimeout(bind,100);});
-window.addEventListener('filitalia:public-content-updated',function(){window.setTimeout(bind,80);});
-window.addEventListener('filitalia:content-updated',function(){window.setTimeout(bind,80);});
+window.addEventListener('resize',function(){window.setTimeout(update,120);});
+window.addEventListener('filitalia:public-content-updated',function(){window.setTimeout(bind,100);});
+window.addEventListener('filitalia:content-updated',function(){window.setTimeout(bind,100);});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 [250,700,1500,3200].forEach(function(delay){window.setTimeout(bind,delay);});
 })();
