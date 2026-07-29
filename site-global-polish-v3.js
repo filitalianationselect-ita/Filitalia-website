@@ -1,79 +1,25 @@
 (function(){
 'use strict';
 const DESKTOP=900;
-const LABELS={
-  it:['Home','Chi siamo','Giocatori','Media','Staff','News','Eventi','Camp','Contatti'],
-  en:['Home','About','Players','Media','Staff','News','Events','Camp','Contact'],
-  ph:['Home','Tungkol','Players','Media','Staff','News','Events','Camp','Contact']
-};
-let observer=null;
-let applying=false;
+const LABELS={it:['Home','Chi siamo','Giocatori','Media','Staff','News','Eventi','Camp','Contatti'],en:['Home','About','Players','Media','Staff','News','Events','Camp','Contact'],ph:['Home','Tungkol','Players','Media','Staff','News','Events','Camp','Contact']};
+let observer=null,applying=false;
+function loadV4(){if(document.querySelector('link[data-filitalia-unified-v4]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href='site-unified-readability-v4.css?v=1';link.dataset.filitaliaUnifiedV4='true';document.head.appendChild(link)}
 function language(){try{const value=(localStorage.getItem('language')||document.documentElement.lang||'it').toLowerCase();return LABELS[value]?value:'it'}catch(_){return'it'}}
 function social(kind,url,path){const a=document.createElement('a');a.className='home-nav-social';a.dataset.social=kind.toLowerCase();a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label',kind);a.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+path+'"></path></svg>';return a}
 function makeBrand(){const a=document.createElement('a');a.className='fil-final-brand';a.href=(location.pathname==='/'||location.pathname.endsWith('/index.html'))?'#top':'index.html';a.setAttribute('aria-label','FIL-ITALIA Home');a.innerHTML='<img src="images/logo.png" alt="FIL-ITALIA"><span class="fil-final-brand-copy"><strong>FIL-ITALIA</strong><small>NATION SELECT</small></span>';return a}
 function makeAuth(){const wrap=document.createElement('div');wrap.className='fil-final-auth';wrap.innerHTML='<a href="login.html" aria-label="Accedi">Accedi</a><a href="login.html?mode=signup" aria-label="Crea account">Crea account</a>';return wrap}
 function makeLanguages(){const wrap=document.createElement('div');wrap.className='language-switch';wrap.setAttribute('aria-label','Lingua');wrap.innerHTML='<button type="button" onclick="setLanguage(\'it\')" aria-label="Italiano">IT</button><button type="button" onclick="setLanguage(\'en\')" aria-label="English">EN</button><button type="button" onclick="setLanguage(\'ph\')" aria-label="Filipino">PH</button>';return wrap}
-function normalizeNavLinks(navLinks){
-  const labels=LABELS[language()];
-  const hrefs=['index.html','index.html#about','players.html','gallery.html','staff.html','news.html','events.html','camp-register.html','index.html#contact-modal'];
-  const isHome=location.pathname==='/'||location.pathname.endsWith('/index.html');
-  const homeHrefs=['#top','#about','#players','#gallery','#staff','#news','#events','camp-register.html','#contact-modal'];
-  navLinks.innerHTML=labels.map((label,index)=>'<a href="'+(isHome?homeHrefs[index]:hrefs[index])+'">'+label+'</a>').join('');
-}
-function normalizeNavbar(){
-  if(applying)return;
-  const nav=document.querySelector('.navbar');
-  const navLinks=document.getElementById('navLinks');
-  if(!nav||!navLinks)return;
-  applying=true;
-  if(observer)observer.disconnect();
-  nav.classList.add('fil-final-navbar');
-  document.body.classList.add('fil-final-site');
-
-  nav.querySelectorAll('.home-reference-brand,.logo-area,.fil-final-brand').forEach(node=>node.remove());
-  const brand=makeBrand();
-  nav.insertBefore(brand,nav.firstChild);
-
-  let mobile=nav.querySelector('.mobile-menu-button');
-  nav.querySelectorAll('.mobile-menu-button').forEach((node,index)=>{if(index>0)node.remove()});
-  if(!mobile){mobile=document.createElement('button');mobile.type='button';mobile.className='mobile-menu-button';mobile.textContent='☰';mobile.setAttribute('aria-label','Apri menu');nav.insertBefore(mobile,brand)}
-  mobile.onclick=function(){document.body.classList.toggle('mobile-menu-open');navLinks.classList.toggle('active',document.body.classList.contains('mobile-menu-open'))};
-
-  normalizeNavLinks(navLinks);
-
-  nav.querySelectorAll('.fil-final-actions,.home-auth-actions,.fil-final-auth,.language-switch,.fil-global-socials,.home-nav-social').forEach(node=>{if(!navLinks.contains(node))node.remove()});
-  const actions=document.createElement('div');actions.className='fil-final-actions';
-  const socials=document.createElement('div');socials.className='fil-global-socials';socials.setAttribute('aria-label','Social FIL-ITALIA');
-  socials.append(
-    social('Instagram','https://www.instagram.com/filitalianationselect','M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5Z'),
-    social('Facebook','https://www.facebook.com/share/1EPfQAxGx5/','M13.8 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5H17V4.6c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4.1v2.3H8.2V14h2.6v8h3Z')
-  );
-  actions.append(socials,makeLanguages(),makeAuth());
-  nav.appendChild(actions);
-
-  if(window.innerWidth>DESKTOP){document.body.classList.remove('mobile-menu-open');navLinks.classList.remove('active')}
-  applying=false;
-  if(observer)observer.observe(nav,{childList:true,subtree:true});
-}
-function markActive(){
-  const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  document.querySelectorAll('#navLinks a').forEach(link=>{
-    const href=(link.getAttribute('href')||'').split('#')[0].toLowerCase();
-    const active=(current==='index.html'&&link.getAttribute('href')==='#top')||(href&&href===current);
-    link.classList.toggle('is-active',active);
-  });
-}
-function apply(){normalizeNavbar();markActive();document.documentElement.classList.add('fil-global-polish-ready')}
-function boot(){
-  observer=new MutationObserver(()=>{window.clearTimeout(boot._timer);boot._timer=window.setTimeout(apply,40)});
-  apply();
-  window.addEventListener('resize',apply,{passive:true});
-  window.addEventListener('storage',apply);
-  document.addEventListener('click',event=>{
-    if(event.target.closest('.language-switch button'))window.setTimeout(apply,80);
-    if(event.target.closest('#navLinks a')&&window.innerWidth<=DESKTOP){document.body.classList.remove('mobile-menu-open');document.getElementById('navLinks')?.classList.remove('active')}
-  });
-  [250,900,1800,3200].forEach(delay=>window.setTimeout(apply,delay));
-}
+function normalizeNavLinks(navLinks){const labels=LABELS[language()];const hrefs=['index.html','index.html#about','players.html','gallery.html','staff.html','news.html','events.html','camp-register.html','index.html#contact-modal'];const isHome=location.pathname==='/'||location.pathname.endsWith('/index.html');const homeHrefs=['#top','#about','#players','#gallery','#staff','#news','#events','camp-register.html','#contact-modal'];navLinks.innerHTML=labels.map((label,index)=>'<a href="'+(isHome?homeHrefs[index]:hrefs[index])+'">'+label+'</a>').join('')}
+function normalizeNavbar(){if(applying)return;const nav=document.querySelector('.navbar');const navLinks=document.getElementById('navLinks');if(!nav||!navLinks)return;applying=true;if(observer)observer.disconnect();nav.classList.add('fil-final-navbar');document.body.classList.add('fil-final-site');
+ nav.querySelectorAll('.home-reference-brand,.logo-area,.fil-final-brand').forEach(node=>node.remove());const brand=makeBrand();nav.insertBefore(brand,nav.firstChild);
+ nav.querySelectorAll('.mobile-menu-button').forEach(node=>node.remove());const mobile=document.createElement('button');mobile.type='button';mobile.className='mobile-menu-button';mobile.textContent='☰';mobile.setAttribute('aria-label','Apri menu');mobile.onclick=function(){document.body.classList.toggle('mobile-menu-open');navLinks.classList.toggle('active',document.body.classList.contains('mobile-menu-open'))};nav.insertBefore(mobile,brand);
+ normalizeNavLinks(navLinks);
+ nav.querySelectorAll('.fil-final-actions,.home-auth-actions,.fil-final-auth,.language-switch,.fil-global-socials,.home-nav-social').forEach(node=>{if(!navLinks.contains(node))node.remove()});
+ const actions=document.createElement('div');actions.className='fil-final-actions';const socials=document.createElement('div');socials.className='fil-global-socials';socials.setAttribute('aria-label','Social FIL-ITALIA');socials.append(social('Instagram','https://www.instagram.com/filitalianationselect','M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5Z'),social('Facebook','https://www.facebook.com/share/1EPfQAxGx5/','M13.8 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5H17V4.6c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4.1v2.3H8.2V14h2.6v8h3Z'));
+ actions.append(socials,makeLanguages(),makeAuth());nav.appendChild(actions);
+ if(window.innerWidth>DESKTOP){document.body.classList.remove('mobile-menu-open');navLinks.classList.remove('active')}applying=false;if(observer)observer.observe(nav,{childList:true,subtree:true})}
+function markActive(){const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();document.querySelectorAll('#navLinks a').forEach(link=>{const href=(link.getAttribute('href')||'').split('#')[0].toLowerCase();const active=(current==='index.html'&&link.getAttribute('href')==='#top')||(href&&href===current);link.classList.toggle('is-active',active)})}
+function apply(){loadV4();normalizeNavbar();markActive();document.documentElement.classList.add('fil-global-polish-ready')}
+function boot(){observer=new MutationObserver(()=>{window.clearTimeout(boot._timer);boot._timer=window.setTimeout(apply,40)});apply();window.addEventListener('resize',apply,{passive:true});window.addEventListener('storage',apply);document.addEventListener('click',event=>{if(event.target.closest('.language-switch button'))window.setTimeout(apply,80);if(event.target.closest('#navLinks a')&&window.innerWidth<=DESKTOP){document.body.classList.remove('mobile-menu-open');document.getElementById('navLinks')?.classList.remove('active')}});[200,700,1400,2600].forEach(delay=>window.setTimeout(apply,delay))}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
