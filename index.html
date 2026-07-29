@@ -12,11 +12,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
-<link rel="stylesheet" href="home-auth-actions-v1.css?v=2">
+<link rel="stylesheet" href="home-auth-actions-v1.css?v=3">
 <link rel="stylesheet" href="home-tricolore-v1.css?v=4">
-<link rel="stylesheet" href="home-horizontal-v1.css?v=2" data-filitalia-horizontal>
+<link rel="stylesheet" href="home-horizontal-v1.css?v=3" data-filitalia-horizontal>
 <link rel="stylesheet" href="home-horizontal-mobile-v1.css?v=1">
-<link rel="stylesheet" href="home-content-v2.css?v=1">
+<link rel="stylesheet" href="home-content-v2.css?v=2">
+<link rel="stylesheet" href="home-homehub-v1.css?v=1">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
@@ -36,10 +37,7 @@
       </a>
     </div>
   </div>
-  <a href="index.html" class="logo-area">
-    <img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo">
-    <div class="logo-text">FIL-ITALIA</div>
-  </a>
+  <div class="home-nav-page-controls" data-horizontal-controls-slot aria-label="Navigazione pagine"></div>
   <div class="nav-links" id="navLinks">
     <a href="#top" data-key="navHome">Home</a>
     <a href="#players" data-key="navPlayers">Players</a>
@@ -48,9 +46,15 @@
     <a href="#news" data-key="navNews">News</a>
     <a href="#events" data-key="navEvents">Events</a>
     <a href="camp-register.html" data-key="navCamp">Camp</a>
-    <a href="#contact" data-key="navContact">Contact</a>
+    <a href="#contact-modal" data-home-contact-trigger data-key="navContact">Contact</a>
   </div>
   <div class="language-switch">
+    <a class="home-nav-social" href="https://www.instagram.com/filitalianationselect?igsh=MXExeHoxY3I1cjE0bw%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram FIL-ITALIA" title="Instagram">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5ZM17.8 6.2a1.05 1.05 0 1 1-1.05 1.05A1.05 1.05 0 0 1 17.8 6.2Z"></path></svg>
+    </a>
+    <a class="home-nav-social" href="https://www.facebook.com/share/1EPfQAxGx5/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook FIL-ITALIA" title="Facebook">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.8 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5H17V4.6c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4.1v2.3H8.2V14h2.6v8h3Z"></path></svg>
+    </a>
     <button onclick="setLanguage('it')">IT</button>
     <button onclick="setLanguage('en')">EN</button>
     <button onclick="setLanguage('ph')">PH</button>
@@ -59,7 +63,7 @@
 <section class="hero home-hero" id="top">
   <div class="home-hero-shell">
     <div class="home-hero-copy">
-      <span id="homeHeroEyebrow" class="home-hero-eyebrow">FIL-ITALIA NATION SELECT</span>
+      <span class="home-hero-eyebrow"><img src="images/logo.png" alt=""><span id="homeHeroEyebrow">FIL-ITALIA NATION SELECT</span></span>
       <h1 class="home-hero-title">
         <span id="homeHeroLine1">IL TALENTO</span>
         <strong id="homeHeroLine2">CRESCE.</strong>
@@ -70,6 +74,7 @@
       <div class="home-hero-actions">
         <a class="home-hero-button" href="#events"><span id="homeHeroEventsLabel">I prossimi eventi</span></a>
         <a class="home-hero-button secondary" href="#about"><span id="homeHeroDiscoverLabel">Scopri di più</span></a>
+        <button class="home-hero-button secondary" type="button" data-home-contact-trigger><span data-home-contact-label>Contatti</span></button>
       </div>
       <p id="homeHeroNote" class="home-hero-note">Un unico percorso: sviluppo, selezione e opportunità internazionali.</p>
     </div>
@@ -137,7 +142,7 @@
   <div class="gallery-grid"><img src="images/media1.jpg" alt="" onclick="openImageGallery(this)"><img src="images/media2.jpg" alt="" onclick="openImageGallery(this)"><img src="images/media3.jpg" alt="" onclick="openImageGallery(this)"></div>
 </section>
 <section class="staff-section" id="staff">
-  <h2 data-key="staffTitle">COACHES & STAFF</h2>
+  <h2 data-key="staffTitle">STAFF</h2>
   <p class="section-subtitle" data-key="staffSubtitle">The people helping guide, organize and develop the FIL-ITALIA basketball program.</p>
   <div class="players-button-row"><a href="staff.html" class="players-list-link" data-key="viewFullStaff">View Full Staff →</a></div>
   <div class="staff-grid" id="homeStaffGrid"></div>
@@ -148,24 +153,33 @@
   <p class="section-subtitle" data-key="newsSubtitle">Updates about selections, camps, tournaments and future FIL-ITALIA activities.</p>
   <div class="news-grid" id="homeNewsGrid"></div>
 </section>
-<section class="join-section" id="account-access">
-<h2 data-account-cta-title>ACCOUNT FIL-ITALIA</h2>
-<p class="section-subtitle" data-account-cta-text>Crea il tuo account, completa il profilo una sola volta e usalo per le future iscrizioni ai camp.</p>
-<div class="join-button-row">
-<a href="login.html?mode=signup" class="main-button" data-account-cta-create>CREA ACCOUNT</a>
-<a href="login.html" class="main-button secondary-main-button" data-account-cta-login>ACCEDI</a>
-</div>
-</section>
-<section class="social-section" id="social"><h2 data-key="socialTitle">SOCIAL MEDIA</h2><p class="section-subtitle" data-key="socialSubtitle">Stay connected with FIL-ITALIA Nation Select and follow our players, activities and journey.</p><div class="social-grid"><a href="https://www.instagram.com/filitalianationselect?igsh=MXExeHoxY3I1cjE0bw%3D%3D&utm_source=qr" target="_blank" class="social-card"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" class="social-icon" alt="Instagram">Instagram</a><a href="https://www.facebook.com/share/1EPfQAxGx5/?mibextid=wwXIfr" target="_blank" class="social-card"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" class="social-icon" alt="Facebook">Facebook</a></div></section>
 <section class="events-section" id="events"><h2 data-key="eventsTitle">UPCOMING EVENTS</h2><div class="players-button-row"><a href="events.html" class="players-list-link" data-key="viewAllEvents">View All Events →</a></div><p class="section-subtitle" data-key="eventsSubtitle">Explore upcoming camps, tournaments, tryouts and future opportunities for our athletes.</p><div class="events-grid" id="homeEventsGrid"></div></section>
-<section class="contact-section" id="contact"><h2 data-key="contactTitle">CONTACT</h2><form action="https://formsubmit.co/Filitalia.nationselect@gmail.com" method="POST" class="contact-form"><input type="text" name="name" placeholder="Name" maxlength="100" autocomplete="name" data-key-placeholder="namePlaceholder" required><input type="email" name="email" placeholder="Email" maxlength="254" autocomplete="email" data-key-placeholder="emailPlaceholder" required><textarea name="message" placeholder="Message" maxlength="2000" data-key-placeholder="messagePlaceholder" required></textarea><input type="hidden" name="_subject" value="Nuovo messaggio FIL-ITALIA"><input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;pointer-events:none"><button type="submit" data-key="sendButton">SEND MESSAGE</button></form></section>
-<footer>
-<img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
-<p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
-<div class="footer-links">
-<a href="privacy.html">Privacy Policy</a>
+
+<div class="home-contact-modal" id="homeContactModal" aria-hidden="true">
+  <div class="home-contact-panel" role="dialog" aria-modal="true" aria-labelledby="homeContactTitle">
+    <button class="home-contact-close" type="button" data-home-contact-close aria-label="Chiudi">×</button>
+    <div class="home-contact-intro">
+      <img src="images/logo.png" alt="FIL-ITALIA">
+      <small>FIL-ITALIA NATION SELECT</small>
+      <h2 id="homeContactTitle" data-home-contact-title>PARLIAMONE</h2>
+      <p data-home-contact-subtitle>Camp, collaborazioni, giocatori e nuove opportunità FIL-ITALIA.</p>
+      <div class="home-contact-direct">
+        <a href="mailto:Filitalia.nationselect@gmail.com">Filitalia.nationselect@gmail.com</a>
+        <a href="https://www.instagram.com/filitalianationselect?igsh=MXExeHoxY3I1cjE0bw%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer">Instagram · @filitalianationselect</a>
+      </div>
+    </div>
+    <form action="https://formsubmit.co/Filitalia.nationselect@gmail.com" method="POST" class="home-contact-form">
+      <input type="text" name="name" placeholder="Nome" maxlength="100" autocomplete="name" data-home-contact-name required>
+      <input type="email" name="email" placeholder="Email" maxlength="254" autocomplete="email" data-home-contact-email required>
+      <textarea name="message" placeholder="Messaggio" maxlength="2000" data-home-contact-message required></textarea>
+      <input type="hidden" name="_subject" value="Nuovo messaggio FIL-ITALIA">
+      <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;pointer-events:none">
+      <button type="submit" data-home-contact-send>Invia messaggio</button>
+      <p class="home-contact-privacy">Inviando il messaggio accetti il trattamento dei dati secondo la <a href="privacy.html">Privacy Policy</a>.</p>
+    </form>
+  </div>
 </div>
-</footer>
+
 <div class="info-modal" id="infoModal">
   <span class="close-btn" onclick="closeInfo()">×</span>
   <button class="modal-arrow modal-prev" onclick="prevInfo()">‹</button>
@@ -205,8 +219,9 @@
 <script src="script.js?v=801"></script>
 <script src="filitalia-i18n.js?v=800"></script>
 <script src="home-auth-actions-v1.js?v=1"></script>
-<script src="home-horizontal-v1.js?v=2" data-filitalia-horizontal></script>
+<script src="home-horizontal-v1.js?v=3" data-filitalia-horizontal></script>
 <script src="home-tricolore-v1.js?v=4"></script>
 <script src="players-supabase.js?v=1"></script>
 <script src="home-content-v2.js?v=1"></script>
+<script src="home-homehub-v1.js?v=1"></script>
 </body></html>
