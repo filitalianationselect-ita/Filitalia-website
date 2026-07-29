@@ -1,5 +1,5 @@
 {
-  "url": "https://deploy-preview-1--filitalia.netlify.app/?visual-review=content-v2&attempt=0#events",
+  "url": "https://deploy-preview-1--filitalia.netlify.app/?visual-review=concept2-final&attempt=0#events",
   "title": "FIL-ITALIA Nation Select",
   "viewport": {
     "width": 1280,
@@ -9,6 +9,20 @@
   "bodyClientWidth": 1280,
   "stageScrollWidth": 8960,
   "panelCount": 7,
+  "navLabels": [
+    "Home",
+    "Chi siamo",
+    "Giocatori",
+    "Galleria",
+    "Staff",
+    "News",
+    "Eventi",
+    "Registrazione Camp",
+    "Contatti",
+    "Account"
+  ],
+  "programCta": 1,
+  "visiblePageControls": 0,
   "playerCards": 3,
   "eventOrder": [
     {
@@ -36,15 +50,58 @@
       "status": "Data in arrivo"
     }
   ],
+  "standalone": {
+    "players": {
+      "bodyClass": "fil-public-body fil-page-players",
+      "title": "FIL-ITALIA Giocatori",
+      "background": "radial-gradient(circle at 88% 12%, rgba(229, 50, 72, 0.2), rgba(0, 0, 0, 0) 27%), linear-gradient(135deg, rgb(2, 11, 8), rgb(7, 47, 32) 58%, rgb(7, 21, 15))",
+      "navLinks": 10
+    },
+    "gallery": {
+      "bodyClass": "fil-public-body fil-page-gallery",
+      "title": "FIL-ITALIA Media Gallery",
+      "background": "radial-gradient(circle at 12% 84%, rgba(229, 50, 72, 0.16), rgba(0, 0, 0, 0) 28%), linear-gradient(135deg, rgb(1, 8, 6), rgb(6, 27, 19) 58%, rgb(7, 31, 22))",
+      "navLinks": 10
+    },
+    "staff": {
+      "bodyClass": "fil-public-body fil-page-staff",
+      "title": "FIL-ITALIA Staff",
+      "background": "linear-gradient(118deg, rgb(3, 17, 12) 0px, rgb(3, 17, 12) 68%, rgba(157, 24, 42, 0.86) 68%, rgba(157, 24, 42, 0.86) 77%, rgb(6, 27, 19) 77%, rgb(6, 27, 19) 100%)",
+      "navLinks": 10
+    },
+    "news": {
+      "bodyClass": "fil-public-body fil-page-news",
+      "title": "FIL-ITALIA News",
+      "background": "radial-gradient(circle at 90% 10%, rgba(229, 50, 72, 0.2), rgba(0, 0, 0, 0) 27%), linear-gradient(135deg, rgb(4, 7, 6), rgb(18, 16, 15) 60%, rgb(35, 16, 22))",
+      "navLinks": 10
+    },
+    "events": {
+      "bodyClass": "fil-public-body fil-page-events",
+      "title": "FIL-ITALIA Eventi",
+      "background": "radial-gradient(circle at 88% 12%, rgba(229, 50, 72, 0.2), rgba(0, 0, 0, 0) 27%), radial-gradient(circle at 10% 86%, rgba(24, 212, 112, 0.14), rgba(0, 0, 0, 0) 27%), linear-gradient(135deg, rgb(2, 11, 8), rgb(6, 34, 25) 58%, rgb(23, 16, 19))",
+      "navLinks": 10
+    }
+  },
   "mobile": {
     "bodyScrollWidth": 390,
     "bodyClientWidth": 390,
     "heroShell": {
-      "x": -2328,
+      "x": 12,
       "y": 88,
       "width": 366,
       "height": 653.375
     },
-    "playerCardWidth": 327.9951171875
+    "menuButton": {
+      "x": 10,
+      "y": -6.5,
+      "width": 46,
+      "height": 44
+    },
+    "loginButton": {
+      "x": 66,
+      "y": 15.5,
+      "width": 38,
+      "height": 44
+    }
   }
 }
