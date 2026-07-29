@@ -6,28 +6,22 @@
   html body.fil-final-site.fil-concept2.home-reference-navbar-ready[data-horizontal-ready="true"] .navbar.fil-final-navbar .home-nav-left,
   html body.fil-final-site[data-gallery-category] .navbar.fil-final-navbar .mobile-menu-button,
   html body.fil-final-site[data-album-id] .navbar.fil-final-navbar .mobile-menu-button{
-    display:none!important;
-    visibility:hidden!important;
-    opacity:0!important;
-    pointer-events:none!important;
-    width:0!important;
-    height:0!important;
-    min-width:0!important;
-    min-height:0!important;
-    margin:0!important;
-    padding:0!important;
+    display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;
   }
   html body.fil-final-site.mobile-menu-open .navbar.fil-final-navbar .nav-links,
   html body.fil-final-site .navbar.fil-final-navbar .nav-links.active{
-    display:flex!important;
-    position:static!important;
-    inset:auto!important;
-    width:auto!important;
-    height:var(--fil-final-nav)!important;
-    flex-direction:row!important;
-    background:transparent!important;
-    transform:none!important;
-    opacity:1!important;
-    visibility:visible!important;
+    display:flex!important;position:static!important;inset:auto!important;width:auto!important;height:var(--fil-final-nav)!important;flex-direction:row!important;background:transparent!important;transform:none!important;opacity:1!important;visibility:visible!important;
   }
+  html body.fil-final-site .navbar.fil-final-navbar .nav-links a,
+  html body.fil-final-site.fil-concept2.home-reference-navbar-ready[data-horizontal-ready="true"] .navbar.fil-final-navbar .nav-links a,
+  html body.fil-final-site[data-gallery-category] .navbar.fil-final-navbar .nav-links a,
+  html body.fil-final-site[data-album-id] .navbar.fil-final-navbar .nav-links a{
+    font-size:11.5px!important;
+    letter-spacing:.025em!important;
+  }
+}
+@media(min-width:901px) and (max-width:1080px){
+  html body.fil-final-site .navbar.fil-final-navbar .nav-links{gap:7px!important}
+  html body.fil-final-site .navbar.fil-final-navbar .nav-links a{font-size:10.5px!important}
+  html body.fil-final-site .fil-final-brand-copy small{display:none!important}
 }
