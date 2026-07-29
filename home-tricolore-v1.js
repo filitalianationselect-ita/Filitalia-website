@@ -153,7 +153,17 @@
     }
   }
 
+  function loadPanelRedesign(){
+    if(document.querySelector('link[data-filitalia-panels-v4]')) return;
+    const style=document.createElement('link');
+    style.rel='stylesheet';
+    style.href='home-panels-v4.css?v=4';
+    style.dataset.filitaliaPanelsV4='true';
+    document.head.appendChild(style);
+  }
+
   function boot(){
+    loadPanelRedesign();
     apply();
     loadHorizontalLayout();
   }
