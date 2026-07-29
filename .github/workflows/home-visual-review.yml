@@ -5,6 +5,11 @@ on:
     branches: ["agent/admin-panel-demo"]
     paths:
       - ".github/workflows/home-visual-review.yml"
+      - "index.html"
+      - "home-tricolore-v1.css"
+      - "home-tricolore-v1.js"
+      - "home-horizontal-v1.css"
+      - "home-horizontal-v1.js"
 
 permissions:
   contents: write
@@ -28,32 +33,57 @@ jobs:
           node <<'NODE'
           const { chromium } = require('playwright');
           const fs = require('fs');
+          const url='https://deploy-preview-1--filitalia.netlify.app/?visual-review=horizontal-1';
           (async()=>{
             const browser = await chromium.launch({headless:true});
-            const page = await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
-            await page.goto('https://deploy-preview-1--filitalia.netlify.app/?visual-review=4',{waitUntil:'networkidle',timeout:120000});
-            await page.waitForTimeout(2500);
-            await page.screenshot({path:'/tmp/home-review.jpg',type:'jpeg',quality:58,fullPage:false});
-            const selectors=['.navbar','.home-hero-shell','.home-hero-title','.home-player-frame','.home-event-rail','.home-value-strip'];
-            const metrics={url:page.url(),title:await page.title(),viewport:{width:1280,height:800},elements:{}};
+            const desktop = await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
+            let ready=false;
+            for(let attempt=0;attempt<60;attempt++){
+              await desktop.goto(url+'&attempt='+attempt,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await desktop.waitForSelector('body[data-horizontal-ready="true"]',{timeout:2500});
+                ready=true;
+                break;
+              }catch(error){await desktop.waitForTimeout(1500);}
+            }
+            if(!ready)throw new Error('Horizontal homepage was not available on Deploy Preview');
+            await desktop.waitForTimeout(2500);
+            await desktop.screenshot({path:'/tmp/home-desktop.jpg',type:'jpeg',quality:72,fullPage:false});
+            const selectors=['.navbar','.home-horizontal-stage','.home-hero-shell','.home-hero-title','.home-player-frame','.home-event-rail','.home-value-strip'];
+            const metrics={url:desktop.url(),title:await desktop.title(),viewport:{width:1280,height:800},elements:{}};
             for(const selector of selectors){
-              const node=page.locator(selector).first();
+              const node=desktop.locator(selector).first();
               metrics.elements[selector]=await node.count()?await node.boundingBox():null;
             }
-            metrics.bodyScrollWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
-            metrics.bodyClientWidth=await page.evaluate(()=>document.documentElement.clientWidth);
+            metrics.bodyScrollWidth=await desktop.evaluate(()=>document.documentElement.scrollWidth);
+            metrics.bodyClientWidth=await desktop.evaluate(()=>document.documentElement.clientWidth);
+            metrics.stageScrollWidth=await desktop.locator('.home-horizontal-stage').evaluate(node=>node.scrollWidth);
+            metrics.panelCount=await desktop.locator('.home-horizontal-panel').count();
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            await mobile.goto(url+'&mobile=1',{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('body[data-horizontal-ready="true"]',{timeout:15000});
+            await mobile.waitForTimeout(1200);
+            await mobile.screenshot({path:'/tmp/home-mobile.jpg',type:'jpeg',quality:72,fullPage:false});
+            metrics.mobile={
+              bodyScrollWidth:await mobile.evaluate(()=>document.documentElement.scrollWidth),
+              bodyClientWidth:await mobile.evaluate(()=>document.documentElement.clientWidth),
+              heroShell:await mobile.locator('.home-hero-shell').boundingBox(),
+              title:await mobile.locator('.home-hero-title').boundingBox()
+            };
             fs.writeFileSync('/tmp/home-metrics.json',JSON.stringify(metrics,null,2));
             await browser.close();
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
-      - name: Save compact visual evidence
+      - name: Save visual evidence
         run: |
+          rm -rf visual-review
           mkdir -p visual-review
-          base64 -w 0 /tmp/home-review.jpg > /tmp/home-review.b64
-          split -b 18000 -d -a 2 /tmp/home-review.b64 visual-review/home-review-part-
+          cp /tmp/home-desktop.jpg visual-review/home-desktop.jpg
+          cp /tmp/home-mobile.jpg visual-review/home-mobile.jpg
           cp /tmp/home-metrics.json visual-review/home-metrics.json
           git config user.name "filitalia-visual-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add visual-review
-          git commit -m "test: capture live homepage visual review"
+          git add -A visual-review
+          git commit -m "test: capture horizontal homepage visual review"
           git push origin HEAD:agent/admin-panel-demo
