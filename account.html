@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
 <link rel="stylesheet" href="account.css?v=920">
+<link rel="stylesheet" href="account-workspace-v2.css?v=1">
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body data-account-page="account">
@@ -23,9 +24,33 @@
 </nav>
 <main class="account-main">
   <div class="account-shell">
+    <section class="account-workspace-hero">
+      <div class="account-workspace-copy">
+        <span class="account-workspace-kicker">FIL-ITALIA NATION SELECT</span>
+        <h1>Il mio account</h1>
+        <p>Profilo, iscrizioni, documenti e attività FIL-ITALIA riuniti in un’unica area personale.</p>
+      </div>
+      <div class="account-workspace-actions">
+        <a class="account-workspace-button" href="index.html">Torna al sito</a>
+        <a id="accountAdminAction" class="account-workspace-button primary" href="admin" hidden>Apri amministrazione</a>
+      </div>
+    </section>
+
+    <section class="account-overview-grid" aria-label="Riepilogo account">
+      <article class="account-overview-card"><span>Profilo</span><strong id="accountProfileCompletion">0%</strong><small>Completamento dei dati personali</small></article>
+      <article class="account-overview-card"><span>Registrazioni</span><strong id="accountRegistrationCount">0</strong><small>Camp e attività collegate</small></article>
+      <article class="account-overview-card"><span>Documenti</span><strong id="accountDocumentStatus">Da verificare</strong><small>Disponibilità in base al ruolo</small></article>
+      <article class="account-overview-card"><span>Accesso</span><strong id="accountAccessStatus">Da verificare</strong><small id="accountRoleSummary">In attesa</small></article>
+    </section>
+
+    <section class="account-role-intro">
+      <div><span class="account-workspace-kicker" style="color:#126847">AREA PERSONALE</span><h2 id="accountRoleTitle">Account in attesa</h2><p id="accountRoleDescription">Caricamento delle funzioni disponibili per il tuo profilo.</p></div>
+      <span id="accountRolePill" class="account-role-pill">In attesa</span>
+    </section>
+
     <p id="accountConfigWarning" class="account-config-warning" hidden>Collega Supabase in <strong>supabase-config.js</strong> prima di usare l’area riservata.</p>
 
-    <section class="account-card">
+    <section class="account-card account-profile-card">
       <div class="account-head">
         <div>
           <h1 id="accountName" class="account-title">Account FIL-ITALIA</h1>
@@ -160,5 +185,6 @@
 <script src="auth-pages.js?v=1001"></script>
 <script src="unified-access-v1.js?v=1"></script>
 <script src="player-card-admin.js?v=1"></script>
+<script src="account-role-dashboard-v1.js?v=1"></script>
 </body>
 </html>
