@@ -12,6 +12,30 @@ function getParts(){
   return {section,grid,prev,next,count};
 }
 
+function playerSource(){
+  try{
+    if(Array.isArray(window.playersData))return window.playersData;
+    if(typeof playersData!=='undefined'&&Array.isArray(playersData))return playersData;
+  }catch(_){}
+  return [];
+}
+
+function activePlayers(){
+  return playerSource().filter(function(player){
+    const status=String(player.status||'active').toLowerCase();
+    return !['hidden','inactive','disabled','archived'].includes(status);
+  });
+}
+
+function ensureAllPlayerCards(grid){
+  if(!grid)return;
+  const source=activePlayers();
+  const current=grid.querySelectorAll(':scope > .player-card').length;
+  if(source.length<=current||typeof window.buildPlayerCard!=='function'&&typeof buildPlayerCard!=='function')return;
+  const builder=typeof window.buildPlayerCard==='function'?window.buildPlayerCard:buildPlayerCard;
+  grid.innerHTML=source.map(function(player,index){return builder(player,index);}).join('');
+}
+
 function cards(grid){
   return grid?Array.from(grid.querySelectorAll(':scope > .player-card')):[];
 }
@@ -53,8 +77,10 @@ function targetLeft(grid,card){
 
 function update(){
   const {grid,prev,next,count}=getParts();
+  if(!grid)return;
+  ensureAllPlayerCards(grid);
   const list=cards(grid);
-  if(!grid||!list.length)return;
+  if(!list.length)return;
   sizeCards(grid,list);
   activeIndex=Math.min(Math.max(0,activeIndex),maxIndex(grid,list));
   if(count)count.textContent=String(activeIndex+1).padStart(2,'0')+' / '+String(list.length).padStart(2,'0');
@@ -64,8 +90,10 @@ function update(){
 
 function go(delta){
   const {grid}=getParts();
+  if(!grid)return;
+  ensureAllPlayerCards(grid);
   const list=cards(grid);
-  if(!grid||!list.length)return;
+  if(!list.length)return;
   sizeCards(grid,list);
   activeIndex=Math.min(Math.max(0,activeIndex+delta),maxIndex(grid,list));
   const target=list[activeIndex];
@@ -82,6 +110,7 @@ function go(delta){
 function bind(){
   const {grid}=getParts();
   if(!grid)return;
+  ensureAllPlayerCards(grid);
   const list=cards(grid);
   sizeCards(grid,list);
   if(!grid.dataset.filReliableCarousel){
@@ -98,7 +127,7 @@ function bind(){
       activeIndex=Math.min(best,maxIndex(grid,current));
       window.requestAnimationFrame(update);
     },{passive:true});
-    new MutationObserver(function(){window.setTimeout(bind,60);}).observe(grid,{childList:true});
+    new MutationObserver(function(){window.setTimeout(update,60);}).observe(grid,{childList:true});
   }
   update();
 }
