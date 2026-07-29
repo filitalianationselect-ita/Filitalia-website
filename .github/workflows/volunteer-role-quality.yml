@@ -1,0 +1,84 @@
+name: FIL-ITALIA Volunteer Role Quality
+
+on:
+  pull_request:
+    paths:
+      - "login.html"
+      - "account.html"
+      - "volunteer-role-v1.js"
+      - "supabase/migrations/20260729083000_volunteer_role.sql"
+      - "supabase/functions/admin-invite-user/index.ts"
+      - "supabase/functions/admin-update-account-status/index.ts"
+      - "scripts/audit-role-consistency.js"
+      - ".github/workflows/volunteer-role-quality.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+
+permissions:
+  contents: read
+
+jobs:
+  volunteer_role:
+    name: Volunteer role and permissions
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      PGPASSWORD: postgres
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check volunteer JavaScript syntax
+        run: node --check volunteer-role-v1.js
+      - name: Prepare profiles schema without volunteer
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          create extension if not exists pgcrypto;
+          create schema if not exists auth;
+          create table if not exists auth.users (
+            id uuid primary key default gen_random_uuid(),
+            email text
+          );
+          create table public.profiles (
+            id uuid primary key references auth.users(id) on delete cascade,
+            email text,
+            role text not null default 'player'
+              check (role in ('player','parent','coach','coordinator','city_coordinator','staff','scout','media','user','admin','super_admin')),
+            requested_role text
+              check (requested_role in ('player','parent','coach','coordinator','city_coordinator','staff','scout','media','user','admin','super_admin')),
+            status text not null default 'pending'
+          );
+          SQL
+      - name: Apply volunteer migration twice
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260729083000_volunteer_role.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260729083000_volunteer_role.sql
+      - name: Verify volunteer profile and request
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          insert into auth.users (id,email)
+          values ('00000000-0000-0000-0000-000000000001','volunteer@example.test');
+          insert into public.profiles (id,email,role,requested_role,status)
+          values ('00000000-0000-0000-0000-000000000001','volunteer@example.test','volunteer','volunteer','active');
+          select role,requested_role,status from public.profiles where email='volunteer@example.test';
+          SQL
+      - name: Verify UI and Edge Function alignment
+        run: |
+          grep -F '<option value="volunteer">Volontario</option>' login.html
+          grep -F 'data-role-section="volunteer"' account.html
+          grep -F 'volunteer-role-v1.js' account.html
+          grep -F '"volunteer"' supabase/functions/admin-invite-user/index.ts
+          grep -F '"volunteer"' supabase/functions/admin-update-account-status/index.ts
+          node scripts/audit-role-consistency.js
