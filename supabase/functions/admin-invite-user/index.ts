@@ -42,7 +42,7 @@ Deno.serve(async (request) => {
     const firstName = String(body.first_name || "").trim().slice(0, 100);
     const lastName = String(body.last_name || "").trim().slice(0, 100);
     const requestedRole = String(body.role || "staff");
-    const role = ["super_admin","admin","coordinator","coach","staff","player","parent"].includes(requestedRole) ? requestedRole : "staff";
+    const role = ["super_admin","admin","coordinator","coach","staff","volunteer","player","parent"].includes(requestedRole) ? requestedRole : "staff";
     const scope = Array.isArray(body.scope) ? body.scope.map((value: unknown) => String(value).trim()).filter(Boolean).slice(0, 30) : [];
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw new Error("INVALID_EMAIL");
     if (role === "super_admin" && profile.role !== "super_admin") throw new Error("SUPER_ADMIN_REQUIRED");
