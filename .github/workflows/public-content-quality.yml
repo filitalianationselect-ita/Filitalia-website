@@ -12,6 +12,10 @@ on:
       - "public-media-v1.css"
       - "public-pages-v1.js"
       - "public-pages-v1.css"
+      - "public-concept2-final-v1.css"
+      - "home-concept2-final-v1.js"
+      - "home-concept2-final-v1.css"
+      - "home-tricolore-v1.js"
       - "admin-content-layout-v1.js"
       - "admin-light.html"
       - "index.html"
@@ -53,6 +57,10 @@ on:
       - "public-media-v1.css"
       - "public-pages-v1.js"
       - "public-pages-v1.css"
+      - "public-concept2-final-v1.css"
+      - "home-concept2-final-v1.js"
+      - "home-concept2-final-v1.css"
+      - "home-tricolore-v1.js"
       - "admin-content-layout-v1.js"
       - "admin-light.html"
       - "index.html"
@@ -100,6 +108,8 @@ jobs:
           node --check public-content-layout-v1.js
           node --check public-media-v1.js
           node --check public-pages-v1.js
+          node --check home-tricolore-v1.js
+          node --check home-concept2-final-v1.js
           node --check admin-content-layout-v1.js
           node --check login-form-polish-v1.js
           node --check reset-password-polish-v1.js
@@ -119,15 +129,15 @@ jobs:
           const admin = fs.readFileSync('admin-light.html','utf8');
           const required = [
             [files.index,'id="homeMediaGrid"'],
-            [files.index,'public-content-layout-v1.js?v=1'],
-            [files.index,'public-media-v1.js?v=1'],
-            [files.players,'public-pages-v1.js?v=1'],
-            [files.gallery,'public-pages-v1.js?v=1'],
-            [files.staff,'public-pages-v1.js?v=1'],
-            [files.news,'public-pages-v1.js?v=1'],
-            [files.events,'public-pages-v1.js?v=1'],
-            [files.gallery,'public-media-v1.js?v=1'],
-            [admin,'admin-content-layout-v1.js?v=1'],
+            [files.index,'public-content-layout-v1.js?v='],
+            [files.index,'public-media-v1.js?v='],
+            [files.players,'public-pages-v1.js?v='],
+            [files.gallery,'public-pages-v1.js?v='],
+            [files.staff,'public-pages-v1.js?v='],
+            [files.news,'public-pages-v1.js?v='],
+            [files.events,'public-pages-v1.js?v='],
+            [files.gallery,'public-media-v1.js?v='],
+            [admin,'admin-content-layout-v1.js?v='],
             [migration,'create table if not exists public.admin_content_layout'],
             [migration,'create table if not exists public.admin_media'],
             [migration,'Public read published FIL-ITALIA media']
