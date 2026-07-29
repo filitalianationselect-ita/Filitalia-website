@@ -1,0 +1,111 @@
+/* FIL-ITALIA standalone public pages v2 */
+body.fil-public-body{
+  background-attachment:fixed!important;
+}
+
+body.fil-public-body::before{
+  z-index:0!important;
+  opacity:.055!important;
+  background-size:min(620px,48vw) auto!important;
+}
+
+body.fil-public-body .navbar,
+body.fil-public-body .players-page,
+body.fil-public-body footer{
+  position:relative;
+  z-index:2;
+}
+
+body.fil-public-body .players-page>.page-subtitle{
+  font-weight:700!important;
+}
+
+body.fil-public-body .fil-page-brand{
+  backdrop-filter:blur(14px);
+}
+
+/* PLAYERS */
+body.fil-page-players{
+  color:#fff!important;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(215,45,67,.42),transparent 27%),
+    radial-gradient(circle at 12% 78%,rgba(55,220,136,.2),transparent 30%),
+    linear-gradient(135deg,#031a12 0%,#06442d 52%,#08261c 100%)!important;
+}
+body.fil-page-players::before{filter:grayscale(1) brightness(4)!important;opacity:.045!important}
+body.fil-page-players .navbar{background:rgba(3,24,17,.92)!important;border-color:rgba(255,255,255,.1)!important}
+body.fil-page-players .navbar a,body.fil-page-players .logo-text{color:#fff!important}
+body.fil-page-players .players-page>h1{color:#fff!important;text-shadow:0 18px 55px rgba(0,0,0,.22)}
+body.fil-page-players .players-page>.page-subtitle{color:#d1e8dc!important}
+body.fil-page-players .fil-page-brand{border-color:rgba(255,255,255,.16)!important;background:rgba(255,255,255,.08)!important}
+body.fil-page-players .fil-page-brand span{color:#9af1c1!important}
+body.fil-page-players .fil-player-page-tools{background:rgba(255,255,255,.92)!important;box-shadow:0 24px 70px rgba(0,0,0,.25)!important}
+body.fil-page-players footer{background:#02130d!important}
+
+/* MEDIA */
+body.fil-page-gallery{
+  background:
+    radial-gradient(circle at 84% 14%,rgba(36,211,127,.28),transparent 27%),
+    radial-gradient(circle at 12% 82%,rgba(218,45,68,.25),transparent 29%),
+    linear-gradient(135deg,#020b08 0%,#061d14 55%,#12241b 100%)!important;
+}
+body.fil-page-gallery footer{background:#010906!important}
+
+/* STAFF */
+body.fil-page-staff{
+  color:#fff!important;
+  background:
+    linear-gradient(112deg,rgba(133,17,30,.96) 0 39%,rgba(197,42,57,.94) 39% 47%,rgba(4,42,28,.97) 47% 100%),
+    url("images/logo.png") center/48vw auto no-repeat!important;
+}
+body.fil-page-staff::before{filter:grayscale(1) brightness(4)!important;opacity:.04!important}
+body.fil-page-staff .navbar{background:rgba(4,25,18,.92)!important;border-color:rgba(255,255,255,.1)!important}
+body.fil-page-staff .navbar a,body.fil-page-staff .logo-text{color:#fff!important}
+body.fil-page-staff .players-page>h1{color:#fff!important}
+body.fil-page-staff .players-page>.page-subtitle{color:#f1dfe2!important}
+body.fil-page-staff .fil-page-brand{border-color:rgba(255,255,255,.16)!important;background:rgba(255,255,255,.08)!important}
+body.fil-page-staff .fil-page-brand span{color:#fff!important}
+body.fil-page-staff .fil-staff-heading h2{color:#fff!important}
+body.fil-page-staff .fil-staff-heading span{color:#d8eadf!important}
+body.fil-page-staff footer{background:#02150e!important}
+
+/* NEWS */
+body.fil-page-news{
+  color:#fff!important;
+  background:
+    radial-gradient(circle at 14% 18%,rgba(36,199,119,.18),transparent 27%),
+    linear-gradient(108deg,#090a0a 0 58%,#b51f35 58% 78%,#731322 78% 100%)!important;
+}
+body.fil-page-news::before{filter:grayscale(1) brightness(4)!important;opacity:.035!important}
+body.fil-page-news .navbar{background:rgba(8,9,9,.93)!important;border-color:rgba(255,255,255,.1)!important}
+body.fil-page-news .navbar a,body.fil-page-news .logo-text{color:#fff!important}
+body.fil-page-news .players-page>h1{color:#fff!important}
+body.fil-page-news .players-page>.page-subtitle{color:#eadde0!important}
+body.fil-page-news .fil-page-brand{border-color:rgba(255,255,255,.16)!important;background:rgba(255,255,255,.08)!important}
+body.fil-page-news .fil-page-brand span{color:#8ff0ba!important}
+body.fil-page-news footer{background:#050606!important}
+
+/* EVENTS */
+body.fil-page-events{
+  background:
+    radial-gradient(circle at 86% 12%,rgba(255,191,45,.28),transparent 25%),
+    radial-gradient(circle at 12% 84%,rgba(58,220,139,.22),transparent 28%),
+    linear-gradient(122deg,#031a12 0 52%,#087047 52% 64%,#b6213a 64% 100%)!important;
+}
+body.fil-page-events footer{background:#02130d!important}
+
+body.fil-page-players .language-switch button,
+body.fil-page-gallery .language-switch button,
+body.fil-page-staff .language-switch button,
+body.fil-page-news .language-switch button,
+body.fil-page-events .language-switch button{
+  border-color:rgba(255,255,255,.18)!important;
+  color:#fff!important;
+  background:rgba(255,255,255,.08)!important;
+}
+
+@media(max-width:760px){
+  body.fil-page-staff{background:linear-gradient(155deg,#8b1726 0 34%,#063c28 34% 100%)!important}
+  body.fil-page-news{background:linear-gradient(155deg,#080909 0 64%,#9f1c31 64% 100%)!important}
+  body.fil-page-events{background:linear-gradient(155deg,#031a12 0 58%,#a51d35 58% 100%)!important}
+}
