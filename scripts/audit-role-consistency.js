@@ -18,10 +18,22 @@ requireFragments('supabase/migrations/20260728090000_filitalia_admin_complete.sq
   'create or replace function public.is_active_super_admin()'
 ]);
 
+requireFragments('supabase/migrations/20260729083000_volunteer_role.sql', [
+  "'volunteer'",
+  "array['role','requested_role']",
+  'profiles_%I_check'
+]);
+
 requireFragments('supabase/functions/admin-update-account-status/index.ts', [
+  '"volunteer"',
   '"admin", "super_admin"',
   'SUPER_ADMIN_REQUIRED',
   'CANNOT_REMOVE_LAST_SUPER_ADMIN'
+]);
+
+requireFragments('supabase/functions/admin-invite-user/index.ts', [
+  '"volunteer"',
+  'requested_role: role'
 ]);
 
 requireFragments('unified-access-v1.js', [
@@ -45,8 +57,19 @@ const accountUiPosition = account.indexOf('auth-pages.js');
 if (compatibilityPosition < 0 || accountUiPosition < 0 || compatibilityPosition > accountUiPosition) {
   throw new Error('Super Admin compatibility must load before auth-pages.js');
 }
-if (!account.includes('data-role-section="player,parent,coach,coordinator,staff,admin,super_admin"')) {
-  throw new Error('Account role sections do not include super_admin');
+if (!account.includes('data-role-section="player,parent,coach,coordinator,staff,volunteer,admin,super_admin"')) {
+  throw new Error('Account role sections do not include volunteer and super_admin');
+}
+if (!account.includes('data-role-section="volunteer"')) {
+  throw new Error('Volunteer workspace is missing from account.html');
+}
+if (!account.includes('volunteer-role-v1.js')) {
+  throw new Error('Volunteer UI compatibility script is missing from account.html');
+}
+
+const login = read('login.html');
+if (!login.includes('<option value="volunteer">Volontario</option>')) {
+  throw new Error('Volunteer role is missing from signup');
 }
 
 const temporaryWorkflows = [
@@ -61,4 +84,4 @@ if (!compatibility.includes('if (!isSuperAdmin(caller))')) {
   throw new Error('Ordinary Admin accounts are not protected from Super Admin records');
 }
 
-console.log('Role consistency audit passed: Admin and Super Admin access is aligned and protected.');
+console.log('Role consistency audit passed: Admin, Super Admin and Volunteer roles are aligned and protected.');
