@@ -1,72 +1,50 @@
 {
-  "url": "https://deploy-preview-1--filitalia.netlify.app/?visual-review=horizontal-1&attempt=0#top",
+  "url": "https://deploy-preview-1--filitalia.netlify.app/?visual-review=content-v2&attempt=0#events",
   "title": "FIL-ITALIA Nation Select",
   "viewport": {
     "width": 1280,
     "height": 800
   },
-  "elements": {
-    ".navbar": {
-      "x": 0,
-      "y": 0,
-      "width": 1280,
-      "height": 75
-    },
-    ".home-horizontal-stage": {
-      "x": 0,
-      "y": 75,
-      "width": 1280,
-      "height": 725
-    },
-    ".home-hero-shell": {
-      "x": 50,
-      "y": 101,
-      "width": 1180,
-      "height": 544
-    },
-    ".home-hero-title": {
-      "x": 79,
-      "y": 173.953125,
-      "width": 511.359375,
-      "height": 89.03125
-    },
-    ".home-player-frame": {
-      "x": 624.359375,
-      "y": 130,
-      "width": 576.625,
-      "height": 338
-    },
-    ".home-event-rail": {
-      "x": 79,
-      "y": 490,
-      "width": 1121.984375,
-      "height": 126
-    },
-    ".home-value-strip": {
-      "x": 50,
-      "y": 659,
-      "width": 1180,
-      "height": 92
-    }
-  },
   "bodyScrollWidth": 1280,
   "bodyClientWidth": 1280,
   "stageScrollWidth": 12800,
   "panelCount": 10,
+  "playerCards": 3,
+  "eventOrder": [
+    {
+      "id": "idcamp-roma-2026",
+      "date": "5 Agosto 2026",
+      "title": "Talent ID Camp Roma",
+      "status": "Prossimo"
+    },
+    {
+      "id": "idcamp-venezia-2026",
+      "date": "13 Settembre 2026",
+      "title": "Talent ID Camp Venezia",
+      "status": "In programma"
+    },
+    {
+      "id": "idcamp-firenze-2026",
+      "date": "20 Settembre 2026",
+      "title": "Talent ID Camp Firenze",
+      "status": "In programma"
+    },
+    {
+      "id": "idcamp-milano-2026",
+      "date": "Data in arrivo",
+      "title": "Talent ID Camp Milano",
+      "status": "Data in arrivo"
+    }
+  ],
   "mobile": {
     "bodyScrollWidth": 390,
     "bodyClientWidth": 390,
     "heroShell": {
-      "x": 12,
+      "x": -2328,
       "y": 88,
       "width": 366,
       "height": 592.375
     },
-    "title": {
-      "x": 27,
-      "y": 130,
-      "width": 336,
-      "height": 66.5
-    }
+    "playerCardWidth": 330
   }
 }
