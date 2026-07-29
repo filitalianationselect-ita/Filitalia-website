@@ -13,10 +13,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
 <link rel="stylesheet" href="home-auth-actions-v1.css?v=2">
+<link rel="stylesheet" href="home-tricolore-v1.css?v=1">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
-<body>
+<body data-home-theme="tricolore">
 <div class="background-logo"></div>
 <nav class="navbar">
   <div class="home-nav-left">
@@ -52,12 +53,44 @@
     <button onclick="setLanguage('ph')">PH</button>
   </div>
 </nav>
-<section class="hero" id="top">
-  <div class="hero-content">
-    <img src="images/logo.png" class="hero-logo" alt="FIL-ITALIA Logo">
-    <h1>FIL-ITALIA<span>NATION SELECT</span></h1>
-    <p data-key="heroText">Representing the Next Generation of Fil-Italian Basketball Talent</p>
-    <a href="#players" class="main-button" data-key="heroButton">View Players</a>
+<section class="hero home-hero" id="top">
+  <div class="home-hero-shell">
+    <div class="home-hero-copy">
+      <span id="homeHeroEyebrow" class="home-hero-eyebrow">FIL-ITALIA NATION SELECT</span>
+      <h1 class="home-hero-title">
+        <span id="homeHeroLine1">IL TALENTO</span>
+        <strong id="homeHeroLine2">CRESCE.</strong>
+        <span id="homeHeroLine3">IL FUTURO</span>
+        <span id="homeHeroLine4" class="home-red-line">CI ASPETTA.</span>
+      </h1>
+      <p id="homeHeroDescription">Allenamento, competizione e opportunità per costruire il futuro dei giovani atleti italiani e di origine filippina.</p>
+      <div class="home-hero-actions">
+        <a class="home-hero-button" href="#events"><span id="homeHeroEventsLabel">I prossimi eventi</span></a>
+        <a class="home-hero-button secondary" href="#about"><span id="homeHeroDiscoverLabel">Scopri di più</span></a>
+      </div>
+      <p id="homeHeroNote" class="home-hero-note">Un unico percorso: sviluppo, selezione e opportunità internazionali.</p>
+    </div>
+
+    <div class="home-hero-visual">
+      <div class="home-player-frame">
+        <img src="images/players/6.jpg" alt="Giocatore FIL-ITALIA">
+        <div class="home-player-caption">
+          <div><strong>FIL-ITALIA DEVELOPMENT PROGRAM</strong><span>Players · Camps · International Pathway</span></div>
+          <img src="images/logo.png" alt="">
+        </div>
+      </div>
+      <aside class="home-event-rail" aria-label="Prossimi eventi">
+        <div class="home-event-rail-head"><strong id="homeHeroRailTitle">Prossimi eventi</strong><a id="homeHeroAllEvents" href="events.html">Vedi tutti</a></div>
+        <div id="homeHeroEvents" class="home-hero-event-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="home-value-strip" aria-label="I pilastri FIL-ITALIA">
+    <article class="home-value-item"><span class="home-value-icon">↗</span><div><strong id="homeValueTitle1">Sviluppo</strong><p id="homeValueText1">Programmi tecnici avanzati e crescita continua.</p></div></article>
+    <article class="home-value-item"><span class="home-value-icon">◎</span><div><strong id="homeValueTitle2">Visibilità</strong><p id="homeValueText2">Eventi e selezioni per farti notare dai migliori.</p></div></article>
+    <article class="home-value-item"><span class="home-value-icon">★</span><div><strong id="homeValueTitle3">Opportunità</strong><p id="homeValueText3">Percorsi in Italia e all’estero, college e borse di studio.</p></div></article>
+    <article class="home-value-item"><span class="home-value-icon">◇</span><div><strong id="homeValueTitle4">Network</strong><p id="homeValueText4">Allenatori, scout e partner a livello internazionale.</p></div></article>
   </div>
 </section>
 <section class="about-section" id="about">
@@ -169,5 +202,6 @@
 <script src="script.js?v=801"></script>
 <script src="filitalia-i18n.js?v=800"></script>
 <script src="home-auth-actions-v1.js?v=1"></script>
+<script src="home-tricolore-v1.js?v=1"></script>
 <script src="players-supabase.js?v=1"></script>
 </body></html>
