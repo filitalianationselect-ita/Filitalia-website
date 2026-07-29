@@ -1,0 +1,108 @@
+name: FIL-ITALIA Staff Events QA
+
+on:
+  pull_request:
+    paths:
+      - "staff.html"
+      - "events.html"
+      - "site-staff-events-v1.css"
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-priority-v2.css"
+      - ".github/workflows/staff-events-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "staff.html"
+      - "events.html"
+      - "site-staff-events-v1.css"
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-priority-v2.css"
+      - ".github/workflows/staff-events-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify Staff and Events
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:800}});
+            async function ready(path,selector){
+              for(let i=0;i<70;i++){
+                await page.goto(`${root}/${path}?staffevents=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{await page.waitForSelector(selector,{timeout:1800});await page.waitForSelector('.navbar.fil-final-navbar',{timeout:1800});return}catch(_){await sleep(1200)}
+              }
+              throw new Error(`${path} did not reach Deploy Preview`);
+            }
+            await ready('staff','.fil-staff-profile');
+            await page.waitForTimeout(1200);
+            const staff=await page.evaluate(()=>({
+              hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+              navCount:document.querySelectorAll('#navLinks a').length,
+              cards:document.querySelectorAll('.fil-staff-profile').length,
+              columns:getComputedStyle(document.querySelector('.fil-staff-team,.fil-staff-leadership')).gridTemplateColumns,
+              bodyBg:getComputedStyle(document.body).backgroundImage,
+              titleColor:getComputedStyle(document.querySelector('.players-page>h1')).color
+            }));
+            if(staff.hamburger!=='none')throw new Error('Staff desktop hamburger visible');
+            if(staff.navCount!==9)throw new Error(`Staff nav count ${staff.navCount}`);
+            if(staff.cards<1)throw new Error('Staff cards missing');
+            if(!staff.columns.includes('px'))throw new Error('Staff grid missing');
+            await page.screenshot({path:'staff-final.jpg',type:'jpeg',quality:76,fullPage:true});
+
+            await ready('events','.fil-next-event');
+            await page.waitForTimeout(1200);
+            const events=await page.evaluate(()=>({
+              hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+              navCount:document.querySelectorAll('#navLinks a').length,
+              hero:document.querySelectorAll('.fil-next-event').length,
+              cards:document.querySelectorAll('.fil-event-tile-v1').length,
+              heroColumns:getComputedStyle(document.querySelector('.fil-next-event')).gridTemplateColumns,
+              bodyBg:getComputedStyle(document.body).backgroundImage
+            }));
+            if(events.hamburger!=='none')throw new Error('Events desktop hamburger visible');
+            if(events.navCount!==9)throw new Error(`Events nav count ${events.navCount}`);
+            if(events.hero!==1)throw new Error(`Events hero count ${events.hero}`);
+            if(!events.heroColumns.includes('px'))throw new Error('Events hero grid missing');
+            await page.screenshot({path:'events-final.jpg',type:'jpeg',quality:76,fullPage:true});
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/staff?staffevents=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+            const mobileMenu=await mobile.locator('.mobile-menu-button').evaluate(el=>getComputedStyle(el).display);
+            if(mobileMenu==='none')throw new Error('Staff mobile hamburger missing');
+            fs.writeFileSync('staff-events-qa.json',JSON.stringify({staff,events,mobileMenu},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staff-events-qa
+          path: |
+            staff-final.jpg
+            events-final.jpg
+            staff-events-qa.json
+          if-no-files-found: warn
+          retention-days: 7
