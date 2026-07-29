@@ -13,7 +13,7 @@ function loadFinalFixes(){
 function loadPlayerCarouselFix(){
   if(document.querySelector('script[data-filitalia-player-carousel-fix]'))return;
   const script=document.createElement('script');
-  script.src='home-player-carousel-fix-v1.js?v=1';
+  script.src='home-player-carousel-fix-v1.js?v=4';
   script.defer=true;
   script.dataset.filitaliaPlayerCarouselFix='true';
   document.head.appendChild(script);
