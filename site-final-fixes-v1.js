@@ -1,6 +1,11 @@
 (function(){
 'use strict';
-function loadAuthoritativePass(){if(!document.querySelector('link[data-filitalia-final-pass]')){const style=document.createElement('link');style.rel='stylesheet';style.href='site-final-pass-v1.css?v=1';style.dataset.filitaliaFinalPass='true';document.head.appendChild(style)}if(!document.querySelector('script[data-filitalia-final-pass]')){const script=document.createElement('script');script.src='site-final-pass-v1.js?v=1';script.defer=true;script.dataset.filitaliaFinalPass='true';document.body.appendChild(script)}}
+function loadAuthoritativePass(){
+ if(!document.querySelector('link[data-filitalia-final-pass]')){const style=document.createElement('link');style.rel='stylesheet';style.href='site-final-pass-v1.css?v=4';style.dataset.filitaliaFinalPass='true';document.head.appendChild(style)}
+ if(!document.querySelector('link[data-filitalia-global-polish]')){const style=document.createElement('link');style.rel='stylesheet';style.href='site-global-polish-v3.css?v=1';style.dataset.filitaliaGlobalPolish='true';document.head.appendChild(style)}
+ if(!document.querySelector('script[data-filitalia-final-pass]')){const script=document.createElement('script');script.src='site-final-pass-v1.js?v=4';script.defer=true;script.dataset.filitaliaFinalPass='true';document.body.appendChild(script)}
+ if(!document.querySelector('script[data-filitalia-global-polish]')){const script=document.createElement('script');script.src='site-global-polish-v3.js?v=1';script.defer=true;script.dataset.filitaliaGlobalPolish='true';document.body.appendChild(script)}
+}
 function timeValue(item){
  const raw=item&&(item.sortDate||item.publishDate||item.dateISO||item.date);
  const value=raw&&typeof raw==='object'?(raw.it||raw.en||raw.ph||''):String(raw||'');
