@@ -1,0 +1,106 @@
+name: FIL-ITALIA Players Media QA
+
+on:
+  pull_request:
+    paths:
+      - "players.html"
+      - "gallery.html"
+      - "site-players-media-v1.css"
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-priority-v2.css"
+      - ".github/workflows/players-media-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "players.html"
+      - "gallery.html"
+      - "site-players-media-v1.css"
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-priority-v2.css"
+      - ".github/workflows/players-media-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify Players and Media
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:800}});
+            async function waitDeploy(path,body){
+              for(let i=0;i<80;i++){
+                await page.goto(`${root}/${path}?pmqa=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{await page.waitForSelector(body,{timeout:2200});await page.waitForSelector('.navbar.fil-final-navbar',{timeout:2200});return}catch(_){await sleep(1500)}
+              }
+              throw new Error(`${path}: final deploy not ready`);
+            }
+            async function inspect(path,body,cardSelector){
+              await waitDeploy(path,body);
+              await page.waitForTimeout(2600);
+              const result=await page.evaluate((cardSelector)=>{
+                const nav=document.querySelector('.navbar');
+                const links=document.getElementById('navLinks');
+                const menu=document.querySelector('.mobile-menu-button');
+                const cards=[...document.querySelectorAll(cardSelector)];
+                const style=getComputedStyle(links);
+                return {
+                  hamburger:getComputedStyle(menu).display,
+                  navHeight:nav.getBoundingClientRect().height,
+                  navPosition:style.position,
+                  navLeft:style.left,
+                  navWidth:links.getBoundingClientRect().width,
+                  navCount:links.querySelectorAll('a').length,
+                  cardCount:cards.length,
+                  firstCardHeight:cards[0]?.getBoundingClientRect().height||0,
+                  bodyBackground:getComputedStyle(document.body).backgroundImage
+                };
+              },cardSelector);
+              if(result.hamburger!=='none')throw new Error(`${path}: desktop hamburger visible`);
+              if(result.navPosition==='fixed'&&result.navLeft==='0px')throw new Error(`${path}: legacy side menu active`);
+              if(result.navHeight<80||result.navCount!==9)throw new Error(`${path}: final navbar missing`);
+              if(result.cardCount<1||result.firstCardHeight<250)throw new Error(`${path}: content grid missing`);
+              await page.screenshot({path:`${path}.jpg`,type:'jpeg',quality:76,fullPage:true});
+              return result;
+            }
+            const players=await inspect('players','body.fil-page-players','#playersPageContainer .fil-roster-card');
+            const media=await inspect('gallery','body.fil-page-gallery','#galleryCategoryGrid > *');
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/players?pmqa=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+            const mobileMenu=await mobile.locator('.mobile-menu-button').evaluate(el=>getComputedStyle(el).display);
+            if(mobileMenu==='none')throw new Error('Players mobile hamburger missing');
+            fs.writeFileSync('players-media-qa.json',JSON.stringify({players,media,mobileMenu},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: players-media-qa
+          path: |
+            players.jpg
+            gallery.jpg
+            players-media-qa.json
+          if-no-files-found: warn
+          retention-days: 7
