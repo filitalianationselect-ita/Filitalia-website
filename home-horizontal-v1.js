@@ -8,10 +8,7 @@
     ['gallery','Gallery'],
     ['staff','Staff'],
     ['news','News'],
-    ['events','Eventi'],
-    ['account-access','Account'],
-    ['social','Social'],
-    ['contact','Contatti']
+    ['events','Eventi']
   ];
 
   function setNavHeight(){
@@ -51,10 +48,6 @@
       stage.appendChild(section);
       panels.push(section);
     });
-
-    const footer=document.querySelector('footer');
-    const contact=document.getElementById('contact');
-    if(footer&&contact)contact.appendChild(footer);
 
     const rail=document.querySelector('.home-event-rail');
     const visual=document.querySelector('.home-hero-visual');
