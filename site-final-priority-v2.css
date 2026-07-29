@@ -22,6 +22,18 @@
   html body.fil-final-site[data-album-id] .navbar.fil-final-navbar .nav-links a{
     font-size:11.5px!important;letter-spacing:.015em!important;
   }
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions,
+  html body.fil-final-site .navbar.fil-final-navbar .fil-global-socials,
+  html body.fil-final-site .navbar.fil-final-navbar .language-switch,
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-auth{
+    position:static!important;inset:auto!important;transform:none!important;align-self:center!important;
+  }
+  html body.fil-final-site .navbar.fil-final-navbar .language-switch button,
+  html body.fil-final-site .navbar.fil-final-navbar .fil-global-socials .home-nav-social,
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-auth a{
+    position:static!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+    transform:none!important;translate:none!important;align-self:center!important;vertical-align:middle!important;
+  }
   /* Fallback while older JavaScript is still finishing: hide repeated social buttons. */
   html body.fil-final-site .navbar .language-switch a[aria-label*="Instagram" i] ~ a[aria-label*="Instagram" i],
   html body.fil-final-site .navbar .language-switch a[aria-label*="Facebook" i] ~ a[aria-label*="Facebook" i]{display:none!important}
