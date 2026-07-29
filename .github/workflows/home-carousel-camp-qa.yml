@@ -1,0 +1,135 @@
+name: FIL-ITALIA Home Carousel Camp QA
+
+on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "home-content-v2.js"
+      - "home-concept2-final-v1.js"
+      - "home-player-carousel-fix-v1.js"
+      - "camp-register.html"
+      - "camp-register-redesign-v2.css"
+      - ".github/workflows/home-carousel-camp-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "index.html"
+      - "home-content-v2.js"
+      - "home-concept2-final-v1.js"
+      - "home-player-carousel-fix-v1.js"
+      - "camp-register.html"
+      - "camp-register-redesign-v2.css"
+      - ".github/workflows/home-carousel-camp-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify carousel and registration redesign
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1050,height:820}});
+
+            async function waitDeploy(path,selector){
+              for(let i=0;i<80;i++){
+                await page.goto(`${root}/${path}${path.includes('?')?'&':'?'}hcqa=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{await page.waitForSelector(selector,{timeout:2500});return}catch(_){await sleep(1500)}
+              }
+              throw new Error(`${path}: deploy not ready`);
+            }
+
+            await waitDeploy('?test=carousel','#players [data-fil-player-next]');
+            await page.waitForTimeout(3600);
+            await page.locator('#players').scrollIntoViewIfNeeded();
+            const before=await page.evaluate(()=>({
+              scrollLeft:document.getElementById('homePlayersGrid').scrollLeft,
+              firstLeft:document.querySelector('#homePlayersGrid > .player-card')?.getBoundingClientRect().left||0,
+              cards:document.querySelectorAll('#homePlayersGrid > .player-card').length,
+              disabled:document.querySelector('[data-fil-player-next]')?.disabled
+            }));
+            if(before.cards<2)throw new Error(`Home player cards missing: ${before.cards}`);
+            if(before.disabled)throw new Error('Home carousel next button disabled before first move');
+            await page.click('[data-fil-player-next]');
+            await page.waitForTimeout(650);
+            const after=await page.evaluate(()=>({
+              scrollLeft:document.getElementById('homePlayersGrid').scrollLeft,
+              firstLeft:document.querySelector('#homePlayersGrid > .player-card')?.getBoundingClientRect().left||0,
+              count:document.querySelector('[data-fil-player-count]')?.textContent.trim()||''
+            }));
+            if(after.scrollLeft<=before.scrollLeft+4 && after.firstLeft>=before.firstLeft-4){
+              throw new Error(`Home carousel did not move: ${JSON.stringify({before,after})}`);
+            }
+            await page.screenshot({path:'home-carousel.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            await waitDeploy('camp-register.html','body.fil-page-camp-register .camp-registration-hero');
+            await page.waitForTimeout(3000);
+            const camp=await page.evaluate(()=>{
+              const select=document.getElementById('campEventSelect');
+              const field=document.querySelector('#campForm input[name="Nome"]');
+              const hero=document.querySelector('.camp-registration-hero');
+              const old=document.querySelector('.players-page.registration-page');
+              return {
+                sections:document.querySelectorAll('#campForm .form-section-card').length,
+                eventOptions:select?.options.length||0,
+                fieldFont:field?parseFloat(getComputedStyle(field).fontSize):0,
+                fieldHeight:field?.getBoundingClientRect().height||0,
+                heroHeight:hero?.getBoundingClientRect().height||0,
+                oldLayout:Boolean(old),
+                navbar:Boolean(document.querySelector('.navbar.fil-final-navbar'))
+              };
+            });
+            if(camp.sections!==4)throw new Error(`Camp form sections invalid: ${camp.sections}`);
+            if(camp.eventOptions<2)throw new Error(`Camp event selector empty: ${camp.eventOptions}`);
+            if(camp.fieldFont<16||camp.fieldHeight<48)throw new Error(`Camp fields unreadable: ${JSON.stringify(camp)}`);
+            if(camp.heroHeight<300||camp.oldLayout)throw new Error(`Camp redesign missing: ${JSON.stringify(camp)}`);
+            if(!camp.navbar)throw new Error('Camp final navbar missing');
+            await page.screenshot({path:'camp-register-desktop.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/camp-register.html?hcqa=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('.camp-registration-hero',{timeout:20000});
+            const mobileCamp=await mobile.evaluate(()=>({
+              width:document.documentElement.scrollWidth,
+              viewport:window.innerWidth,
+              columns:getComputedStyle(document.querySelector('#campForm .form-grid')).gridTemplateColumns,
+              hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display
+            }));
+            if(mobileCamp.width>mobileCamp.viewport+2)throw new Error(`Camp mobile horizontal overflow: ${JSON.stringify(mobileCamp)}`);
+            if(mobileCamp.hamburger==='none')throw new Error('Camp mobile hamburger missing');
+            await mobile.screenshot({path:'camp-register-mobile.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            fs.writeFileSync('home-carousel-camp-qa.json',JSON.stringify({before,after,camp,mobileCamp},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-carousel-camp-qa
+          path: |
+            home-carousel.jpg
+            camp-register-desktop.jpg
+            camp-register-mobile.jpg
+            home-carousel-camp-qa.json
+          if-no-files-found: warn
+          retention-days: 7
