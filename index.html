@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="home-concept2-final-v1.css?v=1" data-filitalia-concept2-style>
 <link rel="stylesheet" href="home-reference-navbar-v1.css?v=2" data-filitalia-reference-navbar>
 <link rel="stylesheet" href="home-reference-navbar-polish-v2.css?v=1">
+<link rel="stylesheet" href="home-about-test-v1.css?v=1">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
@@ -106,11 +107,41 @@
   </div>
 </section>
 <section class="about-section" id="about">
-  <h2 data-key="aboutTitle">ABOUT US</h2>
-  <div class="about-grid">
-    <div class="about-card" onclick="openAbout('identity')"><h3 data-key="aboutCard1Title">National Identity</h3><p data-key="aboutCard1Text">Building a strong basketball culture under FIL-ITALIA.</p></div>
-    <div class="about-card" onclick="openAbout('development')"><h3 data-key="aboutCard2Title">Player Development</h3><p data-key="aboutCard2Text">Supporting athletes through development and opportunities.</p></div>
-    <div class="about-card" onclick="openAbout('vision')"><h3 data-key="aboutCard3Title">International Vision</h3><p data-key="aboutCard3Text">Connecting players, coaches and basketball communities worldwide.</p></div>
+  <div class="fil-about-layout">
+    <div class="fil-about-layout-copy">
+      <h2 data-key="aboutTitle">ABOUT US</h2>
+      <div class="fil-about-story">
+        <div class="fil-about-story-copy">
+          <small>LA NOSTRA IDENTITÀ</small>
+          <h3>Un percorso cestistico che unisce sviluppo e appartenenza.</h3>
+          <p>FIL-ITALIA accompagna atleti e famiglie attraverso camp, allenamenti, selezioni ed esperienze internazionali. Il progetto cresce insieme alle persone che ne fanno parte.</p>
+        </div>
+      </div>
+      <div class="about-grid">
+        <div class="about-card" onclick="openAbout('identity')"><h3 data-key="aboutCard1Title">National Identity</h3><p data-key="aboutCard1Text">Building a strong basketball culture under FIL-ITALIA.</p></div>
+        <div class="about-card" onclick="openAbout('development')"><h3 data-key="aboutCard2Title">Player Development</h3><p data-key="aboutCard2Text">Supporting athletes through development and opportunities.</p></div>
+        <div class="about-card" onclick="openAbout('vision')"><h3 data-key="aboutCard3Title">International Vision</h3><p data-key="aboutCard3Text">Connecting players, coaches and basketball communities worldwide.</p></div>
+      </div>
+      <div class="fil-about-pathway"><span><strong>01</strong>CAMP</span><span><strong>02</strong>SVILUPPO</span><span><strong>03</strong>SELEZIONE</span><span><strong>04</strong>OPPORTUNITÀ</span></div>
+    </div>
+    <figure class="fil-about-story-media"><img src="images/media2.jpg" alt="Community FIL-ITALIA"></figure>
+  </div>
+  <div class="fil-about-social-cta">
+    <div class="fil-about-social-copy">
+      <small>FIL-ITALIA SOCIAL</small>
+      <strong>Segui il percorso, dentro e fuori dal campo.</strong>
+      <p>Camp, giocatori, tornei, risultati e dietro le quinte del progetto.</p>
+    </div>
+    <div class="fil-about-social-links">
+      <a class="fil-about-social-link instagram" href="https://www.instagram.com/filitalianationselect?igsh=MXExeHoxY3I1cjE0bw%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Segui FIL-ITALIA su Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5Z"></path></svg>
+        Instagram
+      </a>
+      <a class="fil-about-social-link facebook" href="https://www.facebook.com/share/1EPfQAxGx5/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Segui FIL-ITALIA su Facebook">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.8 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.3-1.5 1.6-1.5H17V4.6c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4.1v2.3H8.2V14h2.6v8h3Z"></path></svg>
+        Facebook
+      </a>
+    </div>
   </div>
 </section>
 <div class="about-modal" id="aboutModal"><span class="close-btn" onclick="closeAbout()">×</span><div class="about-modal-content"><h2 id="aboutModalTitle"></h2><p id="aboutModalText"></p></div></div>
