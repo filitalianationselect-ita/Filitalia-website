@@ -8,6 +8,15 @@ function loadStyle(){
   link.dataset.filitaliaFinalPass='true';
   document.head.appendChild(link);
 }
+function loadEventRouting(){
+  const old=document.querySelector('script[data-filitalia-event-page-routing]');
+  if(old)old.remove();
+  const script=document.createElement('script');
+  script.src='event-modal-modern-v1.js?v=2';
+  script.async=false;
+  script.dataset.filitaliaEventPageRouting='true';
+  document.body.appendChild(script);
+}
 function loadHomeEventPlacement(){
   if(!document.querySelector('link[data-filitalia-home-event-placement]')){
     const link=document.createElement('link');
@@ -29,6 +38,8 @@ function loadHomeEventPlacement(){
   script.src='home-events-placement-final-v1.js?v=3';
   script.async=false;
   script.dataset.filitaliaHomeEventPlacement='true';
+  script.addEventListener('load',loadEventRouting,{once:true});
+  script.addEventListener('error',loadEventRouting,{once:true});
   document.body.appendChild(script);
 }
 function loadReviewFixes(){
