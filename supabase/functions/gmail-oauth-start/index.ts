@@ -45,7 +45,7 @@ Deno.serve(async (request) => {
       .eq("id", user.id)
       .maybeSingle();
     if (profileResult.error) throw profileResult.error;
-    if (!profileResult.data || !["admin","super_admin"].includes(String(profileResult.data.role)) || profileResult.data.status !== "active") {
+    if (!profileResult.data || !["admin", "super_admin"].includes(String(profileResult.data.role)) || profileResult.data.status !== "active") {
       throw new Error("NOT_AUTHORIZED");
     }
 
@@ -82,7 +82,10 @@ Deno.serve(async (request) => {
       scope: [
         "openid",
         "email",
-        "https://www.googleapis.com/auth/gmail.send"
+        "https://www.googleapis.com/auth/gmail.send",
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/spreadsheets.readonly",
+        "https://www.googleapis.com/auth/drive.metadata.readonly"
       ].join(" "),
       state
     });
