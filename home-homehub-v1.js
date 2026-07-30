@@ -7,6 +7,22 @@
     ph:{contact:'Contact',title:'USAP TAYO',subtitle:'Camps, collaborations, players at mga bagong FIL-ITALIA opportunities.',send:'Ipadala',name:'Pangalan',email:'Email',message:'Mensahe'}
   };
 
+  function loadModernEventModal(){
+    if(!document.querySelector('link[data-fil-event-modal-modern]')){
+      const style=document.createElement('link');
+      style.rel='stylesheet';
+      style.href='event-modal-modern-v1.css?v=1';
+      style.dataset.filEventModalModern='true';
+      document.head.appendChild(style);
+    }
+    if(!document.querySelector('script[data-fil-event-modal-modern]')){
+      const script=document.createElement('script');
+      script.src='event-modal-modern-v1.js?v=1';
+      script.dataset.filEventModalModern='true';
+      document.body.appendChild(script);
+    }
+  }
+
   function language(){
     const raw=String(localStorage.getItem('language')||document.documentElement.lang||'it').toLowerCase();
     return copy[raw]?raw:'it';
@@ -30,6 +46,7 @@
   }
 
   function init(){
+    loadModernEventModal();
     const modal=document.getElementById('homeContactModal');
     if(!modal)return;
     const panel=modal.querySelector('.home-contact-panel');
