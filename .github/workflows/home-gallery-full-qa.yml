@@ -3,14 +3,69 @@ name: FIL-ITALIA Home Gallery Full QA
 on:
   pull_request:
     paths:
+      - 'index.html'
       - 'home-gallery-full-v1.js'
       - 'home-gallery-full-v1.css'
       - 'public-media-v1.js'
       - 'public-media-v1.css'
       - '.github/workflows/home-gallery-full-qa.yml'
 
+permissions:
+  contents: write
+
 jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Force the full gallery directly into index.html
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          changed = False
+
+          old_css = '<link rel="stylesheet" href="public-media-v1.css?v=1">'
+          new_css = '<link rel="stylesheet" href="public-media-v1.css?v=4">\n<link rel="stylesheet" href="home-gallery-full-v1.css?v=4" data-home-gallery-full-style>'
+          if old_css in text:
+              text = text.replace(old_css, new_css, 1)
+              changed = True
+
+          old_section = '''<section class="gallery-section" id="gallery">
+  <h2 data-key="galleryTitle">MEDIA GALLERY</h2>
+  <p class="section-subtitle" data-key="gallerySubtitle">Moments from camps, tournaments, training sessions and community events.</p>
+  <div class="players-button-row"><a href="gallery.html" class="players-list-link" data-key="viewGallery">View Gallery →</a></div>
+  <div class="gallery-grid" id="homeMediaGrid"></div>
+</section>'''
+          new_section = '<section class="gallery-section home-gallery-full-panel" id="gallery" aria-label="Galleria Media FIL-ITALIA"></section>'
+          if old_section in text:
+              text = text.replace(old_section, new_section, 1)
+              changed = True
+
+          old_script = '<script src="public-media-v1.js?v=1"></script>'
+          new_script = '<script src="public-media-v1.js?v=4"></script>\n<script src="home-gallery-full-v1.js?v=4" data-home-gallery-full-script></script>'
+          if old_script in text:
+              text = text.replace(old_script, new_script, 1)
+              changed = True
+
+          if changed:
+              path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit the direct Home gallery mount
+        run: |
+          git config user.name "FIL-ITALIA Preview Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "remove old Home gallery cover"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
   browser:
+    needs: patch-index
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
