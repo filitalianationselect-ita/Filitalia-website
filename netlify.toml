@@ -49,6 +49,16 @@
     Cache-Control = "no-store, max-age=0"
 
 [[headers]]
+  for = "/supabase-config.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+
+[[headers]]
+  for = "/auth-client.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+
+[[headers]]
   for = "/admin-light.html"
   [headers.values]
     Cache-Control = "no-store, max-age=0"
