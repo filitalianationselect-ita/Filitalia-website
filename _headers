@@ -10,6 +10,15 @@
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 
+/home-reference-navbar-v1.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/site-final-pass-v1.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/home-staff-events-finalizer-v1.js
+  Cache-Control: public, max-age=0, must-revalidate
+
 /*.js
   Cache-Control: public, max-age=3600, must-revalidate
 
