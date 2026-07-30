@@ -1,0 +1,165 @@
+/* FIL-ITALIA review fixes: transition, News, Contact and Home hero */
+
+/* Prevent the unstyled vertical Home navigation from flashing before the horizontal system is ready. */
+body[data-home-layout="horizontal"]:not([data-horizontal-ready="true"]) .navbar,
+body[data-home-layout="horizontal"]:not([data-horizontal-ready="true"]) .home-horizontal-stage,
+body[data-home-layout="horizontal"]:not([data-horizontal-ready="true"]) .home-hero{
+  visibility:hidden!important;
+  opacity:0!important;
+}
+body[data-home-layout="horizontal"][data-horizontal-ready="true"] .navbar,
+body[data-home-layout="horizontal"][data-horizontal-ready="true"] .home-horizontal-stage,
+body[data-home-layout="horizontal"][data-horizontal-ready="true"] .home-hero{
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+/* HOME: player card and upcoming events share the right column. */
+body[data-horizontal-ready="true"] .home-horizontal-panel.home-hero{
+  padding:22px 24px 42px!important;
+}
+body[data-horizontal-ready="true"] .home-hero-shell{
+  width:min(1380px,100%)!important;
+  min-height:650px!important;
+  grid-template-columns:minmax(0,.88fr) minmax(500px,1.12fr)!important;
+  grid-template-areas:"copy visual"!important;
+  align-items:stretch!important;
+  gap:0!important;
+}
+body[data-horizontal-ready="true"] .home-hero-copy{
+  min-height:650px!important;
+  justify-content:flex-start!important;
+  align-self:stretch!important;
+}
+body[data-horizontal-ready="true"] .home-hero-copy>.home-hero-note{
+  order:4!important;
+  margin-top:24px!important;
+}
+body[data-horizontal-ready="true"] .home-hero-actions{
+  order:5!important;
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+  margin-top:auto!important;
+  padding-top:34px!important;
+}
+body[data-horizontal-ready="true"] .home-hero-button{
+  min-height:58px!important;
+  padding:0 14px!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+body[data-horizontal-ready="true"] .home-hero-visual{
+  display:grid!important;
+  grid-template-rows:minmax(330px,1fr) auto!important;
+  align-self:stretch!important;
+  min-height:650px!important;
+  gap:0!important;
+}
+body[data-horizontal-ready="true"] .home-player-frame,
+body[data-horizontal-ready="true"] .home-player-frame>img{
+  min-height:350px!important;
+}
+body[data-horizontal-ready="true"] .home-event-rail{
+  width:100%!important;
+  margin:0!important;
+  padding:16px!important;
+  border-radius:0!important;
+}
+body[data-horizontal-ready="true"] .home-hero-event-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:9px!important;
+}
+body[data-horizontal-ready="true"] .home-hero-event{
+  min-height:72px!important;
+}
+
+/* NEWS: use the available width and keep secondary cards readable. */
+body.fil-page-news .players-page.fpr-news-page{
+  width:min(1500px,calc(100vw - 40px))!important;
+  max-width:none!important;
+  margin-inline:auto!important;
+}
+body.fil-page-news .fpr-news-page-hero,
+body.fil-page-news .fpr-news-controls,
+body.fil-page-news #allNewsGrid{
+  width:100%!important;
+  max-width:none!important;
+}
+body.fil-page-news .fpr-news-archive-feature .fpr-news-feature{
+  min-height:500px!important;
+}
+body.fil-page-news .fpr-news-card-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(260px,1fr))!important;
+  gap:18px!important;
+}
+body.fil-page-news .fpr-news-card-grid .fpr-news-card{
+  min-width:0!important;
+  min-height:360px!important;
+}
+body.fil-page-news .fpr-news-card-grid .fpr-news-copy h3{
+  font-size:clamp(1.05rem,1.35vw,1.35rem)!important;
+  line-height:1.08!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+}
+
+/* CONTACT: replace the target symbol with an existing FIL-ITALIA team photograph. */
+.fpr-contact-hero:after{
+  content:none!important;
+  display:none!important;
+}
+.fpr-contact-hero>div{
+  width:min(58%,700px)!important;
+}
+.fpr-contact-hero-media{
+  position:absolute;
+  inset:0 0 0 52%;
+  margin:0;
+  overflow:hidden;
+}
+.fpr-contact-hero-media:before{
+  content:"";
+  position:absolute;
+  z-index:2;
+  inset:0;
+  background:linear-gradient(90deg,#050a07 0%,rgba(5,10,7,.72) 28%,rgba(5,10,7,.12) 72%),linear-gradient(0deg,rgba(4,10,7,.42),transparent 55%);
+}
+.fpr-contact-hero-media img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:center 38%;
+  filter:saturate(.82) contrast(1.06);
+}
+
+@media(max-width:1180px){
+  body.fil-page-news .fpr-news-card-grid{grid-template-columns:repeat(2,minmax(250px,1fr))!important}
+  body[data-horizontal-ready="true"] .home-hero-shell{grid-template-columns:minmax(0,.92fr) minmax(430px,1.08fr)!important}
+  body[data-horizontal-ready="true"] .home-hero-button{font-size:.67rem!important}
+}
+
+@media(max-width:760px){
+  body[data-horizontal-ready="true"] .home-hero-shell{
+    min-height:0!important;
+    grid-template-columns:1fr!important;
+    grid-template-areas:"copy" "visual"!important;
+  }
+  body[data-horizontal-ready="true"] .home-hero-copy,
+  body[data-horizontal-ready="true"] .home-hero-visual{min-height:0!important}
+  body[data-horizontal-ready="true"] .home-hero-actions{
+    margin-top:26px!important;
+    padding-top:0!important;
+  }
+  body[data-horizontal-ready="true"] .home-hero-event-list{grid-template-columns:1fr!important}
+  body.fil-page-news .players-page.fpr-news-page{width:calc(100vw - 24px)!important}
+  body.fil-page-news .fpr-news-card-grid{grid-template-columns:1fr!important}
+  .fpr-contact-hero{min-height:440px!important;align-items:flex-start!important}
+  .fpr-contact-hero>div{width:100%!important}
+  .fpr-contact-hero-media{inset:48% 0 0 0}
+  .fpr-contact-hero-media:before{background:linear-gradient(180deg,#050a07 0%,rgba(5,10,7,.22) 48%,rgba(5,10,7,.35))}
+}
