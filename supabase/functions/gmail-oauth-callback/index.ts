@@ -110,12 +110,24 @@ Deno.serve(async (request) => {
     }
 
     const encrypted = await encryptToken(refreshToken, encryptionKey);
+    const grantedScopes = String(tokens.scope || "")
+      .split(/\s+/)
+      .map((scope) => scope.trim())
+      .filter(Boolean);
+    const expectedScopes = [
+      "https://www.googleapis.com/auth/gmail.send",
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+      "https://www.googleapis.com/auth/drive.metadata.readonly"
+    ];
+    const scopes = Array.from(new Set([...grantedScopes, ...expectedScopes]));
+
     const upsert = await service.from("admin_google_connections").upsert({
       user_id: stateResult.data.user_id,
       gmail_address: String(googleProfile.email).toLowerCase(),
       encrypted_refresh_token: encrypted.encrypted,
       token_iv: encrypted.iv,
-      scopes: ["https://www.googleapis.com/auth/gmail.send"],
+      scopes,
       updated_at: new Date().toISOString()
     }, { onConflict: "user_id" });
     refreshToken = "";
