@@ -32,8 +32,15 @@
     about.dataset.filAboutShowcaseReady='true';
     about.dataset.filAboutShowcaseVersion='approved-green-v1';
     track.classList.add('fil-about-slider-track');
-    media.style.setProperty('width','min(100%,410px)','important');
-    media.style.setProperty('max-width','410px','important');
+
+    function applyMediaWidth(){
+      const mobile=window.matchMedia('(max-width:760px)').matches;
+      const width=mobile?'min(100%,330px)':'min(100%,410px)';
+      media.style.setProperty('width',width,'important');
+      media.style.setProperty('max-width',mobile?'330px':'410px','important');
+    }
+    applyMediaWidth();
+    window.addEventListener('resize',applyMediaWidth,{passive:true});
 
     const slider=document.createElement('div');
     slider.className='fil-about-slider fil-about-slider-v2';
