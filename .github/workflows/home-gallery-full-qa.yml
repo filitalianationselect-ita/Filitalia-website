@@ -1,0 +1,94 @@
+name: FIL-ITALIA Home Gallery Full QA
+
+on:
+  pull_request:
+    paths:
+      - 'home-gallery-full-v1.js'
+      - 'home-gallery-full-v1.css'
+      - 'public-media-v1.js'
+      - 'public-media-v1.css'
+      - '.github/workflows/home-gallery-full-qa.yml'
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check JavaScript syntax
+        run: |
+          node --check home-gallery-full-v1.js
+          node --check public-media-v1.js
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify full gallery on Home
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          const fs=require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            for(let attempt=0;attempt<70;attempt++){
+              await page.goto(`${root}/index.html?homegallery=${Date.now()}-${attempt}#gallery`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{await page.waitForSelector('#gallery .home-gallery-full-shell',{timeout:2500});break}catch(_){if(attempt===69)throw new Error('Full Home gallery did not reach Deploy Preview');await sleep(1200)}
+            }
+            await page.waitForTimeout(900);
+            const desktop=await page.evaluate(()=>{
+              const section=document.querySelector('#gallery');
+              const cards=[...document.querySelectorAll('#gallery .home-gallery-full-card')];
+              const labels=cards.map(card=>card.querySelector('.home-gallery-full-copy small')?.textContent.trim()||'');
+              const widths=cards.map(card=>card.getBoundingClientRect().width);
+              return{
+                cards:cards.length,
+                labels,
+                oldCta:section.querySelectorAll(':scope>.players-button-row').length,
+                oldGrid:section.querySelectorAll('#homeMediaGrid').length,
+                sectionOverflow:section.scrollWidth-section.clientWidth,
+                pageOverflow:document.documentElement.scrollWidth-innerWidth,
+                leadWidth:widths[0]||0,
+                secondWidth:widths[1]||0,
+                title:section.querySelector('.home-gallery-full-head h2')?.textContent.trim()||''
+              };
+            });
+            const generic=/^(ALBUM|ALBUMS|FOTO|PHOTOS|VIDEO|VIDEOS)$/i;
+            if(desktop.cards<4||desktop.oldCta||desktop.oldGrid||desktop.sectionOverflow>2||desktop.pageOverflow>2||!desktop.title||desktop.leadWidth<=desktop.secondWidth||desktop.labels.some(label=>!label||generic.test(label)))throw new Error(`Desktop gallery invalid: ${JSON.stringify(desktop)}`);
+            await page.screenshot({path:'home-gallery-desktop.jpg',type:'jpeg',quality:82,fullPage:true});
+
+            await page.locator('[data-home-gallery-filter="album"]').click();
+            await page.waitForTimeout(250);
+            const albumCards=await page.locator('#gallery .home-gallery-full-card').count();
+            if(albumCards<4)throw new Error(`Album filter invalid: ${albumCards}`);
+
+            await page.setViewportSize({width:390,height:844});
+            await page.goto(`${root}/index.html?homegallerymobile=${Date.now()}#gallery`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#gallery .home-gallery-full-shell',{timeout:15000});
+            await page.waitForTimeout(700);
+            const mobile=await page.evaluate(()=>({
+              cards:document.querySelectorAll('#gallery .home-gallery-full-card').length,
+              pageOverflow:document.documentElement.scrollWidth-innerWidth,
+              sectionOverflow:document.querySelector('#gallery').scrollWidth-document.querySelector('#gallery').clientWidth,
+              filters:document.querySelectorAll('#gallery [data-home-gallery-filter]').length
+            }));
+            if(mobile.cards<4||mobile.pageOverflow>2||mobile.sectionOverflow>2||mobile.filters<5)throw new Error(`Mobile gallery invalid: ${JSON.stringify(mobile)}`);
+            await page.screenshot({path:'home-gallery-mobile.jpg',type:'jpeg',quality:82,fullPage:true});
+            fs.writeFileSync('home-gallery-result.json',JSON.stringify({desktop,mobile},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload Home gallery proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-gallery-full-qa
+          path: |
+            home-gallery-desktop.jpg
+            home-gallery-mobile.jpg
+            home-gallery-result.json
+          if-no-files-found: ignore
