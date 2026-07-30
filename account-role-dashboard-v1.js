@@ -84,6 +84,15 @@
     });
   }
 
+  function loadPlayerMedia(){
+    if(d.querySelector('script[data-account-player-media]'))return;
+    const script=d.createElement('script');
+    script.src='account-player-media-v1.js?v=1';
+    script.defer=true;
+    script.dataset.accountPlayerMedia='true';
+    d.body.appendChild(script);
+  }
+
   let tries=0;
   const timer=setInterval(()=>{
     tries++;
@@ -91,6 +100,7 @@
       clearInterval(timer);
       observe();
       render();
+      loadPlayerMedia();
     }else if(tries>80){
       clearInterval(timer);
     }
