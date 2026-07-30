@@ -29,7 +29,7 @@ permissions:
 jobs:
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,49 +41,52 @@ jobs:
           CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
           test -n "$CHROME_PATH"
           echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
-      - name: Verify approved About showcase and modern event modal
+      - name: Verify current About deploy and modern event modal
         run: |
           node <<'NODE'
-          const { chromium } = require('playwright-core');
+          const fs=require('fs');
+          const { chromium }=require('playwright-core');
           const root='https://deploy-preview-1--filitalia.netlify.app';
+          const expectedVersion='about-clean-v3';
           const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          fs.mkdirSync('artifacts',{recursive:true});
 
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
-            const page=await browser.newPage({viewport:{width:1360,height:960}});
+            const page=await browser.newPage({viewport:{width:1360,height:960},deviceScaleFactor:1});
 
-            let approved=false;
-            for(let i=0;i<60;i++){
-              await page.goto(`${root}/index.html?approvedAbout=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            let currentDeploy=false;
+            for(let i=0;i<90;i++){
+              await page.goto(`${root}/index.html?aboutClean=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
               try{
-                await page.waitForSelector('#about[data-fil-about-showcase-version="approved-green-v1"] .fil-about-slider-tab',{timeout:1800});
-                approved=true;
+                await page.waitForSelector(`#about[data-fil-about-showcase-version="${expectedVersion}"] .fil-about-slider-tab`,{timeout:1800});
+                currentDeploy=true;
                 break;
               }catch(_){
                 await sleep(1000);
               }
             }
-            if(!approved)throw new Error('Approved About showcase deploy did not become available');
-            await page.waitForTimeout(1700);
+            if(!currentDeploy)throw new Error(`Current About deploy ${expectedVersion} did not become available`);
+            await page.waitForTimeout(1400);
 
             const before=await page.evaluate(()=>{
               const about=document.querySelector('#about');
               const slider=about?.querySelector('.fil-about-slider');
-              const track=about?.querySelector('.fil-about-slider-track');
               const cards=[...(about?.querySelectorAll('.fil-about-slider-track>.about-card')||[])];
               const tabs=[...(about?.querySelectorAll('.fil-about-slider-tab')||[])];
               const media=about?.querySelector('.fil-about-story-media');
               const social=about?.querySelector('.fil-about-social-cta');
               const layout=about?.querySelector('.fil-about-layout');
-              const activeTab=tabs.findIndex(tab=>tab.getAttribute('aria-selected')==='true');
-              const activeCard=cards.findIndex(card=>card.getAttribute('aria-hidden')==='false');
-              const activeStyle=tabs[0]?getComputedStyle(tabs[0]):null;
-              const activeHeading=cards[0]?.querySelector('h3');
-              const activeParagraph=cards[0]?.querySelector('p');
-              const mediaRect=media?.getBoundingClientRect();
               const sliderRect=slider?.getBoundingClientRect();
+              const mediaRect=media?.getBoundingClientRect();
               const socialRect=social?.getBoundingClientRect();
               const layoutRect=layout?.getBoundingClientRect();
+              const activeTab=tabs.findIndex(tab=>tab.getAttribute('aria-selected')==='true');
+              const activeCard=cards.findIndex(card=>card.getAttribute('aria-hidden')==='false');
+              const visibleCards=cards.filter(card=>!card.hidden&&getComputedStyle(card).display!=='none').length;
+              const activeHeading=cards[activeCard]?.querySelector('h3');
+              const activeParagraph=cards[activeCard]?.querySelector('p');
+              const progress=tabs[activeTab]?.querySelector('.fil-about-slider-tab-progress');
               return {
                 version:about?.dataset.filAboutShowcaseVersion||'',
                 cards:cards.length,
@@ -92,10 +95,11 @@ jobs:
                 labels:tabs.map(tab=>(tab.querySelector('.fil-about-slider-tab-label')?.textContent||'').trim()),
                 activeTab,
                 activeCard,
-                transform:track?getComputedStyle(track).transform:'',
+                visibleCards,
                 titleColor:activeHeading?getComputedStyle(activeHeading).color:'',
                 paragraphColor:activeParagraph?getComputedStyle(activeParagraph).color:'',
-                tabBackground:activeStyle?.backgroundImage||activeStyle?.backgroundColor||'',
+                tabBackground:tabs[activeTab]?getComputedStyle(tabs[activeTab]).backgroundImage:'',
+                timerAnimation:progress?getComputedStyle(progress).animationName:'',
                 sliderWidth:sliderRect?.width||0,
                 sliderLeft:sliderRect?.left||0,
                 mediaWidth:mediaRect?.width||0,
@@ -110,31 +114,40 @@ jobs:
               };
             });
 
-            const expected=['Identità nazionale','Sviluppo giocatori','Visione internazionale'];
-            if(before.version!=='approved-green-v1')throw new Error(`Wrong About version: ${JSON.stringify(before)}`);
+            const expectedLabels=['Identità nazionale','Sviluppo giocatori','Visione internazionale'];
+            if(before.version!==expectedVersion)throw new Error(`Wrong About version: ${JSON.stringify(before)}`);
             if(before.cards!==3||before.tabs!==3||before.arrows!==2)throw new Error(`About controls missing: ${JSON.stringify(before)}`);
-            if(JSON.stringify(before.labels)!==JSON.stringify(expected))throw new Error(`About tab labels invalid: ${JSON.stringify(before)}`);
-            if(before.activeTab!==0||before.activeCard!==0)throw new Error(`About initial slide invalid: ${JSON.stringify(before)}`);
-            if(before.mediaLeft<=before.sliderLeft||before.mediaWidth<280||before.mediaWidth>420||before.mediaHeight>510)throw new Error(`About image is not compact on the right: ${JSON.stringify(before)}`);
+            if(JSON.stringify(before.labels)!==JSON.stringify(expectedLabels))throw new Error(`About tab labels invalid: ${JSON.stringify(before)}`);
+            if(before.activeTab!==0||before.activeCard!==0||before.visibleCards!==1)throw new Error(`About initial slide invalid: ${JSON.stringify(before)}`);
+            if(before.mediaLeft<=before.sliderLeft||before.mediaWidth<280||before.mediaWidth>420||before.mediaHeight>510)throw new Error(`About image is not proportionate on the right: ${JSON.stringify(before)}`);
             if(before.socialDisplay==='none'||Math.abs(before.socialWidth-before.layoutWidth)>5||Math.abs(before.socialLeft-before.layoutLeft)>5)throw new Error(`About social strip width invalid: ${JSON.stringify(before)}`);
-            if(!before.titleColor.includes('255')||!before.paragraphColor.includes('241'))throw new Error(`About text is not direct white copy on dark background: ${JSON.stringify(before)}`);
-            if(!before.tabBackground.includes('gradient'))throw new Error(`Active About tab is not highlighted: ${JSON.stringify(before)}`);
+            if(!before.titleColor.includes('255')||!before.paragraphColor.includes('241'))throw new Error(`About text contrast invalid: ${JSON.stringify(before)}`);
+            if(!before.tabBackground.includes('gradient')||before.timerAnimation==='none')throw new Error(`About active selector or timer invalid: ${JSON.stringify(before)}`);
             if(before.overflow>3)throw new Error(`About desktop overflow: ${JSON.stringify(before)}`);
 
+            await page.locator('#about').screenshot({path:'artifacts/about-desktop.png'});
+
             await page.locator('#about .fil-about-slider-tab').nth(1).click();
-            await page.waitForTimeout(650);
-            const after=await page.evaluate(()=>({
+            await page.waitForTimeout(500);
+            const clicked=await page.evaluate(()=>({
               activeTab:[...document.querySelectorAll('#about .fil-about-slider-tab')].findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
               activeCard:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].findIndex(card=>card.getAttribute('aria-hidden')==='false'),
-              heading:(document.querySelector('#about .about-card[aria-hidden="false"] h3')?.textContent||'').trim(),
-              transform:getComputedStyle(document.querySelector('#about .fil-about-slider-track')).transform
+              visibleCards:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].filter(card=>!card.hidden&&getComputedStyle(card).display!=='none').length,
+              heading:(document.querySelector('#about .about-card[aria-hidden="false"] h3')?.textContent||'').trim()
             }));
-            if(after.activeTab!==1||after.activeCard!==1||after.heading!=='Sviluppo giocatori'||after.transform===before.transform)throw new Error(`About slide 02 did not open: ${JSON.stringify({before,after})}`);
+            if(clicked.activeTab!==1||clicked.activeCard!==1||clicked.visibleCards!==1||clicked.heading!=='Sviluppo giocatori')throw new Error(`About slide 02 did not open: ${JSON.stringify(clicked)}`);
+
+            await page.waitForTimeout(9300);
+            const timed=await page.evaluate(()=>({
+              activeTab:[...document.querySelectorAll('#about .fil-about-slider-tab')].findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
+              heading:(document.querySelector('#about .about-card[aria-hidden="false"] h3')?.textContent||'').trim()
+            }));
+            if(timed.activeTab!==2||timed.heading!=='Visione internazionale')throw new Error(`About timer did not advance: ${JSON.stringify(timed)}`);
 
             await page.setViewportSize({width:390,height:844});
-            await page.goto(`${root}/index.html?approvedAboutMobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForSelector('#about[data-fil-about-showcase-version="approved-green-v1"] .fil-about-slider-tab',{timeout:20000});
-            await page.waitForTimeout(1300);
+            await page.goto(`${root}/index.html?aboutCleanMobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector(`#about[data-fil-about-showcase-version="${expectedVersion}"] .fil-about-slider-tab`,{timeout:20000});
+            await page.waitForTimeout(1200);
             const mobile=await page.evaluate(()=>{
               const slider=document.querySelector('#about .fil-about-slider');
               const media=document.querySelector('#about .fil-about-story-media');
@@ -144,6 +157,7 @@ jobs:
               const socialRect=social?.getBoundingClientRect();
               return {
                 tabs:document.querySelectorAll('#about .fil-about-slider-tab').length,
+                visibleCards:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].filter(card=>!card.hidden&&getComputedStyle(card).display!=='none').length,
                 sliderWidth:sliderRect?.width||0,
                 mediaWidth:mediaRect?.width||0,
                 mediaTop:mediaRect?.top||0,
@@ -155,12 +169,13 @@ jobs:
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
-            if(mobile.tabs!==3||mobile.sliderWidth>mobile.viewport+2||mobile.mediaWidth<220||mobile.mediaWidth>350||mobile.mediaTop<=mobile.sliderBottom||mobile.socialTop<=mobile.mediaBottom||mobile.socialWidth>mobile.viewport+2||mobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(mobile)}`);
+            if(mobile.tabs!==3||mobile.visibleCards!==1||mobile.sliderWidth>mobile.viewport+2||mobile.mediaWidth<220||mobile.mediaWidth>335||mobile.mediaTop<=mobile.sliderBottom||mobile.socialTop<=mobile.mediaBottom||mobile.socialWidth>mobile.viewport+2||mobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(mobile)}`);
+            await page.locator('#about').screenshot({path:'artifacts/about-mobile.png'});
 
             await page.setViewportSize({width:1360,height:900});
             await page.goto(`${root}/events.html?eventqa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
             await page.waitForSelector('#allEventsGrid a',{timeout:20000});
-            await page.waitForTimeout(1600);
+            await page.waitForTimeout(1500);
             await page.locator('#allEventsGrid a').first().click();
             await page.waitForSelector('#infoModal.fil-event-modal-modern.is-open .fil-event-modal-copy h2',{timeout:10000});
             const event=await page.evaluate(()=>{
@@ -178,6 +193,14 @@ jobs:
             if(!event.title||event.description.length<30||event.meta!==4||!event.register.includes('camp-register.html?event=')||event.imageWidth<1||event.display==='none')throw new Error(`Modern event invalid: ${JSON.stringify(event)}`);
 
             await browser.close();
-            console.log(JSON.stringify({before,after,mobile,event},null,2));
+            console.log(JSON.stringify({before,clicked,timed,mobile,event},null,2));
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
+      - name: Upload About preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: about-preview-screenshots
+          path: artifacts/about-*.png
+          if-no-files-found: warn
+          retention-days: 7
