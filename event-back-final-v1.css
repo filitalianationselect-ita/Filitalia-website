@@ -1,0 +1,21 @@
+/* Keep the event back action above the premium hero */
+body.fil-event-detail-page .event-detail-page{isolation:isolate!important}
+body.fil-event-detail-page .players-button-row{
+  position:relative!important;
+  z-index:120!important;
+  isolation:isolate!important;
+  margin-bottom:24px!important;
+  pointer-events:auto!important;
+}
+body.fil-event-detail-page .players-list-link{
+  position:relative!important;
+  z-index:121!important;
+  opacity:1!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  background:#07864a!important;
+  border-color:rgba(126,240,176,.42)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.24)!important;
+  pointer-events:auto!important;
+}
+body.fil-event-detail-page .event-premium-shell{position:relative!important;z-index:1!important}
