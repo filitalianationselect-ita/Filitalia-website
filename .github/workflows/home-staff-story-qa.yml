@@ -1,0 +1,132 @@
+name: FIL-ITALIA Home Staff Story QA
+
+on:
+  pull_request:
+    paths:
+      - "home-homehub-v1.js"
+      - "home-staff-showcase-v1.css"
+      - ".github/workflows/home-staff-story-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "home-homehub-v1.js"
+      - "home-staff-showcase-v1.css"
+      - ".github/workflows/home-staff-story-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Prepare system Chrome
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+      - name: Verify Home Staff story slider
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const {chromium}=require('playwright-core');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const version='staff-story-v1';
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          fs.mkdirSync('artifacts',{recursive:true});
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:1440,height:960},deviceScaleFactor:1});
+            await page.emulateMedia({reducedMotion:'no-preference'});
+
+            let current=false;
+            for(let i=0;i<90;i++){
+              await page.goto(`${root}/index.html?staffStory=${Date.now()}-${i}#staff`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await page.waitForSelector(`#staff[data-fil-staff-showcase-version="${version}"] .fil-staff-showcase-card`,{timeout:1800});
+                current=true;
+                break;
+              }catch(_){await sleep(1000);}
+            }
+            if(!current)throw new Error(`Home Staff deploy ${version} did not become available`);
+            await page.waitForTimeout(1300);
+
+            const desktop=await page.evaluate(()=>{
+              const section=document.querySelector('#staff');
+              const copy=section?.querySelector('.fil-staff-showcase-copy');
+              const card=section?.querySelector('.fil-staff-showcase-card');
+              const copyRect=copy?.getBoundingClientRect();
+              const cardRect=card?.getBoundingClientRect();
+              const tabs=[...(section?.querySelectorAll('.fil-staff-tab')||[])];
+              return {
+                version:section?.dataset.filStaffShowcaseVersion||'',
+                title:(section?.querySelector('.fil-staff-showcase-title')?.textContent||'').trim(),
+                name:(section?.querySelector('[data-fil-staff-name]')?.textContent||'').trim(),
+                role:(section?.querySelector('[data-fil-staff-role]')?.textContent||'').trim(),
+                bio:(section?.querySelector('[data-fil-staff-bio]')?.textContent||'').trim(),
+                oldGrid:Boolean(section?.querySelector('#homeStaffGrid,.staff-grid,.staff-card')),
+                tabs:tabs.length,
+                active:tabs.findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
+                cardRight:cardRect?.left>copyRect?.left,
+                cardWidth:cardRect?.width||0,
+                cardHeight:cardRect?.height||0,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
+            });
+            if(desktop.version!==version)throw new Error(`Wrong version: ${JSON.stringify(desktop)}`);
+            if(desktop.title!=='IL TEAM FIL-ITALIA'||!desktop.name||!desktop.role||desktop.bio.length<30)throw new Error(`Staff copy missing: ${JSON.stringify(desktop)}`);
+            if(desktop.oldGrid||desktop.tabs<2||desktop.active!==0)throw new Error(`Old grid or controls invalid: ${JSON.stringify(desktop)}`);
+            if(!desktop.cardRight||desktop.cardWidth<300||desktop.cardHeight<380)throw new Error(`Desktop card placement invalid: ${JSON.stringify(desktop)}`);
+            if(desktop.overflow>4)throw new Error(`Desktop overflow: ${JSON.stringify(desktop)}`);
+            await page.locator('#staff').screenshot({path:'artifacts/home-staff-desktop.png'});
+
+            const beforeName=desktop.name;
+            await page.locator('#staff [data-fil-staff-next]').click();
+            await page.waitForTimeout(450);
+            const clicked=await page.evaluate(()=>({
+              active:[...document.querySelectorAll('#staff .fil-staff-tab')].findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
+              name:(document.querySelector('#staff [data-fil-staff-name]')?.textContent||'').trim()
+            }));
+            if(clicked.active!==1||!clicked.name||clicked.name===beforeName)throw new Error(`Manual Staff change failed: ${JSON.stringify(clicked)}`);
+
+            await page.waitForTimeout(8300);
+            const timed=await page.evaluate(()=>({
+              active:[...document.querySelectorAll('#staff .fil-staff-tab')].findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
+              name:(document.querySelector('#staff [data-fil-staff-name]')?.textContent||'').trim()
+            }));
+            if(timed.active!==2||timed.name===clicked.name)throw new Error(`Staff timer failed: ${JSON.stringify(timed)}`);
+
+            await page.setViewportSize({width:390,height:844});
+            await page.goto(`${root}/index.html?staffStoryMobile=${Date.now()}#staff`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector(`#staff[data-fil-staff-showcase-version="${version}"] .fil-staff-showcase-card`,{timeout:20000});
+            await page.waitForTimeout(1000);
+            const mobile=await page.evaluate(()=>{
+              const copy=document.querySelector('#staff .fil-staff-showcase-copy')?.getBoundingClientRect();
+              const card=document.querySelector('#staff .fil-staff-showcase-card')?.getBoundingClientRect();
+              return {
+                tabs:document.querySelectorAll('#staff .fil-staff-tab').length,
+                cardBelow:Boolean(copy&&card&&card.top>=copy.bottom-2),
+                cardWidth:card?.width||0,
+                viewport:innerWidth,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
+            });
+            if(mobile.tabs<2||!mobile.cardBelow||mobile.cardWidth>mobile.viewport||mobile.cardWidth<260||mobile.overflow>4)throw new Error(`Mobile Staff layout invalid: ${JSON.stringify(mobile)}`);
+            await page.locator('#staff').screenshot({path:'artifacts/home-staff-mobile.png'});
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1);});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-staff-story-qa
+          path: artifacts
+          if-no-files-found: error
