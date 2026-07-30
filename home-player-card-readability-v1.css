@@ -1,0 +1,72 @@
+/* Home Browse Players: keep player names and metadata clearly visible */
+body[data-horizontal-ready="true"] #players .player-card{
+  position:relative!important;
+}
+
+body[data-horizontal-ready="true"] #players .player-card .player-info{
+  position:relative!important;
+  z-index:5!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:116px!important;
+  padding:18px 16px 20px!important;
+  text-align:center!important;
+  background:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+body[data-horizontal-ready="true"] #players .player-card .player-info h3{
+  display:block!important;
+  width:100%!important;
+  margin:0 0 7px!important;
+  color:#073d2b!important;
+  -webkit-text-fill-color:#073d2b!important;
+  font-size:1.2rem!important;
+  font-weight:900!important;
+  line-height:1.08!important;
+  opacity:1!important;
+  visibility:visible!important;
+  text-shadow:none!important;
+  overflow-wrap:anywhere!important;
+}
+
+body[data-horizontal-ready="true"] #players .player-card .player-info p{
+  display:block!important;
+  margin:0!important;
+  color:#435b50!important;
+  -webkit-text-fill-color:#435b50!important;
+  font-size:.9rem!important;
+  font-weight:800!important;
+  line-height:1.3!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+body[data-horizontal-ready="true"] #players .player-card .player-city{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin-top:9px!important;
+  padding:6px 12px!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  background:#0b8f4d!important;
+  font-size:.75rem!important;
+  font-weight:900!important;
+  line-height:1!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+@media(max-width:620px){
+  body[data-horizontal-ready="true"] #players .player-card .player-info{
+    min-height:108px!important;
+    padding:16px 14px 18px!important;
+  }
+  body[data-horizontal-ready="true"] #players .player-card .player-info h3{
+    font-size:1.1rem!important;
+  }
+}
