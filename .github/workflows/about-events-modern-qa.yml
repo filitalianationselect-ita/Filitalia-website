@@ -5,8 +5,8 @@ on:
     paths:
       - "index.html"
       - "events.html"
-      - "home-about-test-v1.css"
-      - "home-about-fulltext-v1.css"
+      - "home-about-slider-v1.css"
+      - "home-about-slider-v1.js"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -16,8 +16,8 @@ on:
     paths:
       - "index.html"
       - "events.html"
-      - "home-about-test-v1.css"
-      - "home-about-fulltext-v1.css"
+      - "home-about-slider-v1.css"
+      - "home-about-slider-v1.js"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -41,7 +41,7 @@ jobs:
           CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
           test -n "$CHROME_PATH"
           echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
-      - name: Verify editorial About layout and modern event modal
+      - name: Verify About slider and modern event modal
         run: |
           node <<'NODE'
           const { chromium } = require('playwright-core');
@@ -49,92 +49,92 @@ jobs:
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
-            const page=await browser.newPage({viewport:{width:1360,height:1000}});
+            const page=await browser.newPage({viewport:{width:1360,height:960}});
 
-            for(let i=0;i<40;i++){
-              await page.goto(`${root}/index.html?aboutqa=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            for(let i=0;i<45;i++){
+              await page.goto(`${root}/index.html?aboutslider=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
               try{
-                await page.waitForSelector('#about .about-card.fil-about-static',{timeout:2500});
+                await page.waitForSelector('#about .fil-about-slider .fil-about-slider-next',{timeout:2500});
                 const ready=await page.locator('body[data-horizontal-ready="true"]').count();
                 if(ready)break;
               }catch(_){ }
               await sleep(1000);
             }
-            await page.waitForTimeout(2200);
-            const about=await page.evaluate(()=>{
-              const layout=document.querySelector('#about .fil-about-layout');
-              const title=document.querySelector('#about .fil-about-layout-copy>h2');
-              const intro=document.querySelector('#about .fil-about-story-copy p');
+            await page.waitForTimeout(1800);
+
+            const aboutBefore=await page.evaluate(()=>{
+              const slider=document.querySelector('#about .fil-about-slider');
+              const track=document.querySelector('#about .fil-about-slider-track');
+              const cards=[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')];
               const media=document.querySelector('#about .fil-about-story-media');
-              const social=document.querySelector('#about .fil-about-social-cta');
-              const grid=document.querySelector('#about .about-grid');
-              const cards=[...document.querySelectorAll('#about .about-card.fil-about-static')];
-              const rects=cards.map(card=>card.getBoundingClientRect());
-              const cardData=cards.map(card=>({
-                text:(card.querySelector('p')?.textContent||'').trim(),
-                onclick:card.getAttribute('onclick'),
-                background:getComputedStyle(card).backgroundImage,
-                color:getComputedStyle(card.querySelector('p')).color,
-                width:card.getBoundingClientRect().width,
-                height:card.getBoundingClientRect().height,
-                top:card.getBoundingClientRect().top
-              }));
+              const sliderRect=slider?.getBoundingClientRect();
+              const mediaRect=media?.getBoundingClientRect();
               return{
                 cards:cards.length,
-                steps:document.querySelectorAll('#about .fil-about-pathway span').length,
-                columns:grid?getComputedStyle(grid).gridTemplateColumns:'',
-                layoutColumns:layout?getComputedStyle(layout).gridTemplateColumns:'',
-                titleVisible:!!title&&title.getBoundingClientRect().width>200&&title.getBoundingClientRect().height>80,
-                introVisible:!!intro&&intro.getBoundingClientRect().width>250&&intro.getBoundingClientRect().height>60,
-                mediaVisible:!!media&&media.getBoundingClientRect().width>350&&media.getBoundingClientRect().height>350,
-                socialHidden:!!social&&getComputedStyle(social).display==='none',
-                cardData,
-                sameRow:rects.length===3&&Math.max(...rects.map(r=>r.top))-Math.min(...rects.map(r=>r.top))<5,
+                arrows:document.querySelectorAll('#about .fil-about-slider-arrow').length,
+                dots:document.querySelectorAll('#about .fil-about-slider-dot').length,
+                counter:(document.querySelector('#about .fil-about-slider-counter')?.textContent||'').trim(),
+                transform:track?getComputedStyle(track).transform:'',
+                active:cards.findIndex(card=>card.getAttribute('aria-hidden')==='false'),
+                cardWidths:cards.map(card=>card.getBoundingClientRect().width),
+                sliderWidth:sliderRect?.width||0,
+                sliderLeft:sliderRect?.left||0,
+                mediaWidth:mediaRect?.width||0,
+                mediaHeight:mediaRect?.height||0,
+                mediaLeft:mediaRect?.left||0,
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
-            if(about.cards!==3||about.steps!==4)throw new Error(`About content missing: ${JSON.stringify(about)}`);
-            if(!about.titleVisible||!about.introVisible||!about.mediaVisible||!about.socialHidden)throw new Error(`About editorial structure invalid: ${JSON.stringify(about)}`);
-            if(!about.sameRow||about.cardData.some(x=>x.width<340||x.height<300))throw new Error(`About desktop chapters are not a clean three-column row: ${JSON.stringify(about)}`);
-            if(about.cardData.some(x=>x.text.length<300||x.onclick!==null))throw new Error(`About chapter text/click regression: ${JSON.stringify(about)}`);
-            if(about.cardData.some(x=>x.background==='none'))throw new Error(`About chapters are not light readable panels: ${JSON.stringify(about)}`);
-            if(about.overflow>3)throw new Error(`About horizontal overflow: ${JSON.stringify(about)}`);
+
+            if(aboutBefore.cards!==3||aboutBefore.arrows!==2||aboutBefore.dots!==3)throw new Error(`About slider controls missing: ${JSON.stringify(aboutBefore)}`);
+            if(aboutBefore.counter!=='01 / 03'||aboutBefore.active!==0)throw new Error(`About initial slide invalid: ${JSON.stringify(aboutBefore)}`);
+            if(aboutBefore.cardWidths.some(width=>Math.abs(width-aboutBefore.sliderWidth)>4))throw new Error(`About cards are not one-per-view: ${JSON.stringify(aboutBefore)}`);
+            if(aboutBefore.mediaLeft<=aboutBefore.sliderLeft||aboutBefore.mediaWidth<250||aboutBefore.mediaWidth>440||aboutBefore.mediaHeight>540)throw new Error(`About image is not compact on the right: ${JSON.stringify(aboutBefore)}`);
+            if(aboutBefore.overflow>3)throw new Error(`About desktop overflow: ${JSON.stringify(aboutBefore)}`);
+
+            await page.locator('#about .fil-about-slider-next').click();
+            await page.waitForTimeout(650);
+            const aboutAfter=await page.evaluate(()=>({
+              counter:(document.querySelector('#about .fil-about-slider-counter')?.textContent||'').trim(),
+              active:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].findIndex(card=>card.getAttribute('aria-hidden')==='false'),
+              transform:getComputedStyle(document.querySelector('#about .fil-about-slider-track')).transform
+            }));
+            if(aboutAfter.counter!=='02 / 03'||aboutAfter.active!==1||aboutAfter.transform===aboutBefore.transform)throw new Error(`About next arrow did not move: ${JSON.stringify({aboutBefore,aboutAfter})}`);
 
             await page.setViewportSize({width:390,height:844});
-            await page.goto(`${root}/index.html?aboutmobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForSelector('#about .about-card.fil-about-static',{timeout:20000});
-            await page.waitForTimeout(1800);
+            await page.goto(`${root}/index.html?aboutslidermobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#about .fil-about-slider-next',{timeout:20000});
+            await page.waitForTimeout(1400);
             const aboutMobile=await page.evaluate(()=>{
-              const cards=[...document.querySelectorAll('#about .about-card.fil-about-static')];
-              const rects=cards.map(x=>x.getBoundingClientRect());
+              const slider=document.querySelector('#about .fil-about-slider');
+              const media=document.querySelector('#about .fil-about-story-media');
+              const sliderRect=slider?.getBoundingClientRect();
+              const mediaRect=media?.getBoundingClientRect();
               return{
-                widths:rects.map(r=>r.width),
-                tops:rects.map(r=>r.top),
+                sliderWidth:sliderRect?.width||0,
+                mediaWidth:mediaRect?.width||0,
+                mediaTop:mediaRect?.top||0,
+                sliderBottom:sliderRect?.bottom||0,
                 viewport:innerWidth,
-                stacked:rects.length===3&&rects[1].top>rects[0].bottom&&rects[2].top>rects[1].bottom,
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
-            if(!aboutMobile.stacked||aboutMobile.widths.some(x=>x>aboutMobile.viewport+2)||aboutMobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(aboutMobile)}`);
+            if(aboutMobile.sliderWidth>aboutMobile.viewport+2||aboutMobile.mediaWidth>360||aboutMobile.mediaTop<=aboutMobile.sliderBottom||aboutMobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(aboutMobile)}`);
 
             await page.setViewportSize({width:1360,height:900});
             await page.goto(`${root}/events.html?eventqa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
             await page.waitForSelector('#allEventsGrid a',{timeout:20000});
             await page.waitForTimeout(1800);
-            const first=page.locator('#allEventsGrid a').first();
-            await first.click();
+            await page.locator('#allEventsGrid a').first().click();
             await page.waitForSelector('#infoModal.fil-event-modal-modern.is-open .fil-event-modal-copy h2',{timeout:10000});
             const firstEvent=await page.evaluate(()=>{
               const modal=document.querySelector('#infoModal.fil-event-modal-modern.is-open');
-              const title=modal?.querySelector('.fil-event-modal-copy h2');
-              const description=modal?.querySelector('.fil-event-modal-description');
-              const register=modal?.querySelector('.fil-event-modal-register');
               const image=modal?.querySelector('.fil-event-modal-media img');
               return{
-                title:title?.textContent.trim()||'',
-                description:description?.textContent.trim()||'',
+                title:modal?.querySelector('.fil-event-modal-copy h2')?.textContent.trim()||'',
+                description:modal?.querySelector('.fil-event-modal-description')?.textContent.trim()||'',
                 meta:modal?.querySelectorAll('.fil-event-modal-meta article').length||0,
-                register:register?.getAttribute('href')||'',
+                register:modal?.querySelector('.fil-event-modal-register')?.getAttribute('href')||'',
                 imageWidth:image?.naturalWidth||0,
                 display:modal?getComputedStyle(modal).display:'none'
               };
@@ -143,29 +143,7 @@ jobs:
             if(!firstEvent.register.includes('camp-register.html?event='))throw new Error(`Registration link missing: ${JSON.stringify(firstEvent)}`);
             if(firstEvent.imageWidth<1||firstEvent.display==='none')throw new Error(`Modern event not visible: ${JSON.stringify(firstEvent)}`);
 
-            const oldTitle=firstEvent.title;
-            await page.locator('#infoModal > .modal-next').click();
-            await page.waitForTimeout(350);
-            const nextTitle=await page.locator('#infoModal .fil-event-modal-copy h2').textContent();
-            if(!nextTitle||nextTitle.trim()===oldTitle)throw new Error(`Event arrows did not change event: ${oldTitle} -> ${nextTitle}`);
-
-            await page.setViewportSize({width:390,height:844});
-            await page.reload({waitUntil:'domcontentloaded'});
-            await page.waitForSelector('#allEventsGrid a',{timeout:20000});
-            await page.locator('#allEventsGrid a').first().click();
-            await page.waitForSelector('#infoModal.fil-event-modal-modern.is-open .modal-content',{timeout:10000});
-            const mobile=await page.evaluate(()=>{
-              const content=document.querySelector('#infoModal.fil-event-modal-modern .modal-content');
-              return{
-                columns:content?getComputedStyle(content).gridTemplateColumns:'',
-                width:content?.getBoundingClientRect().width||0,
-                viewport:innerWidth,
-                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
-              };
-            });
-            if(mobile.width>mobile.viewport+2||mobile.overflow>3)throw new Error(`Mobile event overflow: ${JSON.stringify(mobile)}`);
-
             await browser.close();
-            console.log(JSON.stringify({about,aboutMobile,firstEvent,nextTitle,mobile},null,2));
+            console.log(JSON.stringify({aboutBefore,aboutAfter,aboutMobile,firstEvent},null,2));
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
