@@ -7,8 +7,6 @@ on:
       - "events.html"
       - "home-about-slider-v1.css"
       - "home-about-slider-v1.js"
-      - "home-about-slider-v2.css"
-      - "home-about-slider-v2.js"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -20,8 +18,6 @@ on:
       - "events.html"
       - "home-about-slider-v1.css"
       - "home-about-slider-v1.js"
-      - "home-about-slider-v2.css"
-      - "home-about-slider-v2.js"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -45,47 +41,61 @@ jobs:
           CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
           test -n "$CHROME_PATH"
           echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
-      - name: Verify titled About slider, social strip and modern event modal
+      - name: Verify approved About showcase and modern event modal
         run: |
           node <<'NODE'
           const { chromium } = require('playwright-core');
           const root='https://deploy-preview-1--filitalia.netlify.app';
-          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
             const page=await browser.newPage({viewport:{width:1360,height:960}});
 
-            for(let i=0;i<45;i++){
-              await page.goto(`${root}/index.html?aboutv2=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            let approved=false;
+            for(let i=0;i<60;i++){
+              await page.goto(`${root}/index.html?approvedAbout=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
               try{
-                await page.waitForSelector('#about .fil-about-slider-v2 .fil-about-slider-tab',{timeout:2500});
-                const ready=await page.locator('body[data-horizontal-ready="true"]').count();
-                if(ready)break;
-              }catch(_){ }
-              await sleep(1000);
+                await page.waitForSelector('#about[data-fil-about-showcase-version="approved-green-v1"] .fil-about-slider-tab',{timeout:1800});
+                approved=true;
+                break;
+              }catch(_){
+                await sleep(1000);
+              }
             }
-            await page.waitForTimeout(1900);
+            if(!approved)throw new Error('Approved About showcase deploy did not become available');
+            await page.waitForTimeout(1700);
 
-            const aboutBefore=await page.evaluate(()=>{
-              const slider=document.querySelector('#about .fil-about-slider-v2');
-              const track=document.querySelector('#about .fil-about-slider-track');
-              const cards=[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')];
-              const tabs=[...document.querySelectorAll('#about .fil-about-slider-tab')];
-              const media=document.querySelector('#about .fil-about-story-media');
-              const social=document.querySelector('#about .fil-about-social-cta');
-              const layout=document.querySelector('#about .fil-about-layout');
-              const sliderRect=slider?.getBoundingClientRect();
+            const before=await page.evaluate(()=>{
+              const about=document.querySelector('#about');
+              const slider=about?.querySelector('.fil-about-slider');
+              const track=about?.querySelector('.fil-about-slider-track');
+              const cards=[...(about?.querySelectorAll('.fil-about-slider-track>.about-card')||[])];
+              const tabs=[...(about?.querySelectorAll('.fil-about-slider-tab')||[])];
+              const media=about?.querySelector('.fil-about-story-media');
+              const social=about?.querySelector('.fil-about-social-cta');
+              const layout=about?.querySelector('.fil-about-layout');
+              const activeTab=tabs.findIndex(tab=>tab.getAttribute('aria-selected')==='true');
+              const activeCard=cards.findIndex(card=>card.getAttribute('aria-hidden')==='false');
+              const activeStyle=tabs[0]?getComputedStyle(tabs[0]):null;
+              const activeHeading=cards[0]?.querySelector('h3');
+              const activeParagraph=cards[0]?.querySelector('p');
               const mediaRect=media?.getBoundingClientRect();
+              const sliderRect=slider?.getBoundingClientRect();
               const socialRect=social?.getBoundingClientRect();
               const layoutRect=layout?.getBoundingClientRect();
-              return{
+              return {
+                version:about?.dataset.filAboutShowcaseVersion||'',
                 cards:cards.length,
                 tabs:tabs.length,
-                arrows:document.querySelectorAll('#about .fil-about-slider-arrow').length,
+                arrows:about?.querySelectorAll('.fil-about-slider-arrow').length||0,
                 labels:tabs.map(tab=>(tab.querySelector('.fil-about-slider-tab-label')?.textContent||'').trim()),
-                activeTab:tabs.findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
-                activeCard:cards.findIndex(card=>card.getAttribute('aria-hidden')==='false'),
+                activeTab,
+                activeCard,
                 transform:track?getComputedStyle(track).transform:'',
+                titleColor:activeHeading?getComputedStyle(activeHeading).color:'',
+                paragraphColor:activeParagraph?getComputedStyle(activeParagraph).color:'',
+                tabBackground:activeStyle?.backgroundImage||activeStyle?.backgroundColor||'',
                 sliderWidth:sliderRect?.width||0,
                 sliderLeft:sliderRect?.left||0,
                 mediaWidth:mediaRect?.width||0,
@@ -101,35 +111,38 @@ jobs:
             });
 
             const expected=['Identità nazionale','Sviluppo giocatori','Visione internazionale'];
-            if(aboutBefore.cards!==3||aboutBefore.tabs!==3||aboutBefore.arrows!==2)throw new Error(`About controls missing: ${JSON.stringify(aboutBefore)}`);
-            if(JSON.stringify(aboutBefore.labels)!==JSON.stringify(expected))throw new Error(`About tab labels invalid: ${JSON.stringify(aboutBefore)}`);
-            if(aboutBefore.activeTab!==0||aboutBefore.activeCard!==0)throw new Error(`About initial slide invalid: ${JSON.stringify(aboutBefore)}`);
-            if(aboutBefore.mediaLeft<=aboutBefore.sliderLeft||aboutBefore.mediaWidth<250||aboutBefore.mediaWidth>410||aboutBefore.mediaHeight>520)throw new Error(`About image is not compact on the right: ${JSON.stringify(aboutBefore)}`);
-            if(aboutBefore.socialDisplay==='none'||Math.abs(aboutBefore.socialWidth-aboutBefore.layoutWidth)>5||Math.abs(aboutBefore.socialLeft-aboutBefore.layoutLeft)>5)throw new Error(`About social strip does not span both columns: ${JSON.stringify(aboutBefore)}`);
-            if(aboutBefore.overflow>3)throw new Error(`About desktop overflow: ${JSON.stringify(aboutBefore)}`);
+            if(before.version!=='approved-green-v1')throw new Error(`Wrong About version: ${JSON.stringify(before)}`);
+            if(before.cards!==3||before.tabs!==3||before.arrows!==2)throw new Error(`About controls missing: ${JSON.stringify(before)}`);
+            if(JSON.stringify(before.labels)!==JSON.stringify(expected))throw new Error(`About tab labels invalid: ${JSON.stringify(before)}`);
+            if(before.activeTab!==0||before.activeCard!==0)throw new Error(`About initial slide invalid: ${JSON.stringify(before)}`);
+            if(before.mediaLeft<=before.sliderLeft||before.mediaWidth<280||before.mediaWidth>420||before.mediaHeight>500)throw new Error(`About image is not compact on the right: ${JSON.stringify(before)}`);
+            if(before.socialDisplay==='none'||Math.abs(before.socialWidth-before.layoutWidth)>5||Math.abs(before.socialLeft-before.layoutLeft)>5)throw new Error(`About social strip width invalid: ${JSON.stringify(before)}`);
+            if(!before.titleColor.includes('255')||!before.paragraphColor.includes('241'))throw new Error(`About text is not direct white copy on dark background: ${JSON.stringify(before)}`);
+            if(!before.tabBackground.includes('gradient'))throw new Error(`Active About tab is not highlighted: ${JSON.stringify(before)}`);
+            if(before.overflow>3)throw new Error(`About desktop overflow: ${JSON.stringify(before)}`);
 
             await page.locator('#about .fil-about-slider-tab').nth(1).click();
             await page.waitForTimeout(650);
-            const aboutAfter=await page.evaluate(()=>({
+            const after=await page.evaluate(()=>({
               activeTab:[...document.querySelectorAll('#about .fil-about-slider-tab')].findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
               activeCard:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].findIndex(card=>card.getAttribute('aria-hidden')==='false'),
               heading:(document.querySelector('#about .about-card[aria-hidden="false"] h3')?.textContent||'').trim(),
               transform:getComputedStyle(document.querySelector('#about .fil-about-slider-track')).transform
             }));
-            if(aboutAfter.activeTab!==1||aboutAfter.activeCard!==1||aboutAfter.heading!=='Sviluppo giocatori'||aboutAfter.transform===aboutBefore.transform)throw new Error(`About second title did not open slide 2: ${JSON.stringify({aboutBefore,aboutAfter})}`);
+            if(after.activeTab!==1||after.activeCard!==1||after.heading!=='Sviluppo giocatori'||after.transform===before.transform)throw new Error(`About slide 02 did not open: ${JSON.stringify({before,after})}`);
 
             await page.setViewportSize({width:390,height:844});
-            await page.goto(`${root}/index.html?aboutv2mobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForSelector('#about .fil-about-slider-v2 .fil-about-slider-tab',{timeout:20000});
-            await page.waitForTimeout(1500);
-            const aboutMobile=await page.evaluate(()=>{
-              const slider=document.querySelector('#about .fil-about-slider-v2');
+            await page.goto(`${root}/index.html?approvedAboutMobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#about[data-fil-about-showcase-version="approved-green-v1"] .fil-about-slider-tab',{timeout:20000});
+            await page.waitForTimeout(1300);
+            const mobile=await page.evaluate(()=>{
+              const slider=document.querySelector('#about .fil-about-slider');
               const media=document.querySelector('#about .fil-about-story-media');
               const social=document.querySelector('#about .fil-about-social-cta');
               const sliderRect=slider?.getBoundingClientRect();
               const mediaRect=media?.getBoundingClientRect();
               const socialRect=social?.getBoundingClientRect();
-              return{
+              return {
                 tabs:document.querySelectorAll('#about .fil-about-slider-tab').length,
                 sliderWidth:sliderRect?.width||0,
                 mediaWidth:mediaRect?.width||0,
@@ -142,18 +155,18 @@ jobs:
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
-            if(aboutMobile.tabs!==3||aboutMobile.sliderWidth>aboutMobile.viewport+2||aboutMobile.mediaWidth<220||aboutMobile.mediaWidth>350||aboutMobile.mediaTop<=aboutMobile.sliderBottom||aboutMobile.socialTop<=aboutMobile.mediaBottom||aboutMobile.socialWidth>aboutMobile.viewport+2||aboutMobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(aboutMobile)}`);
+            if(mobile.tabs!==3||mobile.sliderWidth>mobile.viewport+2||mobile.mediaWidth<220||mobile.mediaWidth>350||mobile.mediaTop<=mobile.sliderBottom||mobile.socialTop<=mobile.mediaBottom||mobile.socialWidth>mobile.viewport+2||mobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(mobile)}`);
 
             await page.setViewportSize({width:1360,height:900});
             await page.goto(`${root}/events.html?eventqa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
             await page.waitForSelector('#allEventsGrid a',{timeout:20000});
-            await page.waitForTimeout(1800);
+            await page.waitForTimeout(1600);
             await page.locator('#allEventsGrid a').first().click();
             await page.waitForSelector('#infoModal.fil-event-modal-modern.is-open .fil-event-modal-copy h2',{timeout:10000});
-            const firstEvent=await page.evaluate(()=>{
+            const event=await page.evaluate(()=>{
               const modal=document.querySelector('#infoModal.fil-event-modal-modern.is-open');
               const image=modal?.querySelector('.fil-event-modal-media img');
-              return{
+              return {
                 title:modal?.querySelector('.fil-event-modal-copy h2')?.textContent.trim()||'',
                 description:modal?.querySelector('.fil-event-modal-description')?.textContent.trim()||'',
                 meta:modal?.querySelectorAll('.fil-event-modal-meta article').length||0,
@@ -162,11 +175,9 @@ jobs:
                 display:modal?getComputedStyle(modal).display:'none'
               };
             });
-            if(!firstEvent.title||firstEvent.description.length<30||firstEvent.meta!==4)throw new Error(`Modern event content missing: ${JSON.stringify(firstEvent)}`);
-            if(!firstEvent.register.includes('camp-register.html?event='))throw new Error(`Registration link missing: ${JSON.stringify(firstEvent)}`);
-            if(firstEvent.imageWidth<1||firstEvent.display==='none')throw new Error(`Modern event not visible: ${JSON.stringify(firstEvent)}`);
+            if(!event.title||event.description.length<30||event.meta!==4||!event.register.includes('camp-register.html?event=')||event.imageWidth<1||event.display==='none')throw new Error(`Modern event invalid: ${JSON.stringify(event)}`);
 
             await browser.close();
-            console.log(JSON.stringify({aboutBefore,aboutAfter,aboutMobile,firstEvent},null,2));
+            console.log(JSON.stringify({before,after,mobile,event},null,2));
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
