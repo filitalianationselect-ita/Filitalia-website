@@ -1,0 +1,18 @@
+/* Hide legacy public-page headings after the new News and Gallery heroes are mounted. */
+body.fil-page-news .players-page.fpr-news-page>.fil-page-brand,
+body.fil-page-news .players-page.fpr-news-page>h1,
+body.fil-page-news .players-page.fpr-news-page>.page-subtitle,
+body.fil-page-news .players-page.fpr-news-page>.players-button-row,
+body.fil-page-gallery .players-page.fpr-gallery-page>.fil-page-brand,
+body.fil-page-gallery .players-page.fpr-gallery-page>h1,
+body.fil-page-gallery .players-page.fpr-gallery-page>.page-subtitle,
+body.fil-page-gallery .players-page.fpr-gallery-page>.players-button-row{
+  display:none!important;
+  margin:0!important;
+  padding:0!important;
+  min-height:0!important;
+  height:0!important;
+  overflow:hidden!important;
+}
+body.fil-page-news .players-page.fpr-news-page,
+body.fil-page-gallery .players-page.fpr-gallery-page{padding-top:22px!important}
