@@ -54,6 +54,7 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
             const page=await browser.newPage({viewport:{width:1360,height:960},deviceScaleFactor:1});
+            await page.emulateMedia({reducedMotion:'no-preference'});
 
             let currentDeploy=false;
             for(let i=0;i<90;i++){
@@ -124,7 +125,6 @@ jobs:
             if(!before.titleColor.includes('255')||!before.paragraphColor.includes('241'))throw new Error(`About text contrast invalid: ${JSON.stringify(before)}`);
             if(!before.tabBackground.includes('gradient')||before.timerAnimation==='none')throw new Error(`About active selector or timer invalid: ${JSON.stringify(before)}`);
             if(before.overflow>3)throw new Error(`About desktop overflow: ${JSON.stringify(before)}`);
-
             await page.locator('#about').screenshot({path:'artifacts/about-desktop.png'});
 
             await page.locator('#about .fil-about-slider-tab').nth(1).click();
