@@ -168,8 +168,6 @@
       touchDeltaX=0;
     },{passive:true});
 
-    about.addEventListener('mouseenter',stopAuto);
-    about.addEventListener('mouseleave',scheduleAuto);
     about.addEventListener('focusin',stopAuto);
     about.addEventListener('focusout',function(){window.setTimeout(function(){if(!about.contains(document.activeElement))scheduleAuto();},0);});
     document.addEventListener('visibilitychange',function(){if(document.hidden)stopAuto();else scheduleAuto();});
