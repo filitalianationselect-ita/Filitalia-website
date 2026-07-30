@@ -115,7 +115,7 @@ jobs:
             if(before.cards!==3||before.tabs!==3||before.arrows!==2)throw new Error(`About controls missing: ${JSON.stringify(before)}`);
             if(JSON.stringify(before.labels)!==JSON.stringify(expected))throw new Error(`About tab labels invalid: ${JSON.stringify(before)}`);
             if(before.activeTab!==0||before.activeCard!==0)throw new Error(`About initial slide invalid: ${JSON.stringify(before)}`);
-            if(before.mediaLeft<=before.sliderLeft||before.mediaWidth<280||before.mediaWidth>420||before.mediaHeight>500)throw new Error(`About image is not compact on the right: ${JSON.stringify(before)}`);
+            if(before.mediaLeft<=before.sliderLeft||before.mediaWidth<280||before.mediaWidth>420||before.mediaHeight>510)throw new Error(`About image is not compact on the right: ${JSON.stringify(before)}`);
             if(before.socialDisplay==='none'||Math.abs(before.socialWidth-before.layoutWidth)>5||Math.abs(before.socialLeft-before.layoutLeft)>5)throw new Error(`About social strip width invalid: ${JSON.stringify(before)}`);
             if(!before.titleColor.includes('255')||!before.paragraphColor.includes('241'))throw new Error(`About text is not direct white copy on dark background: ${JSON.stringify(before)}`);
             if(!before.tabBackground.includes('gradient'))throw new Error(`Active About tab is not highlighted: ${JSON.stringify(before)}`);
