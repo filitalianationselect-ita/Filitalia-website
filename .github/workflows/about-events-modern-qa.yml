@@ -6,6 +6,7 @@ on:
       - "index.html"
       - "events.html"
       - "home-about-test-v1.css"
+      - "home-about-fulltext-v1.css"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -16,6 +17,7 @@ on:
       - "index.html"
       - "events.html"
       - "home-about-test-v1.css"
+      - "home-about-fulltext-v1.css"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -39,7 +41,7 @@ jobs:
           CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
           test -n "$CHROME_PATH"
           echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
-      - name: Verify About layout and modern event modal
+      - name: Verify editorial About layout and modern event modal
         run: |
           node <<'NODE'
           const { chromium } = require('playwright-core');
@@ -47,39 +49,75 @@ jobs:
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
-            const page=await browser.newPage({viewport:{width:1360,height:900}});
+            const page=await browser.newPage({viewport:{width:1360,height:1000}});
 
             for(let i=0;i<40;i++){
               await page.goto(`${root}/index.html?aboutqa=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
               try{
-                await page.waitForSelector('#about .fil-about-layout',{timeout:2500});
+                await page.waitForSelector('#about .about-card.fil-about-static',{timeout:2500});
                 const ready=await page.locator('body[data-horizontal-ready="true"]').count();
                 if(ready)break;
               }catch(_){ }
               await sleep(1000);
             }
-            await page.waitForTimeout(1800);
+            await page.waitForTimeout(2200);
             const about=await page.evaluate(()=>{
               const layout=document.querySelector('#about .fil-about-layout');
-              const copy=document.querySelector('#about .fil-about-layout-copy');
+              const title=document.querySelector('#about .fil-about-layout-copy>h2');
+              const intro=document.querySelector('#about .fil-about-story-copy p');
               const media=document.querySelector('#about .fil-about-story-media');
               const social=document.querySelector('#about .fil-about-social-cta');
-              const style=layout?getComputedStyle(layout):null;
+              const grid=document.querySelector('#about .about-grid');
+              const cards=[...document.querySelectorAll('#about .about-card.fil-about-static')];
+              const rects=cards.map(card=>card.getBoundingClientRect());
+              const cardData=cards.map(card=>({
+                text:(card.querySelector('p')?.textContent||'').trim(),
+                onclick:card.getAttribute('onclick'),
+                background:getComputedStyle(card).backgroundColor,
+                color:getComputedStyle(card.querySelector('p')).color,
+                width:card.getBoundingClientRect().width,
+                height:card.getBoundingClientRect().height,
+                top:card.getBoundingClientRect().top
+              }));
               return{
-                cards:document.querySelectorAll('#about .about-card').length,
+                cards:cards.length,
                 steps:document.querySelectorAll('#about .fil-about-pathway span').length,
-                socials:document.querySelectorAll('#about .fil-about-social-link').length,
-                columns:style?style.gridTemplateColumns:'',
-                copyVisible:!!copy&&copy.getBoundingClientRect().width>300&&copy.getBoundingClientRect().height>400,
-                mediaVisible:!!media&&media.getBoundingClientRect().width>300&&media.getBoundingClientRect().height>400,
-                socialVisible:!!social&&social.getBoundingClientRect().height>60,
+                columns:grid?getComputedStyle(grid).gridTemplateColumns:'',
+                layoutColumns:layout?getComputedStyle(layout).gridTemplateColumns:'',
+                titleVisible:!!title&&title.getBoundingClientRect().width>200&&title.getBoundingClientRect().height>80,
+                introVisible:!!intro&&intro.getBoundingClientRect().width>250&&intro.getBoundingClientRect().height>60,
+                mediaVisible:!!media&&media.getBoundingClientRect().width>350&&media.getBoundingClientRect().height>350,
+                socialHidden:!!social&&getComputedStyle(social).display==='none',
+                cardData,
+                sameRow:rects.length===3&&Math.max(...rects.map(r=>r.top))-Math.min(...rects.map(r=>r.top))<5,
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
-            if(about.cards!==3||about.steps!==4||about.socials!==2)throw new Error(`About content missing: ${JSON.stringify(about)}`);
-            if(!about.copyVisible||!about.mediaVisible||!about.socialVisible)throw new Error(`About layout hidden: ${JSON.stringify(about)}`);
+            if(about.cards!==3||about.steps!==4)throw new Error(`About content missing: ${JSON.stringify(about)}`);
+            if(!about.titleVisible||!about.introVisible||!about.mediaVisible||!about.socialHidden)throw new Error(`About editorial structure invalid: ${JSON.stringify(about)}`);
+            if(!about.sameRow||about.cardData.some(x=>x.width<300||x.height<300))throw new Error(`About desktop chapters are not a clean three-column row: ${JSON.stringify(about)}`);
+            if(about.cardData.some(x=>x.text.length<300||x.onclick!==null))throw new Error(`About chapter text/click regression: ${JSON.stringify(about)}`);
+            if(about.cardData.some(x=>!x.background.includes('255')))throw new Error(`About chapters are not light readable panels: ${JSON.stringify(about)}`);
             if(about.overflow>3)throw new Error(`About horizontal overflow: ${JSON.stringify(about)}`);
 
+            await page.setViewportSize({width:390,height:844});
+            await page.goto(`${root}/index.html?aboutmobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#about .about-card.fil-about-static',{timeout:20000});
+            await page.waitForTimeout(1800);
+            const aboutMobile=await page.evaluate(()=>{
+              const cards=[...document.querySelectorAll('#about .about-card.fil-about-static')];
+              const rects=cards.map(x=>x.getBoundingClientRect());
+              return{
+                widths:rects.map(r=>r.width),
+                tops:rects.map(r=>r.top),
+                viewport:innerWidth,
+                stacked:rects.length===3&&rects[1].top>rects[0].bottom&&rects[2].top>rects[1].bottom,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
+            });
+            if(!aboutMobile.stacked||aboutMobile.widths.some(x=>x>aboutMobile.viewport+2)||aboutMobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(aboutMobile)}`);
+
+            await page.setViewportSize({width:1360,height:900});
             await page.goto(`${root}/events.html?eventqa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
             await page.waitForSelector('#allEventsGrid a',{timeout:20000});
             await page.waitForTimeout(1800);
@@ -128,6 +166,6 @@ jobs:
             if(mobile.width>mobile.viewport+2||mobile.overflow>3)throw new Error(`Mobile event overflow: ${JSON.stringify(mobile)}`);
 
             await browser.close();
-            console.log(JSON.stringify({about,firstEvent,nextTitle,mobile},null,2));
+            console.log(JSON.stringify({about,aboutMobile,firstEvent,nextTitle,mobile},null,2));
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
