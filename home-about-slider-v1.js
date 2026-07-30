@@ -33,7 +33,7 @@
     track.classList.add('fil-about-slider-track');
 
     const slider=document.createElement('div');
-    slider.className='fil-about-slider';
+    slider.className='fil-about-slider fil-about-slider-v2';
     slider.setAttribute('role','region');
     slider.setAttribute('aria-label','Contenuti Chi siamo');
     slider.tabIndex=0;
