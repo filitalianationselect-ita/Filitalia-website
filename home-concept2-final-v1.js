@@ -10,6 +10,15 @@ function loadFinalFixes(){
   document.head.appendChild(style);
 }
 
+function loadPlayerCardReadability(){
+  if(document.querySelector('link[data-filitalia-player-card-readability]'))return;
+  const style=document.createElement('link');
+  style.rel='stylesheet';
+  style.href='home-player-card-readability-v1.css?v=1';
+  style.dataset.filitaliaPlayerCardReadability='true';
+  document.head.appendChild(style);
+}
+
 function addAboutLink(){
   const nav=document.getElementById('navLinks');
   if(!nav||nav.querySelector('a[href="#about"]'))return;
@@ -90,6 +99,7 @@ function closeMenuAfterNavigation(){
 
 function apply(){
   loadFinalFixes();
+  loadPlayerCardReadability();
   document.body.classList.add('fil-concept2');
   addAboutLink();
   removePublicAccountLink();
