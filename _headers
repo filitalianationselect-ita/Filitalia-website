@@ -13,6 +13,9 @@
 /home-reference-navbar-v1.js
   Cache-Control: public, max-age=0, must-revalidate
 
+/home-reference-navbar-polish-v2.css
+  Cache-Control: public, max-age=0, must-revalidate
+
 /site-final-pass-v1.js
   Cache-Control: public, max-age=0, must-revalidate
 
@@ -32,6 +35,12 @@
   Cache-Control: public, max-age=0, must-revalidate
 
 /gallery-redesign-fix-v1.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/review-fixes-v1.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/review-fixes-v1.css
   Cache-Control: public, max-age=0, must-revalidate
 
 /*.js
