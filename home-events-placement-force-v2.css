@@ -1,0 +1,39 @@
+/* Final authority: player card above the Home event rail */
+body.fil-home-events-layout-final[data-horizontal-ready="true"] .home-hero-visual{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(350px,1fr) auto!important;
+  grid-template-areas:"player" "events"!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+body.fil-home-events-layout-final[data-horizontal-ready="true"] .home-hero-visual>.home-player-frame{
+  grid-area:player!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  height:100%!important;
+  min-height:350px!important;
+  max-height:none!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+}
+body.fil-home-events-layout-final[data-horizontal-ready="true"] .home-hero-visual>.home-event-rail{
+  grid-area:events!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:210px!important;
+  max-height:none!important;
+  align-self:auto!important;
+  justify-self:stretch!important;
+  transform:none!important;
+}
+@media(max-width:680px){
+  body.fil-home-events-layout-final[data-horizontal-ready="true"] .home-hero-visual{
+    grid-template-rows:auto auto!important;
+  }
+}
