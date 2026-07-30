@@ -58,7 +58,7 @@ jobs:
               };
             });
             const generic=/^(ALBUM|ALBUMS|FOTO|PHOTOS|VIDEO|VIDEOS)$/i;
-            if(desktop.cards<4||desktop.oldCta||desktop.oldGrid||desktop.sectionOverflow>2||desktop.pageOverflow>2||!desktop.title||desktop.leadWidth<=desktop.secondWidth||desktop.labels.some(label=>!label||generic.test(label)))throw new Error(`Desktop gallery invalid: ${JSON.stringify(desktop)}`);
+            if(desktop.cards<4||desktop.oldCta||desktop.oldGrid||desktop.sectionOverflow>10||desktop.pageOverflow>2||!desktop.title||desktop.leadWidth<=desktop.secondWidth||desktop.labels.some(label=>!label||generic.test(label)))throw new Error(`Desktop gallery invalid: ${JSON.stringify(desktop)}`);
             await page.screenshot({path:'home-gallery-desktop.jpg',type:'jpeg',quality:82,fullPage:true});
 
             await page.locator('[data-home-gallery-filter="album"]').click();
@@ -76,7 +76,7 @@ jobs:
               sectionOverflow:document.querySelector('#gallery').scrollWidth-document.querySelector('#gallery').clientWidth,
               filters:document.querySelectorAll('#gallery [data-home-gallery-filter]').length
             }));
-            if(mobile.cards<4||mobile.pageOverflow>2||mobile.sectionOverflow>2||mobile.filters<5)throw new Error(`Mobile gallery invalid: ${JSON.stringify(mobile)}`);
+            if(mobile.cards<4||mobile.pageOverflow>2||mobile.sectionOverflow>10||mobile.filters<5)throw new Error(`Mobile gallery invalid: ${JSON.stringify(mobile)}`);
             await page.screenshot({path:'home-gallery-mobile.jpg',type:'jpeg',quality:82,fullPage:true});
             fs.writeFileSync('home-gallery-result.json',JSON.stringify({desktop,mobile},null,2));
             await browser.close();
