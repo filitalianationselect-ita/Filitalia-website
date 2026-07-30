@@ -9,9 +9,16 @@ function loadStyle(){
   document.head.appendChild(link);
 }
 function loadReviewFixes(){
+  if(!document.querySelector('link[data-filitalia-review-fixes]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='review-fixes-v1.css?v=2';
+    link.dataset.filitaliaReviewFixes='true';
+    document.head.appendChild(link);
+  }
   if(document.querySelector('script[data-filitalia-review-fixes]'))return;
   const script=document.createElement('script');
-  script.src='review-fixes-v1.js?v=1';
+  script.src='review-fixes-v1.js?v=2';
   script.async=false;
   script.dataset.filitaliaReviewFixes='true';
   document.body.appendChild(script);
