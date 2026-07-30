@@ -8,12 +8,22 @@ function loadStyle(){
   link.dataset.filitaliaFinalPass='true';
   document.head.appendChild(link);
 }
+function loadPublicRedesign(){
+  if(!document.querySelector('link[data-filitalia-public-redesign]')){
+    const link=document.createElement('link');link.rel='stylesheet';link.href='fil-public-redesign-v1.css?v=1';link.dataset.filitaliaPublicRedesign='true';document.head.appendChild(link);
+  }
+  if(!document.querySelector('script[src*="fil-public-redesign-v1.js"]')){
+    const script=document.createElement('script');script.src='fil-public-redesign-v1.js?v=1';script.async=false;script.dataset.filitaliaPublicRedesign='true';document.body.appendChild(script);
+  }
+}
 function loadFinalizer(){
   if(document.querySelector('script[data-filitalia-staff-events-finalizer]'))return;
   const script=document.createElement('script');
-  script.src='home-staff-events-finalizer-v1.js?v=1';
+  script.src='home-staff-events-finalizer-v1.js?v=2';
   script.async=false;
   script.dataset.filitaliaStaffEventsFinalizer='true';
+  script.addEventListener('load',loadPublicRedesign,{once:true});
+  script.addEventListener('error',loadPublicRedesign,{once:true});
   document.body.appendChild(script);
 }
 function loadScript(){
