@@ -13,22 +13,14 @@
     ph:{small:'FIL-ITALIA SOCIAL',title:'SUNDAN KAMI SA SOCIAL MEDIA',text:'Camps, players, tournaments, results at mga behind-the-scenes moment ng project.'}
   };
 
+  const autoDelay=9000;
+
   function language(){
     const raw=String(localStorage.getItem('language')||document.documentElement.lang||'it').toLowerCase();
     return socialCopy[raw]?raw:'it';
   }
 
-  function ensureSingleSlideCss(){
-    if(document.querySelector('link[data-fil-about-single-slide]'))return;
-    const link=document.createElement('link');
-    link.rel='stylesheet';
-    link.href='home-about-single-slide-fix-v1.css?v=2';
-    link.dataset.filAboutSingleSlide='true';
-    document.head.appendChild(link);
-  }
-
   function initAboutShowcase(){
-    ensureSingleSlideCss();
     const about=document.getElementById('about');
     if(!about||about.dataset.filAboutShowcaseReady==='true')return;
 
@@ -36,23 +28,15 @@
     const copy=layout&&layout.querySelector('.fil-about-layout-copy');
     const track=copy&&copy.querySelector('.about-grid');
     const media=layout&&layout.querySelector('.fil-about-story-media');
-    const cards=track?[...track.querySelectorAll('.about-card')]:[];
+    const cards=track?[...track.querySelectorAll(':scope > .about-card')]:[];
     if(!layout||!copy||!track||!media||cards.length!==3)return;
 
     about.dataset.filAboutShowcaseReady='true';
-    about.dataset.filAboutShowcaseVersion='single-slide-v2';
+    about.dataset.filAboutShowcaseVersion='about-clean-v3';
     track.classList.add('fil-about-slider-track');
 
-    function applyMediaWidth(){
-      const mobile=window.matchMedia('(max-width:760px)').matches;
-      media.style.setProperty('width',mobile?'min(100%,330px)':'min(100%,410px)','important');
-      media.style.setProperty('max-width',mobile?'330px':'410px','important');
-    }
-    applyMediaWidth();
-    window.addEventListener('resize',applyMediaWidth,{passive:true});
-
     const slider=document.createElement('div');
-    slider.className='fil-about-slider fil-about-slider-v2';
+    slider.className='fil-about-slider';
     slider.setAttribute('role','region');
     slider.setAttribute('aria-label','Contenuti Chi siamo');
     slider.tabIndex=0;
@@ -93,7 +77,6 @@
     let touchStartX=0;
     let touchDeltaX=0;
     let autoTimer=0;
-    const autoDelay=9000;
 
     const tabNodes=cards.map(function(card,index){
       const button=document.createElement('button');
@@ -101,9 +84,11 @@
       button.className='fil-about-slider-tab';
       button.setAttribute('role','tab');
       button.setAttribute('aria-controls','fil-about-panel-'+(index+1));
-      button.innerHTML='<span class="fil-about-slider-tab-copy"><span class="fil-about-slider-tab-number">'+String(index+1).padStart(2,'0')+'</span><span class="fil-about-slider-tab-label"></span></span><span class="fil-about-slider-tab-icon">'+icons[index]+'</span>';
+      button.innerHTML='<span class="fil-about-slider-tab-copy"><span class="fil-about-slider-tab-number">'+String(index+1).padStart(2,'0')+'</span><span class="fil-about-slider-tab-label"></span></span><span class="fil-about-slider-tab-icon">'+icons[index]+'</span><span class="fil-about-slider-tab-progress" aria-hidden="true"></span>';
       card.id='fil-about-panel-'+(index+1);
       card.setAttribute('role','tabpanel');
+      card.setAttribute('aria-labelledby','fil-about-tab-'+(index+1));
+      button.id='fil-about-tab-'+(index+1);
       button.addEventListener('click',function(){goTo(index);});
       tabs.appendChild(button);
       return button;
@@ -130,25 +115,26 @@
     function stopAuto(){
       window.clearTimeout(autoTimer);
       autoTimer=0;
+      tabNodes.forEach(function(tab){tab.classList.remove('is-timing');});
     }
 
     function scheduleAuto(){
       stopAuto();
       if(document.hidden||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+      const activeTab=tabNodes[current];
+      if(activeTab){
+        void activeTab.offsetWidth;
+        activeTab.classList.add('is-timing');
+      }
       autoTimer=window.setTimeout(function(){goTo(current+1);},autoDelay);
     }
 
     function render(){
-      track.style.setProperty('display','block','important');
-      track.style.setProperty('transform','none','important');
       cards.forEach(function(card,index){
         const active=index===current;
         card.classList.toggle('is-active',active);
         card.hidden=!active;
         card.setAttribute('aria-hidden',active?'false':'true');
-        card.style.setProperty('display',active?'block':'none','important');
-        card.style.setProperty('visibility',active?'visible':'hidden','important');
-        card.style.setProperty('opacity',active?'1':'0','important');
         tabNodes[index].classList.toggle('is-active',active);
         tabNodes[index].setAttribute('aria-selected',active?'true':'false');
         tabNodes[index].tabIndex=active?0:-1;
@@ -204,7 +190,6 @@
   }
 
   function boot(){
-    ensureSingleSlideCss();
     initAboutShowcase();
     [180,500,1100,2200].forEach(function(delay){window.setTimeout(initAboutShowcase,delay);});
   }
