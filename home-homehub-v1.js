@@ -89,8 +89,21 @@
     }
     if(!document.querySelector('script[data-fil-about-slider]')){
       const script=document.createElement('script');
-      script.src='home-about-slider-v1.js?v=1';
+      script.src='home-about-slider-v1.js?v=2';
       script.dataset.filAboutSlider='true';
+      document.body.appendChild(script);
+    }
+    if(!document.querySelector('link[data-fil-about-slider-v2]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href='home-about-slider-v2.css?v=1';
+      link.dataset.filAboutSliderV2='true';
+      document.head.appendChild(link);
+    }
+    if(!document.querySelector('script[data-fil-about-slider-v2]')){
+      const script=document.createElement('script');
+      script.src='home-about-slider-v2.js?v=1';
+      script.dataset.filAboutSliderV2='true';
       document.body.appendChild(script);
     }
   }
@@ -115,7 +128,6 @@
       if(!item)return;
       card.classList.add('fil-about-static');
       card.removeAttribute('onclick');
-      card.removeAttribute('role');
       card.removeAttribute('tabindex');
       card.removeAttribute('data-key');
       card.setAttribute('aria-label',item.title+': '+item.text.replace(/\n+/g,' '));
