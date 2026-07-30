@@ -1,0 +1,133 @@
+name: FIL-ITALIA About Events Modern QA
+
+on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "events.html"
+      - "home-about-test-v1.css"
+      - "home-homehub-v1.js"
+      - "event-modal-modern-v1.css"
+      - "event-modal-modern-v1.js"
+      - ".github/workflows/about-events-modern-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "index.html"
+      - "events.html"
+      - "home-about-test-v1.css"
+      - "home-homehub-v1.js"
+      - "event-modal-modern-v1.css"
+      - "event-modal-modern-v1.js"
+      - ".github/workflows/about-events-modern-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Prepare system Chrome
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+      - name: Verify About layout and modern event modal
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:1360,height:900}});
+
+            for(let i=0;i<40;i++){
+              await page.goto(`${root}/index.html?aboutqa=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await page.waitForSelector('#about .fil-about-layout',{timeout:2500});
+                const ready=await page.locator('body[data-horizontal-ready="true"]').count();
+                if(ready)break;
+              }catch(_){ }
+              await sleep(1000);
+            }
+            await page.waitForTimeout(1800);
+            const about=await page.evaluate(()=>{
+              const layout=document.querySelector('#about .fil-about-layout');
+              const copy=document.querySelector('#about .fil-about-layout-copy');
+              const media=document.querySelector('#about .fil-about-story-media');
+              const social=document.querySelector('#about .fil-about-social-cta');
+              const style=layout?getComputedStyle(layout):null;
+              return{
+                cards:document.querySelectorAll('#about .about-card').length,
+                steps:document.querySelectorAll('#about .fil-about-pathway span').length,
+                socials:document.querySelectorAll('#about .fil-about-social-link').length,
+                columns:style?style.gridTemplateColumns:'',
+                copyVisible:!!copy&&copy.getBoundingClientRect().width>300&&copy.getBoundingClientRect().height>400,
+                mediaVisible:!!media&&media.getBoundingClientRect().width>300&&media.getBoundingClientRect().height>400,
+                socialVisible:!!social&&social.getBoundingClientRect().height>60,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
+            });
+            if(about.cards!==3||about.steps!==4||about.socials!==2)throw new Error(`About content missing: ${JSON.stringify(about)}`);
+            if(!about.copyVisible||!about.mediaVisible||!about.socialVisible)throw new Error(`About layout hidden: ${JSON.stringify(about)}`);
+            if(about.overflow>3)throw new Error(`About horizontal overflow: ${JSON.stringify(about)}`);
+
+            await page.goto(`${root}/events.html?eventqa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#allEventsGrid a',{timeout:20000});
+            await page.waitForTimeout(1800);
+            const first=page.locator('#allEventsGrid a').first();
+            await first.click();
+            await page.waitForSelector('#infoModal.fil-event-modal-modern.is-open .fil-event-modal-copy h2',{timeout:10000});
+            const firstEvent=await page.evaluate(()=>{
+              const modal=document.querySelector('#infoModal.fil-event-modal-modern.is-open');
+              const title=modal?.querySelector('.fil-event-modal-copy h2');
+              const description=modal?.querySelector('.fil-event-modal-description');
+              const register=modal?.querySelector('.fil-event-modal-register');
+              const image=modal?.querySelector('.fil-event-modal-media img');
+              return{
+                title:title?.textContent.trim()||'',
+                description:description?.textContent.trim()||'',
+                meta:modal?.querySelectorAll('.fil-event-modal-meta article').length||0,
+                register:register?.getAttribute('href')||'',
+                imageWidth:image?.naturalWidth||0,
+                display:modal?getComputedStyle(modal).display:'none'
+              };
+            });
+            if(!firstEvent.title||firstEvent.description.length<30||firstEvent.meta!==4)throw new Error(`Modern event content missing: ${JSON.stringify(firstEvent)}`);
+            if(!firstEvent.register.includes('camp-register.html?event='))throw new Error(`Registration link missing: ${JSON.stringify(firstEvent)}`);
+            if(firstEvent.imageWidth<1||firstEvent.display==='none')throw new Error(`Modern event not visible: ${JSON.stringify(firstEvent)}`);
+
+            const oldTitle=firstEvent.title;
+            await page.locator('#infoModal > .modal-next').click();
+            await page.waitForTimeout(350);
+            const nextTitle=await page.locator('#infoModal .fil-event-modal-copy h2').textContent();
+            if(!nextTitle||nextTitle.trim()===oldTitle)throw new Error(`Event arrows did not change event: ${oldTitle} -> ${nextTitle}`);
+
+            await page.setViewportSize({width:390,height:844});
+            await page.reload({waitUntil:'domcontentloaded'});
+            await page.waitForSelector('#allEventsGrid a',{timeout:20000});
+            await page.locator('#allEventsGrid a').first().click();
+            await page.waitForSelector('#infoModal.fil-event-modal-modern.is-open .modal-content',{timeout:10000});
+            const mobile=await page.evaluate(()=>{
+              const content=document.querySelector('#infoModal.fil-event-modal-modern .modal-content');
+              return{
+                columns:content?getComputedStyle(content).gridTemplateColumns:'',
+                width:content?.getBoundingClientRect().width||0,
+                viewport:innerWidth,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
+            });
+            if(mobile.width>mobile.viewport+2||mobile.overflow>3)throw new Error(`Mobile event overflow: ${JSON.stringify(mobile)}`);
+
+            await browser.close();
+            console.log(JSON.stringify({about,firstEvent,nextTitle,mobile},null,2));
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
