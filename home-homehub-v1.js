@@ -28,6 +28,9 @@
     }
   };
 
+  let aboutObserver=null;
+  let aboutTimer=0;
+
   function loadModernEventModal(){
     if(!document.querySelector('link[data-fil-event-modal-modern]')){
       const style=document.createElement('link');
@@ -48,7 +51,7 @@
     if(document.querySelector('style[data-fil-about-static]'))return;
     const style=document.createElement('style');
     style.dataset.filAboutStatic='true';
-    style.textContent='\n      #about .about-card.fil-about-static{cursor:default!important;pointer-events:auto!important}\n      #about .about-card.fil-about-static:hover{transform:none!important;border-color:rgba(255,255,255,.12)!important;background:rgba(1,19,12,.48)!important}\n      #about .about-card.fil-about-static p{font-size:.82rem!important;line-height:1.52!important}\n      #aboutModal{display:none!important}\n    ';
+    style.textContent='\n      #about .about-card.fil-about-static{cursor:default!important;pointer-events:auto!important}\n      #about .about-card.fil-about-static:hover{transform:none!important;border-color:rgba(255,255,255,.12)!important;background:rgba(1,19,12,.48)!important}\n      #about .about-card.fil-about-static p{font-size:.82rem!important;line-height:1.52!important}\n      #about .about-card.fil-about-static::after{display:none!important;content:none!important}\n      #aboutModal{display:none!important}\n    ';
     document.head.appendChild(style);
   }
 
@@ -57,8 +60,20 @@
     return copy[raw]?raw:'it';
   }
 
+  function startAboutObserver(){
+    const grid=document.querySelector('#about .about-grid');
+    if(!grid)return;
+    if(aboutObserver)aboutObserver.disconnect();
+    aboutObserver=new MutationObserver(function(){
+      window.clearTimeout(aboutTimer);
+      aboutTimer=window.setTimeout(syncAbout,20);
+    });
+    aboutObserver.observe(grid,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['onclick','class','role','tabindex']});
+  }
+
   function syncAbout(){
     installStaticAboutStyle();
+    if(aboutObserver)aboutObserver.disconnect();
     const cards=[...document.querySelectorAll('#about .about-card')];
     const items=copy[language()].about;
     cards.forEach(function(card,index){
@@ -71,11 +86,12 @@
       card.setAttribute('aria-label',item.title+': '+item.text);
       const heading=card.querySelector('h3');
       const paragraph=card.querySelector('p');
-      if(heading)heading.textContent=item.title;
-      if(paragraph)paragraph.textContent=item.text;
+      if(heading&&heading.textContent!==item.title)heading.textContent=item.title;
+      if(paragraph&&paragraph.textContent!==item.text)paragraph.textContent=item.text;
     });
     const modal=document.getElementById('aboutModal');
     if(modal)modal.style.display='none';
+    startAboutObserver();
   }
 
   function syncLanguage(){
@@ -99,6 +115,17 @@
   function init(){
     loadModernEventModal();
     syncAbout();
+
+    document.addEventListener('click',function(event){
+      const card=event.target.closest('#about .about-card');
+      if(!card)return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    },true);
+
+    window.addEventListener('filitalia:public-content-updated',function(){window.setTimeout(syncAbout,40);});
+    window.addEventListener('filitalia:content-order-updated',function(){window.setTimeout(syncAbout,40);});
+
     const modal=document.getElementById('homeContactModal');
     if(!modal){syncLanguage();return;}
     const panel=modal.querySelector('.home-contact-panel');
@@ -138,11 +165,14 @@
     });
 
     document.querySelectorAll('.language-switch button').forEach(function(button){
-      button.addEventListener('click',function(){window.setTimeout(syncLanguage,40);});
+      button.addEventListener('click',function(){
+        window.setTimeout(syncLanguage,40);
+        window.setTimeout(syncAbout,350);
+      });
     });
 
     syncLanguage();
-    [250,700,1400].forEach(function(delay){window.setTimeout(syncAbout,delay);});
+    [150,500,1000,1800,3000].forEach(function(delay){window.setTimeout(syncAbout,delay);});
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
