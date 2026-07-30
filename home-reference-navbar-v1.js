@@ -23,9 +23,10 @@ function loadHomeEventPlacement(){
     force.dataset.filitaliaHomeEventPlacementForce='true';
     document.head.appendChild(force);
   }
-  if(document.querySelector('script[data-filitalia-home-event-placement]'))return;
+  const old=document.querySelector('script[data-filitalia-home-event-placement]');
+  if(old)old.remove();
   const script=document.createElement('script');
-  script.src='home-events-placement-final-v1.js?v=1';
+  script.src='home-events-placement-final-v1.js?v=3';
   script.async=false;
   script.dataset.filitaliaHomeEventPlacement='true';
   document.body.appendChild(script);
