@@ -62,11 +62,25 @@ jobs:
             await ready('idcamp.html','.fil-month-archive .fil-month-group');
             await page.waitForTimeout(1000);
             const gallery=await page.evaluate(()=>{
+              const root=document.querySelector('.fil-month-archive');
+              const groups=[...document.querySelectorAll('.fil-month-group')];
               const cards=[...document.querySelectorAll('.fil-gallery-album-card')];
               const bad=cards.filter(card=>{const r=card.getBoundingClientRect();return r.left<0||r.right>innerWidth+1});
-              return{groups:document.querySelectorAll('.fil-month-group').length,cards:cards.length,bad:bad.length,overflow:document.documentElement.scrollWidth-innerWidth};
+              const groupRects=groups.map(group=>group.getBoundingClientRect());
+              const cardWidths=cards.map(card=>card.getBoundingClientRect().width);
+              return{
+                groups:groups.length,
+                cards:cards.length,
+                bad:bad.length,
+                overflow:document.documentElement.scrollWidth-innerWidth,
+                distinctTops:new Set(groupRects.map(rect=>Math.round(rect.top))).size,
+                minGroupWidth:Math.min(...groupRects.map(rect=>rect.width)),
+                rootWidth:root.getBoundingClientRect().width,
+                minCardWidth:Math.min(...cardWidths),
+                headings:groups.map(group=>group.querySelector('h2')?.textContent.trim()||'')
+              };
             });
-            if(gallery.groups<1||gallery.cards<1||gallery.bad||gallery.overflow>2)throw new Error(`Gallery layout invalid: ${JSON.stringify(gallery)}`);
+            if(gallery.groups<1||gallery.cards<1||gallery.bad||gallery.overflow>2||gallery.distinctTops!==gallery.groups||gallery.minGroupWidth<gallery.rootWidth*.9||gallery.minCardWidth<245||gallery.headings.some(value=>value.includes('9999')))throw new Error(`Gallery layout invalid: ${JSON.stringify(gallery)}`);
             await page.screenshot({path:'final-idcamp.jpg',type:'jpeg',quality:80,fullPage:true});
 
             await ready('players.html','#filPlayerCards [data-player-index]');
@@ -86,10 +100,12 @@ jobs:
             await page.waitForTimeout(700);
             const event=await page.evaluate(()=>{
               const back=document.querySelector('.players-list-link');
+              const row=document.querySelector('.players-button-row');
               const shell=document.querySelector('.event-premium-shell');
-              return{backZ:Number(getComputedStyle(back).zIndex)||0,shellZ:Number(getComputedStyle(shell).zIndex)||0,color:getComputedStyle(back).color,visible:back.getBoundingClientRect().height>0};
+              const style=getComputedStyle(back),rowStyle=getComputedStyle(row);
+              return{backZ:Number(style.zIndex)||0,shellZ:Number(getComputedStyle(shell).zIndex)||0,color:style.color,background:style.backgroundColor,opacity:style.opacity,rowOpacity:rowStyle.opacity,visible:back.getBoundingClientRect().height>0};
             });
-            if(!event.visible||event.backZ<=event.shellZ||event.color!=='rgb(255, 255, 255)')throw new Error(`Event back link invalid: ${JSON.stringify(event)}`);
+            if(!event.visible||event.backZ<=event.shellZ||event.color!=='rgb(255, 255, 255)'||event.opacity!=='1'||event.rowOpacity!=='1'||event.background==='rgba(0, 0, 0, 0)')throw new Error(`Event back link invalid: ${JSON.stringify(event)}`);
             await page.screenshot({path:'final-event.jpg',type:'jpeg',quality:80,fullPage:false});
             fs.writeFileSync('final-media-player.json',JSON.stringify({gallery,player,event},null,2));
             await browser.close();
