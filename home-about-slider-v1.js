@@ -30,7 +30,10 @@
     if(!layout||!copy||!track||!media||cards.length!==3)return;
 
     about.dataset.filAboutShowcaseReady='true';
+    about.dataset.filAboutShowcaseVersion='approved-green-v1';
     track.classList.add('fil-about-slider-track');
+    media.style.setProperty('width','min(100%,410px)','important');
+    media.style.setProperty('max-width','410px','important');
 
     const slider=document.createElement('div');
     slider.className='fil-about-slider fil-about-slider-v2';
