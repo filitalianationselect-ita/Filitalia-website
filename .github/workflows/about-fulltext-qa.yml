@@ -1,0 +1,77 @@
+name: FIL-ITALIA About Full Text QA
+
+on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "home-homehub-v1.js"
+      - "home-about-fulltext-v1.css"
+      - ".github/workflows/about-fulltext-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "index.html"
+      - "home-homehub-v1.js"
+      - "home-about-fulltext-v1.css"
+      - ".github/workflows/about-fulltext-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Prepare system Chrome
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+      - name: Verify About text is complete and not clickable
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:1280,height:900}});
+            for(let i=0;i<45;i++){
+              await page.goto(`${root}/index.html?aboutqa=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+              await page.waitForTimeout(1000);
+              const ready=await page.locator('#about .about-card.fil-about-static').count();
+              if(ready===3)break;
+              await sleep(1200);
+            }
+            await page.waitForTimeout(3500);
+            const result=await page.evaluate(()=>{
+              const cards=[...document.querySelectorAll('#about .about-card')];
+              return {
+                count:cards.length,
+                cards:cards.map(card=>({
+                  title:card.querySelector('h3')?.textContent.trim()||'',
+                  text:card.querySelector('p')?.textContent.trim()||'',
+                  onclick:card.getAttribute('onclick'),
+                  cursor:getComputedStyle(card).cursor
+                })),
+                modal:!!document.getElementById('aboutModal')
+              };
+            });
+            if(result.count!==3)throw new Error(`Expected 3 About blocks: ${JSON.stringify(result)}`);
+            const minimums=[300,390,330];
+            result.cards.forEach((card,index)=>{
+              if(card.text.length<minimums[index])throw new Error(`About text too short at ${index}: ${JSON.stringify(card)}`);
+              if(card.onclick!==null)throw new Error(`Clickable About block at ${index}: ${JSON.stringify(card)}`);
+              if(card.cursor==='pointer')throw new Error(`Pointer cursor remains at ${index}: ${JSON.stringify(card)}`);
+            });
+            if(result.modal)throw new Error(`Old About modal still exists: ${JSON.stringify(result)}`);
+            await browser.close();
+            console.log(JSON.stringify(result,null,2));
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
