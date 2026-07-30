@@ -1,0 +1,43 @@
+/* FIL-ITALIA About full static content */
+html body.fil-final-site[data-horizontal-ready="true"] #about .about-card.fil-about-static{
+  min-height:0!important;
+  align-content:start!important;
+  padding:20px 20px 21px!important;
+  cursor:default!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  background:rgba(1,19,12,.54)!important;
+}
+html body.fil-final-site[data-horizontal-ready="true"] #about .about-card.fil-about-static:hover{
+  transform:none!important;
+  border-color:rgba(255,255,255,.12)!important;
+  background:rgba(1,19,12,.54)!important;
+}
+html body.fil-final-site[data-horizontal-ready="true"] #about .about-card.fil-about-static h3{
+  margin:1px 0 10px!important;
+  font-size:1.08rem!important;
+  line-height:1.15!important;
+}
+html body.fil-final-site[data-horizontal-ready="true"] #about .about-card.fil-about-static p{
+  margin:0!important;
+  color:#d0e5da!important;
+  font-size:.80rem!important;
+  font-weight:600!important;
+  line-height:1.58!important;
+  white-space:pre-line!important;
+}
+html body.fil-final-site[data-horizontal-ready="true"] #about .about-card.fil-about-static::after{
+  display:none!important;
+  content:none!important;
+}
+#aboutModal{display:none!important}
+@media(max-width:700px){
+  html body.fil-final-site[data-horizontal-ready="true"] #about .about-card.fil-about-static{
+    grid-template-columns:40px minmax(0,1fr)!important;
+    padding:17px 15px!important;
+  }
+  html body.fil-final-site[data-horizontal-ready="true"] #about .about-card.fil-about-static p{
+    font-size:.79rem!important;
+    line-height:1.55!important;
+  }
+}
