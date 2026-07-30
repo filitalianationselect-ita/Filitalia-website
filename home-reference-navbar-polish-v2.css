@@ -1,4 +1,5 @@
 @import url("home-reference-navbar-force-v3.css?v=1");
+@import url("review-fixes-v1.css?v=1");
 
 /* Laptop-width polish for the approved reference navbar */
 @media(min-width:961px) and (max-width:1380px){
