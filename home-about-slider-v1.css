@@ -1,11 +1,8 @@
-/* FIL-ITALIA About showcase: approved layout, current green/red palette */
+/* FIL-ITALIA About showcase: one clean slider implementation */
 #about.about-section{
   --fil-about-green:#0a9c57;
   --fil-about-green-bright:#6ceaa5;
   --fil-about-red:#d62e49;
-  --fil-about-bg:#03130d;
-  --fil-about-panel:#073422;
-  --fil-about-line:rgba(255,255,255,.18);
   box-sizing:border-box!important;
   overflow-y:auto!important;
   padding:34px 28px 42px!important;
@@ -27,9 +24,9 @@
 
 #about .fil-about-showcase-stage{
   display:grid!important;
-  grid-template-columns:58px minmax(0,1fr) 58px minmax(300px,470px)!important;
+  grid-template-columns:54px minmax(0,1fr) 54px minmax(300px,410px)!important;
   align-items:center!important;
-  gap:clamp(16px,2.5vw,34px)!important;
+  gap:clamp(16px,2.4vw,32px)!important;
   min-width:0!important;
 }
 
@@ -73,30 +70,24 @@
 }
 #about .fil-about-slider-viewport{
   overflow:hidden!important;
-  border-radius:0!important;
   background:transparent!important;
-  box-shadow:none!important;
 }
 
 #about .about-grid.fil-about-slider-track{
   width:100%!important;
-  display:flex!important;
-  gap:0!important;
+  max-width:100%!important;
+  display:block!important;
   margin:0!important;
   padding:0!important;
-  transform:translate3d(0,0,0);
-  transition:transform .42s cubic-bezier(.22,.75,.23,1)!important;
-  will-change:transform!important;
+  transform:none!important;
 }
 
 #about .about-grid.fil-about-slider-track>.about-card{
   position:relative!important;
-  flex:0 0 100%!important;
   width:100%!important;
-  min-width:100%!important;
-  max-width:none!important;
+  min-width:0!important;
+  max-width:100%!important;
   min-height:430px!important;
-  display:block!important;
   box-sizing:border-box!important;
   padding:0 6px 8px!important;
   overflow:visible!important;
@@ -109,10 +100,12 @@
   cursor:default!important;
   transform:none!important;
 }
-#about .about-grid.fil-about-slider-track>.about-card::before{
-  content:none!important;
-  display:none!important;
+#about .about-grid.fil-about-slider-track>.about-card[hidden]{display:none!important}
+#about .about-grid.fil-about-slider-track>.about-card.is-active{
+  display:block!important;
+  animation:filAboutSlideIn .36s ease both!important;
 }
+#about .about-grid.fil-about-slider-track>.about-card::before{content:none!important;display:none!important}
 #about .about-grid.fil-about-slider-track>.about-card::after{
   content:""!important;
   position:static!important;
@@ -144,8 +137,8 @@
 }
 
 #about .fil-about-slider-arrow{
-  width:56px!important;
-  height:56px!important;
+  width:54px!important;
+  height:54px!important;
   display:grid!important;
   place-items:center!important;
   padding:0!important;
@@ -170,9 +163,9 @@
 }
 
 #about .fil-about-story-media{
-  width:min(100%,470px)!important;
+  width:min(100%,410px)!important;
+  max-width:410px!important;
   min-height:0!important;
-  max-height:none!important;
   display:block!important;
   visibility:visible!important;
   opacity:1!important;
@@ -190,11 +183,8 @@
 #about .fil-about-story-media img{
   width:100%!important;
   height:auto!important;
-  min-height:0!important;
   max-height:500px!important;
   display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
   object-fit:contain!important;
   object-position:center!important;
   filter:none!important;
@@ -219,6 +209,7 @@
   align-items:center!important;
   gap:16px!important;
   padding:22px 28px!important;
+  overflow:hidden!important;
   border:0!important;
   border-right:1px solid rgba(255,255,255,.27)!important;
   border-radius:0!important;
@@ -244,6 +235,18 @@
   height:22px!important;
   transform:translateX(-50%) rotate(45deg)!important;
   background:#cf2642!important;
+}
+#about .fil-about-slider-tab-progress{
+  position:absolute!important;
+  left:0!important;
+  bottom:0!important;
+  width:0;
+  height:4px!important;
+  background:var(--fil-about-green-bright)!important;
+  pointer-events:none!important;
+}
+#about .fil-about-slider-tab.is-active.is-timing .fil-about-slider-tab-progress{
+  animation:filAboutTimer 9s linear forwards!important;
 }
 #about .fil-about-slider-tab-copy{min-width:0!important}
 #about .fil-about-slider-tab-number{
@@ -348,6 +351,12 @@
 }
 #aboutModal{display:none!important}
 
+@keyframes filAboutSlideIn{
+  from{opacity:0;transform:translateX(16px)}
+  to{opacity:1;transform:translateX(0)}
+}
+@keyframes filAboutTimer{from{width:0}to{width:100%}}
+
 @media(max-width:1020px){
   #about .fil-about-showcase-stage{
     grid-template-columns:48px minmax(0,1fr) 48px minmax(245px,340px)!important;
@@ -373,7 +382,8 @@
   #about .fil-about-slider-next{grid-area:next!important;justify-self:start!important}
   #about .fil-about-story-media{
     grid-area:media!important;
-    width:min(100%,350px)!important;
+    width:min(100%,330px)!important;
+    max-width:330px!important;
     justify-self:center!important;
   }
   #about .about-grid.fil-about-slider-track>.about-card{
@@ -415,4 +425,9 @@
     padding:21px 18px!important;
   }
   #about .fil-about-social-links{flex-wrap:wrap!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #about .about-grid.fil-about-slider-track>.about-card.is-active,
+  #about .fil-about-slider-tab.is-active.is-timing .fil-about-slider-tab-progress{animation:none!important}
 }
