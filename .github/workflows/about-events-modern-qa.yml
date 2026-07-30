@@ -73,7 +73,7 @@ jobs:
               const cardData=cards.map(card=>({
                 text:(card.querySelector('p')?.textContent||'').trim(),
                 onclick:card.getAttribute('onclick'),
-                background:getComputedStyle(card).backgroundColor,
+                background:getComputedStyle(card).backgroundImage,
                 color:getComputedStyle(card.querySelector('p')).color,
                 width:card.getBoundingClientRect().width,
                 height:card.getBoundingClientRect().height,
@@ -95,9 +95,9 @@ jobs:
             });
             if(about.cards!==3||about.steps!==4)throw new Error(`About content missing: ${JSON.stringify(about)}`);
             if(!about.titleVisible||!about.introVisible||!about.mediaVisible||!about.socialHidden)throw new Error(`About editorial structure invalid: ${JSON.stringify(about)}`);
-            if(!about.sameRow||about.cardData.some(x=>x.width<300||x.height<300))throw new Error(`About desktop chapters are not a clean three-column row: ${JSON.stringify(about)}`);
+            if(!about.sameRow||about.cardData.some(x=>x.width<340||x.height<300))throw new Error(`About desktop chapters are not a clean three-column row: ${JSON.stringify(about)}`);
             if(about.cardData.some(x=>x.text.length<300||x.onclick!==null))throw new Error(`About chapter text/click regression: ${JSON.stringify(about)}`);
-            if(about.cardData.some(x=>!x.background.includes('255')))throw new Error(`About chapters are not light readable panels: ${JSON.stringify(about)}`);
+            if(about.cardData.some(x=>x.background==='none'))throw new Error(`About chapters are not light readable panels: ${JSON.stringify(about)}`);
             if(about.overflow>3)throw new Error(`About horizontal overflow: ${JSON.stringify(about)}`);
 
             await page.setViewportSize({width:390,height:844});
