@@ -18,7 +18,17 @@
     return socialCopy[raw]?raw:'it';
   }
 
+  function ensureSingleSlideCss(){
+    if(document.querySelector('link[data-fil-about-single-slide]'))return;
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='home-about-single-slide-fix-v1.css?v=2';
+    link.dataset.filAboutSingleSlide='true';
+    document.head.appendChild(link);
+  }
+
   function initAboutShowcase(){
+    ensureSingleSlideCss();
     const about=document.getElementById('about');
     if(!about||about.dataset.filAboutShowcaseReady==='true')return;
 
@@ -30,13 +40,12 @@
     if(!layout||!copy||!track||!media||cards.length!==3)return;
 
     about.dataset.filAboutShowcaseReady='true';
-    about.dataset.filAboutShowcaseVersion='approved-green-v1';
+    about.dataset.filAboutShowcaseVersion='single-slide-v2';
     track.classList.add('fil-about-slider-track');
 
     function applyMediaWidth(){
       const mobile=window.matchMedia('(max-width:760px)').matches;
-      const width=mobile?'min(100%,330px)':'min(100%,410px)';
-      media.style.setProperty('width',width,'important');
+      media.style.setProperty('width',mobile?'min(100%,330px)':'min(100%,410px)','important');
       media.style.setProperty('max-width',mobile?'330px':'410px','important');
     }
     applyMediaWidth();
@@ -83,6 +92,8 @@
     let current=0;
     let touchStartX=0;
     let touchDeltaX=0;
+    let autoTimer=0;
+    const autoDelay=9000;
 
     const tabNodes=cards.map(function(card,index){
       const button=document.createElement('button');
@@ -90,12 +101,7 @@
       button.className='fil-about-slider-tab';
       button.setAttribute('role','tab');
       button.setAttribute('aria-controls','fil-about-panel-'+(index+1));
-      button.innerHTML=
-        '<span class="fil-about-slider-tab-copy">'+
-          '<span class="fil-about-slider-tab-number">'+String(index+1).padStart(2,'0')+'</span>'+
-          '<span class="fil-about-slider-tab-label"></span>'+
-        '</span>'+
-        '<span class="fil-about-slider-tab-icon">'+icons[index]+'</span>';
+      button.innerHTML='<span class="fil-about-slider-tab-copy"><span class="fil-about-slider-tab-number">'+String(index+1).padStart(2,'0')+'</span><span class="fil-about-slider-tab-label"></span></span><span class="fil-about-slider-tab-icon">'+icons[index]+'</span>';
       card.id='fil-about-panel-'+(index+1);
       card.setAttribute('role','tabpanel');
       button.addEventListener('click',function(){goTo(index);});
@@ -121,13 +127,28 @@
       }
     }
 
-    function render(animate){
-      track.style.transition=animate===false?'none':'transform .42s cubic-bezier(.22,.75,.23,1)';
-      track.style.transform='translate3d(-'+(current*100)+'%,0,0)';
+    function stopAuto(){
+      window.clearTimeout(autoTimer);
+      autoTimer=0;
+    }
+
+    function scheduleAuto(){
+      stopAuto();
+      if(document.hidden||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+      autoTimer=window.setTimeout(function(){goTo(current+1);},autoDelay);
+    }
+
+    function render(){
+      track.style.setProperty('display','block','important');
+      track.style.setProperty('transform','none','important');
       cards.forEach(function(card,index){
         const active=index===current;
         card.classList.toggle('is-active',active);
+        card.hidden=!active;
         card.setAttribute('aria-hidden',active?'false':'true');
+        card.style.setProperty('display',active?'block':'none','important');
+        card.style.setProperty('visibility',active?'visible':'hidden','important');
+        card.style.setProperty('opacity',active?'1':'0','important');
         tabNodes[index].classList.toggle('is-active',active);
         tabNodes[index].setAttribute('aria-selected',active?'true':'false');
         tabNodes[index].tabIndex=active?0:-1;
@@ -136,37 +157,38 @@
 
     function goTo(index){
       current=(index+cards.length)%cards.length;
-      render(true);
+      render();
+      scheduleAuto();
     }
 
     previous.addEventListener('click',function(){goTo(current-1);});
     next.addEventListener('click',function(){goTo(current+1);});
 
     slider.addEventListener('keydown',function(event){
-      if(event.key==='ArrowLeft'){
-        event.preventDefault();
-        goTo(current-1);
-      }
-      if(event.key==='ArrowRight'){
-        event.preventDefault();
-        goTo(current+1);
-      }
+      if(event.key==='ArrowLeft'){event.preventDefault();goTo(current-1);}
+      if(event.key==='ArrowRight'){event.preventDefault();goTo(current+1);}
     });
 
     viewport.addEventListener('touchstart',function(event){
       touchStartX=event.touches[0].clientX;
       touchDeltaX=0;
+      stopAuto();
     },{passive:true});
-    viewport.addEventListener('touchmove',function(event){
-      touchDeltaX=event.touches[0].clientX-touchStartX;
-    },{passive:true});
+    viewport.addEventListener('touchmove',function(event){touchDeltaX=event.touches[0].clientX-touchStartX;},{passive:true});
     viewport.addEventListener('touchend',function(){
       if(Math.abs(touchDeltaX)>45)goTo(current+(touchDeltaX<0?1:-1));
+      else scheduleAuto();
       touchStartX=0;
       touchDeltaX=0;
     },{passive:true});
 
-    const observer=new MutationObserver(function(){syncLabels();});
+    about.addEventListener('mouseenter',stopAuto);
+    about.addEventListener('mouseleave',scheduleAuto);
+    about.addEventListener('focusin',stopAuto);
+    about.addEventListener('focusout',function(){window.setTimeout(function(){if(!about.contains(document.activeElement))scheduleAuto();},0);});
+    document.addEventListener('visibilitychange',function(){if(document.hidden)stopAuto();else scheduleAuto();});
+
+    const observer=new MutationObserver(syncLabels);
     cards.forEach(function(card){
       const heading=card.querySelector('h3');
       if(heading)observer.observe(heading,{childList:true,subtree:true,characterData:true});
@@ -177,10 +199,12 @@
     });
 
     syncLabels();
-    render(false);
+    render();
+    scheduleAuto();
   }
 
   function boot(){
+    ensureSingleSlideCss();
     initAboutShowcase();
     [180,500,1100,2200].forEach(function(delay){window.setTimeout(initAboutShowcase,delay);});
   }
