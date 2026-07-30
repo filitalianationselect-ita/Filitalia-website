@@ -23,7 +23,8 @@
 <link rel="stylesheet" href="home-concept2-final-v1.css?v=1" data-filitalia-concept2-style>
 <link rel="stylesheet" href="home-reference-navbar-v1.css?v=2" data-filitalia-reference-navbar>
 <link rel="stylesheet" href="home-reference-navbar-polish-v2.css?v=1">
-<link rel="stylesheet" href="home-about-test-v1.css?v=1">
+<link rel="stylesheet" href="home-about-test-v1.css?v=2">
+<link rel="stylesheet" href="home-about-fulltext-v1.css?v=1">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
@@ -109,7 +110,7 @@
 <section class="about-section" id="about">
   <div class="fil-about-layout">
     <div class="fil-about-layout-copy">
-      <h2 data-key="aboutTitle">ABOUT US</h2>
+      <h2 data-key="aboutTitle">CHI SIAMO</h2>
       <div class="fil-about-story">
         <div class="fil-about-story-copy">
           <small>LA NOSTRA IDENTITÀ</small>
@@ -118,9 +119,18 @@
         </div>
       </div>
       <div class="about-grid">
-        <div class="about-card" onclick="openAbout('identity')"><h3 data-key="aboutCard1Title">National Identity</h3><p data-key="aboutCard1Text">Building a strong basketball culture under FIL-ITALIA.</p></div>
-        <div class="about-card" onclick="openAbout('development')"><h3 data-key="aboutCard2Title">Player Development</h3><p data-key="aboutCard2Text">Supporting athletes through development and opportunities.</p></div>
-        <div class="about-card" onclick="openAbout('vision')"><h3 data-key="aboutCard3Title">International Vision</h3><p data-key="aboutCard3Text">Connecting players, coaches and basketball communities worldwide.</p></div>
+        <div class="about-card fil-about-static" aria-label="Identità nazionale">
+          <h3>Identità nazionale</h3>
+          <p>FIL-ITALIA Nation Select nasce per dare ai giocatori italo-filippini in Italia una casa sportiva, un’identità chiara e un percorso serio dentro il basket.<br><br>Il progetto vuole unire cultura italiana, radici filippine e passione per il gioco, creando una comunità riconoscibile, organizzata e presente sul territorio.<br><br>Ogni atleta non rappresenta solo sé stesso, ma anche una nuova generazione che vuole crescere, essere vista e costruire opportunità attraverso il basket.</p>
+        </div>
+        <div class="about-card fil-about-static" aria-label="Sviluppo giocatori">
+          <h3>Sviluppo giocatori</h3>
+          <p>Lo sviluppo del giocatore è il cuore del programma FIL-ITALIA. L’obiettivo non è soltanto individuare talento, ma accompagnare ogni atleta in un percorso di crescita tecnica, mentale e sportiva.<br><br>Attraverso camp, allenamenti, valutazioni e feedback, vogliamo aiutare i giocatori a capire il proprio livello, migliorare i fondamentali, leggere meglio il gioco e prepararsi a opportunità future.<br><br>Il percorso include lavoro individuale, comprensione del gioco, mentalità, disciplina, collaborazione e capacità di competere in contesti diversi.</p>
+        </div>
+        <div class="about-card fil-about-static" aria-label="Visione internazionale">
+          <h3>Visione internazionale</h3>
+          <p>FIL-ITALIA vuole creare un ponte tra Italia, Europa e Filippine attraverso il basket.<br><br>La visione è costruire una rete internazionale di giocatori, famiglie, allenatori e organizzazioni che possa aprire nuove opportunità sportive e personali.<br><br>Attraverso camp, selezioni, tornei, viaggi sportivi e collaborazioni con realtà come FIL Nation Select, Manila Live e NBTC, vogliamo dare ai giocatori la possibilità di confrontarsi, crescere e rappresentare la propria identità anche fuori dai confini italiani.</p>
+        </div>
       </div>
       <div class="fil-about-pathway"><span><strong>01</strong>CAMP</span><span><strong>02</strong>SVILUPPO</span><span><strong>03</strong>SELEZIONE</span><span><strong>04</strong>OPPORTUNITÀ</span></div>
     </div>
@@ -144,7 +154,6 @@
     </div>
   </div>
 </section>
-<div class="about-modal" id="aboutModal"><span class="close-btn" onclick="closeAbout()">×</span><div class="about-modal-content"><h2 id="aboutModalTitle"></h2><p id="aboutModalText"></p></div></div>
 <section class="players-section" id="players">
   <h2 data-key="programTitle">FIL-ITALIA DEVELOPMENT PROGRAM</h2>
   <p class="section-subtitle" data-key="programSubtitle">Athletes selected to grow, compete and represent FIL-ITALIA in future camps and tournaments.</p>
@@ -251,5 +260,5 @@
 <script src="players-supabase.js?v=1"></script>
 <script src="home-content-v2.js?v=2"></script>
 <script src="home-player-carousel-fix-v1.js?v=5" data-filitalia-player-carousel-fix></script>
-<script src="home-homehub-v1.js?v=2"></script>
+<script src="home-homehub-v1.js?v=3"></script>
 </body></html>
