@@ -8,6 +8,21 @@ function loadStyle(){
   link.dataset.filitaliaFinalPass='true';
   document.head.appendChild(link);
 }
+function loadHomeEventPlacement(){
+  if(!document.querySelector('link[data-filitalia-home-event-placement]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='home-events-placement-final-v1.css?v=1';
+    link.dataset.filitaliaHomeEventPlacement='true';
+    document.head.appendChild(link);
+  }
+  if(document.querySelector('script[data-filitalia-home-event-placement]'))return;
+  const script=document.createElement('script');
+  script.src='home-events-placement-final-v1.js?v=1';
+  script.async=false;
+  script.dataset.filitaliaHomeEventPlacement='true';
+  document.body.appendChild(script);
+}
 function loadReviewFixes(){
   if(!document.querySelector('link[data-filitalia-review-fixes]')){
     const link=document.createElement('link');
@@ -16,11 +31,14 @@ function loadReviewFixes(){
     link.dataset.filitaliaReviewFixes='true';
     document.head.appendChild(link);
   }
-  if(document.querySelector('script[data-filitalia-review-fixes]'))return;
+  const existing=document.querySelector('script[data-filitalia-review-fixes]');
+  if(existing){loadHomeEventPlacement();return;}
   const script=document.createElement('script');
   script.src='review-fixes-v1.js?v=2';
   script.async=false;
   script.dataset.filitaliaReviewFixes='true';
+  script.addEventListener('load',loadHomeEventPlacement,{once:true});
+  script.addEventListener('error',loadHomeEventPlacement,{once:true});
   document.body.appendChild(script);
 }
 function loadPublicRedesign(){
