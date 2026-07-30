@@ -7,6 +7,8 @@ on:
       - "events.html"
       - "home-about-slider-v1.css"
       - "home-about-slider-v1.js"
+      - "home-about-slider-v2.css"
+      - "home-about-slider-v2.js"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -18,6 +20,8 @@ on:
       - "events.html"
       - "home-about-slider-v1.css"
       - "home-about-slider-v1.js"
+      - "home-about-slider-v2.css"
+      - "home-about-slider-v2.js"
       - "home-homehub-v1.js"
       - "event-modal-modern-v1.css"
       - "event-modal-modern-v1.js"
@@ -41,7 +45,7 @@ jobs:
           CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
           test -n "$CHROME_PATH"
           echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
-      - name: Verify About slider and modern event modal
+      - name: Verify titled About slider, social strip and modern event modal
         run: |
           node <<'NODE'
           const { chromium } = require('playwright-core');
@@ -52,74 +56,93 @@ jobs:
             const page=await browser.newPage({viewport:{width:1360,height:960}});
 
             for(let i=0;i<45;i++){
-              await page.goto(`${root}/index.html?aboutslider=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+              await page.goto(`${root}/index.html?aboutv2=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
               try{
-                await page.waitForSelector('#about .fil-about-slider .fil-about-slider-next',{timeout:2500});
+                await page.waitForSelector('#about .fil-about-slider-v2 .fil-about-slider-tab',{timeout:2500});
                 const ready=await page.locator('body[data-horizontal-ready="true"]').count();
                 if(ready)break;
               }catch(_){ }
               await sleep(1000);
             }
-            await page.waitForTimeout(1800);
+            await page.waitForTimeout(1900);
 
             const aboutBefore=await page.evaluate(()=>{
-              const slider=document.querySelector('#about .fil-about-slider');
+              const slider=document.querySelector('#about .fil-about-slider-v2');
               const track=document.querySelector('#about .fil-about-slider-track');
               const cards=[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')];
+              const tabs=[...document.querySelectorAll('#about .fil-about-slider-tab')];
               const media=document.querySelector('#about .fil-about-story-media');
+              const social=document.querySelector('#about .fil-about-social-cta');
+              const layout=document.querySelector('#about .fil-about-layout');
               const sliderRect=slider?.getBoundingClientRect();
               const mediaRect=media?.getBoundingClientRect();
+              const socialRect=social?.getBoundingClientRect();
+              const layoutRect=layout?.getBoundingClientRect();
               return{
                 cards:cards.length,
+                tabs:tabs.length,
                 arrows:document.querySelectorAll('#about .fil-about-slider-arrow').length,
-                dots:document.querySelectorAll('#about .fil-about-slider-dot').length,
-                counter:(document.querySelector('#about .fil-about-slider-counter')?.textContent||'').trim(),
+                labels:tabs.map(tab=>(tab.querySelector('.fil-about-slider-tab-label')?.textContent||'').trim()),
+                activeTab:tabs.findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
+                activeCard:cards.findIndex(card=>card.getAttribute('aria-hidden')==='false'),
                 transform:track?getComputedStyle(track).transform:'',
-                active:cards.findIndex(card=>card.getAttribute('aria-hidden')==='false'),
-                cardWidths:cards.map(card=>card.getBoundingClientRect().width),
                 sliderWidth:sliderRect?.width||0,
                 sliderLeft:sliderRect?.left||0,
                 mediaWidth:mediaRect?.width||0,
                 mediaHeight:mediaRect?.height||0,
                 mediaLeft:mediaRect?.left||0,
+                socialWidth:socialRect?.width||0,
+                socialLeft:socialRect?.left||0,
+                layoutWidth:layoutRect?.width||0,
+                layoutLeft:layoutRect?.left||0,
+                socialDisplay:social?getComputedStyle(social).display:'none',
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
 
-            if(aboutBefore.cards!==3||aboutBefore.arrows!==2||aboutBefore.dots!==3)throw new Error(`About slider controls missing: ${JSON.stringify(aboutBefore)}`);
-            if(aboutBefore.counter!=='01 / 03'||aboutBefore.active!==0)throw new Error(`About initial slide invalid: ${JSON.stringify(aboutBefore)}`);
-            if(aboutBefore.cardWidths.some(width=>Math.abs(width-aboutBefore.sliderWidth)>4))throw new Error(`About cards are not one-per-view: ${JSON.stringify(aboutBefore)}`);
-            if(aboutBefore.mediaLeft<=aboutBefore.sliderLeft||aboutBefore.mediaWidth<250||aboutBefore.mediaWidth>440||aboutBefore.mediaHeight>540)throw new Error(`About image is not compact on the right: ${JSON.stringify(aboutBefore)}`);
+            const expected=['Identità nazionale','Sviluppo giocatori','Visione internazionale'];
+            if(aboutBefore.cards!==3||aboutBefore.tabs!==3||aboutBefore.arrows!==2)throw new Error(`About controls missing: ${JSON.stringify(aboutBefore)}`);
+            if(JSON.stringify(aboutBefore.labels)!==JSON.stringify(expected))throw new Error(`About tab labels invalid: ${JSON.stringify(aboutBefore)}`);
+            if(aboutBefore.activeTab!==0||aboutBefore.activeCard!==0)throw new Error(`About initial slide invalid: ${JSON.stringify(aboutBefore)}`);
+            if(aboutBefore.mediaLeft<=aboutBefore.sliderLeft||aboutBefore.mediaWidth<250||aboutBefore.mediaWidth>410||aboutBefore.mediaHeight>520)throw new Error(`About image is not compact on the right: ${JSON.stringify(aboutBefore)}`);
+            if(aboutBefore.socialDisplay==='none'||Math.abs(aboutBefore.socialWidth-aboutBefore.layoutWidth)>5||Math.abs(aboutBefore.socialLeft-aboutBefore.layoutLeft)>5)throw new Error(`About social strip does not span both columns: ${JSON.stringify(aboutBefore)}`);
             if(aboutBefore.overflow>3)throw new Error(`About desktop overflow: ${JSON.stringify(aboutBefore)}`);
 
-            await page.locator('#about .fil-about-slider-next').click();
+            await page.locator('#about .fil-about-slider-tab').nth(1).click();
             await page.waitForTimeout(650);
             const aboutAfter=await page.evaluate(()=>({
-              counter:(document.querySelector('#about .fil-about-slider-counter')?.textContent||'').trim(),
-              active:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].findIndex(card=>card.getAttribute('aria-hidden')==='false'),
+              activeTab:[...document.querySelectorAll('#about .fil-about-slider-tab')].findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
+              activeCard:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].findIndex(card=>card.getAttribute('aria-hidden')==='false'),
+              heading:(document.querySelector('#about .about-card[aria-hidden="false"] h3')?.textContent||'').trim(),
               transform:getComputedStyle(document.querySelector('#about .fil-about-slider-track')).transform
             }));
-            if(aboutAfter.counter!=='02 / 03'||aboutAfter.active!==1||aboutAfter.transform===aboutBefore.transform)throw new Error(`About next arrow did not move: ${JSON.stringify({aboutBefore,aboutAfter})}`);
+            if(aboutAfter.activeTab!==1||aboutAfter.activeCard!==1||aboutAfter.heading!=='Sviluppo giocatori'||aboutAfter.transform===aboutBefore.transform)throw new Error(`About second title did not open slide 2: ${JSON.stringify({aboutBefore,aboutAfter})}`);
 
             await page.setViewportSize({width:390,height:844});
-            await page.goto(`${root}/index.html?aboutslidermobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForSelector('#about .fil-about-slider-next',{timeout:20000});
-            await page.waitForTimeout(1400);
+            await page.goto(`${root}/index.html?aboutv2mobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#about .fil-about-slider-v2 .fil-about-slider-tab',{timeout:20000});
+            await page.waitForTimeout(1500);
             const aboutMobile=await page.evaluate(()=>{
-              const slider=document.querySelector('#about .fil-about-slider');
+              const slider=document.querySelector('#about .fil-about-slider-v2');
               const media=document.querySelector('#about .fil-about-story-media');
+              const social=document.querySelector('#about .fil-about-social-cta');
               const sliderRect=slider?.getBoundingClientRect();
               const mediaRect=media?.getBoundingClientRect();
+              const socialRect=social?.getBoundingClientRect();
               return{
+                tabs:document.querySelectorAll('#about .fil-about-slider-tab').length,
                 sliderWidth:sliderRect?.width||0,
                 mediaWidth:mediaRect?.width||0,
                 mediaTop:mediaRect?.top||0,
                 sliderBottom:sliderRect?.bottom||0,
+                socialWidth:socialRect?.width||0,
+                socialTop:socialRect?.top||0,
+                mediaBottom:mediaRect?.bottom||0,
                 viewport:innerWidth,
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
-            if(aboutMobile.sliderWidth>aboutMobile.viewport+2||aboutMobile.mediaWidth>360||aboutMobile.mediaTop<=aboutMobile.sliderBottom||aboutMobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(aboutMobile)}`);
+            if(aboutMobile.tabs!==3||aboutMobile.sliderWidth>aboutMobile.viewport+2||aboutMobile.mediaWidth<220||aboutMobile.mediaWidth>350||aboutMobile.mediaTop<=aboutMobile.sliderBottom||aboutMobile.socialTop<=aboutMobile.mediaBottom||aboutMobile.socialWidth>aboutMobile.viewport+2||aboutMobile.overflow>3)throw new Error(`About mobile layout invalid: ${JSON.stringify(aboutMobile)}`);
 
             await page.setViewportSize({width:1360,height:900});
             await page.goto(`${root}/events.html?eventqa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
