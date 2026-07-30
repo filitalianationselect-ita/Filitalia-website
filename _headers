@@ -28,6 +28,12 @@
 /fil-public-redesign-v1.css
   Cache-Control: public, max-age=0, must-revalidate
 
+/gallery-redesign-fix-v1.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/gallery-redesign-fix-v1.css
+  Cache-Control: public, max-age=0, must-revalidate
+
 /*.js
   Cache-Control: public, max-age=3600, must-revalidate
 
