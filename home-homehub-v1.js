@@ -79,22 +79,6 @@
     }
   }
 
-  function loadAboutSliderAssets(){
-    if(!document.querySelector('link[data-fil-about-slider]')){
-      const link=document.createElement('link');
-      link.rel='stylesheet';
-      link.href='home-about-slider-v1.css?v=10';
-      link.dataset.filAboutSlider='true';
-      document.head.appendChild(link);
-    }
-    if(!document.querySelector('script[data-fil-about-slider]')){
-      const script=document.createElement('script');
-      script.src='home-about-slider-v1.js?v=10';
-      script.dataset.filAboutSlider='true';
-      document.body.appendChild(script);
-    }
-  }
-
   function startAboutObserver(){
     const grid=document.querySelector('#about .about-grid');
     if(!grid)return;
@@ -103,11 +87,10 @@
       window.clearTimeout(aboutTimer);
       aboutTimer=window.setTimeout(syncAbout,20);
     });
-    aboutObserver.observe(grid,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['onclick','class','role','tabindex','data-key']});
+    aboutObserver.observe(grid,{childList:true,subtree:true,characterData:true});
   }
 
   function syncAbout(){
-    loadAboutSliderAssets();
     if(aboutObserver)aboutObserver.disconnect();
     const items=copy[language()].about;
     document.querySelectorAll('#about .about-card').forEach(function(card,index){
@@ -148,7 +131,6 @@
 
   function init(){
     loadModernEventModal();
-    loadAboutSliderAssets();
     syncAbout();
 
     document.addEventListener('click',function(event){
