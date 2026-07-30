@@ -1,9 +1,25 @@
 (function(){
   'use strict';
 
+  function forceAboutImageVisible(about){
+    const media=about&&about.querySelector('.fil-about-story-media');
+    const image=media&&media.querySelector('img');
+    if(media){
+      media.style.setProperty('display','block','important');
+      media.style.setProperty('visibility','visible','important');
+      media.style.setProperty('opacity','1','important');
+    }
+    if(image){
+      image.style.setProperty('display','block','important');
+      image.style.setProperty('visibility','visible','important');
+      image.style.setProperty('opacity','1','important');
+    }
+  }
+
   function initAboutSlider(){
     const about=document.getElementById('about');
     const track=about&&about.querySelector('.about-grid');
+    forceAboutImageVisible(about);
     if(!about||!track||track.dataset.filAboutSliderReady==='true')return;
 
     const cards=[...track.querySelectorAll('.about-card')];
