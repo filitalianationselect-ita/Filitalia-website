@@ -2,11 +2,8 @@ name: FIL-ITALIA Home Staff Events Redesign QA
 
 on:
   push:
-    branches: ["agent/admin-panel-demo"]
+    branches: ["agent/staff-events-home-redesign-0730"]
     paths:
-      - "site-final-pass-v1.js"
-      - "home-staff-events-finalizer-v1.js"
-      - "home-reference-navbar-v1.js"
       - ".github/workflows/home-staff-events-redesign-qa.yml"
 
 permissions:
@@ -98,7 +95,8 @@ jobs:
               const title=document.querySelector('#homeEventsGrid .fhe-feature h3');
               const box=feature?.getBoundingClientRect();
               const panelBox=panel?.getBoundingClientRect();
-              const hiddenHeading=panel?getComputedStyle(panel.querySelector(':scope > h2')).display:'';
+              const heading=panel?.querySelector(':scope > h2');
+              const hiddenHeading=heading?getComputedStyle(heading).display:'';
               return {feature:!!feature,title:title?.textContent?.trim()||'',minis:minis.length,legacy,width:box?.width||0,height:box?.height||0,panelX:panelBox?.x||0,panelWidth:panelBox?.width||0,hiddenHeading,overflow:panel?panel.scrollWidth-panel.clientWidth:999};
             });
             if(!events.feature||!events.title)throw new Error('Home Events featured card missing');
