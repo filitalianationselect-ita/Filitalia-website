@@ -73,6 +73,13 @@
 
       source = replaceOnce(
         source,
+        '    if (code.includes("GMAIL_SEND_NOT_CONFIGURED")) return "La configurazione Gmail server non è ancora completa.";',
+        '    if (code.includes("GMAIL_SEND_NOT_CONFIGURED")) return "La configurazione Gmail server non è ancora completa.";\n    if (code.includes("DELETE_NOT_AVAILABLE")) return "Aggiorna la Preview: il comando Elimina non è ancora caricato.";',
+        "messaggio elimina"
+      );
+
+      source = replaceOnce(
+        source,
         '    $("lightEventSelect").innerHTML = EVENTS.map(function (event) { return `<option value="${esc(event.id)}">${esc(event.label)}</option>`; }).join("");',
         '    renderEventOptions(currentEvent.id);',
         "opzioni eventi"
@@ -90,6 +97,20 @@
         '    $("registrationLightModal").classList.add("show");',
         '    $("registrationLightModal").classList.add("show");\n    paintRegistrationPrice();',
         "prezzo apertura registrazione"
+      );
+
+      source = replaceOnce(
+        source,
+        '<button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button>',
+        '<button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button><button id="edDelete" class="btn secondary danger-btn">Elimina</button>',
+        "bottone elimina"
+      );
+
+      source = replaceOnce(
+        source,
+        '      $("edPayment").onclick = function () { openPaymentModal(player); };',
+        '      $("edPayment").onclick = function () { openPaymentModal(player); };\n      $("edDelete").onclick = function () { deleteRegistration(player); };',
+        "click elimina"
       );
 
       source = replaceOnce(
@@ -132,6 +153,52 @@
   }
   async function sendCommunication`,
         "destinatari dinamici"
+      );
+
+      source = replaceOnce(
+        source,
+        "  function openRegistrationModal(player) {",
+        `  async function deleteRealRegistration(player) {
+    if (!window.FilitaliaAuth || !window.FilitaliaAuth.client) throw new Error("SUPABASE_NOT_CONFIGURED");
+    const client = window.FilitaliaAuth.client;
+    const op = await client.from("event_admin_operations").delete().eq("registration_id", String(player.id));
+    if (op.error) throw op.error;
+    const reg = await client.from("registrations").delete().eq("id", String(player.id));
+    if (reg.error) throw reg.error;
+    try {
+      await client.from("admin_audit_log").insert({
+        event_id: currentEvent && currentEvent.id ? currentEvent.id : null,
+        registration_id: String(player.id),
+        action: "registration_deleted",
+        details: { participant_name: player.name || "", participant_email: player.email || "" }
+      });
+    } catch (error) { console.warn("Audit eliminazione registrazione", error); }
+  }
+
+  async function deleteRegistration(player) {
+    if (!player) return;
+    if (!confirm("Eliminare la registrazione di " + player.name + "? Questa azione la rimuove dall’archivio registrazioni.")) return;
+    try {
+      if (mode === "real" && currentService()) {
+        if (typeof currentService().deleteRegistration === "function") await currentService().deleteRegistration(player.id, currentEvent.id);
+        else await deleteRealRegistration(player);
+      } else {
+        data = data.filter(function (item) { return String(item.id) !== String(player.id); });
+        saveDemo();
+      }
+      data = data.filter(function (item) { return String(item.id) !== String(player.id); });
+      selected = data[0] ? data[0].id : null;
+      localLog("Registrazione eliminata", player.name);
+      renderEventDay();
+      if (window.FilitaliaRegistrationSync && typeof window.FilitaliaRegistrationSync.refresh === "function") {
+        window.FilitaliaRegistrationSync.refresh();
+      }
+      notify("Registrazione eliminata.");
+    } catch (error) { notify(friendly(error)); }
+  }
+
+  function openRegistrationModal(player) {`,
+        "funzione elimina"
       );
 
       source = replaceOnce(
