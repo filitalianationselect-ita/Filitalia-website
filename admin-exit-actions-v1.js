@@ -6,12 +6,12 @@
     const node = document.createElement("style");
     node.id = "adminExitActionsStyle";
     node.textContent = [
-      ".admin-exit-actions{display:grid;grid-template-columns:1fr;gap:8px;margin:12px;padding:10px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(255,255,255,.07);box-shadow:0 10px 24px rgba(0,0,0,.08)}",
-      ".admin-exit-actions a,.admin-exit-actions button{appearance:none;width:100%;min-height:40px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.22);border-radius:8px;background:#ffffff;color:#12372a;font:800 12px/1 Montserrat,Arial,sans-serif;letter-spacing:0;text-decoration:none;padding:11px 12px;cursor:pointer}",
+      ".admin-exit-actions{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 12px 14px;padding:0;background:transparent;box-shadow:none}",
+      ".admin-exit-actions a,.admin-exit-actions button{appearance:none;width:100%;min-height:42px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:rgba(255,255,255,.09);color:#fff;font:800 12px/1 Montserrat,Arial,sans-serif;letter-spacing:0;text-decoration:none;padding:11px 12px;cursor:pointer}",
       ".admin-exit-actions button{background:#a71930;color:#fff;border-color:#a71930}",
       ".admin-exit-actions a:hover,.admin-exit-actions button:hover{transform:translateY(-1px)}",
       ".admin-exit-actions button:disabled{opacity:.65;cursor:wait;transform:none}",
-      ".admin-exit-actions.is-top-fallback{max-width:320px;margin:10px 0 18px}",
+      ".admin-exit-actions.is-top-fallback{max-width:320px;margin:10px 0 18px}.admin-exit-actions.is-top-fallback a{background:#fff;color:#12372a;border-color:rgba(10,59,42,.22)}",
       "@media(max-width:680px){.admin-exit-actions{grid-template-columns:1fr 1fr;margin:10px;padding:8px}.admin-exit-actions a,.admin-exit-actions button{min-height:38px;padding:10px;font-size:11px}}"
     ].join("");
     document.head.appendChild(node);
@@ -47,13 +47,16 @@
 
   function findSidebar() {
     const controls = Array.from(document.querySelectorAll("a,button,[role='button']"));
-    const settings = controls.find(function (control) {
+    const anchor = controls.find(function (control) {
       const text = clean(control.textContent);
-      return text === "impostazioni" || text === "settings" || text.includes("impostazioni") || text.includes("settings");
+      return text === "impostazioni" || text === "settings" ||
+        text === "registrazioni" || text === "dashboard" ||
+        text === "giocatori" || text === "eventi" ||
+        text.includes("impostazioni") || text.includes("settings");
     });
-    if (settings) {
-      const container = settings.closest("aside,nav,[role='navigation'],[class*='sidebar'],[class*='side-nav'],[class*='menu'],[class*='tabs']");
-      if (container) return { container: container, after: itemShell(settings) };
+    if (anchor) {
+      const container = anchor.closest("aside,nav,[role='navigation'],[class*='sidebar'],[class*='side-nav'],[class*='menu'],[class*='tabs']");
+      if (container) return { container: container, after: itemShell(anchor) };
     }
     const sidebar = document.querySelector("aside,nav,[role='navigation'],[class*='sidebar'],[class*='side-nav'],[class*='admin-menu'],[class*='menu']");
     return sidebar ? { container: sidebar, after: null } : null;
@@ -76,7 +79,7 @@
     const target = findSidebar();
     if (target && target.container) {
       wrap.classList.remove("is-top-fallback");
-      if (target.after && target.after.parentNode === target.container) {
+      if (target.after && target.container.contains(target.after)) {
         target.after.insertAdjacentElement("afterend", wrap);
       } else {
         target.container.appendChild(wrap);
@@ -93,8 +96,22 @@
   let tries = 0;
   const timer = window.setInterval(function () {
     tries += 1;
-    if (mount() || tries > 80) window.clearInterval(timer);
+    mount();
+    if (tries > 240) window.clearInterval(timer);
   }, 250);
+  let observer = null;
+  function watch() {
+    if (!document.body || observer) return;
+    observer = new MutationObserver(function () {
+      window.clearTimeout(watch._timer);
+      watch._timer = window.setTimeout(mount, 80);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
   if (document.readyState !== "loading") mount();
-  document.addEventListener("DOMContentLoaded", mount);
+  if (document.readyState !== "loading") watch();
+  document.addEventListener("DOMContentLoaded", function () {
+    mount();
+    watch();
+  });
 })();
