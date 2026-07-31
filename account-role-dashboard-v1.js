@@ -26,10 +26,10 @@
     if(text.includes('admin')||text.includes('amministr')) return 'admin';
     if(text.includes('coordin')) return 'coordinator';
     if(text.includes('coach')||text.includes('allenator')) return 'coach';
-    if(text.includes('genitor')||text.includes('tutor')||text.includes('parent')) return 'parent';
-    if(text.includes('volont')||text.includes('volunteer')) return 'volunteer';
+    if(text.includes('genitor')||text.includes('tutor')||text.includes('parent')||text.includes('magulang')) return 'parent';
+    if(text.includes('volont')||text.includes('volunteer')||text.includes('boluntary')) return 'volunteer';
     if(text.includes('staff')) return 'staff';
-    if(text.includes('giocator')||text.includes('player')) return 'player';
+    if(text.includes('giocator')||text.includes('player')||text.includes('manlalaro')) return 'player';
     return 'pending';
   }
 
@@ -156,7 +156,9 @@
     if(byId('accountProfileCompletion')) byId('accountProfileCompletion').textContent=completion+'%';
     if(byId('accountRegistrationCount')) byId('accountRegistrationCount').textContent=String(registrations);
     if(byId('accountDocumentStatus')) byId('accountDocumentStatus').textContent=profile.documents;
-    if(byId('accountAccessStatus')) byId('accountAccessStatus').textContent=normalized(byId('accountStatusBadge')?.textContent).includes('attiv')?'Attivo':'Da verificare';
+    const statusText=normalized(byId('accountStatusBadge')?.textContent);
+    const isActive=statusText.includes('attiv')||statusText.includes('active')||statusText.includes('aktibo');
+    if(byId('accountAccessStatus')) byId('accountAccessStatus').textContent=isActive?'Attivo':'Da verificare';
 
     const isAdmin=role==='admin'||role==='super_admin';
     if(adminAction){
