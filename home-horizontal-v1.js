@@ -122,7 +122,10 @@
     },{passive:true});
 
     stage.addEventListener('wheel',function(event){
-      if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;
+      if(Math.abs(event.deltaX)>Math.abs(event.deltaY)){
+        event.preventDefault();
+        return;
+      }
       const panel=panels[currentIndex];
       if(!panel)return;
       const canScroll=panel.scrollHeight>panel.clientHeight+3;
@@ -130,10 +133,6 @@
       const atBottom=panel.scrollTop+panel.clientHeight>=panel.scrollHeight-1;
       if(canScroll&&((event.deltaY<0&&!atTop)||(event.deltaY>0&&!atBottom)))return;
       event.preventDefault();
-      if(wheelLocked)return;
-      wheelLocked=true;
-      goTo(currentIndex+(event.deltaY>0?1:-1),'smooth');
-      window.setTimeout(function(){wheelLocked=false;},650);
     },{passive:false});
 
     window.addEventListener('keydown',function(event){
