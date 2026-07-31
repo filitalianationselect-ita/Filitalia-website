@@ -11,8 +11,8 @@
     coordinator:{label:'Coordinatore',title:'La tua area coordinatore',description:'Gestisci le attività della tua città, gli eventi assegnati, lo staff operativo e le comunicazioni.',documents:'Logistica e certificazioni'},
     staff:{label:'Staff',title:'La tua area staff',description:'Consulta eventi, turni, mansioni, documenti e comunicazioni relativi alle attività assegnate.',documents:'Solo quelli assegnati'},
     volunteer:{label:'Volontario',title:'La tua area volontario',description:'Consulta disponibilità, turni, mansioni, referente e checklist operative senza accedere ai dati sensibili.',documents:'Solo certificazioni personali'},
-    admin:{label:'Admin',title:'Profilo amministratore',description:'Gestisci il tuo profilo personale e accedi al pannello operativo FIL-ITALIA.',documents:'Gestione autorizzata'},
-    super_admin:{label:'Super Admin',title:'Profilo Super Admin',description:'Gestisci il tuo profilo e accedi alla configurazione completa di utenti, ruoli e piattaforma.',documents:'Gestione completa'},
+    admin:{label:'Admin',title:'Area Admin',description:'Gestisci il tuo profilo amministratore e apri il pannello operativo FIL-ITALIA.',documents:'Gestione autorizzata'},
+    super_admin:{label:'Super Admin',title:'Area Admin',description:'Gestisci il tuo account e accedi separatamente al pannello Super Admin con tutti gli strumenti della piattaforma.',documents:'Gestione completa'},
     pending:{label:'In attesa',title:'Account in attesa',description:'Puoi completare i dati personali mentre attendi l’approvazione dell’amministratore.',documents:'Non ancora disponibili'}
   };
 
@@ -49,6 +49,60 @@
     return Math.round((completed/nodes.length)*100);
   }
 
+  function loadAdminTheme(){
+    if(d.querySelector('link[data-account-admin-theme]')) return;
+    const link=d.createElement('link');
+    link.rel='stylesheet';
+    link.href='account-admin-modern-v1.css?v=1';
+    link.dataset.accountAdminTheme='true';
+    d.head.appendChild(link);
+  }
+
+  function updateAdminHero(role){
+    const hero=d.querySelector('.account-workspace-hero');
+    const title=hero?.querySelector('h1');
+    const description=hero?.querySelector('p');
+    const navAccount=Array.from(d.querySelectorAll('.nav-links a')).find(link=>/account\.html(?:$|\?)/.test(link.getAttribute('href')||''));
+
+    if(title) title.textContent='Admin';
+    if(description){
+      description.textContent=role==='super_admin'
+        ? 'Il tuo spazio amministratore. Da qui gestisci il profilo e apri il pannello Super Admin completo.'
+        : 'Il tuo spazio amministratore per profilo, attività assegnate e accesso agli strumenti FIL-ITALIA.';
+    }
+    if(navAccount) navAccount.textContent='Admin';
+    d.title=role==='super_admin'?'Admin e Super Admin | FIL-ITALIA':'Admin | FIL-ITALIA';
+  }
+
+  function ensureAdminPortal(role){
+    let portal=byId('adminPortalLaunch');
+    if(!portal){
+      portal=d.createElement('section');
+      portal.id='adminPortalLaunch';
+      portal.className='admin-portal-launch';
+      portal.innerHTML='<div class="admin-portal-launch-copy"><span class="admin-portal-launch-eyebrow">ACCESSO AMMINISTRATIVO</span><h2>Pannello Super Admin</h2><p>Apri il centro di controllo completo per utenti, ruoli, Player, Staff, eventi, iscrizioni, pagamenti, documenti, media e comunicazioni.</p></div><div class="admin-portal-launch-actions"><a class="admin-portal-launch-button" href="admin-light.html">APRI PANNELLO SUPER ADMIN</a><span class="admin-portal-launch-note">Accesso riservato e protetto</span></div>';
+      const roleIntro=d.querySelector('.account-role-intro');
+      if(roleIntro) roleIntro.insertAdjacentElement('afterend',portal);
+    }
+
+    const heading=portal.querySelector('h2');
+    const paragraph=portal.querySelector('p');
+    const button=portal.querySelector('a');
+    if(role==='admin'){
+      if(heading) heading.textContent='Pannello Admin';
+      if(paragraph) paragraph.textContent='Apri il centro operativo FIL-ITALIA con gli strumenti consentiti al tuo ruolo amministratore.';
+      if(button) button.textContent='APRI PANNELLO ADMIN';
+    }else{
+      if(heading) heading.textContent='Pannello Super Admin';
+      if(paragraph) paragraph.textContent='Apri il centro di controllo completo per utenti, ruoli, Player, Staff, eventi, iscrizioni, pagamenti, documenti, media e comunicazioni.';
+      if(button) button.textContent='APRI PANNELLO SUPER ADMIN';
+    }
+  }
+
+  function removeAdminPortal(){
+    byId('adminPortalLaunch')?.remove();
+  }
+
   function render(){
     const role=detectRole();
     const profile=roleProfiles[role]||roleProfiles.pending;
@@ -70,7 +124,21 @@
     if(byId('accountRegistrationCount')) byId('accountRegistrationCount').textContent=String(registrations);
     if(byId('accountDocumentStatus')) byId('accountDocumentStatus').textContent=profile.documents;
     if(byId('accountAccessStatus')) byId('accountAccessStatus').textContent=normalized(byId('accountStatusBadge')?.textContent).includes('attiv')?'Attivo':'Da verificare';
-    if(adminAction) adminAction.hidden=!(role==='admin'||role==='super_admin');
+
+    const isAdmin=role==='admin'||role==='super_admin';
+    if(adminAction){
+      adminAction.hidden=!isAdmin;
+      adminAction.href='admin-light.html';
+      adminAction.textContent=role==='super_admin'?'Apri pannello Super Admin':'Apri pannello Admin';
+    }
+
+    if(isAdmin){
+      loadAdminTheme();
+      updateAdminHero(role);
+      ensureAdminPortal(role);
+    }else{
+      removeAdminPortal();
+    }
   }
 
   function observe(){
