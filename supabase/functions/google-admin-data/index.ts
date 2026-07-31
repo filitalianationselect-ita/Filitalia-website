@@ -78,6 +78,34 @@ function clean(value: unknown, max = 1000) {
   return String(value == null ? "" : value).replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
 }
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clean(value, 80));
+}
+
+function boolValue(value: unknown) {
+  const text = normalized(value);
+  return ["yes", "si", "true", "1", "ok", "accepted", "accettato"].includes(text);
+}
+
+function parseDate(value: unknown) {
+  const text = clean(value, 80);
+  if (!text) return null;
+  const iso = text.match(/^((?:19|20)\d{2})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+  if (iso) return [iso[1], iso[2].padStart(2, "0"), iso[3].padStart(2, "0")].join("-");
+  const euro = text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.]((?:19|20)\d{2})/);
+  if (euro) return [euro[3], euro[2].padStart(2, "0"), euro[1].padStart(2, "0")].join("-");
+  return null;
+}
+
+async function deterministicUuid(seed: string) {
+  const data = new TextEncoder().encode("filitalia-registration:" + clean(seed, 600));
+  const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", data)).slice(0, 16);
+  hash[6] = (hash[6] & 0x0f) | 0x40;
+  hash[8] = (hash[8] & 0x3f) | 0x80;
+  const hex = Array.from(hash, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join("-");
+}
+
 function indexOfHeader(headers: string[], aliases: string[]) {
   const normalizedHeaders = headers.map(normalized);
   for (const alias of aliases.map(normalized)) {
@@ -297,6 +325,81 @@ async function loadRegistrations(accessToken: string, eventId: string) {
   };
 }
 
+async function recordFromGoogleRow(row: any, event: { city: string; label: string }) {
+  const payload = row?.payload && typeof row.payload === "object" ? row.payload : {};
+  const sourceKey = clean(payload.submission_id || row.id || [row.eventId, row.name, row.email, row.createdAt].join("|"), 600);
+  const submissionId = isUuid(sourceKey) ? sourceKey : await deterministicUuid(sourceKey);
+  const nameParts = clean(row.name, 200).split(/\s+/).filter(Boolean);
+  return {
+    submission_id: submissionId,
+    account_id: null,
+    player_id: null,
+    registration_type: "camp",
+    source: "sheet_import",
+    source_page: "DATI FIL-ITALIA/" + clean(row.sourceTab || "CAMPS", 80),
+    camp_event_id: clean(row.eventId, 160),
+    event_name: clean(payload.event_name || event.label, 240),
+    event_city: clean(event.city, 120),
+    event_date: clean(payload.event_date, 80) || null,
+    participant_first_name: nameParts[0] || null,
+    participant_last_name: nameParts.length > 1 ? nameParts.slice(1).join(" ") : null,
+    participant_name: clean(row.name, 200),
+    participant_email: clean(row.email, 254).toLowerCase() || null,
+    participant_phone: clean(row.phone, 80) || null,
+    guardian_name: clean(row.parent, 200) || null,
+    birth_date: parseDate(payload.birth_date),
+    sex: clean(payload.gender, 40) || null,
+    residence_city: clean(payload.residence_city || payload.city_country, 120) || null,
+    shirt_size: clean(row.shirt, 20) && clean(row.shirt, 20) !== "—" ? clean(row.shirt, 20).toUpperCase() : null,
+    privacy_consent: boolValue(payload.privacy_consent || payload.policy_acceptance || payload.authorization),
+    media_consent: boolValue(payload.media_consent),
+    registration_status: clean(row.status, 40) || "received",
+    payment_status: clean(row.payment, 40) || "pending",
+    payment_amount: row.amount == null ? null : Number(row.amount),
+    notes: clean(row.notes, 2000) || null,
+    original_data: {
+      source: "DATI FIL-ITALIA",
+      source_id: clean(row.id, 200),
+      source_tab: clean(row.sourceTab || "CAMPS", 80),
+      created_at_sheet: clean(row.createdAt, 80) || null,
+      row
+    },
+    sheet_copy_status: "sent",
+    imported_from_sheet: clean(row.sourceTab || "CAMPS", 80),
+    imported_at: new Date().toISOString()
+  };
+}
+
+async function importHistoricRegistrations(accessToken: string, service: any) {
+  const bySubmission = new Map<string, any>();
+  const counts: Record<string, number> = {};
+  for (const eventId of Object.keys(EVENT_MAP)) {
+    const eventData = await loadRegistrations(accessToken, eventId);
+    counts[eventId] = eventData.rows.length;
+    for (const row of eventData.rows) {
+      const record = await recordFromGoogleRow(row, eventData.event);
+      if (record.participant_name && record.camp_event_id) bySubmission.set(record.submission_id, record);
+    }
+  }
+  const records = [...bySubmission.values()];
+  let imported = 0;
+  for (let index = 0; index < records.length; index += 100) {
+    const chunk = records.slice(index, index + 100);
+    const result = await service
+      .from("registrations")
+      .upsert(chunk, { onConflict: "submission_id" })
+      .select("id");
+    if (result.error) throw result.error;
+    imported += Array.isArray(result.data) ? result.data.length : chunk.length;
+  }
+  return {
+    imported,
+    prepared: records.length,
+    events: counts,
+    source: "DATI FIL-ITALIA"
+  };
+}
+
 function headerValue(headers: any[], name: string) {
   const found = (headers || []).find((header) => String(header.name || "").toLowerCase() === name.toLowerCase());
   return clean(found?.value || "", 1000);
@@ -394,6 +497,9 @@ Deno.serve(async (request) => {
     if (action === "registrations") {
       const eventId = clean(body.event_id, 160);
       return json(await loadRegistrations(accessToken, eventId));
+    }
+    if (action === "import_historic_registrations") {
+      return json(await importHistoricRegistrations(accessToken, service));
     }
     if (action === "inbox") {
       return json(await loadInbox(accessToken, Number(body.limit) || 40));
