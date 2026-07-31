@@ -11,7 +11,9 @@
     const ms = Number(delay) || 0;
     const blocksRegistrationReload = ms >= 3500 && ms <= 5500 && source.includes("load") && source.includes("registrations");
     const blocksLiveRefresh = ms >= 2400 && ms <= 5500 && source.includes("refresh") && (source.includes("bind") || source.length < 80);
-    if (blocksRegistrationReload || blocksLiveRefresh) {
+    const blocksEventPropagation = ms >= 2400 && ms <= 3000 && source.includes("Propagazione eventi");
+    const blocksEventLinkFilters = ms >= 2600 && ms <= 3000 && source.includes("Filtri collegamenti evento");
+    if (blocksRegistrationReload || blocksLiveRefresh || blocksEventPropagation || blocksEventLinkFilters) {
       blockedIntervals.push({ delay: ms, source: source.slice(0, 160) });
       return 0;
     }
