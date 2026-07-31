@@ -115,6 +115,7 @@
 
   function friendlyError(error) {
     const code = errorCode(error);
+    if (code.includes("Failed to send a request") || code.includes("FunctionsFetchError") || code.includes("NOT_FOUND") || code.includes("Requested function was not found")) return "Backend Google non ancora pubblicato sulla Preview. Va eseguito il deploy backend Preview da GitHub Actions.";
     if (code.includes("GOOGLE_NOT_CONNECTED") || code.includes("GMAIL_NOT_CONNECTED")) return "Collega l’account Google FIL-ITALIA per mostrare i dati reali.";
     if (code.includes("GOOGLE_RECONNECT_REQUIRED")) return "Ricollega Google per autorizzare Fogli e Gmail in sola lettura.";
     if (code.includes("NOT_AUTHENTICATED")) return "Accedi con un account Admin attivo.";
