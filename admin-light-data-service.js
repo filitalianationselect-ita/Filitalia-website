@@ -23,30 +23,35 @@
     const session = await auth().getSession();
     if (!session) throw new Error("NOT_AUTHENTICATED");
     const profile = await auth().getOwnProfile();
-    if (!profile || profile.role !== "admin" || profile.status !== "active") throw new Error("NOT_AUTHORIZED");
+    const role = profile && (profile.actual_role || profile.role);
+    if (!profile || !["admin", "super_admin"].includes(role) || profile.status !== "active") throw new Error("NOT_AUTHORIZED");
     return { session, profile };
   }
 
   function randomId() {
     if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
-    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (char) {
+      const value = Math.random() * 16 | 0;
+      const number = char === "x" ? value : (value & 3 | 8);
+      return number.toString(16);
+    });
   }
 
   function mapRegistration(row, operation) {
-    const payload = row && row.payload && typeof row.payload === "object" ? row.payload : {};
+    const payload = row && row.original_data && typeof row.original_data === "object" ? row.original_data : {};
     const op = operation || {};
-    const birthDate = clean(payload.birth_date, 10);
+    const birthDate = clean(row.birth_date || payload.birth_date || payload["Data Nascita"], 10);
     const year = birthDate ? birthDate.slice(0, 4) : clean(payload.birth_year, 4);
     const certificateStatus = clean(op.certificate_status, 40) || "missing";
     return {
       id: String(row.id),
-      eventId: clean(row.event_id, 160),
+      eventId: clean(row.camp_event_id, 160),
       name: clean(row.participant_name, 200) || "Partecipante senza nome",
       email: clean(row.participant_email, 254),
       phone: clean(row.participant_phone, 80),
-      parent: clean(payload.parent_name || payload.guardian_name, 200),
+      parent: clean(row.guardian_name || payload.parent_name || payload.guardian_name, 200),
       year: year || "—",
-      cat: clean(payload.category, 30) || "—",
+      cat: clean(payload.category || payload.Categoria, 30) || "—",
       shirt: clean(row.shirt_size, 20) || "—",
       payment: clean(op.payment_status || row.payment_status, 40) || "pending",
       amount: op.payment_amount == null ? null : Number(op.payment_amount),
@@ -58,8 +63,8 @@
       certificateFile: clean(op.certificate_path, 600),
       photo: clean(op.player_photo_path, 600),
       present: Boolean(op.present),
-      notes: clean(op.notes, 5000),
-      status: clean(row.status, 40) || "received",
+      notes: clean(op.notes || row.admin_notes || row.notes, 5000),
+      status: clean(row.registration_status, 40) || "received",
       payload: payload,
       createdAt: row.created_at || null,
       updatedAt: op.updated_at || row.updated_at || null
@@ -70,9 +75,9 @@
     await requireAdmin();
     const safeEventId = clean(eventId, 160);
     const registrationsResult = await client()
-      .from("camp_registrations")
-      .select("id,submission_id,account_id,event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,shirt_size,payload,status,payment_status,created_at,updated_at")
-      .eq("event_id", safeEventId)
+      .from("registrations")
+      .select("id,submission_id,account_id,player_id,camp_event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,guardian_name,birth_date,shirt_size,privacy_consent,media_consent,registration_status,payment_status,payment_amount,notes,admin_notes,original_data,created_at,updated_at")
+      .eq("camp_event_id", safeEventId)
       .order("created_at", { ascending: true });
     if (registrationsResult.error) throw registrationsResult.error;
 
@@ -124,14 +129,22 @@
 
   async function updateRegistration(registrationId, eventId, changes) {
     await requireAdmin();
-    const allowed = ["participant_name", "participant_email", "participant_phone", "shirt_size", "status", "payment_status", "payload"];
+    const rename = {
+      status: "registration_status",
+      event_id: "camp_event_id",
+      payload: "original_data"
+    };
+    const allowed = ["participant_name", "participant_email", "participant_phone", "shirt_size", "registration_status", "payment_status", "original_data", "notes", "admin_notes"];
     const record = {};
     allowed.forEach(function (key) {
       if (Object.prototype.hasOwnProperty.call(changes || {}, key)) record[key] = changes[key];
     });
-    const result = await client().from("camp_registrations").update(record).eq("id", registrationId).select("*").single();
+    Object.keys(rename).forEach(function (from) {
+      if (Object.prototype.hasOwnProperty.call(changes || {}, from)) record[rename[from]] = changes[from];
+    });
+    const result = await client().from("registrations").update(record).eq("id", registrationId).select("*").single();
     if (result.error) throw result.error;
-    await addAudit(eventId || result.data.event_id, String(registrationId), "registration_updated", changes || {});
+    await addAudit(eventId || result.data.camp_event_id, String(registrationId), "registration_updated", changes || {});
     return result.data;
   }
 
@@ -141,7 +154,9 @@
     const record = {
       submission_id: randomId(),
       account_id: null,
-      event_id: clean(eventInfo.id, 160),
+      registration_type: "camp",
+      source: "admin_manual",
+      camp_event_id: clean(eventInfo.id, 160),
       event_name: clean(eventInfo.name, 200),
       event_city: clean(eventInfo.city, 120),
       event_date: clean(eventInfo.date, 20) || null,
@@ -149,7 +164,7 @@
       participant_email: clean(payload.email, 254) || null,
       participant_phone: clean(payload.phone, 80) || null,
       shirt_size: clean(payload.shirt, 20) || null,
-      payload: {
+      original_data: {
         category: clean(payload.cat, 30),
         birth_year: birthYear || null,
         birth_date: /^\d{4}$/.test(birthYear) ? birthYear + "-01-01" : null,
@@ -157,11 +172,11 @@
         source: "admin_manual",
         created_by_admin: admin.profile.id
       },
-      status: "received",
+      registration_status: "received",
       payment_status: clean(payload.payment, 40) || "pending"
     };
     if (!record.participant_name) throw new Error("NAME_REQUIRED");
-    const result = await client().from("camp_registrations").insert(record).select("*").single();
+    const result = await client().from("registrations").insert(record).select("*").single();
     if (result.error) throw result.error;
     await addAudit(eventInfo.id, String(result.data.id), "registration_created", { participant_name: record.participant_name });
     return result.data;
