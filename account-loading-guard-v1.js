@@ -84,6 +84,34 @@
     return /loading|caricamento|naglo-load/i.test(value || "");
   }
 
+  function needsFallbackHydration() {
+    if (!document.body || document.body.dataset.accountPage !== "account") return false;
+    const name = byId("accountName");
+    const email = byId("accountEmail");
+    const badge = byId("accountStatusBadge");
+    const registrations = byId("accountRegistrations");
+    return !email || !email.textContent.trim()
+      || (name && /account fil-italia/i.test(name.textContent || ""))
+      || (badge && isLoadingText(badge.textContent))
+      || (registrations && isLoadingText(registrations.textContent));
+  }
+
+  function bindLogout() {
+    const logout = byId("logoutButton");
+    if (logout && !logout.dataset.guardBound) {
+      logout.dataset.guardBound = "1";
+      logout.addEventListener("click", async function () {
+        logout.disabled = true;
+        try {
+          if (window.FilitaliaAuth && typeof window.FilitaliaAuth.signOut === "function") {
+            await window.FilitaliaAuth.signOut();
+          }
+        } catch (_) {}
+        window.location.replace("login.html");
+      });
+    }
+  }
+
   function settlePendingStatus() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
     const badge = byId("accountStatusBadge");
@@ -99,11 +127,11 @@
 
   async function hydrateFallback() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
-    const badge = byId("accountStatusBadge");
-    if (!badge || !isLoadingText(badge.textContent)) return;
+    if (!needsFallbackHydration()) return;
 
     const session = await sessionFallback();
     if (!session || !session.user) return;
+    const badge = byId("accountStatusBadge");
     const meta = session.user.user_metadata || {};
     const first = meta.first_name || "";
     const last = meta.last_name || "";
@@ -133,15 +161,7 @@
       registrations.innerHTML = '<p class="account-muted">' + copy("registrations") + '</p>';
     }
 
-    const logout = byId("logoutButton");
-    if (logout && !logout.dataset.guardBound) {
-      logout.dataset.guardBound = "1";
-      logout.addEventListener("click", async function () {
-        logout.disabled = true;
-        try { await window.FilitaliaAuth.signOut(); } catch (_) {}
-        window.location.replace("login.html");
-      });
-    }
+    bindLogout();
   }
 
   function clearStaleLoading() {
@@ -151,11 +171,13 @@
     if (registrations && isLoadingText(registrations.textContent)) {
       registrations.innerHTML = '<p class="account-muted">' + copy("registrations") + '</p>';
     }
+    bindLogout();
   }
 
   patchAuth();
   document.addEventListener("DOMContentLoaded", function () {
     patchAuth();
+    bindLogout();
     window.setTimeout(settlePendingStatus, 1800);
     window.setTimeout(hydrateFallback, 2800);
     window.setTimeout(clearStaleLoading, 4500);
