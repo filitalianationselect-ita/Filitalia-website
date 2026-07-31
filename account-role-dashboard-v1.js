@@ -53,16 +53,46 @@
     if(d.querySelector('link[data-account-admin-theme]')) return;
     const link=d.createElement('link');
     link.rel='stylesheet';
-    link.href='account-admin-modern-v1.css?v=1';
+    link.href='account-admin-modern-v1.css?v=2';
     link.dataset.accountAdminTheme='true';
     d.head.appendChild(link);
+  }
+
+  function ensureAdminNavigation(){
+    const nav=byId('navLinks')||d.querySelector('.nav-links');
+    if(!nav) return;
+
+    const links=[
+      ['Home','index.html'],
+      ['Players','players.html'],
+      ['Staff','staff.html'],
+      ['Gallery','gallery.html'],
+      ['News','news.html'],
+      ['Events','events.html'],
+      ['Camp','camp-register.html'],
+      ['Admin','account.html']
+    ];
+
+    nav.replaceChildren();
+    links.forEach(function(item){
+      const link=d.createElement('a');
+      link.textContent=item[0];
+      link.href=item[1];
+      if(item[1]==='account.html') link.setAttribute('aria-current','page');
+      nav.appendChild(link);
+    });
+
+    d.querySelectorAll('.mobile-menu-button').forEach(function(button){
+      button.hidden=true;
+      button.setAttribute('aria-hidden','true');
+      button.tabIndex=-1;
+    });
   }
 
   function updateAdminHero(role){
     const hero=d.querySelector('.account-workspace-hero');
     const title=hero?.querySelector('h1');
     const description=hero?.querySelector('p');
-    const navAccount=Array.from(d.querySelectorAll('.nav-links a')).find(link=>/account\.html(?:$|\?)/.test(link.getAttribute('href')||''));
 
     if(title) title.textContent='Admin';
     if(description){
@@ -70,7 +100,6 @@
         ? 'Il tuo spazio amministratore. Da qui gestisci il profilo e apri il pannello Super Admin completo.'
         : 'Il tuo spazio amministratore per profilo, attività assegnate e accesso agli strumenti FIL-ITALIA.';
     }
-    if(navAccount) navAccount.textContent='Admin';
     d.title=role==='super_admin'?'Admin e Super Admin | FIL-ITALIA':'Admin | FIL-ITALIA';
   }
 
@@ -101,6 +130,10 @@
 
   function removeAdminPortal(){
     byId('adminPortalLaunch')?.remove();
+  }
+
+  function removeLegacyAdminCard(){
+    byId('openAdminPanelCard')?.remove();
   }
 
   function render(){
@@ -134,7 +167,9 @@
 
     if(isAdmin){
       loadAdminTheme();
+      ensureAdminNavigation();
       updateAdminHero(role);
+      removeLegacyAdminCard();
       ensureAdminPortal(role);
     }else{
       removeAdminPortal();
