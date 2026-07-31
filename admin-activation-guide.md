@@ -4,56 +4,49 @@ Il sito pubblico, l’Account e il pannello `admin-light.html` restano nello ste
 
 ## Stato della Preview
 
-Senza credenziali Supabase dedicate, la Deploy Preview funziona in modalità demo/statica e non utilizza il database di produzione.
+La Deploy Preview usa il progetto Supabase FIL-ITALIA tramite URL e chiave pubblicabile browser-safe, come richiesto per il collaudo con dati reali. Autenticazione, Row Level Security e ruoli continuano a proteggere le operazioni riservate.
 
-Per attivare account, recupero password, alias privati e dati reali servono:
+Un progetto Supabase Preview separato può essere collegato in seguito. Quando sono presenti entrambe le variabili dedicate, il database Preview ha priorità automatica sul progetto reale.
 
-- un progetto Supabase separato per il collaudo;
-- due variabili Netlify per il contesto Deploy Previews;
-- tre segreti GitHub per il deploy del backend.
+La Pull Request resta in bozza e `main` non viene modificato finché il collaudo non è completato e la pubblicazione non viene approvata esplicitamente.
 
-Gmail è facoltativo e può essere configurato in un secondo momento.
+## 1. Configurazione Netlify
 
-## 1. Variabili Netlify
+La build genera automaticamente `supabase-config.js` con:
 
-Nel contesto **Deploy Previews** impostare:
+- URL della Deploy Preview come `siteUrl`;
+- ambiente `deploy-preview`;
+- URL e chiave pubblicabile Supabase;
+- indicazione del database utilizzato.
+
+Variabili facoltative per un futuro progetto Supabase Preview dedicato:
 
 - `FILITALIA_PREVIEW_SUPABASE_URL`
 - `FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY`
 
-La build genera `supabase-config.js` con:
+Senza queste due variabili, la Preview usa il progetto FIL-ITALIA già configurato. Non inserire mai chiavi `service_role` nel frontend o in `supabase-config.js`.
 
-- URL della Deploy Preview come `siteUrl`;
-- progetto Supabase di collaudo;
-- `environment = deploy-preview`;
-- `usesPreviewDatabase = true`.
+## 2. Backend Supabase
 
-Senza entrambe le variabili, la Preview resta intenzionalmente in modalità demo e non contatta Supabase.
-
-## 2. Segreti GitHub obbligatori
-
-Creare l’environment GitHub `filitalia-preview` e inserire:
+Per pubblicare migrazioni ed Edge Functions tramite GitHub Actions creare l’environment `filitalia-preview` e inserire:
 
 - `SUPABASE_PREVIEW_ACCESS_TOKEN`
 - `SUPABASE_PREVIEW_PROJECT_REF`
 - `SUPABASE_PREVIEW_DB_PASSWORD`
 
-Il workflow manuale `.github/workflows/deploy-preview-backend.yml`:
+Quando si usa il progetto reale per il collaudo, questi valori devono riferirsi esattamente a quel progetto. Il workflow `.github/workflows/deploy-preview-backend.yml` richiede la conferma `DEPLOY PREVIEW`, controlla l’origine Netlify, mostra il dry-run, applica le migrazioni e pubblica le Edge Functions.
 
-1. accetta soltanto la conferma `DEPLOY PREVIEW`;
-2. rifiuta origini diverse dalla Deploy Preview FIL-ITALIA;
-3. collega esclusivamente il progetto Supabase Preview;
-4. mostra in anteprima le modifiche database;
-5. applica tutte le migrazioni presenti in `supabase/migrations`;
-6. pubblica tutte le Edge Functions presenti in `supabase/functions`;
-7. non modifica `main` né il progetto di produzione.
+Prima di eseguirlo sul progetto reale è obbligatorio creare un backup e verificare il dry-run.
 
 ## 3. Migrazioni database
 
-Il deploy applica tutte le migrazioni in ordine cronologico. Le principali sono:
+Il deploy applica tutte le migrazioni in ordine cronologico, incluse:
 
 - `20260728090000_filitalia_admin_complete.sql`
 - `20260728211500_login_aliases.sql`
+- `20260729083000_volunteer_role.sql`
+- `20260729132000_content_layout_media.sql`
+- `20260730183000_player_profile_media_skills.sql`
 
 Creano o aggiornano:
 
@@ -78,6 +71,7 @@ Il deploy pubblica tutte le funzioni presenti, incluse:
 - `admin-invite-user`
 - `admin-update-account-status`
 - `sign-in-alias`
+- `google-admin-data`
 
 `sign-in-alias` permette di accedere con un nome utente privato senza mostrare nel frontend l’email associata o gli alias disponibili.
 
@@ -120,23 +114,28 @@ Il recupero password utilizza sempre l’email privata collegata all’account:
 4. il collegamento apre `reset-password.html`;
 5. scegliere una nuova password di almeno 10 caratteri.
 
-Autorizzare nel progetto Supabase Preview:
+Autorizzare nel progetto Supabase:
 
 ```text
 https://deploy-preview-1--filitalia.netlify.app/account.html
 https://deploy-preview-1--filitalia.netlify.app/reset-password.html
 https://deploy-preview-1--filitalia.netlify.app/**
+https://www.filitalianationselect.com/account.html
+https://www.filitalianationselect.com/reset-password.html
+https://www.filitalianationselect.com/**
 ```
 
-## 8. Gmail facoltativo
+## 8. Google Sheets e Gmail
 
-Il backend core può essere attivato anche senza Gmail. Per abilitare le Comunicazioni aggiungere successivamente nell’environment GitHub:
+Il foglio `DATI FIL-ITALIA` viene letto tramite Google OAuth in modalità protetta e sola lettura. Non è ancora importato definitivamente in Supabase.
+
+Per abilitare Google Sheets, posta in arrivo e Comunicazioni aggiungere nell’environment GitHub:
 
 - `GMAIL_PREVIEW_CLIENT_ID`
 - `GMAIL_PREVIEW_CLIENT_SECRET`
 - `GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY`
 
-Quando tutti e tre sono presenti, il workflow configura automaticamente:
+Quando tutti e tre sono presenti, il workflow configura:
 
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`
@@ -147,7 +146,7 @@ Quando tutti e tre sono presenti, il workflow configura automaticamente:
 Callback Google:
 
 ```text
-https://<PROJECT_REF_PREVIEW>.supabase.co/functions/v1/gmail-oauth-callback
+https://<PROJECT_REF>.supabase.co/functions/v1/gmail-oauth-callback
 ```
 
 ## 9. Collaudo finale
@@ -160,8 +159,8 @@ https://<PROJECT_REF_PREVIEW>.supabase.co/functions/v1/gmail-oauth-callback
 6. Creare un evento di prova con categoria, prezzo e copertina.
 7. Creare una registrazione e controllare pagamento e documenti.
 8. Pubblicare una News e verificare che i Talent ID esistenti restino visibili.
-9. Controllare Players, Staff e Comunicazioni.
-10. Se Gmail è configurato, inviare un’email di prova.
+9. Controllare Players, Staff, Google Sheets e Comunicazioni.
+10. Inviare un’email di prova quando Gmail è configurato.
 11. Eliminare o archiviare i dati di collaudo.
 
 Soltanto dopo il collaudo la Pull Request potrà essere approvata e unita a `main`.
