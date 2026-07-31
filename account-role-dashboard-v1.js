@@ -3,6 +3,8 @@
 
   const d=document;
   const byId=id=>d.getElementById(id);
+  const MOVEMENT_LIMIT=5;
+  let registrationMovementsExpanded=false;
 
   const roleProfiles={
     player:{label:'Giocatore',title:'La tua area giocatore',description:'Gestisci profilo basket, iscrizioni ai camp, documenti, pagamenti e comunicazioni personali.',documents:'Profilo e certificati'},
@@ -38,6 +40,53 @@
     if(!box) return 0;
     const cards=box.querySelectorAll('.registration-mini-card,[data-registration-id],article');
     return cards.length;
+  }
+
+  function movementText(key,total){
+    const lang=String(localStorage.getItem('language')||document.documentElement.lang||'it').toLowerCase();
+    const more=Math.max(0,total-MOVEMENT_LIMIT);
+    const copy={
+      it:{show:'Mostra movimenti'+(more?' ('+more+')':''),hide:'Mostra meno'},
+      en:{show:'Show movements'+(more?' ('+more+')':''),hide:'Show less'},
+      ph:{show:'Ipakita ang movements'+(more?' ('+more+')':''),hide:'Ipakita ang mas kaunti'}
+    };
+    return (copy[lang]||copy.it)[key];
+  }
+
+  function ensureMovementStyle(){
+    if(byId('accountMovementLimitStyle')) return;
+    const style=d.createElement('style');
+    style.id='accountMovementLimitStyle';
+    style.textContent='.account-registration-hidden{display:none!important}.account-movement-toggle{width:100%;margin-top:14px;text-align:center}.account-movement-toggle.account-button{display:block}';
+    d.head.appendChild(style);
+  }
+
+  function collapseRegistrationMovements(){
+    const box=byId('accountRegistrations');
+    if(!box) return;
+    ensureMovementStyle();
+    const cards=Array.from(box.children).filter(node=>node.classList&&node.classList.contains('registration-mini-card'));
+    let toggle=box.querySelector('[data-account-show-movements]');
+    if(cards.length<=MOVEMENT_LIMIT){
+      cards.forEach(card=>card.classList.remove('account-registration-hidden'));
+      if(toggle) toggle.remove();
+      return;
+    }
+    cards.forEach((card,index)=>{
+      card.classList.toggle('account-registration-hidden',!registrationMovementsExpanded&&index>=MOVEMENT_LIMIT);
+    });
+    if(!toggle){
+      toggle=d.createElement('button');
+      toggle.type='button';
+      toggle.className='account-button secondary account-movement-toggle';
+      toggle.dataset.accountShowMovements='true';
+      toggle.addEventListener('click',function(){
+        registrationMovementsExpanded=!registrationMovementsExpanded;
+        collapseRegistrationMovements();
+      });
+      box.appendChild(toggle);
+    }
+    toggle.textContent=registrationMovementsExpanded?movementText('hide',cards.length):movementText('show',cards.length);
   }
 
   function profileCompletion(role){
@@ -176,6 +225,8 @@
     }else{
       removeAdminPortal();
     }
+
+    collapseRegistrationMovements();
   }
 
   function observe(){
