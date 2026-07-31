@@ -100,16 +100,72 @@
     const logout = byId("logoutButton");
     if (logout && !logout.dataset.guardBound) {
       logout.dataset.guardBound = "1";
-      logout.addEventListener("click", async function () {
-        logout.disabled = true;
-        try {
-          if (window.FilitaliaAuth && typeof window.FilitaliaAuth.signOut === "function") {
-            await window.FilitaliaAuth.signOut();
-          }
-        } catch (_) {}
-        window.location.replace("login.html");
+      logout.addEventListener("click", function () {
+        emergencySignOut();
       });
     }
+  }
+
+  function storageKeys(storage) {
+    const keys = [];
+    try {
+      for (let i = 0; i < storage.length; i += 1) {
+        const key = storage.key(i);
+        if (/supabase|sb-|auth-token|filitalia/i.test(key || "")) keys.push(key);
+      }
+    } catch (_) {}
+    return keys;
+  }
+
+  function clearAuthStorage() {
+    try { storageKeys(localStorage).forEach(function (key) { localStorage.removeItem(key); }); } catch (_) {}
+    try { storageKeys(sessionStorage).forEach(function (key) { sessionStorage.removeItem(key); }); } catch (_) {}
+  }
+
+  async function emergencySignOut() {
+    const buttons = document.querySelectorAll("#logoutButton,[data-account-emergency-logout]");
+    buttons.forEach(function (button) {
+      button.disabled = true;
+      button.textContent = "USCITA...";
+    });
+
+    try {
+      if (window.FilitaliaAuth && typeof window.FilitaliaAuth.signOut === "function") {
+        await Promise.race([
+          window.FilitaliaAuth.signOut(),
+          new Promise(function (resolve) { window.setTimeout(resolve, 1200); })
+        ]);
+      }
+    } catch (_) {}
+
+    clearAuthStorage();
+    window.location.replace("login.html?logout=1");
+  }
+
+  function installEmergencyActions() {
+    if (!document.body || document.body.dataset.accountPage !== "account") return;
+    if (byId("accountEmergencyActions")) return;
+
+    const style = document.createElement("style");
+    style.id = "accountEmergencyActionsStyle";
+    style.textContent = [
+      "body[data-account-page='account'] .mobile-menu-overlay{display:none!important;pointer-events:none!important}",
+      "#accountEmergencyActions{position:fixed;right:18px;top:86px;z-index:2147483647;display:flex;gap:8px;align-items:center;pointer-events:auto}",
+      "#accountEmergencyActions a,#accountEmergencyActions button{min-height:42px;border-radius:11px;border:1px solid rgba(11,95,63,.24);padding:10px 13px;background:#fff;color:#0b4b33;font:900 12px/1.1 Montserrat,Arial,sans-serif;box-shadow:0 12px 34px rgba(4,35,23,.18);cursor:pointer;text-decoration:none}",
+      "#accountEmergencyActions button{background:#0b5f3f;color:#fff;border-color:#0b5f3f}",
+      "@media(max-width:700px){#accountEmergencyActions{top:auto;right:12px;left:12px;bottom:12px;display:grid;grid-template-columns:1fr 1fr}#accountEmergencyActions a,#accountEmergencyActions button{width:100%}}"
+    ].join("");
+    document.head.appendChild(style);
+
+    const wrap = document.createElement("div");
+    wrap.id = "accountEmergencyActions";
+    wrap.innerHTML = '<a href="index.html">Torna al sito</a><button type="button" data-account-emergency-logout>Esci subito</button>';
+    document.body.appendChild(wrap);
+    wrap.querySelector("[data-account-emergency-logout]").addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      emergencySignOut();
+    }, true);
   }
 
   function settlePendingStatus() {
@@ -177,10 +233,13 @@
   patchAuth();
   document.addEventListener("DOMContentLoaded", function () {
     patchAuth();
+    installEmergencyActions();
     bindLogout();
     window.setTimeout(settlePendingStatus, 1800);
     window.setTimeout(hydrateFallback, 2800);
     window.setTimeout(clearStaleLoading, 4500);
     window.setTimeout(clearStaleLoading, 9000);
   });
+
+  if (document.readyState !== "loading") installEmergencyActions();
 })();
