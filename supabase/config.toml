@@ -18,6 +18,9 @@ verify_jwt = true
 [functions.send-filitalia-branded-email]
 verify_jwt = true
 
+[functions.google-admin-data]
+verify_jwt = true
+
 [functions.admin-invite-user]
 verify_jwt = true
 
