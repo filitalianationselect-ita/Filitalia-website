@@ -3,7 +3,7 @@
 
   const d = document;
   const base = window.FilitaliaAdminData;
-  const state = { connected: false, source: "", count: 0, error: "", loading: false };
+  const state = { connected: false, source: "", count: 0, error: "", loading: false, importing: false, imported: 0 };
 
   function clean(value) {
     return String(value == null ? "" : value).trim();
@@ -22,6 +22,95 @@
 
   function errorCode(error) {
     return clean(error && (error.message || error.error_description || error.details || error));
+  }
+
+  function normalized(value) {
+    return clean(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  function isUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clean(value));
+  }
+
+  function boolValue(value) {
+    return ["yes", "si", "true", "1", "ok", "accepted", "accettato"].includes(normalized(value));
+  }
+
+  function parseDate(value) {
+    const text = clean(value);
+    if (!text) return null;
+    const iso = text.match(/^((?:19|20)\d{2})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if (iso) return [iso[1], iso[2].padStart(2, "0"), iso[3].padStart(2, "0")].join("-");
+    const euro = text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.]((?:19|20)\d{2})/);
+    if (euro) return [euro[3], euro[2].padStart(2, "0"), euro[1].padStart(2, "0")].join("-");
+    return null;
+  }
+
+  async function deterministicUuid(seed) {
+    const input = new TextEncoder().encode("filitalia-registration:" + clean(seed).slice(0, 600));
+    const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", input)).slice(0, 16);
+    hash[6] = (hash[6] & 15) | 64;
+    hash[8] = (hash[8] & 63) | 128;
+    const hex = Array.from(hash, function (byte) { return byte.toString(16).padStart(2, "0"); }).join("");
+    return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join("-");
+  }
+
+  function eventInfo(eventId) {
+    const fallback = {
+      "idcamp-roma-2026": { city: "Roma", label: "Talent ID Camp Roma" },
+      "idcamp-milano-2026": { city: "Milano", label: "Talent ID Camp Milano" },
+      "idcamp-firenze-2026": { city: "Firenze", label: "Talent ID Camp Firenze" },
+      "idcamp-venezia-2026": { city: "Venezia", label: "Talent ID Camp Venezia" },
+      "idcamp-bologna-2026": { city: "Bologna", label: "Talent ID Camp Bologna" }
+    };
+    const catalogEvent = window.FilitaliaEventCatalog && window.FilitaliaEventCatalog.get ? window.FilitaliaEventCatalog.get(eventId) : null;
+    return Object.assign({}, fallback[eventId] || { city: "Evento", label: "Evento FIL-ITALIA" }, catalogEvent || {});
+  }
+
+  async function recordFromGoogleRow(row) {
+    const payload = row && row.payload && typeof row.payload === "object" ? row.payload : {};
+    const event = eventInfo(row.eventId);
+    const sourceKey = clean(payload.submission_id || row.id || [row.eventId, row.name, row.email, row.createdAt].join("|"));
+    const submissionId = isUuid(sourceKey) ? sourceKey : await deterministicUuid(sourceKey);
+    const nameParts = clean(row.name).split(/\s+/).filter(Boolean);
+    return {
+      submission_id: submissionId,
+      account_id: null,
+      player_id: null,
+      registration_type: "camp",
+      source: "sheet_import",
+      source_page: "DATI FIL-ITALIA/" + clean(row.sourceTab || "CAMPS").slice(0, 80),
+      camp_event_id: clean(row.eventId).slice(0, 160),
+      event_name: clean(payload.event_name || event.label).slice(0, 240),
+      event_city: clean(event.city).slice(0, 120),
+      event_date: clean(payload.event_date).slice(0, 80) || null,
+      participant_first_name: nameParts[0] || null,
+      participant_last_name: nameParts.length > 1 ? nameParts.slice(1).join(" ") : null,
+      participant_name: clean(row.name).slice(0, 200),
+      participant_email: clean(row.email).slice(0, 254).toLowerCase() || null,
+      participant_phone: clean(row.phone).slice(0, 80) || null,
+      guardian_name: clean(row.parent).slice(0, 200) || null,
+      birth_date: parseDate(payload.birth_date),
+      sex: clean(payload.gender).slice(0, 40) || null,
+      residence_city: clean(payload.residence_city || payload.city_country).slice(0, 120) || null,
+      shirt_size: clean(row.shirt) && clean(row.shirt) !== "—" ? clean(row.shirt).slice(0, 20).toUpperCase() : null,
+      privacy_consent: boolValue(payload.privacy_consent || payload.policy_acceptance || payload.authorization),
+      media_consent: boolValue(payload.media_consent),
+      registration_status: clean(row.status).slice(0, 40) || "received",
+      payment_status: clean(row.payment).slice(0, 40) || "pending",
+      payment_amount: row.amount == null ? null : Number(row.amount),
+      notes: clean(row.notes).slice(0, 2000) || null,
+      original_data: {
+        source: "DATI FIL-ITALIA",
+        source_id: clean(row.id).slice(0, 200),
+        source_tab: clean(row.sourceTab || "CAMPS").slice(0, 80),
+        created_at_sheet: clean(row.createdAt).slice(0, 80) || null,
+        row: row
+      },
+      sheet_copy_status: "sent",
+      imported_from_sheet: clean(row.sourceTab || "CAMPS").slice(0, 80),
+      imported_at: new Date().toISOString()
+    };
   }
 
   function friendlyError(error) {
@@ -77,6 +166,61 @@
     return invoke("inbox", { limit: Number(limit) || 40 });
   }
 
+  async function importHistoricInBrowser() {
+    const auth = window.FilitaliaAuth;
+    if (!auth || !auth.client) throw new Error("SUPABASE_NOT_CONFIGURED");
+    const eventIds = ["idcamp-roma-2026", "idcamp-firenze-2026", "idcamp-venezia-2026", "idcamp-milano-2026", "idcamp-bologna-2026"];
+    const recordsById = new Map();
+    const counts = {};
+    for (const eventId of eventIds) {
+      const data = await invoke("registrations", { event_id: eventId });
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+      counts[eventId] = rows.length;
+      for (const row of rows) {
+        const record = await recordFromGoogleRow(row);
+        if (record.participant_name && record.camp_event_id) recordsById.set(record.submission_id, record);
+      }
+    }
+    const records = Array.from(recordsById.values());
+    for (let index = 0; index < records.length; index += 100) {
+      const chunk = records.slice(index, index + 100);
+      const result = await auth.client.from("registrations").upsert(chunk, { onConflict: "submission_id" }).select("id");
+      if (result.error) throw result.error;
+    }
+    return { imported: records.length, prepared: records.length, events: counts, source: "DATI FIL-ITALIA" };
+  }
+
+  async function importHistoricRegistrations() {
+    state.importing = true;
+    state.error = "";
+    emitState();
+    try {
+      let data;
+      try {
+        data = await invoke("import_historic_registrations", {});
+      } catch (serverError) {
+        if (!errorCode(serverError).includes("UNKNOWN_ACTION")) throw serverError;
+        data = await importHistoricInBrowser();
+      }
+      state.connected = true;
+      state.source = clean(data.source) || "DATI FIL-ITALIA";
+      state.imported = Number(data.imported || data.prepared || 0);
+      state.error = "";
+      notify("Import storico completato: " + state.imported + " registrazioni copiate nell’archivio.");
+      if (window.FilitaliaRegistrationSync && typeof window.FilitaliaRegistrationSync.refresh === "function") {
+        await window.FilitaliaRegistrationSync.refresh();
+      }
+      return data;
+    } catch (error) {
+      state.error = friendlyError(error);
+      notify(state.error);
+      throw error;
+    } finally {
+      state.importing = false;
+      emitState();
+    }
+  }
+
   async function connectGoogle() {
     if (!base || typeof base.startGmailConnection !== "function") throw new Error("GOOGLE_CONNECT_NOT_AVAILABLE");
     return base.startGmailConnection();
@@ -89,6 +233,7 @@
   window.FilitaliaGoogleAdminData = Object.freeze({
     loadEvent: loadEvent,
     loadInbox: loadInbox,
+    importHistoricRegistrations: importHistoricRegistrations,
     connect: connectGoogle,
     getState: function () { return Object.assign({}, state); }
   });
@@ -120,11 +265,15 @@
     const banner = d.createElement("div");
     banner.id = "grdRegistrationBanner";
     banner.className = "grd-banner";
-    banner.innerHTML = '<div><strong><i class="grd-dot"></i><span id="grdRegistrationTitle" style="display:inline">Dati registrazioni</span></strong><span id="grdRegistrationText">In modalità reale vengono letti dal foglio Google protetto.</span></div><button id="grdRegistrationConnect" class="btn small secondary" type="button">Collega / ricollega Google</button>';
+    banner.innerHTML = '<div><strong><i class="grd-dot"></i><span id="grdRegistrationTitle" style="display:inline">Dati registrazioni</span></strong><span id="grdRegistrationText">In modalità reale vengono letti dal foglio Google protetto.</span></div><div class="grd-actions"><button id="grdRegistrationImport" class="btn small primary" type="button">Importa storico</button><button id="grdRegistrationConnect" class="btn small secondary" type="button">Collega / ricollega Google</button></div>';
     const anchor = section.querySelector(".topbar") || section.firstChild;
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(banner, anchor.nextSibling);
     else section.prepend(banner);
     d.getElementById("grdRegistrationConnect").onclick = function () { connectGoogle().catch(function (error) { notify(friendlyError(error)); }); };
+    d.getElementById("grdRegistrationImport").onclick = function () {
+      if (!confirm("Importare le registrazioni storiche da DATI FIL-ITALIA nell’archivio Preview? I doppioni verranno aggiornati, non duplicati.")) return;
+      importHistoricRegistrations().catch(function () {});
+    };
     updateRegistrationBanner(state);
   }
 
@@ -134,9 +283,20 @@
     const dot = d.querySelector("#grdRegistrationBanner .grd-dot");
     if (!title || !text || !dot) return;
     dot.className = "grd-dot";
+    const importButton = d.getElementById("grdRegistrationImport");
+    if (importButton) {
+      importButton.disabled = Boolean(next.importing || next.loading || !modeIsReal());
+      importButton.textContent = next.importing ? "Import in corso..." : "Importa storico";
+    }
     if (!modeIsReal()) {
       title.textContent = "Modalità demo";
       text.textContent = "Passa alla modalità reale per leggere Google Sheets.";
+      return;
+    }
+    if (next.importing) {
+      dot.classList.add("ok");
+      title.textContent = "Import storico in corso...";
+      text.textContent = "Sto copiando DATI FIL-ITALIA nell’archivio Preview.";
       return;
     }
     if (next.loading) {
@@ -147,7 +307,7 @@
     if (next.connected) {
       dot.classList.add("ok");
       title.textContent = "Dati reali · sola lettura";
-      text.textContent = next.count + " registrazioni lette da " + (next.source || "DATI FIL-ITALIA") + ".";
+      text.textContent = next.count + " registrazioni lette da " + (next.source || "DATI FIL-ITALIA") + (next.imported ? " · " + next.imported + " già importate." : ".");
       return;
     }
     if (next.error) {
