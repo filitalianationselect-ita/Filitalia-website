@@ -56,10 +56,51 @@
     } catch (_) { return null; }
   }
 
+  function currentLanguage() {
+    const saved = String(localStorage.getItem("language") || document.documentElement.lang || "it").toLowerCase();
+    return saved === "en" || saved === "ph" ? saved : "it";
+  }
+
+  function copy(key) {
+    const lang = currentLanguage();
+    const labels = {
+      pending: { it: "Da verificare", en: "Pending", ph: "Pending" },
+      title: { it: "Account in verifica", en: "Account pending", ph: "Account pending" },
+      description: {
+        it: "Puoi completare i dati personali mentre attendi l'approvazione dell'amministratore.",
+        en: "You can complete your personal details while waiting for administrator approval.",
+        ph: "Maaari mong kumpletuhin ang personal details habang naghihintay ng admin approval."
+      },
+      registrations: {
+        it: "Registrazioni in aggiornamento. Se non compaiono, ricarica la pagina tra qualche secondo.",
+        en: "Registrations are updating. If they do not appear, refresh the page in a few seconds.",
+        ph: "Ina-update ang registrations. Kung hindi pa lumabas, i-refresh ang page pagkaraan ng ilang segundo."
+      }
+    };
+    return (labels[key] && labels[key][lang]) || (labels[key] && labels[key].it) || "";
+  }
+
+  function isLoadingText(value) {
+    return /loading|caricamento|naglo-load/i.test(value || "");
+  }
+
+  function settlePendingStatus() {
+    if (!document.body || document.body.dataset.accountPage !== "account") return;
+    const badge = byId("accountStatusBadge");
+    if (badge && isLoadingText(badge.textContent)) {
+      text(badge, copy("pending"));
+      badge.className = "account-badge status-pending";
+    }
+    text(byId("accountRoleTitle"), copy("title"));
+    text(byId("accountRoleDescription"), copy("description"));
+    text(byId("accountRolePill"), copy("pending"));
+    text(byId("accountAccessStatus"), copy("pending"));
+  }
+
   async function hydrateFallback() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
     const badge = byId("accountStatusBadge");
-    if (!badge || !/loading|caricamento/i.test(badge.textContent || "")) return;
+    if (!badge || !isLoadingText(badge.textContent)) return;
 
     const session = await sessionFallback();
     if (!session || !session.user) return;
@@ -71,12 +112,12 @@
     text(byId("accountName"), [first, last].filter(Boolean).join(" ") || "Account FIL-ITALIA");
     text(byId("accountEmail"), session.user.email || "");
     text(byId("accountRole"), requestedRole === "player" ? "Giocatore" : requestedRole);
-    text(badge, "Da verificare");
+    text(badge, copy("pending"));
     badge.className = "account-badge status-pending";
-    text(byId("accountRoleTitle"), "Account in verifica");
-    text(byId("accountRoleDescription"), "La pagina è attiva, ma alcuni dati stanno rispondendo lentamente. Puoi aggiornare tra poco oppure uscire e rientrare.");
-    text(byId("accountRolePill"), "Da verificare");
-    text(byId("accountAccessStatus"), "Da verificare");
+    text(byId("accountRoleTitle"), copy("title"));
+    text(byId("accountRoleDescription"), copy("description"));
+    text(byId("accountRolePill"), copy("pending"));
+    text(byId("accountAccessStatus"), copy("pending"));
 
     const form = byId("profileForm");
     if (form) {
@@ -88,8 +129,8 @@
     const pending = byId("pendingApprovalBox");
     if (pending) pending.hidden = false;
     const registrations = byId("accountRegistrations");
-    if (registrations && /loading|caricamento/i.test(registrations.textContent || "")) {
-      registrations.innerHTML = '<p class="account-muted">Registrazioni in aggiornamento. Se non compaiono, ricarica la pagina tra qualche secondo.</p>';
+    if (registrations && isLoadingText(registrations.textContent)) {
+      registrations.innerHTML = '<p class="account-muted">' + copy("registrations") + '</p>';
     }
 
     const logout = byId("logoutButton");
@@ -105,21 +146,19 @@
 
   function clearStaleLoading() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
-    const badge = byId("accountStatusBadge");
-    if (badge && /loading|caricamento/i.test(badge.textContent || "")) {
-      text(badge, "Da verificare");
-      badge.className = "account-badge status-pending";
-    }
+    settlePendingStatus();
     const registrations = byId("accountRegistrations");
-    if (registrations && /loading|caricamento/i.test(registrations.textContent || "")) {
-      registrations.innerHTML = '<p class="account-muted">Registrazioni in aggiornamento. Riprova con un refresh se non compaiono.</p>';
+    if (registrations && isLoadingText(registrations.textContent)) {
+      registrations.innerHTML = '<p class="account-muted">' + copy("registrations") + '</p>';
     }
   }
 
   patchAuth();
   document.addEventListener("DOMContentLoaded", function () {
     patchAuth();
-    window.setTimeout(hydrateFallback, 7000);
-    window.setTimeout(clearStaleLoading, 11000);
+    window.setTimeout(settlePendingStatus, 1800);
+    window.setTimeout(hydrateFallback, 2800);
+    window.setTimeout(clearStaleLoading, 4500);
+    window.setTimeout(clearStaleLoading, 9000);
   });
 })();
