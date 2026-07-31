@@ -195,13 +195,7 @@
     state.error = "";
     emitState();
     try {
-      let data;
-      try {
-        data = await invoke("import_historic_registrations", {});
-      } catch (serverError) {
-        if (!errorCode(serverError).includes("UNKNOWN_ACTION")) throw serverError;
-        data = await importHistoricInBrowser();
-      }
+      const data = await importHistoricInBrowser();
       state.connected = true;
       state.source = clean(data.source) || "DATI FIL-ITALIA";
       state.imported = Number(data.imported || data.prepared || 0);
