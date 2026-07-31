@@ -20,10 +20,34 @@
     return window.FILITALIA_FORM_ENDPOINT || "";
   }
 
+  function endpointConfigured() {
+    return endpoint() && !endpoint().includes("INCOLLA_QUI");
+  }
+
+  function restoreButton(form, button) {
+    if (button) {
+      button.disabled = false;
+      button.innerText = form && form.id === "campForm" ? "ISCRIVITI AL CAMP" : "INVIA";
+    }
+    if (form) form.dataset.filitaliaSubmitting = "";
+  }
+
+  async function markSheetCopy(registrationId, status, detail) {
+    if (!registrationId || !window.FilitaliaRegistrations || typeof window.FilitaliaRegistrations.markSheetCopy !== "function") return;
+    try {
+      await window.FilitaliaRegistrations.markSheetCopy(registrationId, status, detail || {});
+    } catch (error) {
+      console.warn("FIL-ITALIA sheet copy status not updated", error);
+    }
+  }
+
   async function submitCampForm(form) {
     const button = submitButton(form);
-    if (!endpoint() || endpoint().includes("INCOLLA_QUI")) {
-      showStatus(form, "Errore: manca il link Google Apps Script nel file script.js", "error");
+
+    if (form.dataset.filitaliaSubmitting === "true") return;
+
+    if (typeof form.checkValidity === "function" && !form.checkValidity()) {
+      if (typeof form.reportValidity === "function") form.reportValidity();
       return;
     }
 
@@ -32,14 +56,21 @@
       return;
     }
 
+    if (typeof window.collectFormData !== "function") {
+      showStatus(form, "Modulo non pronto. Ricarica la pagina e riprova.", "error");
+      return;
+    }
+
+    form.dataset.filitaliaSubmitting = "true";
     showStatus(form, "Salvataggio registrazione in corso...", "sending");
     if (button) {
       button.disabled = true;
       button.innerText = "INVIO IN CORSO...";
     }
 
+    let payload = {};
     try {
-      const payload = await window.collectFormData(form);
+      payload = await window.collectFormData(form);
       const registration = await window.FilitaliaRegistrations.createCampRegistration(payload);
       const sheetPayload = Object.assign({}, payload, {
         supabaseRegistrationId: registration.id,
@@ -49,24 +80,38 @@
       });
       delete sheetPayload.accountAccessToken;
 
-      showStatus(form, "Copia su Google Sheet in corso...", "sending");
-      await fetch(endpoint(), {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(sheetPayload)
-      });
+      if (endpointConfigured()) {
+        showStatus(form, "Registrazione salvata. Copia su Google Sheet in corso...", "sending");
+        try {
+          await fetch(endpoint(), {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(sheetPayload)
+          });
+          await markSheetCopy(registration.id, "sent", { sentAt: new Date().toISOString(), source: "camp-register.html" });
+        } catch (sheetError) {
+          console.warn("FIL-ITALIA Google Sheet copy failed", sheetError);
+          await markSheetCopy(registration.id, "failed", { message: String(sheetError && sheetError.message || sheetError) });
+        }
+      } else {
+        await markSheetCopy(registration.id, "skipped", { reason: "GOOGLE_ENDPOINT_NOT_CONFIGURED" });
+      }
 
       const eventId = payload.eventId || "";
       const city = payload["Camp City"] || "";
       window.location.href = "thank-you.html?event=" + encodeURIComponent(eventId) + "&city=" + encodeURIComponent(city);
     } catch (error) {
       console.error("FIL-ITALIA camp registration failed", error);
-      showStatus(form, "Registrazione non salvata in Supabase. Riprova o contatta FIL-ITALIA.", "error");
-      if (button) {
-        button.disabled = false;
-        button.innerText = "ISCRIVITI AL CAMP";
+      if (String(error && error.message || "").toLowerCase().includes("duplicate")) {
+        const eventId = payload.eventId || "";
+        const city = payload["Camp City"] || "";
+        showStatus(form, "Registrazione già salvata. Ti porto alla conferma...", "success");
+        window.location.href = "thank-you.html?event=" + encodeURIComponent(eventId) + "&city=" + encodeURIComponent(city);
+        return;
       }
+      showStatus(form, "Registrazione non salvata nel sistema. Nessuna copia Google è stata inviata. Riprova o contatta FIL-ITALIA.", "error");
+      restoreButton(form, button);
     }
   }
 
