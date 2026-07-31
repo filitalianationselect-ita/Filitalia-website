@@ -14,6 +14,7 @@ const expected = [
   'admin-update-account-status',
   'gmail-oauth-callback',
   'gmail-oauth-start',
+  'google-admin-data',
   'send-filitalia-branded-email',
   'sign-in-alias'
 ].sort();
