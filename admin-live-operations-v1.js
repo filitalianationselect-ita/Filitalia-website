@@ -75,10 +75,9 @@ function bind(){
  if($('cGroup')&&!$('cGroup').dataset.live){$('cGroup').dataset.live='1';$('cGroup').addEventListener('change',refresh)}
  if($('regEvent')&&!$('regEvent').dataset.liveOps){$('regEvent').dataset.liveOps='1';$('regEvent').addEventListener('change',refresh)}
 }
-let tries=0;const timer=setInterval(()=>{tries++;if(catalog&&window.FilitaliaAdminLight){bind();refresh();if(tries>20)clearInterval(timer)}if(tries>80)clearInterval(timer)},250);
+let tries=0;const timer=setInterval(()=>{tries++;if(catalog&&window.FilitaliaAdminLight){clearInterval(timer);bind();refresh()}if(tries>80)clearInterval(timer)},250);
 window.addEventListener('filitalia:events-updated',()=>{bind();refresh()});
 window.addEventListener('storage',refresh);
 d.addEventListener('click',e=>{if(e.target.closest?.('[data-section="dashboard"],[data-page="dashboard"],[data-section="registrations"],[data-page="registrations"],[data-section="communications"],[data-page="communications"]'))setTimeout(()=>{bind();refresh()},100)});
-setInterval(()=>{bind();refresh()},5000);
 window.FilitaliaLiveOperations=Object.freeze({refresh});
 })();
