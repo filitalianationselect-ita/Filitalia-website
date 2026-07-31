@@ -171,7 +171,6 @@
       load();
       d.addEventListener("click", function (event) { if (event.target.closest && event.target.closest("#eventDayLight,#registrationLightModal,#paymentLightModal")) setTimeout(load, 350); });
       d.addEventListener("change", function (event) { if (event.target.closest && event.target.closest("#eventDayLight,#registrationLightModal,#paymentLightModal")) setTimeout(load, 350); });
-      setInterval(function () { const section = $("registrations"); if (section && !section.classList.contains("hidden")) load(); }, 4000);
     } else if (tries > 80) clearInterval(timer);
   }, 200);
 
