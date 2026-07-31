@@ -9,7 +9,7 @@
     const style = d.createElement("style");
     style.id = "filMobileToolsStyle";
     style.textContent = `
-      .fil-mobile-tools-button,
+      .fil-mobile-tools-dock,
       .fil-mobile-tools-sheet { display: none; }
 
       @media (max-width: 900px) {
@@ -18,22 +18,29 @@
           display: none !important;
         }
 
+        .fil-mobile-tools-dock {
+          position: relative;
+          z-index: 40;
+          display: flex;
+          justify-content: flex-end;
+          padding: 9px 12px;
+          border-bottom: 1px solid #c8ddd2;
+          background: #f4faf7;
+        }
+
         .fil-mobile-tools-button {
-          position: fixed;
-          z-index: 1850;
-          right: 14px;
-          bottom: calc(88px + env(safe-area-inset-bottom));
           display: inline-flex;
-          width: 50px;
-          height: 50px;
+          min-height: 42px;
           align-items: center;
           justify-content: center;
+          gap: 8px;
           border: 0;
-          border-radius: 50%;
+          border-radius: 999px;
+          padding: 10px 15px;
           background: #0b6243;
           color: #fff;
-          box-shadow: 0 12px 30px rgba(3, 48, 32, .28);
-          font-size: 22px;
+          box-shadow: 0 8px 20px rgba(3, 48, 32, .18);
+          font-size: 13px;
           font-weight: 900;
           cursor: pointer;
         }
@@ -141,14 +148,19 @@
 
     const launchers = findLaunchers();
     if (!launchers.players && !launchers.layout) return false;
-    if (d.getElementById("filMobileToolsButton")) return true;
+    if (d.getElementById("filMobileToolsDock")) return true;
+
+    const dock = d.createElement("div");
+    dock.id = "filMobileToolsDock";
+    dock.className = "fil-mobile-tools-dock";
 
     const button = d.createElement("button");
     button.id = "filMobileToolsButton";
     button.className = "fil-mobile-tools-button";
     button.type = "button";
     button.setAttribute("aria-label", "Apri strumenti amministratore");
-    button.textContent = "☰";
+    button.textContent = "☰  STRUMENTI";
+    dock.appendChild(button);
 
     const sheet = d.createElement("div");
     sheet.id = "filMobileToolsSheet";
@@ -186,7 +198,7 @@
       openTool(".fil-layout-launcher");
     });
 
-    d.body.appendChild(button);
+    d.body.insertBefore(dock, d.body.firstChild);
     d.body.appendChild(sheet);
     return true;
   }
