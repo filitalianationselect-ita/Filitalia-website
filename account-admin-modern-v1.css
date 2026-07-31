@@ -1,0 +1,207 @@
+/* FIL-ITALIA account gateway for Admin and Super Admin */
+body[data-account-page="account"][data-profile-role="admin"],
+body[data-account-page="account"][data-profile-role="super_admin"]{
+  --admin-ink:#10271f;
+  --admin-deep:#082f24;
+  --admin-green:#0e684b;
+  --admin-mint:#bce8d1;
+  --admin-gold:#f0cf73;
+  --admin-paper:#f5faf7;
+  --admin-line:#c7ddd2;
+  background:#eaf3ee;
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-main,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-main{
+  background:
+    radial-gradient(circle at 85% 5%,rgba(49,147,106,.17),transparent 26%),
+    linear-gradient(180deg,#f7fbf9 0%,#e8f1ec 100%);
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-workspace-hero,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-workspace-hero{
+  min-height:210px;
+  padding:32px;
+  border-color:rgba(188,232,209,.24);
+  border-radius:26px;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.035) 0 1px,transparent 1px 32px),
+    linear-gradient(25deg,rgba(255,255,255,.025) 0 1px,transparent 1px 32px),
+    radial-gradient(circle at 88% 18%,rgba(188,232,209,.20),transparent 28%),
+    linear-gradient(135deg,#061f18 0%,#0a4433 48%,#107054 100%);
+  box-shadow:0 24px 58px rgba(6,47,36,.24);
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-workspace-kicker,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-workspace-kicker{
+  color:var(--admin-gold);
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-workspace-hero h1,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-workspace-hero h1{
+  max-width:760px;
+  font-size:clamp(2.35rem,5vw,4.25rem);
+  line-height:.98;
+  letter-spacing:-.06em;
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-workspace-hero p,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-workspace-hero p{
+  max-width:730px;
+  color:#d8ebe2;
+  font-size:1rem;
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-workspace-button.primary,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-workspace-button.primary{
+  border-color:var(--admin-gold);
+  color:#17372a;
+  background:var(--admin-gold);
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-overview-card,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-overview-card{
+  border-color:var(--admin-line);
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 12px 30px rgba(8,47,36,.075);
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-overview-card strong,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-overview-card strong{
+  color:var(--admin-deep);
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-role-intro,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-role-intro{
+  border-color:var(--admin-line);
+  background:linear-gradient(135deg,#fff,#f1f8f4);
+}
+
+.admin-portal-launch{
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:24px;
+  align-items:center;
+  margin:0 0 15px;
+  padding:25px 27px;
+  border:1px solid #b7d7c7;
+  border-radius:22px;
+  background:linear-gradient(135deg,#ffffff 0%,#eef8f3 100%);
+  box-shadow:0 14px 36px rgba(8,47,36,.09);
+}
+
+.admin-portal-launch::after{
+  content:"";
+  position:absolute;
+  width:190px;
+  height:190px;
+  right:-88px;
+  top:-90px;
+  border:32px solid rgba(14,104,75,.055);
+  border-radius:50%;
+}
+
+.admin-portal-launch-copy,
+.admin-portal-launch-actions{
+  position:relative;
+  z-index:1;
+}
+
+.admin-portal-launch-eyebrow{
+  display:block;
+  margin-bottom:7px;
+  color:#0e684b;
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+
+.admin-portal-launch h2{
+  margin:0 0 7px;
+  color:#082f24;
+  font-size:clamp(1.55rem,3vw,2.15rem);
+  letter-spacing:-.035em;
+}
+
+.admin-portal-launch p{
+  max-width:720px;
+  margin:0;
+  color:#587268;
+  line-height:1.6;
+}
+
+.admin-portal-launch-actions{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:9px;
+}
+
+.admin-portal-launch-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:48px;
+  padding:12px 19px;
+  border-radius:13px;
+  color:#fff;
+  background:linear-gradient(135deg,#082f24,#0e684b);
+  box-shadow:0 12px 24px rgba(8,47,36,.20);
+  font-weight:900;
+  text-decoration:none;
+  white-space:nowrap;
+}
+
+.admin-portal-launch-note{
+  color:#6e8279;
+  font-size:.76rem;
+  font-weight:700;
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-card,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-card{
+  border-radius:22px;
+}
+
+body[data-account-page="account"][data-profile-role="admin"] .account-danger-zone,
+body[data-account-page="account"][data-profile-role="super_admin"] .account-danger-zone{
+  opacity:.82;
+}
+
+@media(min-width:769px){
+  body[data-account-page="account"][data-profile-role="admin"] .mobile-menu-button,
+  body[data-account-page="account"][data-profile-role="super_admin"] .mobile-menu-button{
+    display:none!important;
+  }
+
+  body[data-account-page="account"][data-profile-role="admin"] .nav-links,
+  body[data-account-page="account"][data-profile-role="super_admin"] .nav-links{
+    display:flex!important;
+  }
+}
+
+@media(max-width:760px){
+  .admin-portal-launch{
+    grid-template-columns:1fr;
+    padding:20px;
+  }
+
+  .admin-portal-launch-actions{
+    align-items:stretch;
+  }
+
+  .admin-portal-launch-button{
+    width:100%;
+  }
+
+  body[data-account-page="account"][data-profile-role="admin"] .account-workspace-hero,
+  body[data-account-page="account"][data-profile-role="super_admin"] .account-workspace-hero{
+    min-height:0;
+    padding:23px 20px;
+  }
+}
