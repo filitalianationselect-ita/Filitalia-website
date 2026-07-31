@@ -421,12 +421,14 @@
       registrations.forEach(function (registration) {
         const card = document.createElement("article");
         card.className = "registration-mini-card";
+        card.dataset.registrationId = registration.id || "";
         const title = document.createElement("strong");
         title.textContent = registration.event_name || registration.event_id || "Camp FIL-ITALIA";
         const detail = document.createElement("span");
         detail.textContent = [registration.event_city, registration.event_date].filter(Boolean).join(" · ");
         const status = document.createElement("small");
-        status.textContent = tx("status") + ": " + (registration.status || tx("received")) + " · " + tx("payment") + ": " + (registration.payment_status || tx("toVerify"));
+        const shirt = registration.shirt_size ? " · Taglia: " + registration.shirt_size : "";
+        status.textContent = tx("status") + ": " + (registration.status || tx("received")) + " · " + tx("payment") + ": " + (registration.payment_status || tx("toVerify")) + shirt;
         card.append(title, detail, status);
         list.appendChild(card);
       });
