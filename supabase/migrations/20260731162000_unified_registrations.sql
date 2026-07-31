@@ -129,61 +129,67 @@ for each row execute function public.registrations_touch_updated_at();
 
 -- Porta nell'archivio nuovo le eventuali righe gia salvate nella tabella
 -- precedente. L'import storico dai Google Sheet resta separato.
-insert into public.registrations (
-  submission_id,
-  account_id,
-  player_id,
-  registration_type,
-  source,
-  camp_event_id,
-  event_name,
-  event_city,
-  event_date,
-  participant_name,
-  participant_email,
-  participant_phone,
-  shirt_size,
-  registration_status,
-  payment_status,
-  notes,
-  original_data,
-  created_at,
-  updated_at
-)
-select
-  old.submission_id,
-  old.account_id,
-  old.player_id,
-  'camp',
-  'legacy_camp_registrations',
-  old.event_id,
-  old.event_name,
-  old.event_city,
-  old.event_date,
-  old.participant_name,
-  old.participant_email,
-  old.participant_phone,
-  old.shirt_size,
-  case old.status
-    when 'confirmed' then 'confirmed'
-    when 'cancelled' then 'cancelled'
-    when 'waiting_list' then 'waiting_list'
-    else 'received'
-  end,
-  case old.payment_status
-    when 'paid' then 'paid'
-    when 'waived' then 'waived'
-    when 'refunded' then 'refunded'
-    when 'not_required' then 'not_required'
-    else 'pending'
-  end,
-  old.payload ->> 'notes',
-  jsonb_build_object('legacy_camp_registrations', to_jsonb(old)),
-  old.created_at,
-  old.updated_at
-from public.camp_registrations old
-where to_regclass('public.camp_registrations') is not null
-on conflict (submission_id) do nothing;
+do $$
+begin
+  if to_regclass('public.camp_registrations') is not null then
+    execute $legacy_camp_registrations$
+      insert into public.registrations (
+        submission_id,
+        account_id,
+        player_id,
+        registration_type,
+        source,
+        camp_event_id,
+        event_name,
+        event_city,
+        event_date,
+        participant_name,
+        participant_email,
+        participant_phone,
+        shirt_size,
+        registration_status,
+        payment_status,
+        notes,
+        original_data,
+        created_at,
+        updated_at
+      )
+      select
+        old.submission_id,
+        old.account_id,
+        old.player_id,
+        'camp',
+        'legacy_camp_registrations',
+        old.event_id,
+        old.event_name,
+        old.event_city,
+        old.event_date,
+        old.participant_name,
+        old.participant_email,
+        old.participant_phone,
+        old.shirt_size,
+        case old.status
+          when 'confirmed' then 'confirmed'
+          when 'cancelled' then 'cancelled'
+          when 'waiting_list' then 'waiting_list'
+          else 'received'
+        end,
+        case old.payment_status
+          when 'paid' then 'paid'
+          when 'waived' then 'waived'
+          when 'refunded' then 'refunded'
+          when 'not_required' then 'not_required'
+          else 'pending'
+        end,
+        old.payload ->> 'notes',
+        jsonb_build_object('legacy_camp_registrations', to_jsonb(old)),
+        old.created_at,
+        old.updated_at
+      from public.camp_registrations old
+      on conflict (submission_id) do nothing
+    $legacy_camp_registrations$;
+  end if;
+end $$;
 
 alter table public.registrations enable row level security;
 
