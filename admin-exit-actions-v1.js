@@ -47,12 +47,15 @@
 
   function findSidebar() {
     const controls = Array.from(document.querySelectorAll("a,button,[role='button']"));
-    const anchor = controls.find(function (control) {
+    const settings = controls.find(function (control) {
       const text = clean(control.textContent);
       return text === "impostazioni" || text === "settings" ||
-        text === "registrazioni" || text === "dashboard" ||
-        text === "giocatori" || text === "eventi" ||
         text.includes("impostazioni") || text.includes("settings");
+    });
+    const anchor = settings || controls.find(function (control) {
+      const text = clean(control.textContent);
+      return text === "registrazioni" || text === "dashboard" ||
+        text === "giocatori" || text === "eventi";
     });
     if (anchor) {
       const container = anchor.closest("aside,nav,[role='navigation'],[class*='sidebar'],[class*='side-nav'],[class*='menu'],[class*='tabs']");
