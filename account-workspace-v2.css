@@ -25,7 +25,19 @@ body[data-account-page="account"] #accountEmergencyActions{
   display:none !important;
 }
 
+body[data-account-page="account"] .background-logo{
+  pointer-events:none !important;
+}
+
 body[data-account-page="account"] .mobile-menu-overlay{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+body[data-account-page="account"] .share-sheet-overlay,
+body[data-account-page="account"] #accountEmergencyActions,
+body[data-account-page="account"] #accountEmergencyActionsStyle{
   display:none !important;
   visibility:hidden !important;
   pointer-events:none !important;
@@ -171,12 +183,22 @@ body[data-account-page="account"] .background-logo{
 }
 
 body[data-account-page="account"] .account-main{
+  position:relative;
+  z-index:1;
   min-height:calc(100vh - 72px);
   padding:100px 20px 60px;
   background:
     radial-gradient(circle at 10% 14%,rgba(18,104,71,.11),transparent 28%),
     radial-gradient(circle at 92% 44%,rgba(105,178,142,.08),transparent 23%),
     linear-gradient(180deg,#f8fcfa 0%,#edf6f1 48%,#e7f1ec 100%);
+}
+
+body[data-account-page="account"] a,
+body[data-account-page="account"] button,
+body[data-account-page="account"] input,
+body[data-account-page="account"] select,
+body[data-account-page="account"] textarea{
+  pointer-events:auto !important;
 }
 
 body[data-account-page="account"] .account-shell{

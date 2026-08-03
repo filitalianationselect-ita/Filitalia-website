@@ -159,28 +159,7 @@
 
   function installEmergencyActions() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
-    if (byId("accountEmergencyActions")) return;
-
-    const style = document.createElement("style");
-    style.id = "accountEmergencyActionsStyle";
-    style.textContent = [
-      "body[data-account-page='account'] .mobile-menu-overlay{display:none!important;pointer-events:none!important}",
-      "#accountEmergencyActions{position:fixed;right:18px;top:86px;z-index:2147483647;display:flex;gap:8px;align-items:center;pointer-events:auto}",
-      "#accountEmergencyActions a,#accountEmergencyActions button{min-height:42px;border-radius:11px;border:1px solid rgba(11,95,63,.24);padding:10px 13px;background:#fff;color:#0b4b33;font:900 12px/1.1 Montserrat,Arial,sans-serif;box-shadow:0 12px 34px rgba(4,35,23,.18);cursor:pointer;text-decoration:none}",
-      "#accountEmergencyActions button{background:#0b5f3f;color:#fff;border-color:#0b5f3f}",
-      "@media(max-width:700px){#accountEmergencyActions{top:auto;right:12px;left:12px;bottom:12px;display:grid;grid-template-columns:1fr 1fr}#accountEmergencyActions a,#accountEmergencyActions button{width:100%}}"
-    ].join("");
-    document.head.appendChild(style);
-
-    const wrap = document.createElement("div");
-    wrap.id = "accountEmergencyActions";
-    wrap.innerHTML = '<a href="index.html">Torna al sito</a><button type="button" data-account-emergency-logout>Esci subito</button>';
-    document.body.appendChild(wrap);
-    wrap.querySelector("[data-account-emergency-logout]").addEventListener("click", function (event) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      emergencySignOut();
-    }, true);
+    removeEmergencyActions();
   }
 
   function removeEmergencyActions() {

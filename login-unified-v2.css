@@ -17,8 +17,15 @@ body[data-account-page="login"]{
   color:var(--login-ink);
 }
 
+body[data-account-page="login"] .background-logo,
+body[data-account-page="reset-password"] .background-logo{
+  pointer-events:none!important;
+}
+
 body[data-account-page="login"] .mobile-menu-overlay,
-body[data-account-page="reset-password"] .mobile-menu-overlay{
+body[data-account-page="reset-password"] .mobile-menu-overlay,
+body[data-account-page="login"] .share-sheet-overlay,
+body[data-account-page="reset-password"] .share-sheet-overlay{
   display:none!important;
   visibility:hidden!important;
   pointer-events:none!important;
@@ -42,11 +49,24 @@ body[data-account-page="login"] .navbar{
 }
 
 body[data-account-page="login"] .account-main{
+  position:relative;
+  z-index:1;
   min-height:calc(100vh - 110px);
   padding:104px 18px 50px;
   background:
     radial-gradient(circle at 12% 8%,rgba(39,81,143,.10),transparent 28%),
     linear-gradient(180deg,#f8fafc 0%,var(--login-bg) 42%,#e8edf4 100%);
+}
+
+body[data-account-page="login"] a,
+body[data-account-page="login"] button,
+body[data-account-page="login"] input,
+body[data-account-page="login"] select,
+body[data-account-page="reset-password"] a,
+body[data-account-page="reset-password"] button,
+body[data-account-page="reset-password"] input,
+body[data-account-page="reset-password"] select{
+  pointer-events:auto!important;
 }
 
 body[data-account-page="login"] .login-workspace{
