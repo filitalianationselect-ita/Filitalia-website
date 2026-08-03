@@ -17,6 +17,20 @@ body[data-account-page="account"]{
   color:var(--account-ink);
 }
 
+body[data-account-page="account"] [hidden]{
+  display:none !important;
+}
+
+body[data-account-page="account"] #accountEmergencyActions{
+  display:none !important;
+}
+
+body[data-account-page="account"] .navbar{
+  position:fixed !important;
+  inset:0 0 auto 0 !important;
+  z-index:5000 !important;
+}
+
 body[data-account-page="account"] .background-logo{
   opacity:.015;
   filter:grayscale(1);

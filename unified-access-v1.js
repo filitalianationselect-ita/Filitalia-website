@@ -29,10 +29,11 @@
     }
 
     const profile = await auth.getOwnProfile();
+    const role = String(profile && (profile.actual_role || profile.role) || "").toLowerCase();
     const isAdmin = Boolean(
       profile &&
       profile.status === ACTIVE_STATUS &&
-      ADMIN_ROLES.has(String(profile.role || "").toLowerCase())
+      ADMIN_ROLES.has(role)
     );
 
     return { configured: true, session, profile, isAdmin };

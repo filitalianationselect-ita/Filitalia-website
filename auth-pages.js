@@ -172,8 +172,23 @@
     return keys[status] ? tx(keys[status]) : (status || tx("rolePending"));
   }
 
+  function accountRole(profile) {
+    return String((profile && (profile.actual_role || profile.role)) || "").toLowerCase();
+  }
+
+  function isAdminRole(profile) {
+    const role = accountRole(profile);
+    return role === "admin" || role === "super_admin";
+  }
+
+  function isActiveAdmin(profile) {
+    return isAdminRole(profile) && profile && profile.status === "active";
+  }
+
   function renderProfile(profile) {
     lastProfile = profile;
+    document.body.dataset.accountRole = accountRole(profile) || String(profile.role || "pending").toLowerCase();
+    document.body.dataset.accountStatus = String(profile.status || "pending").toLowerCase();
     byId("accountName").textContent = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "FIL-ITALIA " + tx("account");
     byId("accountEmail").textContent = profile.email || "";
     byId("accountRole").textContent = roleLabel(profile.role);
@@ -194,8 +209,16 @@
 
     document.querySelectorAll("[data-role-section]").forEach(function (section) {
       const roles = section.getAttribute("data-role-section").split(",").map(function (value) { return value.trim(); });
-      section.hidden = !roles.includes(profile.role) || profile.status !== "active";
+      const role = accountRole(profile) || profile.role;
+      section.hidden = !roles.includes(role) || profile.status !== "active";
     });
+
+    const adminAction = byId("accountAdminAction");
+    if (adminAction) {
+      adminAction.hidden = !isActiveAdmin(profile);
+      adminAction.href = "admin-light.html";
+      adminAction.textContent = accountRole(profile) === "super_admin" ? "Apri pannello Super Admin" : "Apri pannello Admin";
+    }
   }
 
   function booleanSelectValue(value) {
@@ -551,7 +574,7 @@
     const reason = byId("deletionReason");
     if (!button) return;
 
-    if (profile && profile.role === "admin") {
+    if (isAdminRole(profile)) {
       button.disabled = true;
       button.textContent = "ACCOUNT ADMIN PROTETTO";
       return;
@@ -705,7 +728,7 @@
       });
     }
 
-    if (profile.role === "admin" && profile.status === "active") {
+    if (isActiveAdmin(profile)) {
       const dashboardSection = byId("adminDashboardSection");
       const adminSection = byId("adminAccountsSection");
       const adminDeletionSection = byId("adminDeletionSection");
@@ -760,7 +783,7 @@
     const page = document.body && document.body.getAttribute("data-account-page");
     if (page === "account") {
       loadRegistrations();
-      if (lastProfile && lastProfile.role === "admin" && lastProfile.status === "active") loadAdminDashboard();
+      if (isActiveAdmin(lastProfile)) loadAdminDashboard();
     }
   });
 

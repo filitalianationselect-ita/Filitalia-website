@@ -23,6 +23,8 @@
   }
 
   function detectRole(){
+    const stored=normalized(d.body?.dataset.accountRole);
+    if(roleProfiles[stored]) return stored;
     const text=normalized(byId('accountRole')?.textContent);
     if(text.includes('super')) return 'super_admin';
     if(text.includes('admin')||text.includes('amministr')) return 'admin';
@@ -33,6 +35,13 @@
     if(text.includes('staff')) return 'staff';
     if(text.includes('giocator')||text.includes('player')||text.includes('manlalaro')) return 'player';
     return 'pending';
+  }
+
+  function isActiveAccount(){
+    const stored=normalized(d.body?.dataset.accountStatus);
+    if(stored) return stored==='active'||stored==='attivo'||stored==='aktibo';
+    const statusText=normalized(byId('accountStatusBadge')?.textContent);
+    return statusText.includes('attiv')||statusText.includes('active')||statusText.includes('aktibo');
   }
 
   function countRegistrations(){
@@ -205,18 +214,17 @@
     if(byId('accountProfileCompletion')) byId('accountProfileCompletion').textContent=completion+'%';
     if(byId('accountRegistrationCount')) byId('accountRegistrationCount').textContent=String(registrations);
     if(byId('accountDocumentStatus')) byId('accountDocumentStatus').textContent=profile.documents;
-    const statusText=normalized(byId('accountStatusBadge')?.textContent);
-    const isActive=statusText.includes('attiv')||statusText.includes('active')||statusText.includes('aktibo');
+    const isActive=isActiveAccount();
     if(byId('accountAccessStatus')) byId('accountAccessStatus').textContent=isActive?'Attivo':'Da verificare';
 
     const isAdmin=role==='admin'||role==='super_admin';
     if(adminAction){
-      adminAction.hidden=!isAdmin;
+      adminAction.hidden=!(isAdmin&&isActive);
       adminAction.href='admin-light.html';
       adminAction.textContent=role==='super_admin'?'Apri pannello Super Admin':'Apri pannello Admin';
     }
 
-    if(isAdmin){
+    if(isAdmin&&isActive){
       loadAdminTheme();
       ensureAdminNavigation();
       updateAdminHero(role);

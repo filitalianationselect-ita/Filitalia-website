@@ -85,15 +85,30 @@
   }
 
   function needsFallbackHydration() {
+    return needsIdentityFallback() || needsRegistrationsFallback();
+  }
+
+  function needsIdentityFallback() {
     if (!document.body || document.body.dataset.accountPage !== "account") return false;
     const name = byId("accountName");
     const email = byId("accountEmail");
     const badge = byId("accountStatusBadge");
-    const registrations = byId("accountRegistrations");
     return !email || !email.textContent.trim()
       || (name && /account fil-italia/i.test(name.textContent || ""))
-      || (badge && isLoadingText(badge.textContent))
-      || (registrations && isLoadingText(registrations.textContent));
+      || (badge && isLoadingText(badge.textContent));
+  }
+
+  function needsRegistrationsFallback() {
+    if (!document.body || document.body.dataset.accountPage !== "account") return false;
+    const registrations = byId("accountRegistrations");
+    return Boolean(registrations && isLoadingText(registrations.textContent));
+  }
+
+  function settleRegistrationsFallback() {
+    const registrations = byId("accountRegistrations");
+    if (registrations && isLoadingText(registrations.textContent)) {
+      registrations.innerHTML = '<p class="account-muted">' + copy("registrations") + '</p>';
+    }
   }
 
   function bindLogout() {
@@ -168,8 +183,18 @@
     }, true);
   }
 
+  function removeEmergencyActions() {
+    const actions = byId("accountEmergencyActions");
+    const style = byId("accountEmergencyActionsStyle");
+    if (actions) actions.remove();
+    if (style) style.remove();
+  }
+
   function settlePendingStatus() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
+    if (!needsIdentityFallback()) return;
+    document.body.dataset.accountRole = "pending";
+    document.body.dataset.accountStatus = "pending";
     const badge = byId("accountStatusBadge");
     if (badge && isLoadingText(badge.textContent)) {
       text(badge, copy("pending"));
@@ -183,10 +208,16 @@
 
   async function hydrateFallback() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
-    if (!needsFallbackHydration()) return;
+    if (!needsIdentityFallback()) {
+      settleRegistrationsFallback();
+      bindLogout();
+      return;
+    }
 
     const session = await sessionFallback();
     if (!session || !session.user) return;
+    document.body.dataset.accountRole = "pending";
+    document.body.dataset.accountStatus = "pending";
     const badge = byId("accountStatusBadge");
     const meta = session.user.user_metadata || {};
     const first = meta.first_name || "";
@@ -212,10 +243,7 @@
 
     const pending = byId("pendingApprovalBox");
     if (pending) pending.hidden = false;
-    const registrations = byId("accountRegistrations");
-    if (registrations && isLoadingText(registrations.textContent)) {
-      registrations.innerHTML = '<p class="account-muted">' + copy("registrations") + '</p>';
-    }
+    settleRegistrationsFallback();
 
     bindLogout();
   }
@@ -223,17 +251,14 @@
   function clearStaleLoading() {
     if (!document.body || document.body.dataset.accountPage !== "account") return;
     settlePendingStatus();
-    const registrations = byId("accountRegistrations");
-    if (registrations && isLoadingText(registrations.textContent)) {
-      registrations.innerHTML = '<p class="account-muted">' + copy("registrations") + '</p>';
-    }
+    settleRegistrationsFallback();
     bindLogout();
   }
 
   patchAuth();
   document.addEventListener("DOMContentLoaded", function () {
     patchAuth();
-    installEmergencyActions();
+    removeEmergencyActions();
     bindLogout();
     window.setTimeout(settlePendingStatus, 1800);
     window.setTimeout(hydrateFallback, 2800);
@@ -241,5 +266,5 @@
     window.setTimeout(clearStaleLoading, 9000);
   });
 
-  if (document.readyState !== "loading") installEmergencyActions();
+  if (document.readyState !== "loading") removeEmergencyActions();
 })();
