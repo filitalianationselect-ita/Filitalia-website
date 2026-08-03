@@ -1486,7 +1486,15 @@ function toggleMobileMenu(){
 function closeMobileMenu(){
   document.body.classList.remove("mobile-menu-open");
 }
+function isAccountSurface(){
+  const page=document.body&&document.body.dataset?document.body.dataset.accountPage:"";
+  return page==="login"||page==="account"||page==="reset-password";
+}
 function ensureMobileOverlay(){
+  if(isAccountSurface()){
+    document.querySelectorAll(".mobile-menu-overlay").forEach(overlay=>overlay.remove());
+    return;
+  }
   if(document.querySelector(".mobile-menu-overlay")) return;
   const overlay = document.createElement("div");
   overlay.className = "mobile-menu-overlay";
@@ -1494,6 +1502,7 @@ function ensureMobileOverlay(){
   document.body.appendChild(overlay);
 }
 function initMobileMenu(){
+  if(isAccountSurface()) closeMobileMenu();
   ensureMobileOverlay();
   document.querySelectorAll(".nav-links a").forEach(link => {
     link.addEventListener("click", closeMobileMenu);

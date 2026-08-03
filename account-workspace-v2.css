@@ -25,6 +25,16 @@ body[data-account-page="account"] #accountEmergencyActions{
   display:none !important;
 }
 
+body[data-account-page="account"] .mobile-menu-overlay{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+body[data-account-page="account"].mobile-menu-open{
+  overflow:auto !important;
+}
+
 body[data-account-page="account"] .navbar{
   position:fixed !important;
   inset:0 0 auto 0 !important;

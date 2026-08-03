@@ -17,6 +17,18 @@ body[data-account-page="login"]{
   color:var(--login-ink);
 }
 
+body[data-account-page="login"] .mobile-menu-overlay,
+body[data-account-page="reset-password"] .mobile-menu-overlay{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+body[data-account-page="login"].mobile-menu-open,
+body[data-account-page="reset-password"].mobile-menu-open{
+  overflow:auto!important;
+}
+
 body[data-account-page="login"] .background-logo{
   opacity:.025;
   filter:grayscale(1);
