@@ -47,6 +47,8 @@
   function countRegistrations(){
     const box=byId('accountRegistrations');
     if(!box) return 0;
+    const loadedCount=Number(box.dataset.registrationCount);
+    if(Number.isFinite(loadedCount)&&loadedCount>=0) return loadedCount;
     const cards=box.querySelectorAll('.registration-mini-card,[data-registration-id],article');
     return cards.length;
   }

@@ -42,6 +42,7 @@ body[data-account-page="account"] .navbar {
   top: 0;
   z-index: 1000;
   width: 100%;
+  justify-content: flex-start !important;
   background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid var(--account-line);
   box-shadow: none;
@@ -53,9 +54,32 @@ body[data-account-page="account"] .navbar button {
 }
 
 body[data-account-page="account"] .logo-area {
-  margin: 0 !important;
+  position: static !important;
+  inset: auto !important;
+  order: 1 !important;
+  margin: 0 28px 0 0 !important;
   flex: 0 0 auto;
-  justify-content: flex-start;
+  justify-content: flex-start !important;
+  transform: none !important;
+}
+
+body[data-account-page="account"] .nav-logo {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 6px !important;
+}
+
+body[data-account-page="account"] .logo-text {
+  font-size: 18px !important;
+  letter-spacing: 0 !important;
+}
+
+body[data-account-page="account"] .language-switch {
+  position: static !important;
+  inset: auto !important;
+  order: 3 !important;
+  margin: 0 0 0 auto !important;
+  transform: none !important;
 }
 
 @media (min-width: 901px) {
@@ -65,9 +89,11 @@ body[data-account-page="account"] .logo-area {
     display: flex !important;
     width: 100% !important;
     height: auto !important;
-    min-height: 78px;
+    min-height: 68px;
     align-items: center !important;
-    padding: 10px 4% !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    padding: 8px 4% !important;
   }
 
   body[data-account-page="account"] #navLinks {
@@ -76,11 +102,12 @@ body[data-account-page="account"] .logo-area {
     display: flex !important;
     width: auto !important;
     height: auto !important;
-    flex: 1 1 auto !important;
+    order: 2 !important;
+    flex: 0 1 auto !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    gap: 16px !important;
+    gap: 24px !important;
     padding: 0 !important;
     opacity: 1 !important;
     transform: none !important;
@@ -98,8 +125,12 @@ body[data-account-page="account"] .logo-area {
   }
 
   body[data-account-page="account"] #navLinks a {
-    padding: 8px 4px !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+    padding: 8px 0 !important;
+    border: 0 !important;
     font-size: 13px !important;
+    text-align: left !important;
   }
 
   body[data-account-page="account"] .language-switch {
@@ -490,6 +521,7 @@ body[data-account-page="account"] footer {
 
   body[data-account-page="account"] .logo-area {
     order: 1;
+    margin-right: 0 !important;
   }
 
   body[data-account-page="account"] .language-switch {

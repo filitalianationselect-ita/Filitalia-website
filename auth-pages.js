@@ -433,6 +433,7 @@
     if (!list) return;
     try {
       const registrations = await auth.getOwnRegistrations();
+      list.dataset.registrationCount = String(registrations.length);
       list.replaceChildren();
       if (!registrations.length) {
         const empty = document.createElement("p");
@@ -456,6 +457,7 @@
         list.appendChild(card);
       });
     } catch (error) {
+      list.dataset.registrationCount = "0";
       const empty = document.createElement("p");
       empty.className = "account-muted";
       empty.textContent = tx("registrationsUnavailable");
