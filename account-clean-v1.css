@@ -40,12 +40,20 @@ body[data-account-page="account"] #accountEmergencyActionsStyle {
 body[data-account-page="account"] .navbar {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2147483646 !important;
   width: 100%;
   justify-content: flex-start !important;
+  isolation: isolate;
+  pointer-events: auto !important;
   background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid var(--account-line);
   box-shadow: none;
+}
+
+body[data-account-page="account"] .logo-area,
+body[data-account-page="account"] #navLinks,
+body[data-account-page="account"] .language-switch {
+  pointer-events: auto !important;
 }
 
 body[data-account-page="account"] .navbar a,
