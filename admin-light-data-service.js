@@ -148,6 +148,36 @@
     return result.data;
   }
 
+  async function deleteRegistration(registrationId, eventId) {
+    await requireAdmin();
+    const safeId = clean(registrationId, 160);
+    if (!safeId) throw new Error("REGISTRATION_ID_REQUIRED");
+
+    const existing = await client()
+      .from("registrations")
+      .select("id,camp_event_id,participant_name,participant_email")
+      .eq("id", safeId)
+      .maybeSingle();
+    if (existing.error) throw existing.error;
+
+    const safeEventId = clean(eventId || (existing.data && existing.data.camp_event_id), 160) || null;
+    const operationResult = await client().from("event_admin_operations").delete().eq("registration_id", safeId);
+    if (operationResult.error) throw operationResult.error;
+
+    const registrationResult = await client().from("registrations").delete().eq("id", safeId);
+    if (registrationResult.error) throw registrationResult.error;
+
+    try {
+      await addAudit(safeEventId, safeId, "registration_deleted", {
+        participant_name: existing.data ? existing.data.participant_name : "",
+        participant_email: existing.data ? existing.data.participant_email : ""
+      });
+    } catch (error) {
+      console.warn("Audit eliminazione registrazione", error);
+    }
+    return true;
+  }
+
   async function createRegistration(eventInfo, payload) {
     const admin = await requireAdmin();
     const birthYear = clean(payload.year, 4);
@@ -280,6 +310,7 @@
     loadEvent,
     saveOperation,
     updateRegistration,
+    deleteRegistration,
     createRegistration,
     uploadFile,
     signedUrl,

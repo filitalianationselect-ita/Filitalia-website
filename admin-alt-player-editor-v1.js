@@ -27,6 +27,50 @@
     return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
   }
 
+  function normalizeCategory(value) {
+    return core.normalizePlayerCategory ? core.normalizePlayerCategory(value) : String(value || "").trim();
+  }
+
+  function categoryParts(selected) {
+    const parts = normalizeCategory(selected).split(/\s+\+\s+/).filter(Boolean);
+    const seniorOptions = core.playerSeniorCategoryOptions ? core.playerSeniorCategoryOptions() : ["FIP DR3", "FIP DR2", "FIP DR1", "FIP Serie C", "FIP Serie B", "FIP Serie A2", "FIP Serie A1", "CSI", "UISP", "Free"];
+    const senior = parts.find(function (part) { return seniorOptions.includes(part); }) || "";
+    const primary = parts.find(function (part) { return part !== senior; }) || parts[0] || "Under 19";
+    return { primary: primary, senior: senior };
+  }
+
+  function combineCategory(primary, senior) {
+    return [normalizeCategory(primary), normalizeCategory(senior)].filter(Boolean).filter(function (part, index, list) {
+      return list.indexOf(part) === index;
+    }).join(" + ");
+  }
+
+  function categoryOptions(selected) {
+    const current = normalizeCategory(selected);
+    const groups = core.playerCategoryGroups ? core.playerCategoryGroups() : [
+      { label: "Under", options: ["Under 17", "Under 19", "Under 21"] },
+      { label: "Senior FIP", options: ["FIP DR3", "FIP DR2", "FIP DR1", "FIP Serie C", "FIP Serie B", "FIP Serie A2", "FIP Serie A1"] },
+      { label: "Altri campionati", options: ["CSI", "UISP", "Free"] }
+    ];
+    const known = new Set(groups.flatMap(function (group) { return group.options; }));
+    const extra = current && !known.has(current) ? `<option value="${esc(current)}" selected>${esc(current)}</option>` : "";
+    return extra + groups.map(function (group) {
+      return `<optgroup label="${esc(group.label)}">${group.options.map(function (option) {
+        return `<option value="${esc(option)}"${option === current ? " selected" : ""}>${esc(option)}</option>`;
+      }).join("")}</optgroup>`;
+    }).join("");
+  }
+
+  function seniorCategoryOptions(selected) {
+    const current = normalizeCategory(selected);
+    const options = core.playerSeniorCategoryOptions ? core.playerSeniorCategoryOptions() : ["FIP DR3", "FIP DR2", "FIP DR1", "FIP Serie C", "FIP Serie B", "FIP Serie A2", "FIP Serie A1", "CSI", "UISP", "Free"];
+    const known = new Set(options);
+    const extra = current && !known.has(current) ? `<option value="${esc(current)}" selected>${esc(current)}</option>` : "";
+    return `<option value="">Nessuna</option>` + extra + options.map(function (option) {
+      return `<option value="${esc(option)}"${option === current ? " selected" : ""}>${esc(option)}</option>`;
+    }).join("");
+  }
+
   function addStyle() {
     if (d.getElementById("filAltPlayerEditorStyle")) return;
     const style = d.createElement("style");
@@ -236,11 +280,13 @@
 
   function playerForm(item) {
     const evaluations = item.evaluations || {};
+    const categories = categoryParts(item.category);
     return `
       <div class="fil-alt-player-grid">
         <label class="full">Nome e cognome<input id="fapName" value="${esc(item.name)}"></label>
         <label>Anno di nascita<input id="fapYear" inputmode="numeric" value="${esc(item.year || "")}"></label>
-        <label>Categoria<input id="fapCategory" value="${esc(item.category || "")}" placeholder="U16, U19, Senior..."></label>
+        <label>Categoria principale<select id="fapCategory">${categoryOptions(categories.primary)}</select></label>
+        <label>Senior aggiuntiva<select id="fapSeniorCategory">${seniorCategoryOptions(categories.senior)}</select></label>
         <label>Ruolo basket<input id="fapPosition" value="${esc(item.position || "")}"></label>
         <label>Altezza cm<input id="fapHeight" type="number" min="0" value="${esc(item.heightCm || "")}"></label>
         <label>Squadra / club<input id="fapClub" value="${esc(item.club || "")}"></label>
@@ -292,7 +338,7 @@
           id: item.id || "",
           name: name,
           year: d.getElementById("fapYear").value,
-          category: d.getElementById("fapCategory").value,
+          category: combineCategory(d.getElementById("fapCategory").value, d.getElementById("fapSeniorCategory").value),
           position: d.getElementById("fapPosition").value,
           heightCm: d.getElementById("fapHeight").value,
           club: d.getElementById("fapClub").value,

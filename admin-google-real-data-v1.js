@@ -3,7 +3,7 @@
 
   const d = document;
   const base = window.FilitaliaAdminData;
-  const state = { connected: false, source: "", count: 0, error: "", loading: false, importing: false, imported: 0 };
+  const state = { connected: false, source: "", count: 0, error: "", loading: false, previewing: false, importing: false, prepared: 0, imported: 0, events: {} };
 
   function clean(value) {
     return String(value == null ? "" : value).trim();
@@ -191,6 +191,40 @@
     return { imported: records.length, prepared: records.length, events: counts, source: "DATI FIL-ITALIA" };
   }
 
+  async function previewHistoricRegistrations() {
+    state.previewing = true;
+    state.error = "";
+    emitState();
+    try {
+      const eventIds = ["idcamp-roma-2026", "idcamp-firenze-2026", "idcamp-venezia-2026", "idcamp-milano-2026", "idcamp-bologna-2026"];
+      const recordsById = new Map();
+      const counts = {};
+      for (const eventId of eventIds) {
+        const data = await invoke("registrations", { event_id: eventId });
+        const rows = Array.isArray(data.rows) ? data.rows : [];
+        counts[eventId] = rows.length;
+        for (const row of rows) {
+          const record = await recordFromGoogleRow(row);
+          if (record.participant_name && record.camp_event_id) recordsById.set(record.submission_id, record);
+        }
+      }
+      state.connected = true;
+      state.source = "DATI FIL-ITALIA";
+      state.prepared = recordsById.size;
+      state.events = counts;
+      state.error = "";
+      notify("Controllo storico completato: " + state.prepared + " registrazioni pronte per l’import.");
+      return { prepared: recordsById.size, events: counts, source: "DATI FIL-ITALIA" };
+    } catch (error) {
+      state.error = friendlyError(error);
+      notify(state.error);
+      throw error;
+    } finally {
+      state.previewing = false;
+      emitState();
+    }
+  }
+
   async function importHistoricRegistrations() {
     state.importing = true;
     state.error = "";
@@ -199,7 +233,9 @@
       const data = await importHistoricInBrowser();
       state.connected = true;
       state.source = clean(data.source) || "DATI FIL-ITALIA";
+      state.prepared = Number(data.prepared || state.prepared || 0);
       state.imported = Number(data.imported || data.prepared || 0);
+      state.events = data.events || state.events || {};
       state.error = "";
       notify("Import storico completato: " + state.imported + " registrazioni copiate nell’archivio.");
       if (window.FilitaliaRegistrationSync && typeof window.FilitaliaRegistrationSync.refresh === "function") {
@@ -228,6 +264,7 @@
   window.FilitaliaGoogleAdminData = Object.freeze({
     loadEvent: loadEvent,
     loadInbox: loadInbox,
+    previewHistoricRegistrations: previewHistoricRegistrations,
     importHistoricRegistrations: importHistoricRegistrations,
     connect: connectGoogle,
     getState: function () { return Object.assign({}, state); }
@@ -260,13 +297,18 @@
     const banner = d.createElement("div");
     banner.id = "grdRegistrationBanner";
     banner.className = "grd-banner";
-    banner.innerHTML = '<div><strong><i class="grd-dot"></i><span id="grdRegistrationTitle" style="display:inline">Dati registrazioni</span></strong><span id="grdRegistrationText">In modalità reale vengono letti dal foglio Google protetto.</span></div><div class="grd-actions"><button id="grdRegistrationImport" class="btn small primary" type="button">Importa storico</button><button id="grdRegistrationConnect" class="btn small secondary" type="button">Collega / ricollega Google</button></div>';
+    banner.innerHTML = '<div><strong><i class="grd-dot"></i><span id="grdRegistrationTitle" style="display:inline">Dati registrazioni</span></strong><span id="grdRegistrationText">In modalità reale vengono letti dal foglio Google protetto.</span></div><div class="grd-actions"><button id="grdRegistrationPreview" class="btn small secondary" type="button">Controlla storico</button><button id="grdRegistrationImport" class="btn small primary" type="button">Importa storico</button><button id="grdRegistrationConnect" class="btn small secondary" type="button">Collega / ricollega Google</button></div>';
     const anchor = section.querySelector(".topbar") || section.firstChild;
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(banner, anchor.nextSibling);
     else section.prepend(banner);
     d.getElementById("grdRegistrationConnect").onclick = function () { connectGoogle().catch(function (error) { notify(friendlyError(error)); }); };
+    d.getElementById("grdRegistrationPreview").onclick = function () {
+      previewHistoricRegistrations().catch(function () {});
+    };
     d.getElementById("grdRegistrationImport").onclick = function () {
-      if (!confirm("Importare le registrazioni storiche da DATI FIL-ITALIA nell’archivio Preview? I doppioni verranno aggiornati, non duplicati.")) return;
+      const count = Number(state.prepared || 0);
+      const detail = count ? " Ho trovato " + count + " registrazioni pronte." : " Se non hai ancora fatto il controllo, lo farò durante l’import.";
+      if (!confirm("Importare le registrazioni storiche da DATI FIL-ITALIA nell’archivio Preview?" + detail + " I doppioni verranno aggiornati, non duplicati.")) return;
       importHistoricRegistrations().catch(function () {});
     };
     updateRegistrationBanner(state);
@@ -279,8 +321,13 @@
     if (!title || !text || !dot) return;
     dot.className = "grd-dot";
     const importButton = d.getElementById("grdRegistrationImport");
+    const previewButton = d.getElementById("grdRegistrationPreview");
+    if (previewButton) {
+      previewButton.disabled = Boolean(next.importing || next.previewing || next.loading || !modeIsReal());
+      previewButton.textContent = next.previewing ? "Controllo..." : "Controlla storico";
+    }
     if (importButton) {
-      importButton.disabled = Boolean(next.importing || next.loading || !modeIsReal());
+      importButton.disabled = Boolean(next.importing || next.previewing || next.loading || !modeIsReal());
       importButton.textContent = next.importing ? "Import in corso..." : "Importa storico";
     }
     if (!modeIsReal()) {
@@ -294,6 +341,11 @@
       text.textContent = "Sto copiando DATI FIL-ITALIA nell’archivio Preview.";
       return;
     }
+    if (next.previewing) {
+      title.textContent = "Controllo storico in corso...";
+      text.textContent = "Sto leggendo DATI FIL-ITALIA senza scrivere nel nuovo archivio.";
+      return;
+    }
     if (next.loading) {
       title.textContent = "Caricamento dati reali…";
       text.textContent = "Lettura protetta da Google Sheets.";
@@ -302,7 +354,7 @@
     if (next.connected) {
       dot.classList.add("ok");
       title.textContent = "Dati reali · sola lettura";
-      text.textContent = next.count + " registrazioni lette da " + (next.source || "DATI FIL-ITALIA") + (next.imported ? " · " + next.imported + " già importate." : ".");
+      text.textContent = next.count + " registrazioni lette da " + (next.source || "DATI FIL-ITALIA") + (next.prepared ? " · " + next.prepared + " pronte per l’import." : "") + (next.imported ? " · " + next.imported + " importate." : ".");
       return;
     }
     if (next.error) {

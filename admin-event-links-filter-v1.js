@@ -2,7 +2,7 @@
 'use strict';
 const d=document,$=id=>d.getElementById(id),catalog=window.FilitaliaEventCatalog,links=window.FilitaliaEventLinks;if(!catalog||!links)return;
 let busy=false;
-const esc=v=>String(v==null?'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 function events(){return catalog.events?.()||[]}
 function options(selected){return`<option value="">Tutti gli eventi</option>${events().map(e=>`<option value="${esc(e.id)}" ${String(e.id)===String(selected)?'selected':''}>${esc(e.name||e.label||e.city)}</option>`).join('')}`}
 function eventName(id){const e=catalog.get?.(id);return e?.name||e?.label||e?.city||'Evento'}

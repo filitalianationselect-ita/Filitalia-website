@@ -48,6 +48,7 @@
     if (code.includes("event_admin_operations")) return "La migrazione Supabase non è ancora stata eseguita.";
     if (code.includes("GMAIL_NOT_CONNECTED")) return "Collega prima il Gmail ufficiale FIL-ITALIA.";
     if (code.includes("GMAIL_SEND_NOT_CONFIGURED")) return "La configurazione Gmail server non è ancora completa.";
+    if (code.includes("DELETE_NOT_AVAILABLE")) return "Aggiorna la Preview: il comando Elimina non è ancora caricato.";
     if (code.includes("FILE_TOO_LARGE")) return "Il file supera 10 MB.";
     if (code.includes("INVALID_FILE_TYPE")) return "Sono accettati PDF, JPG, PNG e WEBP.";
     return "Operazione non completata. Restiamo in modalità demo.";
@@ -250,9 +251,10 @@
       $("edDetail").innerHTML = '<div class="eventday-detail"><h2 style="margin-top:0">Nessuna registrazione</h2><div class="muted">Aggiungi una registrazione oppure seleziona un altro evento.</div><button id="edEmptyAdd" class="btn primary" style="margin-top:14px">＋ Nuova registrazione</button></div>';
       $("edEmptyAdd").onclick = function () { openRegistrationModal(null); };
     } else {
-      $("edDetail").innerHTML = `<div class="eventday-detail"><div class="eventday-profile"><div><h2 style="margin:0">${esc(player.name)}</h2><div class="muted">${esc(player.cat)} · ${esc(player.year)} · ${isComplete(player) ? "Pagamento completato" : "Pagamento in attesa"}</div></div><div class="light-integration-actions"><button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button></div></div><div class="eventday-info"><div><span>EMAIL</span><b>${esc(player.email || "—")}</b></div><div><span>GENITORE</span><b>${esc(player.parent || "—")}</b></div><div><span>TAGLIA MAGLIA</span><b>${esc(player.shirt || "—")}</b></div><div><span>IMPORTO</span><b>${player.amount == null ? "—" : "€" + esc(player.amount)}</b></div><div><span>METODO</span><b>${esc(player.paymentMethod || "—")}</b></div><div><span>STATO CERTIFICATO</span><b>${esc(player.certificateStatus || "missing")}</b></div></div><div class="eventday-tasks">${taskButton("payment", "Pagamento verificato", isComplete(player))}${taskButton("certificate", "Certificato medico", player.certificate)}${taskButton("present", "Presenza confermata", player.present)}</div><div class="eventday-docs"><label><b>Foto giocatore</b><div class="muted">${esc(player.photo || "Nessun file")}</div><input id="edPhoto" type="file" accept="image/jpeg,image/png,image/webp"></label><label><b>Certificato</b><div class="muted">${esc(player.certificateFile || "Nessun file")}</div><input id="edCertificate" type="file" accept="application/pdf,image/jpeg,image/png,image/webp"></label></div><textarea id="edNotes" class="eventday-notes" placeholder="Note interne…">${esc(player.notes || "")}</textarea></div>`;
+      $("edDetail").innerHTML = `<div class="eventday-detail"><div class="eventday-profile"><div><h2 style="margin:0">${esc(player.name)}</h2><div class="muted">${esc(player.cat)} · ${esc(player.year)} · ${isComplete(player) ? "Pagamento completato" : "Pagamento in attesa"}</div></div><div class="light-integration-actions"><button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button><button id="edDelete" class="btn secondary danger-btn">Elimina</button></div></div><div class="eventday-info"><div><span>EMAIL</span><b>${esc(player.email || "—")}</b></div><div><span>GENITORE</span><b>${esc(player.parent || "—")}</b></div><div><span>TAGLIA MAGLIA</span><b>${esc(player.shirt || "—")}</b></div><div><span>IMPORTO</span><b>${player.amount == null ? "—" : "€" + esc(player.amount)}</b></div><div><span>METODO</span><b>${esc(player.paymentMethod || "—")}</b></div><div><span>STATO CERTIFICATO</span><b>${esc(player.certificateStatus || "missing")}</b></div></div><div class="eventday-tasks">${taskButton("payment", "Pagamento verificato", isComplete(player))}${taskButton("certificate", "Certificato medico", player.certificate)}${taskButton("present", "Presenza confermata", player.present)}</div><div class="eventday-docs"><label><b>Foto giocatore</b><div class="muted">${esc(player.photo || "Nessun file")}</div><input id="edPhoto" type="file" accept="image/jpeg,image/png,image/webp"></label><label><b>Certificato</b><div class="muted">${esc(player.certificateFile || "Nessun file")}</div><input id="edCertificate" type="file" accept="application/pdf,image/jpeg,image/png,image/webp"></label></div><textarea id="edNotes" class="eventday-notes" placeholder="Note interne…">${esc(player.notes || "")}</textarea></div>`;
       $("edEdit").onclick = function () { openRegistrationModal(player); };
       $("edPayment").onclick = function () { openPaymentModal(player); };
+      $("edDelete").onclick = function () { deleteRegistration(player); };
       $("edNotes").onchange = function (event) { savePlayerOperation(player, { notes: event.target.value }, { notes: event.target.value }, "notes_updated"); };
       $("edPhoto").onchange = function (event) { uploadDocument(player, "photo", event.target.files[0]); };
       $("edCertificate").onchange = function (event) { uploadDocument(player, "certificate", event.target.files[0]); };
@@ -284,6 +286,28 @@
       return savePlayerOperation(player, { certificate_status: next ? "approved" : "missing" }, { certificate: next, certificateStatus: next ? "approved" : "missing" }, "certificate_status_updated");
     }
     if (key === "present") return savePlayerOperation(player, { present: !player.present }, { present: !player.present }, "presence_updated");
+  }
+
+  async function deleteRegistration(player) {
+    if (!player) return;
+    if (!confirm("Eliminare la registrazione di " + player.name + "? Questa azione la rimuove dall’archivio registrazioni.")) return;
+    try {
+      if (mode === "real" && currentService()) {
+        if (typeof currentService().deleteRegistration !== "function") throw new Error("DELETE_NOT_AVAILABLE");
+        await currentService().deleteRegistration(player.id, currentEvent.id);
+      } else {
+        data = data.filter(function (item) { return String(item.id) !== String(player.id); });
+        saveDemo();
+      }
+      data = data.filter(function (item) { return String(item.id) !== String(player.id); });
+      selected = data[0] ? data[0].id : null;
+      localLog("Registrazione eliminata", player.name);
+      renderEventDay();
+      if (window.FilitaliaRegistrationSync && typeof window.FilitaliaRegistrationSync.refresh === "function") {
+        window.FilitaliaRegistrationSync.refresh();
+      }
+      notify("Registrazione eliminata.");
+    } catch (error) { notify(friendly(error)); }
   }
 
   function openRegistrationModal(player) {

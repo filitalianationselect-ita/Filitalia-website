@@ -23,6 +23,7 @@
 
   let rows = [];
   let busy = false;
+  let lastSignature = "";
 
   const style = d.createElement("style");
   style.textContent = ".reg-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}";
@@ -54,6 +55,15 @@
     } catch (_) { return JSON.parse(JSON.stringify(seed[eventId()] || [])); }
   }
 
+  function demoStore() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(KEY) || "{}");
+      return stored && typeof stored === "object" ? stored : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
   function complete(player) { return ["paid", "not_required", "waived"].includes(player.payment); }
   function payLabel(player) {
     if (player.payment === "paid") return "Pagato";
@@ -73,7 +83,32 @@
     const documentStatus = docs(player);
     const registrationState = state(player);
     const search = [player.name, player.year, event.city, player.email, player.parent].join(" ").toLowerCase();
-    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar">${esc(initials(player.name))}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small secondary reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
+    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar">${esc(initials(player.name))}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
+  }
+
+  function signature() {
+    return JSON.stringify([eventId(), rows.map(function (player) {
+      return [player.id, player.name, player.year, player.cat, player.email, player.parent, player.payment, player.amount, player.certificate, player.shirt, player.updated_at || player.updatedAt || ""];
+    })]);
+  }
+
+  function scrollState() {
+    const tableWrap = $("regTable") && $("regTable").closest(".table-wrap");
+    return {
+      x: window.scrollX || 0,
+      y: window.scrollY || 0,
+      tableTop: tableWrap ? tableWrap.scrollTop : 0,
+      tableLeft: tableWrap ? tableWrap.scrollLeft : 0
+    };
+  }
+
+  function restoreScroll(state) {
+    const tableWrap = $("regTable") && $("regTable").closest(".table-wrap");
+    if (tableWrap) {
+      tableWrap.scrollTop = state.tableTop;
+      tableWrap.scrollLeft = state.tableLeft;
+    }
+    window.scrollTo(state.x, state.y);
   }
 
   function stats() {
@@ -115,39 +150,26 @@
     if (window.FilitaliaAdminData) window.FilitaliaAdminData.exportCsv(list, "filitalia-" + String(eventInfo().city || "evento").toLowerCase() + "-registrazioni.csv");
   }
 
-  async function deleteRealRegistration(player) {
-    if (!window.FilitaliaAuth || !window.FilitaliaAuth.client) throw new Error("SUPABASE_NOT_CONFIGURED");
-    const client = window.FilitaliaAuth.client;
-    const op = await client.from("event_admin_operations").delete().eq("registration_id", String(player.id));
-    if (op.error) throw op.error;
-    const reg = await client.from("registrations").delete().eq("id", String(player.id));
-    if (reg.error) throw reg.error;
-    try {
-      await client.from("admin_audit_log").insert({
-        event_id: eventId() || null,
-        registration_id: String(player.id),
-        action: "registration_deleted",
-        details: { participant_name: player.name || "", participant_email: player.email || "" }
-      });
-    } catch (error) { console.warn("Audit eliminazione registrazione", error); }
-  }
-
   async function deletePlayer(id) {
     const player = rows.find(function (item) { return String(item.id) === String(id); });
     if (!player) return;
     const message = "Eliminare la registrazione di " + player.name + "? Questa azione la rimuove dall’archivio registrazioni.";
     if (!confirm(message)) return;
+    const scroll = scrollState();
     try {
-      if (window.FilitaliaAdminLight && window.FilitaliaAdminLight.getMode() === "real") {
-        await deleteRealRegistration(player);
+      if (window.FilitaliaAdminLight && window.FilitaliaAdminLight.getMode() === "real" && window.FilitaliaAdminData && window.FilitaliaAdminData.deleteRegistration) {
+        await window.FilitaliaAdminData.deleteRegistration(player.id, eventId());
+        rows = rows.filter(function (item) { return String(item.id) !== String(player.id); });
       } else {
-        const store = read(KEY, {});
+        const store = demoStore();
         const list = Array.isArray(store[eventId()]) ? store[eventId()] : demo();
         store[eventId()] = list.filter(function (item) { return String(item.id) !== String(player.id); });
         localStorage.setItem(KEY, JSON.stringify(store));
+        rows = rows.filter(function (item) { return String(item.id) !== String(player.id); });
       }
-      rows = rows.filter(function (item) { return String(item.id) !== String(player.id); });
+      lastSignature = "";
       render();
+      restoreScroll(scroll);
       if (window.showToast) window.showToast("Registrazione eliminata.");
       else alert("Registrazione eliminata.");
     } catch (error) {
@@ -160,12 +182,22 @@
   function render() {
     const body = $("regTable") && $("regTable").querySelector("tbody");
     if (!body) return;
+    const nextSignature = signature();
+    if (lastSignature === nextSignature && body.dataset.registrationSignature === nextSignature) {
+      stats();
+      return;
+    }
+    const scroll = scrollState();
     body.innerHTML = rows.length ? rows.map(row).join("") : `<tr><td colspan="8" class="muted" style="padding:25px;text-align:center">Nessuna registrazione per ${esc(eventInfo().city || eventInfo().name)}.</td></tr>`;
+    body.dataset.registrationSignature = nextSignature;
+    lastSignature = nextSignature;
     stats();
     d.querySelectorAll(".reg-sync-open").forEach(function (button) { button.onclick = function () { openPlayer(button.dataset.player); }; });
     d.querySelectorAll(".reg-sync-delete").forEach(function (button) { button.onclick = function () { deletePlayer(button.dataset.player); }; });
     bindChecks();
     if ($("regEmpty")) $("regEmpty").style.display = "none";
+    restoreScroll(scroll);
+    setTimeout(function () { restoreScroll(scroll); }, 0);
   }
 
   async function load() {

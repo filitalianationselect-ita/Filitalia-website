@@ -299,3 +299,41 @@ html body.fil-final-site[data-horizontal-ready="true"] .home-value-item p{font-s
   html body.fil-final-site[data-horizontal-ready="true"] .home-horizontal-panel.home-hero{padding:10px 10px 34px!important}
   html body.fil-final-site[data-horizontal-ready="true"] .home-value-strip{grid-template-columns:1fr!important}
 }
+
+html body.fil-final-site.fil-vertical-home[data-horizontal-ready="true"]{
+  height:auto!important;
+  min-height:100vh!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+
+html body.fil-final-site.fil-vertical-home[data-horizontal-ready="true"] .home-horizontal-stage{
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  padding-top:var(--fil-global-nav,92px)!important;
+  overflow:visible!important;
+  scroll-behavior:auto!important;
+  scroll-snap-type:none!important;
+}
+
+html body.fil-final-site.fil-vertical-home[data-horizontal-ready="true"] .home-horizontal-panel{
+  display:block!important;
+  flex:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:calc(100vh - var(--fil-global-nav,92px))!important;
+  overflow:visible!important;
+  scroll-snap-align:none!important;
+  scroll-snap-stop:normal!important;
+}
+
+html body.fil-final-site.fil-vertical-home[data-horizontal-ready="true"] .home-horizontal-controls,
+html body.fil-final-site.fil-vertical-home[data-horizontal-ready="true"] .home-nav-page-controls{
+  display:none!important;
+}

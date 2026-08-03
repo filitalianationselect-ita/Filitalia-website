@@ -383,3 +383,40 @@ body[data-horizontal-ready="true"] .nav-links a.is-horizontal-active::after{
   .home-horizontal-controls{right:50%;bottom:12px;transform:translateX(50%)}
   .home-horizontal-counter{min-width:105px}
 }
+
+body.fil-vertical-home[data-home-theme="tricolore"][data-horizontal-ready="true"]{
+  height:auto!important;
+  min-height:100vh!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+
+body.fil-vertical-home[data-horizontal-ready="true"] .home-horizontal-stage{
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  padding-top:var(--fil-nav-height)!important;
+  overflow:visible!important;
+  scroll-behavior:auto!important;
+  scroll-snap-type:none!important;
+}
+
+body.fil-vertical-home[data-horizontal-ready="true"] .home-horizontal-panel{
+  display:block!important;
+  flex:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:calc(100vh - var(--fil-nav-height,74px))!important;
+  overflow:visible!important;
+  scroll-snap-align:none!important;
+  scroll-snap-stop:normal!important;
+}
+
+body.fil-vertical-home[data-horizontal-ready="true"] .home-horizontal-controls,
+body.fil-vertical-home[data-horizontal-ready="true"] .home-nav-page-controls{
+  display:none!important;
+}

@@ -34,6 +34,42 @@
     });
   }
 
+  function normalizeCategory(value) {
+    return window.FilitaliaCore?.normalizePlayerCategory ? window.FilitaliaCore.normalizePlayerCategory(value) : String(value || "").trim();
+  }
+
+  function categoryParts(selected) {
+    const parts = normalizeCategory(selected).split(/\s+\+\s+/).filter(Boolean);
+    const seniorOptions = window.FilitaliaCore?.playerSeniorCategoryOptions ? window.FilitaliaCore.playerSeniorCategoryOptions() : ["FIP DR3", "FIP DR2", "FIP DR1", "FIP Serie C", "FIP Serie B", "FIP Serie A2", "FIP Serie A1", "CSI", "UISP", "Free"];
+    const senior = parts.find((part) => seniorOptions.includes(part)) || "";
+    const primary = parts.find((part) => part !== senior) || parts[0] || "Under 19";
+    return { primary, senior };
+  }
+
+  function combineCategory(primary, senior) {
+    return [normalizeCategory(primary), normalizeCategory(senior)].filter(Boolean).filter((part, index, list) => list.indexOf(part) === index).join(" + ");
+  }
+
+  function categoryOptions(selected) {
+    const current = normalizeCategory(selected);
+    const groups = window.FilitaliaCore?.playerCategoryGroups ? window.FilitaliaCore.playerCategoryGroups() : [
+      { label: "Under", options: ["Under 17", "Under 19", "Under 21"] },
+      { label: "Senior FIP", options: ["FIP DR3", "FIP DR2", "FIP DR1", "FIP Serie C", "FIP Serie B", "FIP Serie A2", "FIP Serie A1"] },
+      { label: "Altri campionati", options: ["CSI", "UISP", "Free"] }
+    ];
+    const known = new Set(groups.flatMap((group) => group.options));
+    const extra = current && !known.has(current) ? `<option value="${esc(current)}" selected>${esc(current)}</option>` : "";
+    return extra + groups.map((group) => `<optgroup label="${esc(group.label)}">${group.options.map((option) => `<option value="${esc(option)}"${option === current ? " selected" : ""}>${esc(option)}</option>`).join("")}</optgroup>`).join("");
+  }
+
+  function seniorCategoryOptions(selected) {
+    const current = normalizeCategory(selected);
+    const options = window.FilitaliaCore?.playerSeniorCategoryOptions ? window.FilitaliaCore.playerSeniorCategoryOptions() : ["FIP DR3", "FIP DR2", "FIP DR1", "FIP Serie C", "FIP Serie B", "FIP Serie A2", "FIP Serie A1", "CSI", "UISP", "Free"];
+    const known = new Set(options);
+    const extra = current && !known.has(current) ? `<option value="${esc(current)}" selected>${esc(current)}</option>` : "";
+    return `<option value="">Nessuna</option>` + extra + options.map((option) => `<option value="${esc(option)}"${option === current ? " selected" : ""}>${esc(option)}</option>`).join("");
+  }
+
   function addStyle() {
     if (d.getElementById("filPlayerLiveStyle")) return;
     const style = d.createElement("style");
@@ -67,7 +103,7 @@
       id: row.id || "",
       name: row.name || "",
       year: row.birth_year || "",
-      category: row.category || "",
+      category: normalizeCategory(row.category),
       position: row.position || "",
       heightCm: row.height_cm || "",
       club: row.club || "",
@@ -118,10 +154,12 @@
 
   function form(item) {
     const e = item.evaluations || {};
+    const categories = categoryParts(item.category);
     return `<div class="fil-player-live-grid">
       <label class="full">Nome e cognome<input id="fplName" value="${esc(item.name)}"></label>
       <label>Anno di nascita<input id="fplYear" inputmode="numeric" value="${esc(item.year)}"></label>
-      <label>Categoria<input id="fplCategory" value="${esc(item.category)}" placeholder="U16, U19, Senior..."></label>
+      <label>Categoria principale<select id="fplCategory">${categoryOptions(categories.primary)}</select></label>
+      <label>Senior aggiuntiva<select id="fplSeniorCategory">${seniorCategoryOptions(categories.senior)}</select></label>
       <label>Ruolo basket<input id="fplPosition" value="${esc(item.position)}"></label>
       <label>Altezza cm<input id="fplHeight" type="number" min="0" value="${esc(item.heightCm)}"></label>
       <label>Squadra / club<input id="fplClub" value="${esc(item.club)}"></label>
@@ -155,7 +193,7 @@
   }
 
   function openEditor(item) {
-    current = item || { id: "", name: "", year: "", category: "", position: "", heightCm: "", club: "", city: "", nationality: "Filipino / Italian", instagram: "", highlightsUrl: "", imageUrl: "", cardImageUrl: "", status: "draft", profileStatus: "review", evaluations: {}, notes: "" };
+    current = item || { id: "", name: "", year: "", category: "Under 19", position: "", heightCm: "", club: "", city: "", nationality: "Filipino / Italian", instagram: "", highlightsUrl: "", imageUrl: "", cardImageUrl: "", status: "draft", profileStatus: "review", evaluations: {}, notes: "" };
     const overlay = ensureModal();
     d.getElementById("filPlayerLiveTitle").textContent = current.id ? "Modifica Player" : "Nuovo Player";
     d.getElementById("filPlayerLiveBody").innerHTML = form(current);
@@ -185,7 +223,7 @@
           id: current.id || slug(name),
           name,
           birth_year: d.getElementById("fplYear").value || null,
-          category: d.getElementById("fplCategory").value || null,
+          category: combineCategory(d.getElementById("fplCategory").value, d.getElementById("fplSeniorCategory").value) || null,
           position: d.getElementById("fplPosition").value || null,
           height_cm: Number(d.getElementById("fplHeight").value) || null,
           club: d.getElementById("fplClub").value || null,

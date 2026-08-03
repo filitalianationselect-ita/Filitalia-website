@@ -129,7 +129,7 @@
         eventContent: ["Completare lo schema eventi", "La migrazione unica deve creare copertine, descrizioni e collegamenti con News, staff e giocatori."],
         publicRead: ["Attivare la lettura pubblica", "Le policy RLS devono permettere ai visitatori di leggere soltanto contenuti pubblicati o attivi."],
         account: ["Attivare un account amministrativo", "Accedi con un profilo Admin o Super Admin con status active."],
-        functions: ["Pubblicare le funzioni Supabase", "Distribuisci le cinque funzioni Gmail, email grafica e gestione utenti sul progetto di collaudo."],
+        functions: ["Pubblicare le funzioni Supabase", "Distribuisci le sette funzioni Supabase, inclusi Gmail, email grafica, gestione utenti e login con alias privato."],
         gmail: ["Collegare il Gmail ufficiale", "Configura i segreti Google e completa il collegamento OAuth dalla sezione Comunicazioni."],
         content: ["Pubblicare contenuti di prova", "Imposta come pubblicato o attivo almeno un evento, una News, un giocatore o uno staff per verificarne la comparsa sulla preview."]
       };
@@ -220,10 +220,10 @@
       } catch (error) { accountDetail = String(error.message || error); }
       setResult("account", accountLevel, accountDetail);
 
-      const functionNames = ["gmail-oauth-start", "gmail-oauth-callback", "send-filitalia-branded-email", "admin-invite-user", "admin-update-account-status"];
+      const functionNames = ["gmail-oauth-start", "gmail-oauth-callback", "send-filitalia-branded-email", "admin-invite-user", "admin-update-account-status", "sign-in-alias", "google-admin-data"];
       const functionResults = await Promise.all(functionNames.map(functionCheck));
       const missingFunctions = functionNames.filter((_, index) => !functionResults[index]);
-      setResult("functions", missingFunctions.length ? "bad" : "ok", missingFunctions.length ? `Funzioni non rilevate: ${missingFunctions.join(", ")}.` : "Tutte le cinque funzioni server richieste rispondono.");
+      setResult("functions", missingFunctions.length ? "bad" : "ok", missingFunctions.length ? `Funzioni non rilevate: ${missingFunctions.join(", ")}.` : "Tutte le sette funzioni server richieste rispondono.");
 
       let gmailLevel = "warn";
       let gmailDetail = "Gmail non collegato oppure account non autenticato.";

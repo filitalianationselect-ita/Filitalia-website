@@ -7,7 +7,7 @@
     return next;
   }
 
-  window.FilitaliaIntegrationReady = fetch("admin-light-integration.js?v=6")
+  window.FilitaliaIntegrationReady = fetch("admin-light-integration.js?v=7")
     .then(function (response) {
       if (!response.ok) throw new Error("INTEGRATION_SOURCE_NOT_FOUND");
       return response.text();
@@ -214,7 +214,7 @@
     .catch(function (error) {
       console.error("Impossibile avviare il pannello dinamico", error);
       const script = document.createElement("script");
-      script.src = "admin-light-integration.js?v=6";
+      script.src = "admin-light-integration.js?v=7";
       document.head.appendChild(script);
       return false;
     });

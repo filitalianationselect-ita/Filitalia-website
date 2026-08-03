@@ -47,6 +47,8 @@ Il deploy applica tutte le migrazioni in ordine cronologico, incluse:
 - `20260729083000_volunteer_role.sql`
 - `20260729132000_content_layout_media.sql`
 - `20260730183000_player_profile_media_skills.sql`
+- `20260731124500_authenticated_api_grants.sql`
+- `20260731162000_unified_registrations.sql`
 
 Creano o aggiornano:
 
