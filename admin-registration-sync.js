@@ -77,8 +77,35 @@
   function state(player) { return complete(player) && player.certificate ? "Confermata" : !complete(player) && !player.certificate ? "Incompleta" : "In attesa"; }
   function initials(name) { return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part[0]; }).join("").toUpperCase(); }
 
+  function mapUnifiedRegistration(row) {
+    const payload = row && row.original_data && typeof row.original_data === "object" ? row.original_data : {};
+    const birthDate = String(row && (row.birth_date || payload.birth_date || payload["Data Nascita"]) || "");
+    return {
+      id: String(row && row.id),
+      eventId: String(row && row.camp_event_id || ""),
+      name: String(row && row.participant_name || "Partecipante senza nome"),
+      email: String(row && (row.participant_email || row.guardian_email) || ""),
+      phone: String(row && (row.participant_phone || row.guardian_phone) || ""),
+      parent: String(row && row.guardian_name || payload.parent_name || payload.guardian_name || ""),
+      year: birthDate ? birthDate.slice(0, 4) : String(payload.birth_year || "—"),
+      cat: String(payload.category || payload.Categoria || "—"),
+      shirt: String(row && row.shirt_size || "—"),
+      payment: String(row && row.payment_status || "pending"),
+      amount: row && row.payment_amount == null ? null : Number(row.payment_amount),
+      certificate: false,
+      present: false,
+      notes: String(row && (row.admin_notes || row.notes) || ""),
+      status: String(row && row.registration_status || "received"),
+      payload: payload,
+      createdAt: row && row.created_at || null,
+      updatedAt: row && row.updated_at || null
+    };
+  }
+
   function row(player) {
-    const event = eventInfo();
+    const event = player.eventId && catalog && catalog.get
+      ? (catalog.get(player.eventId) || eventInfo())
+      : eventInfo();
     const payment = payLabel(player);
     const documentStatus = docs(player);
     const registrationState = state(player);
@@ -174,8 +201,12 @@
       else alert("Registrazione eliminata.");
     } catch (error) {
       console.error(error);
-      if (window.showToast) window.showToast("Non sono riuscito a eliminare la registrazione.");
-      else alert("Non sono riuscito a eliminare la registrazione.");
+      const message = String(error && (error.message || error.code) || error || "");
+      const notice = message.includes("permission denied")
+        ? "Il database deve essere aggiornato prima di eliminare le registrazioni."
+        : "Non sono riuscito a eliminare la registrazione.";
+      if (window.showToast) window.showToast(notice);
+      else alert(notice);
     }
   }
 
@@ -204,9 +235,17 @@
     if (busy || !$("regTable")) return;
     busy = true;
     try {
-      rows = window.FilitaliaAdminLight && window.FilitaliaAdminLight.getMode() === "real" && window.FilitaliaAdminData
-        ? await window.FilitaliaAdminData.loadEvent(eventId())
-        : demo();
+      const realMode = window.FilitaliaAdminLight
+        && window.FilitaliaAdminLight.getMode() === "real";
+      if (realMode && eventId() === "__all__"
+          && window.FilitaliaRegistrations
+          && window.FilitaliaRegistrations.listForEvent) {
+        rows = (await window.FilitaliaRegistrations.listForEvent("")).map(mapUnifiedRegistration);
+      } else {
+        rows = realMode && window.FilitaliaAdminData
+          ? await window.FilitaliaAdminData.loadEvent(eventId())
+          : demo();
+      }
     } catch (error) { console.error(error); rows = demo(); }
     render();
     busy = false;

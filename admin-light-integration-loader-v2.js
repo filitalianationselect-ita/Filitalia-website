@@ -7,7 +7,7 @@
     return next;
   }
 
-  window.FilitaliaIntegrationReady = fetch("admin-light-integration.js?v=7")
+  window.FilitaliaIntegrationReady = fetch("admin-light-integration.js?v=8")
     .then(function (response) {
       if (!response.ok) throw new Error("INTEGRATION_SOURCE_NOT_FOUND");
       return response.text();

@@ -19,6 +19,17 @@
 
   function client() { return auth().client; }
 
+  function missingUnifiedRegistrations(error) {
+    const message = String(error && error.message || "").toLowerCase();
+    return message.includes("registrations")
+      && (message.includes("schema cache") || message.includes("could not find"));
+  }
+
+  function missingSchemaTable(error) {
+    const message = String(error && error.message || "").toLowerCase();
+    return message.includes("schema cache") || message.includes("could not find");
+  }
+
   async function requireAdmin() {
     const session = await auth().getSession();
     if (!session) throw new Error("NOT_AUTHENTICATED");
@@ -79,16 +90,28 @@
       .select("id,submission_id,account_id,player_id,camp_event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,guardian_name,birth_date,shirt_size,privacy_consent,media_consent,registration_status,payment_status,payment_amount,notes,admin_notes,original_data,created_at,updated_at")
       .eq("camp_event_id", safeEventId)
       .order("created_at", { ascending: true });
-    if (registrationsResult.error) throw registrationsResult.error;
+    let registrationRows;
+    if (registrationsResult.error) {
+      if (!missingUnifiedRegistrations(registrationsResult.error)
+          || !window.FilitaliaRegistrations
+          || typeof window.FilitaliaRegistrations.listForEvent !== "function") {
+        throw registrationsResult.error;
+      }
+      registrationRows = await window.FilitaliaRegistrations.listForEvent(safeEventId);
+    } else {
+      registrationRows = registrationsResult.data || [];
+    }
 
     const operationsResult = await client()
       .from("event_admin_operations")
       .select("registration_id,event_id,payment_status,payment_amount,payment_method,payment_date,payment_reference,certificate_status,certificate_path,player_photo_path,present,notes,updated_at")
       .eq("event_id", safeEventId);
-    if (operationsResult.error) throw operationsResult.error;
+    if (operationsResult.error && !String(operationsResult.error.message || "").toLowerCase().includes("schema cache")) {
+      throw operationsResult.error;
+    }
 
-    const operations = new Map((operationsResult.data || []).map(function (row) { return [String(row.registration_id), row]; }));
-    return (registrationsResult.data || []).map(function (row) { return mapRegistration(row, operations.get(String(row.id))); });
+    const operations = new Map(((operationsResult && operationsResult.data) || []).map(function (row) { return [String(row.registration_id), row]; }));
+    return registrationRows.map(function (row) { return mapRegistration(row, operations.get(String(row.id))); });
   }
 
   async function addAudit(eventId, registrationId, action, details) {
@@ -142,9 +165,27 @@
     Object.keys(rename).forEach(function (from) {
       if (Object.prototype.hasOwnProperty.call(changes || {}, from)) record[rename[from]] = changes[from];
     });
-    const result = await client().from("registrations").update(record).eq("id", registrationId).select("*").single();
+    let usedLegacyTable = false;
+    let result = await client().from("registrations").update(record).eq("id", registrationId).select("*").single();
+    if (result.error && missingUnifiedRegistrations(result.error)) {
+      usedLegacyTable = true;
+      const legacyRecord = {};
+      const legacyFields = ["participant_name", "participant_email", "participant_phone", "shirt_size", "payment_status", "notes"];
+      legacyFields.forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(record, key)) legacyRecord[key] = record[key];
+      });
+      if (Object.prototype.hasOwnProperty.call(record, "registration_status")) legacyRecord.status = record.registration_status;
+      if (Object.prototype.hasOwnProperty.call(record, "original_data")) legacyRecord.payload = record.original_data;
+      if (Object.prototype.hasOwnProperty.call(record, "camp_event_id")) legacyRecord.event_id = record.camp_event_id;
+      result = await client().from("camp_registrations").update(legacyRecord).eq("id", registrationId).select("*").single();
+    }
     if (result.error) throw result.error;
-    await addAudit(eventId || result.data.camp_event_id, String(registrationId), "registration_updated", changes || {});
+    try {
+      await addAudit(eventId || result.data.camp_event_id || result.data.event_id, String(registrationId), "registration_updated", changes || {});
+    } catch (auditError) {
+      if (!usedLegacyTable) throw auditError;
+      console.warn("Audit modifica registrazione legacy non disponibile", auditError);
+    }
     return result.data;
   }
 
@@ -153,18 +194,32 @@
     const safeId = clean(registrationId, 160);
     if (!safeId) throw new Error("REGISTRATION_ID_REQUIRED");
 
-    const existing = await client()
+    let usedLegacyTable = false;
+    let existing = await client()
       .from("registrations")
       .select("id,camp_event_id,participant_name,participant_email")
       .eq("id", safeId)
       .maybeSingle();
+    if (existing.error && missingUnifiedRegistrations(existing.error)) {
+      usedLegacyTable = true;
+      existing = await client()
+        .from("camp_registrations")
+        .select("id,event_id,participant_name,participant_email")
+        .eq("id", safeId)
+        .maybeSingle();
+    }
     if (existing.error) throw existing.error;
 
-    const safeEventId = clean(eventId || (existing.data && existing.data.camp_event_id), 160) || null;
-    const operationResult = await client().from("event_admin_operations").delete().eq("registration_id", safeId);
-    if (operationResult.error) throw operationResult.error;
+    const safeEventId = clean(eventId || (existing.data && (existing.data.camp_event_id || existing.data.event_id)), 160) || null;
+    if (!usedLegacyTable) {
+      const operationResult = await client().from("event_admin_operations").delete().eq("registration_id", safeId);
+      if (operationResult.error && !missingSchemaTable(operationResult.error)) throw operationResult.error;
+    }
 
-    const registrationResult = await client().from("registrations").delete().eq("id", safeId);
+    const registrationResult = await client()
+      .from(usedLegacyTable ? "camp_registrations" : "registrations")
+      .delete()
+      .eq("id", safeId);
     if (registrationResult.error) throw registrationResult.error;
 
     try {
@@ -206,9 +261,38 @@
       payment_status: clean(payload.payment, 40) || "pending"
     };
     if (!record.participant_name) throw new Error("NAME_REQUIRED");
-    const result = await client().from("registrations").insert(record).select("*").single();
+    let usedLegacyTable = false;
+    let result = await client().from("registrations").insert(record).select("*").single();
+    if (result.error && missingUnifiedRegistrations(result.error)) {
+      usedLegacyTable = true;
+      const legacyRecord = {
+        submission_id: record.submission_id,
+        account_id: admin.profile.id,
+        player_id: null,
+        event_id: record.camp_event_id,
+        event_name: record.event_name || "Camp FIL-ITALIA",
+        event_city: record.event_city || null,
+        event_date: record.event_date || null,
+        participant_name: record.participant_name,
+        participant_email: record.participant_email,
+        participant_phone: record.participant_phone,
+        shirt_size: record.shirt_size,
+        payload: record.original_data,
+        status: record.registration_status,
+        payment_status: record.payment_status
+      };
+      result = await client().from("camp_registrations").insert(legacyRecord).select("*").single();
+    }
     if (result.error) throw result.error;
-    await addAudit(eventInfo.id, String(result.data.id), "registration_created", { participant_name: record.participant_name });
+    try {
+      await addAudit(eventInfo.id, String(result.data.id), "registration_created", {
+        participant_name: record.participant_name,
+        legacy_table: usedLegacyTable
+      });
+    } catch (auditError) {
+      if (!usedLegacyTable) throw auditError;
+      console.warn("Audit registrazione legacy non disponibile", auditError);
+    }
     return result.data;
   }
 

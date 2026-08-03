@@ -60,12 +60,17 @@ if (compatibilityPosition < 0 || accountUiPosition < 0 || compatibilityPosition 
 if (!account.includes('data-role-section="player,parent,coach,coordinator,staff,volunteer,admin,super_admin"')) {
   throw new Error('Account role sections do not include volunteer and super_admin');
 }
-if (!account.includes('data-role-section="volunteer"')) {
-  throw new Error('Volunteer workspace is missing from account.html');
-}
 if (!account.includes('volunteer-role-v1.js')) {
   throw new Error('Volunteer UI compatibility script is missing from account.html');
 }
+if (!account.includes('account-role-dashboard-v1.js')) {
+  throw new Error('Account role dashboard is missing from account.html');
+}
+
+requireFragments('account-role-dashboard-v1.js', [
+  "volunteer:{label:'Volontario'",
+  "return 'volunteer'"
+]);
 
 const login = read('login.html');
 if (!login.includes('<option value="volunteer">Volontario</option>')) {

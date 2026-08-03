@@ -10,8 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
-<link rel="stylesheet" href="account.css?v=920">
-<link rel="stylesheet" href="account-workspace-v2.css?v=5">
+<link rel="stylesheet" href="account-clean-v1.css?v=5">
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body data-account-page="account">
@@ -40,7 +39,7 @@
     <section class="account-overview-grid" aria-label="Riepilogo account">
       <article class="account-overview-card"><span>Profilo</span><strong id="accountProfileCompletion">0%</strong><small>Completamento dei dati personali</small></article>
       <article class="account-overview-card"><span>Registrazioni</span><strong id="accountRegistrationCount">0</strong><small>Camp e attività collegate</small></article>
-      <article class="account-overview-card"><span>Documenti</span><strong id="accountDocumentStatus">Da verificare</strong><small>Disponibilità in base al ruolo</small></article>
+      <article class="account-overview-card"><span>Profilo giocatore</span><strong id="accountDocumentStatus">Da verificare</strong><small>Dati disponibili in base al ruolo</small></article>
       <article class="account-overview-card"><span>Accesso</span><strong id="accountAccessStatus">Da verificare</strong><small id="accountRoleSummary">In attesa</small></article>
     </section>
 
@@ -110,85 +109,12 @@
       </form>
     </section>
 
-    <section class="account-card" data-role-section="parent" hidden>
-      <h2 class="account-section-title">Area genitore</h2>
-      <div class="account-feature-grid">
-        <article class="account-feature"><h3>Giocatori collegati</h3><p>Gestione dei figli o atleti minorenni associati.</p></article>
-        <article class="account-feature"><h3>Camp e consensi</h3><p>Iscrizioni, autorizzazioni e stato del pagamento.</p></article>
-        <article class="account-feature"><h3>Comunicazioni</h3><p>Aggiornamenti ufficiali riguardanti i giocatori collegati.</p></article>
-      </div>
-    </section>
-
-    <section class="account-card" data-role-section="coach" hidden>
-      <h2 class="account-section-title">Area coach</h2>
-      <div class="account-feature-grid">
-        <article class="account-feature"><h3>Giocatori assegnati</h3><p>Consulta soltanto gli atleti autorizzati per la tua attività.</p></article>
-        <article class="account-feature"><h3>Valutazioni</h3><p>Presenze, note tecniche e osservazioni dello staff.</p></article>
-        <article class="account-feature"><h3>Eventi e convocazioni</h3><p>Calendario delle attività tecniche assegnate.</p></article>
-      </div>
-    </section>
-
-    <section class="account-card" data-role-section="coordinator" hidden>
-      <h2 class="account-section-title">Area coordinatore</h2>
-      <div class="account-feature-grid">
-        <article class="account-feature"><h3>Città assegnata</h3><p>Eventi, palestra, staff e attività della propria area.</p></article>
-        <article class="account-feature"><h3>Organizzazione</h3><p>Checklist palestra, BLSD, fotografo e materiale operativo.</p></article>
-        <article class="account-feature"><h3>Comunicazioni operative</h3><p>Aggiornamenti e richieste legate agli eventi assegnati.</p></article>
-      </div>
-    </section>
-
-    <section class="account-card" data-role-section="staff" hidden>
-      <h2 class="account-section-title">Area staff</h2>
-      <div class="account-feature-grid">
-        <article class="account-feature"><h3>Attività assegnate</h3><p>Camp, turni, orari e referente operativo.</p></article>
-        <article class="account-feature"><h3>Documenti personali</h3><p>Qualifiche, BLSD e certificazioni richieste.</p></article>
-        <article class="account-feature"><h3>Comunicazioni interne</h3><p>Informazioni necessarie per svolgere il proprio compito.</p></article>
-      </div>
-    </section>
-
-    <section class="account-card" data-role-section="volunteer" hidden>
-      <h2 class="account-section-title">Area volontario</h2>
-      <p class="account-muted">Questa area mostra soltanto informazioni operative personali. Non consente l’accesso a dati medici, pagamenti o profili riservati degli atleti.</p>
-      <div class="account-feature-grid">
-        <article class="account-feature"><h3>Disponibilità e turni</h3><p>Consulta data, orario e attività per cui sei stato assegnato.</p></article>
-        <article class="account-feature"><h3>Mansione e referente</h3><p>Indicazioni pratiche e contatto dello staff responsabile.</p></article>
-        <article class="account-feature"><h3>Checklist evento</h3><p>Compiti da completare prima, durante e dopo l’attività.</p></article>
-      </div>
-    </section>
-
     <section class="account-card account-danger-zone">
       <h2 class="account-section-title">Eliminazione account</h2>
       <p class="account-muted">La richiesta verrà inviata all’amministratore. Dopo la verifica saranno eliminati account, profilo giocatore, foto e dati collegati. L’operazione definitiva non è reversibile.</p>
       <label>Motivo facoltativo<textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea></label>
       <button id="requestDeletionButton" class="account-button danger" type="button">RICHIEDI ELIMINAZIONE ACCOUNT</button>
       <p id="deletionStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminDashboardSection" class="account-card admin-dashboard" hidden>
-      <div class="admin-dashboard-head"><div><span class="admin-kicker">FIL-ITALIA CONTROL ROOM</span><h2 class="account-section-title">Dashboard amministratore</h2></div><button id="refreshAdminDashboard" class="account-button compact secondary" type="button">AGGIORNA</button></div>
-      <div class="admin-stat-grid"><article class="admin-stat"><span>Da approvare</span><strong id="adminPendingCount">0</strong></article><article class="admin-stat"><span>Richieste eliminazione</span><strong id="adminDeletionCount">0</strong></article><article class="admin-stat"><span>Utenti attivi</span><strong id="adminActiveCount">0</strong></article><article class="admin-stat"><span>Utenti sospesi</span><strong id="adminSuspendedCount">0</strong></article></div>
-      <p id="adminDashboardStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminAccountsSection" class="account-card" hidden>
-      <h2 class="account-section-title">Gestione account</h2>
-      <p class="account-muted">Approva, rifiuta, sospendi o riattiva gli account. Ogni cambiamento invia automaticamente una mail all’utente.</p>
-      <div class="admin-filter-row"><label>Mostra<select id="adminAccountFilter"><option value="pending">Da approvare</option><option value="active">Attivi</option><option value="suspended">Sospesi</option><option value="rejected">Rifiutati</option><option value="all">Tutti</option></select></label></div>
-      <div id="managedAccountsList"></div>
-      <p id="adminStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminPlayerCardsSection" class="account-card" hidden>
-      <div class="admin-dashboard-head"><div><h2 class="account-section-title">Player Card pubbliche</h2><p class="account-muted">Controlla i dati del giocatore e pubblica la card nella pagina Players. Email, telefono, peso e dati privati non vengono mostrati.</p></div><button id="refreshAdminPlayerCards" class="account-button compact secondary" type="button">AGGIORNA</button></div>
-      <div id="adminPlayerCardsList"><p class="account-muted">Caricamento...</p></div>
-      <p id="adminPlayerCardsStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminDeletionSection" class="account-card" hidden>
-      <h2 class="account-section-title">Richieste eliminazione account</h2>
-      <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. In entrambi i casi l’utente riceverà una mail.</p>
-      <div id="deletionRequestsList"></div>
-      <p id="deletionAdminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
   </div>
 </main>
@@ -207,7 +133,7 @@
 <script src="volunteer-role-v1.js?v=1"></script>
 <script src="unified-access-v1.js?v=2"></script>
 <script src="player-card-admin.js?v=1"></script>
-<script src="account-role-dashboard-v1.js?v=4"></script>
+<script src="account-role-dashboard-v1.js?v=5"></script>
 <script src="account-i18n-v3.js?v=3"></script>
 </body>
 </html>

@@ -107,46 +107,6 @@
     return Math.round((completed/nodes.length)*100);
   }
 
-  function loadAdminTheme(){
-    if(d.querySelector('link[data-account-admin-theme]')) return;
-    const link=d.createElement('link');
-    link.rel='stylesheet';
-    link.href='account-admin-modern-v1.css?v=2';
-    link.dataset.accountAdminTheme='true';
-    d.head.appendChild(link);
-  }
-
-  function ensureAdminNavigation(){
-    const nav=byId('navLinks')||d.querySelector('.nav-links');
-    if(!nav) return;
-
-    const links=[
-      ['Home','index.html'],
-      ['Players','players.html'],
-      ['Staff','staff.html'],
-      ['Gallery','gallery.html'],
-      ['News','news.html'],
-      ['Events','events.html'],
-      ['Camp','camp-register.html'],
-      ['Admin','account.html']
-    ];
-
-    nav.replaceChildren();
-    links.forEach(function(item){
-      const link=d.createElement('a');
-      link.textContent=item[0];
-      link.href=item[1];
-      if(item[1]==='account.html') link.setAttribute('aria-current','page');
-      nav.appendChild(link);
-    });
-
-    d.querySelectorAll('.mobile-menu-button').forEach(function(button){
-      button.hidden=true;
-      button.setAttribute('aria-hidden','true');
-      button.tabIndex=-1;
-    });
-  }
-
   function updateAdminHero(role){
     const hero=d.querySelector('.account-workspace-hero');
     const title=hero?.querySelector('h1');
@@ -225,11 +185,9 @@
     }
 
     if(isAdmin&&isActive){
-      loadAdminTheme();
-      ensureAdminNavigation();
       updateAdminHero(role);
       removeLegacyAdminCard();
-      ensureAdminPortal(role);
+      removeAdminPortal();
     }else{
       removeAdminPortal();
     }

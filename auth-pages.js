@@ -728,7 +728,13 @@
       });
     }
 
-    if (isActiveAdmin(profile)) {
+    const hasEmbeddedAdmin = Boolean(
+      byId("adminDashboardSection")
+      || byId("adminAccountsSection")
+      || byId("adminDeletionSection")
+    );
+
+    if (isActiveAdmin(profile) && hasEmbeddedAdmin) {
       const dashboardSection = byId("adminDashboardSection");
       const adminSection = byId("adminAccountsSection");
       const adminDeletionSection = byId("adminDeletionSection");

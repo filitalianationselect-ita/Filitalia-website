@@ -170,8 +170,50 @@
       .order("created_at", { ascending: true });
     if (eventId) query = query.eq("camp_event_id", clean(eventId, 160));
     const result = await query;
-    if (result.error) throw result.error;
-    return result.data || [];
+    if (!result.error) return result.data || [];
+
+    const message = String(result.error && result.error.message || "").toLowerCase();
+    if (!message.includes("registrations")) throw result.error;
+
+    let legacyQuery = client()
+      .from("camp_registrations")
+      .select("id,submission_id,account_id,player_id,event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,shirt_size,payload,status,payment_status,created_at,updated_at")
+      .order("created_at", { ascending: true });
+    if (eventId) legacyQuery = legacyQuery.eq("event_id", clean(eventId, 160));
+    const legacy = await legacyQuery;
+    if (legacy.error) throw legacy.error;
+
+    return (legacy.data || []).map(function (row) {
+      const payload = row.payload && typeof row.payload === "object" ? row.payload : {};
+      return {
+        id: row.id,
+        submission_id: row.submission_id,
+        account_id: row.account_id,
+        player_id: row.player_id,
+        camp_event_id: row.event_id,
+        event_name: row.event_name,
+        event_city: row.event_city,
+        event_date: row.event_date,
+        participant_name: row.participant_name,
+        participant_email: row.participant_email,
+        participant_phone: row.participant_phone,
+        guardian_name: payload.parent_name || payload.guardian_name || null,
+        guardian_email: payload.guardian_email || null,
+        guardian_phone: payload.guardian_phone || null,
+        birth_date: payload.birth_date || null,
+        shirt_size: row.shirt_size,
+        privacy_consent: Boolean(payload.privacy_consent),
+        media_consent: Boolean(payload.media_consent),
+        registration_status: row.status || "received",
+        payment_status: row.payment_status || "pending",
+        payment_amount: payload.payment_amount == null ? null : Number(payload.payment_amount),
+        notes: payload.notes || null,
+        admin_notes: payload.admin_notes || null,
+        original_data: payload,
+        created_at: row.created_at,
+        updated_at: row.updated_at
+      };
+    });
   }
 
   window.FilitaliaRegistrations = Object.freeze({
