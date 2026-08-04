@@ -26,7 +26,7 @@
   let lastSignature = "";
 
   const style = d.createElement("style");
-  style.textContent = ".reg-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}";
+  style.textContent = ".reg-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}";
   d.head.appendChild(style);
 
   function esc(value) {
@@ -82,11 +82,15 @@
     const birthDate = String(row && (row.birth_date || payload.birth_date || payload["Data Nascita"]) || "");
     return {
       id: String(row && row.id),
+      playerId: String(row && row.player_id || ""),
       eventId: String(row && row.camp_event_id || ""),
+      eventName: String(row && row.event_name || ""),
+      eventCity: String(row && row.event_city || ""),
       name: String(row && row.participant_name || "Partecipante senza nome"),
       email: String(row && (row.participant_email || row.guardian_email) || ""),
       phone: String(row && (row.participant_phone || row.guardian_phone) || ""),
       parent: String(row && row.guardian_name || payload.parent_name || payload.guardian_name || ""),
+      birthDate: birthDate,
       year: birthDate ? birthDate.slice(0, 4) : String(payload.birth_year || "—"),
       cat: String(payload.category || payload.Categoria || "—"),
       shirt: String(row && row.shirt_size || "—"),
@@ -110,7 +114,7 @@
     const documentStatus = docs(player);
     const registrationState = state(player);
     const search = [player.name, player.year, event.city, player.email, player.parent].join(" ").toLowerCase();
-    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar">${esc(initials(player.name))}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
+    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar">${esc(initials(player.name))}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small reg-sync-player-card" data-player="${esc(player.id)}">Player Card</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
   }
 
   function signature() {
@@ -172,6 +176,17 @@
     await window.FilitaliaAdminLight.openEventDay();
     setTimeout(function () { const button = d.querySelector(`[data-ed-id="${String(id).replace(/"/g, "")}"]`); if (button) button.click(); }, 250);
   }
+
+  async function openPlayerCard(id) {
+    const registration = rows.find(function (item) { return String(item.id) === String(id); });
+    if (!registration) return;
+    if (!window.FilitaliaPlayerLive || !window.FilitaliaPlayerLive.openFromRegistration) {
+      if (window.showToast) window.showToast("La sezione Player Card non è ancora pronta.");
+      else alert("La sezione Player Card non è ancora pronta.");
+      return;
+    }
+    await window.FilitaliaPlayerLive.openFromRegistration(registration);
+  }
   function exportCsv(ids) {
     const list = ids ? rows.filter(function (player) { return ids.includes(String(player.id)); }) : rows;
     if (window.FilitaliaAdminData) window.FilitaliaAdminData.exportCsv(list, "filitalia-" + String(eventInfo().city || "evento").toLowerCase() + "-registrazioni.csv");
@@ -224,6 +239,7 @@
     lastSignature = nextSignature;
     stats();
     d.querySelectorAll(".reg-sync-open").forEach(function (button) { button.onclick = function () { openPlayer(button.dataset.player); }; });
+    d.querySelectorAll(".reg-sync-player-card").forEach(function (button) { button.onclick = function () { openPlayerCard(button.dataset.player); }; });
     d.querySelectorAll(".reg-sync-delete").forEach(function (button) { button.onclick = function () { deletePlayer(button.dataset.player); }; });
     bindChecks();
     if ($("regEmpty")) $("regEmpty").style.display = "none";

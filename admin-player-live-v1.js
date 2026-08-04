@@ -42,7 +42,7 @@
     const parts = normalizeCategory(selected).split(/\s+\+\s+/).filter(Boolean);
     const seniorOptions = window.FilitaliaCore?.playerSeniorCategoryOptions ? window.FilitaliaCore.playerSeniorCategoryOptions() : ["FIP DR3", "FIP DR2", "FIP DR1", "FIP Serie C", "FIP Serie B", "FIP Serie A2", "FIP Serie A1", "CSI", "UISP", "Free"];
     const senior = parts.find((part) => seniorOptions.includes(part)) || "";
-    const primary = parts.find((part) => part !== senior) || parts[0] || "Under 19";
+    const primary = parts.find((part) => part !== senior) || parts[0] || "";
     return { primary, senior };
   }
 
@@ -59,7 +59,7 @@
     ];
     const known = new Set(groups.flatMap((group) => group.options));
     const extra = current && !known.has(current) ? `<option value="${esc(current)}" selected>${esc(current)}</option>` : "";
-    return extra + groups.map((group) => `<optgroup label="${esc(group.label)}">${group.options.map((option) => `<option value="${esc(option)}"${option === current ? " selected" : ""}>${esc(option)}</option>`).join("")}</optgroup>`).join("");
+    return `<option value="">Da definire</option>` + extra + groups.map((group) => `<optgroup label="${esc(group.label)}">${group.options.map((option) => `<option value="${esc(option)}"${option === current ? " selected" : ""}>${esc(option)}</option>`).join("")}</optgroup>`).join("");
   }
 
   function seniorCategoryOptions(selected) {
@@ -193,7 +193,7 @@
   }
 
   function openEditor(item) {
-    current = item || { id: "", name: "", year: "", category: "Under 19", position: "", heightCm: "", club: "", city: "", nationality: "Filipino / Italian", instagram: "", highlightsUrl: "", imageUrl: "", cardImageUrl: "", status: "draft", profileStatus: "review", evaluations: {}, notes: "" };
+    current = item || { id: "", name: "", year: "", category: "", position: "", heightCm: "", club: "", city: "", nationality: "Filipino / Italian", instagram: "", highlightsUrl: "", imageUrl: "", cardImageUrl: "", status: "draft", profileStatus: "review", evaluations: {}, notes: "" };
     const overlay = ensureModal();
     d.getElementById("filPlayerLiveTitle").textContent = current.id ? "Modifica Player" : "Nuovo Player";
     d.getElementById("filPlayerLiveBody").innerHTML = form(current);
@@ -261,6 +261,81 @@
     };
   }
 
+  function firstValue(source, keys) {
+    const payload = source && source.payload && typeof source.payload === "object" ? source.payload : {};
+    for (const key of keys) {
+      const value = payload[key];
+      if (value != null && String(value).trim() && String(value).trim() !== "—") return String(value).trim();
+    }
+    return "";
+  }
+
+  function comparable(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  function draftFromRegistration(registration) {
+    const category = registration.cat && registration.cat !== "—"
+      ? registration.cat
+      : firstValue(registration, ["Categoria", "category", "Categoria Giocatore"]);
+    const residenceCity = firstValue(registration, ["Città di Residenza", "Citta di Residenza", "Città", "Citta", "residence_city"]);
+    const sourceLabel = registration.eventName || registration.eventCity || registration.eventId || "FIL-ITALIA";
+    return {
+      id: "",
+      name: registration.name || "",
+      year: registration.year && registration.year !== "—" ? registration.year : "",
+      category: category || "",
+      position: firstValue(registration, ["Ruolo", "Ruolo basket", "position"]),
+      heightCm: firstValue(registration, ["Altezza", "Altezza (cm)", "height_cm"]),
+      club: firstValue(registration, ["Squadra", "Squadra attuale", "Club", "club"]),
+      city: residenceCity,
+      nationality: firstValue(registration, ["Nazionalità", "Nazionalita", "nationality"]) || "Filipino / Italian",
+      instagram: firstValue(registration, ["Instagram", "instagram"]),
+      highlightsUrl: firstValue(registration, ["Highlights URL", "highlights_url"]),
+      imageUrl: "",
+      cardImageUrl: "",
+      status: "draft",
+      profileStatus: "incomplete",
+      evaluations: {},
+      notes: "Creata dalla registrazione " + sourceLabel + " (" + registration.id + ")."
+    };
+  }
+
+  async function openFromRegistration(registration) {
+    if (!registration) return;
+    try {
+      try {
+        await loadRows();
+      } catch (loadError) {
+        console.warn("Archivio Player non leggibile; apro una nuova scheda.", loadError);
+        rows = [];
+      }
+      const name = comparable(registration.name);
+      const year = String(registration.year || "");
+      const existing = rows.find((player) => {
+        if (registration.playerId && String(player.id) === String(registration.playerId)) return true;
+        return comparable(player.name) === name && (!year || year === "—" || !player.year || String(player.year) === year);
+      });
+      const nav = d.querySelector('[data-section="players"],[data-page="players"],a[href="#players"]')
+        || Array.from(d.querySelectorAll("button,a")).find((node) => ["player", "players", "giocatori"].includes(String(node.textContent || "").trim().toLowerCase()));
+      if (nav) nav.click();
+      window.setTimeout(function () {
+        openEditor(existing || draftFromRegistration(registration));
+        if (!existing) {
+          const title = d.getElementById("filPlayerLiveTitle");
+          if (title) title.textContent = "Crea Player Card";
+        }
+      }, 120);
+    } catch (error) {
+      console.error(error);
+      notify("Player Card non disponibile: " + (error.message || error));
+    }
+  }
+
   function tableHtml(list) {
     if (!list.length) return `<div class="fil-player-live-empty"><b>Nessun Player reale presente in Supabase.</b><div class="fil-player-live-muted">L’archivio dimostrativo non viene più mostrato. Il prossimo passaggio è importare e verificare i profili reali.</div></div>`;
     return `<div class="fil-player-live-table"><table><thead><tr><th>PLAYER</th><th>ANNO</th><th>CATEGORIA</th><th>RUOLO</th><th>SQUADRA</th><th>PROFILO</th><th></th></tr></thead><tbody>${list.map((p) => `<tr data-id="${esc(p.id)}"><td data-label="PLAYER"><div class="fil-player-live-name">${esc(p.name)}</div><div class="fil-player-live-muted">${esc(p.city || "—")}</div></td><td data-label="ANNO">${esc(p.year || "—")}</td><td data-label="CATEGORIA">${esc(p.category || "—")}</td><td data-label="RUOLO">${esc(p.position || "—")}</td><td data-label="SQUADRA">${esc(p.club || "—")}</td><td data-label="PROFILO">${esc(p.profileStatus || "—")}</td><td data-label="AZIONE"><button class="fil-player-live-edit" data-id="${esc(p.id)}" type="button">MODIFICA PLAYER</button></td></tr>`).join("")}</tbody></table></div>`;
@@ -323,6 +398,11 @@
     const globalObserver = new MutationObserver(hideLegacyDemoBanner);
     globalObserver.observe(d.body, { childList: true, subtree: true });
   }
+
+  window.FilitaliaPlayerLive = Object.freeze({
+    refresh: render,
+    openFromRegistration: openFromRegistration
+  });
 
   if (d.readyState === "loading") d.addEventListener("DOMContentLoaded", start);
   else start();

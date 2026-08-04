@@ -16,19 +16,7 @@ function apply(){const lang=language(),t=copy[lang];setText('homeHeroEyebrow',t.
 function addStyle(href,key){if(document.querySelector('link[data-'+key+']'))return;const style=document.createElement('link');style.rel='stylesheet';style.href=href;style.setAttribute('data-'+key,'true');document.head.appendChild(style)}
 function addScript(src,key){if(document.querySelector('script[data-'+key+']'))return;const script=document.createElement('script');script.src=src;script.defer=true;script.setAttribute('data-'+key,'true');document.body.appendChild(script)}
 function loadPackages(){
- addStyle('home-panels-v4.css?v=4','filitalia-panels-v4');
- addStyle('home-concept2-final-v1.css?v=1','filitalia-concept2-style');
- addStyle('home-concept2-fixes-v1.css?v=1','filitalia-concept2-fixes');
- addStyle('home-reference-navbar-v1.css?v=1','filitalia-reference-navbar');
- addStyle('site-final-fixes-v1.css?v=1','filitalia-site-final-fixes');
- addStyle('site-final-stage-v1.css?v=1','filitalia-site-final-stage');
- addStyle('site-global-polish-v3.css?v=1','filitalia-global-polish');
- addScript('home-concept2-final-v1.js?v=2','filitalia-concept2-script');
- addScript('home-concept2-patch-v2.js?v=2','filitalia-concept2-patch');
- addScript('home-reference-navbar-v1.js?v=1','filitalia-reference-navbar');
- addScript('site-global-polish-v3.js?v=1','filitalia-global-polish');
- if(!document.querySelector('link[data-filitalia-horizontal]'))addStyle('home-horizontal-v1.css?v=3','filitalia-horizontal');
- if(!document.querySelector('script[data-filitalia-horizontal]'))addScript('home-horizontal-v1.js?v=4','filitalia-horizontal');
+ // Home packages are linked directly in index.html so the first paint is stable.
 }
 function boot(){loadPackages();apply()}
 document.addEventListener('click',function(event){if(event.target.closest('.language-switch button'))window.setTimeout(apply,0)});window.addEventListener('storage',apply);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
