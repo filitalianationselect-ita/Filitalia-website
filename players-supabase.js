@@ -12,6 +12,10 @@
       .trim();
   }
 
+  function playerKey(name, year) {
+    return normalizeName(name) + "|" + String(year || "").trim();
+  }
+
   function canLoad() {
     const cfg = window.FILITALIA_CONFIG || {};
     return Boolean(
@@ -72,18 +76,18 @@
 
     try {
       const rows = await readCards(client);
-      const existingNames = new Set(playersData.map(function (player) {
-        return normalizeName(player && player.name);
+      const existingPlayers = new Set(playersData.map(function (player) {
+        return playerKey(player && player.name, player && player.year);
       }));
 
       const dynamicPlayers = await Promise.all(rows.map(async function (row) {
-        const nameKey = normalizeName(row.full_name);
-        if (!nameKey || existingNames.has(nameKey)) return null;
+        const year = row.birth_year ? String(row.birth_year) : "";
+        const uniqueKey = playerKey(row.full_name, year);
+        if (!normalizeName(row.full_name) || existingPlayers.has(uniqueKey)) return null;
 
         const photoUrl = await signedPhotoUrl(client, row.photo_path);
-        const year = row.birth_year ? String(row.birth_year) : "";
         const position = row.position || "Player";
-        existingNames.add(nameKey);
+        existingPlayers.add(uniqueKey);
 
         return {
           id: "registry-" + (row.card_id || row.player_id || row.user_id),
