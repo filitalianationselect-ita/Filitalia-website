@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>FIL-ITALIA Control Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-registry.css?v=1">
+<link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body class="registry-body">
+<div class="registry-shell">
+  <aside class="registry-side">
+    <a class="registry-brand" href="account.html"><img src="images/logo.png" alt="FIL-ITALIA"><div><strong>FIL-ITALIA</strong><small>Control Room</small></div></a>
+    <nav class="registry-nav">
+      <a class="active" href="admin-registry.html">Dashboard</a>
+      <button type="button" data-open-tab="players">Giocatori</button>
+      <button type="button" data-open-tab="events">Eventi</button>
+      <button type="button" data-open-tab="duplicates">Doppioni</button>
+      <a href="account.html">Account</a>
+      <a href="index.html">Sito pubblico</a>
+    </nav>
+  </aside>
+
+  <main class="registry-main">
+    <header class="registry-top">
+      <div><span class="registry-kicker">FIL-ITALIA DATABASE</span><h1>Control Room</h1><p>Giocatori unici, eventi, iscrizioni, pagamenti e scouting nello stesso sistema.</p></div>
+      <div class="registry-actions"><button id="refreshRegistry" class="registry-btn" type="button">AGGIORNA</button><button id="exportRegistry" class="registry-btn primary" type="button">ESPORTA CSV</button></div>
+    </header>
+
+    <section class="registry-stats" aria-label="Statistiche">
+      <article class="registry-stat"><span>Giocatori unici</span><strong id="statPlayers">0</strong></article>
+      <article class="registry-stat"><span>Registrazioni</span><strong id="statRegistrations">0</strong></article>
+      <article class="registry-stat"><span>Eventi attivi</span><strong id="statEvents">0</strong></article>
+      <article class="registry-stat"><span>Pagamenti pending</span><strong id="statPayments">0</strong></article>
+      <article class="registry-stat"><span>Selezionati</span><strong id="statSelected">0</strong></article>
+      <article class="registry-stat"><span>Player Card</span><strong id="statCards">0</strong></article>
+    </section>
+
+    <div class="registry-tabs">
+      <button class="registry-tab active" type="button" data-tab="players">Giocatori</button>
+      <button class="registry-tab" type="button" data-tab="events">Eventi</button>
+      <button class="registry-tab" type="button" data-tab="duplicates">Possibili doppioni</button>
+    </div>
+
+    <section id="playersPanel" class="registry-panel" data-panel="players">
+      <div class="registry-panel-head"><h2>Registro giocatori</h2><span id="playersCount" class="registry-muted"></span></div>
+      <div class="registry-filters">
+        <input id="playerSearch" type="search" placeholder="Cerca nome, città, club, email…">
+        <select id="playerEventFilter"><option value="">Tutti gli eventi</option></select>
+        <select id="playerYearFilter"><option value="">Tutti gli anni</option></select>
+        <select id="playerSexFilter"><option value="">Tutti</option><option value="Maschio">Maschile</option><option value="Femmina">Femminile</option></select>
+        <select id="playerStatusFilter"><option value="">Tutti gli stati</option><option value="active">Attivi</option><option value="archived">Archiviati</option></select>
+      </div>
+      <div class="registry-table-wrap">
+        <table class="registry-table">
+          <thead><tr><th>Giocatore</th><th>Anno</th><th>Città</th><th>Ruolo</th><th>Club</th><th>Eventi</th><th>Ultimo evento</th><th>Card</th></tr></thead>
+          <tbody id="playersTableBody"></tbody>
+        </table>
+      </div>
+      <p id="playersStatus" class="registry-status"></p>
+    </section>
+
+    <section id="eventsPanel" class="registry-panel" data-panel="events" hidden>
+      <div class="registry-panel-head"><h2>Eventi e storico</h2><span class="registry-muted">Archivia invece di cancellare gli eventi con iscrizioni.</span></div>
+      <div id="eventsGrid" class="registry-events-grid"></div>
+      <p id="eventsStatus" class="registry-status"></p>
+    </section>
+
+    <section id="duplicatesPanel" class="registry-panel" data-panel="duplicates" hidden>
+      <div class="registry-panel-head"><h2>Possibili doppioni</h2><span class="registry-muted">Nessuna unione automatica: prima controlliamo i record.</span></div>
+      <div id="duplicatesList" class="registry-duplicate-list"></div>
+      <p id="duplicatesStatus" class="registry-status"></p>
+    </section>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=800"></script>
+<script src="auth-client.js?v=1001"></script>
+<script src="admin-registry.js?v=1"></script>
+</body>
+</html>
