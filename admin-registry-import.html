@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Importa registrazioni | FIL-ITALIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-registry.css?v=1">
+<link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body class="registry-body">
+<div class="registry-shell">
+<aside class="registry-side"><a class="registry-brand" href="admin-registry.html"><img src="images/logo.png" alt="FIL-ITALIA"><div><strong>FIL-ITALIA</strong><small>Control Room</small></div></a><nav class="registry-nav"><a href="admin-registry.html">Dashboard</a><a class="active" href="admin-registry-import.html">Import legacy</a><a href="account.html">Account</a></nav></aside>
+<main class="registry-main">
+<header class="registry-top"><div><span class="registry-kicker">MIGRAZIONE CONTROLLATA</span><h1>Importa registrazioni storiche</h1><p>Prima si controlla il pacchetto, poi si importa. Nessun dato viene cancellato dal sistema precedente.</p></div></header>
+<section class="registry-panel">
+<div class="registry-panel-head"><h2>1. Carica il pacchetto JSON</h2></div>
+<div style="padding:18px;display:grid;gap:14px">
+<input id="importBundleFile" type="file" accept="application/json,.json">
+<p class="registry-muted">Generalo con <code>npm run prepare-registry-import -- registrazioni.csv</code>.</p>
+<div id="importSummary" class="registry-stats" style="margin:0"></div>
+<div id="importWarnings"></div>
+<div class="registry-actions"><button id="runRegistryImport" class="registry-btn primary" type="button" disabled>IMPORTA NEL REGISTRO</button><a class="registry-btn" href="admin-registry.html">ANNULLA</a></div>
+<p id="importStatus" class="registry-status" style="margin:0"></p>
+</div>
+</section>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=800"></script><script src="auth-client.js?v=1001"></script><script src="admin-registry-import.js?v=1"></script>
+</body>
+</html>
