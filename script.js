@@ -846,20 +846,61 @@ function getVisibleEvents(){
 
 function buildEventCard(item, index){
   const defaultLink =
-  `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
+    `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
+
   const link = item.ticket || defaultLink;
   const eventId = safe(item.id || item.slug || "");
-  const readMore = tr("readMore");
+  const image = item.image || "images/logo.png";
+  const title = localEvent(item, "title") || "Event";
+
   return `
-    <div class="event-card" onclick="openEventByIndex(${index})">
-      <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
-      <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
-      <p>${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
-      <p>${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
-      <div class="event-read-more">${safe(readMore)}</div>
-      <div class="event-card-actions">
-        <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
-        <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+    <div class="event-card event-card-with-image"
+         onclick="openEventByIndex(${index})">
+
+      <img
+        class="event-card-image"
+        src="${safe(image)}"
+        alt="${safe(title)}"
+        onerror="this.onerror=null;this.src='images/logo.png';"
+      >
+
+      <div class="event-card-body">
+
+        <span>
+          ${autoTextHTML(item,"date",localEvent(item,"date"),0)}
+        </span>
+
+        <h3>
+          ${autoTextHTML(item,"title",localEvent(item,"title"),48)}
+        </h3>
+
+        <p>
+          ${autoTextHTML(item,"location",localEvent(item,"location"),58)}
+        </p>
+
+        <div class="event-card-actions">
+
+          <button
+            type="button"
+            class="event-share-button"
+            onclick="event.preventDefault();event.stopPropagation();shareFilitalia(
+              'event',
+              getVisibleEvents().find(e =>
+                String(e.id || e.slug || '') === '${eventId}'
+              ) || getVisibleEvents()[${index}]
+            );">
+            Condividi
+          </button>
+
+          <a
+            class="ticket-button"
+            href="${safe(link)}"
+            onclick="event.stopPropagation();">
+            ${safe(tr("registerNow"))}
+          </a>
+
+        </div>
+
       </div>
     </div>`;
 }

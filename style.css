@@ -2932,3 +2932,73 @@ body.mobile-menu-open .nav-links{
   outline: 2px solid currentColor;
   outline-offset: 4px;
 }
+/* ===== EVENT CARD WITH POSTER ===== */
+
+.event-card.event-card-with-image{
+  padding:0 !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow:hidden !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+
+  background:#fff;
+}
+
+.event-card-image{
+  width:100%;
+  height:auto;
+  aspect-ratio:1 / 1;
+
+  object-fit:contain;
+  object-position:center;
+
+  display:block;
+  background:#111;
+}
+
+.event-card-body{
+  padding:20px;
+  width:100%;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  flex:1;
+}
+
+.event-card-body span{
+  min-height:0 !important;
+  margin-bottom:8px;
+}
+
+.event-card-body h3{
+  min-height:0 !important;
+  margin-bottom:10px;
+}
+
+.event-card-body p{
+  margin-bottom:18px;
+}
+
+.event-card-actions{
+  width:100%;
+  display:flex;
+  gap:10px;
+  margin-top:auto;
+}
+
+.event-card-actions .event-share-button,
+.event-card-actions .ticket-button{
+  flex:1;
+  margin-top:0 !important;
+}
+
+#homeEventsGrid .event-card,
+#allEventsGrid .event-card{
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+}
