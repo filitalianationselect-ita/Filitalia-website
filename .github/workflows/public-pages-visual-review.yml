@@ -1,0 +1,89 @@
+name: FIL-ITALIA Public Pages Visual Review
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "players.html"
+      - "gallery.html"
+      - "staff.html"
+      - "news.html"
+      - "events.html"
+      - "public-pages-v1.css"
+      - "public-pages-v1.js"
+      - "public-media-v1.css"
+      - "public-media-v1.js"
+      - ".github/workflows/public-pages-visual-review.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/admin-panel-demo
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Capture redesigned public pages
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const base='https://deploy-preview-1--filitalia.netlify.app/';
+          const pages=[
+            ['players','players.html','.fil-player-page-spotlight'],
+            ['gallery','gallery.html','.fil-media-card'],
+            ['staff','staff.html','.fil-staff-profile'],
+            ['news','news.html','.fil-news-lead'],
+            ['events','events.html','.fil-next-event']
+          ];
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const metrics={};
+            for(const [name,path,selector] of pages){
+              const page=await browser.newPage({viewport:{width:1366,height:900},deviceScaleFactor:1});
+              let ready=false;
+              for(let attempt=0;attempt<60;attempt++){
+                await page.goto(base+path+'?visual=public-v1&attempt='+attempt,{waitUntil:'domcontentloaded',timeout:120000});
+                try{await page.waitForSelector(selector,{timeout:2200});ready=true;break}catch(error){await page.waitForTimeout(1400)}
+              }
+              if(!ready)throw new Error(name+' redesign did not become available');
+              await page.waitForTimeout(1400);
+              await page.screenshot({path:'/tmp/public-'+name+'.jpg',type:'jpeg',quality:76,fullPage:false});
+              metrics[name]={
+                title:await page.title(),
+                bodyWidth:await page.evaluate(()=>document.documentElement.scrollWidth),
+                viewportWidth:await page.evaluate(()=>document.documentElement.clientWidth),
+                cards:await page.locator(selector).count(),
+                heading:await page.locator('.players-page>h1').first().textContent()
+              };
+              await page.close();
+            }
+            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            await mobile.goto(base+'players.html?visual=public-v1-mobile',{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('.fil-player-page-spotlight',{timeout:15000});
+            await mobile.screenshot({path:'/tmp/public-players-mobile.jpg',type:'jpeg',quality:76,fullPage:false});
+            metrics.mobilePlayers={bodyWidth:await mobile.evaluate(()=>document.documentElement.scrollWidth),viewportWidth:390,cards:await mobile.locator('.fil-roster-card').count()};
+            fs.writeFileSync('/tmp/public-pages-metrics.json',JSON.stringify(metrics,null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Save visual evidence
+        run: |
+          rm -rf visual-review-public
+          mkdir -p visual-review-public
+          cp /tmp/public-*.jpg visual-review-public/
+          cp /tmp/public-pages-metrics.json visual-review-public/
+          git config user.name "filitalia-visual-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A visual-review-public
+          git commit -m "test: capture redesigned public pages"
+          git push origin HEAD:agent/admin-panel-demo

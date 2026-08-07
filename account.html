@@ -10,27 +10,51 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
-<link rel="stylesheet" href="account.css?v=920">
+<link rel="stylesheet" href="account-clean-v1.css?v=8">
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body data-account-page="account">
 <div class="background-logo"></div>
 <nav class="navbar">
   <a href="index.html" class="logo-area"><img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo"><div class="logo-text">FIL-ITALIA</div></a>
-  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Apri menu">☰</button>
   <div class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="players.html">Players</a><a href="events.html">Events</a><a href="camp-register.html">Camp</a><a href="account.html" aria-current="page">Account</a></div>
-  <div class="language-switch"><button onclick="setLanguage('it')">IT</button><button onclick="setLanguage('en')">EN</button><button onclick="setLanguage('ph')">PH</button></div>
+  <div class="language-switch"><button type="button" data-account-language="it">IT</button><button type="button" data-account-language="en">EN</button><button type="button" data-account-language="ph">PH</button></div>
 </nav>
+
 <main class="account-main">
   <div class="account-shell">
+    <section class="account-workspace-hero">
+      <div class="account-workspace-copy">
+        <span class="account-workspace-kicker">FIL-ITALIA NATION SELECT</span>
+        <h1>Il mio account</h1>
+        <p>Profilo, iscrizioni, documenti e attività FIL-ITALIA riuniti in un’unica area personale.</p>
+      </div>
+      <div class="account-workspace-actions">
+        <a class="account-workspace-button" href="index.html">Torna al sito</a>
+        <a id="accountAdminAction" class="account-workspace-button primary" href="admin" hidden>Apri amministrazione</a>
+      </div>
+    </section>
+
+    <section class="account-overview-grid" aria-label="Riepilogo account">
+      <article class="account-overview-card"><span>Profilo</span><strong id="accountProfileCompletion">0%</strong><small>Completamento dei dati personali</small></article>
+      <article class="account-overview-card"><span>Registrazioni</span><strong id="accountRegistrationCount">0</strong><small>Camp e attività collegate</small></article>
+      <article class="account-overview-card"><span>Profilo giocatore</span><strong id="accountDocumentStatus">Da verificare</strong><small>Dati disponibili in base al ruolo</small></article>
+      <article class="account-overview-card"><span>Accesso</span><strong id="accountAccessStatus">Da verificare</strong><small id="accountRoleSummary">In attesa</small></article>
+    </section>
+
+    <section class="account-role-intro">
+      <div><span class="account-workspace-kicker" style="color:#126847">AREA PERSONALE</span><h2 id="accountRoleTitle">Account in attesa</h2><p id="accountRoleDescription">Caricamento delle funzioni disponibili per il tuo profilo.</p></div>
+      <span id="accountRolePill" class="account-role-pill">In attesa</span>
+    </section>
+
     <p id="accountConfigWarning" class="account-config-warning" hidden>Collega Supabase in <strong>supabase-config.js</strong> prima di usare l’area riservata.</p>
 
-    <section class="account-card">
+    <section class="account-card account-profile-card" id="profilo-personale">
       <div class="account-head">
         <div>
           <h1 id="accountName" class="account-title">Account FIL-ITALIA</h1>
           <p id="accountEmail" class="account-subtitle"></p>
-          <div class="account-meta"><span id="accountRole" class="account-badge">In attesa</span><span id="accountStatusBadge" class="account-badge status-pending">Caricamento...</span></div>
+          <div class="account-meta"><span id="accountRole" class="account-badge">In attesa</span><span id="accountStatusBadge" class="account-badge status-pending" hidden>Pending</span></div>
         </div>
         <button id="logoutButton" class="account-button secondary" type="button">ESCI</button>
       </div>
@@ -46,142 +70,69 @@
           <label>Cognome<input name="lastName" maxlength="100" autocomplete="family-name" required></label>
           <label>Telefono<input name="phone" maxlength="50" autocomplete="tel"></label>
           <label>Città<input name="city" maxlength="120" autocomplete="address-level2"></label>
-          <label>Lingua
-            <select name="language"><option value="it">Italiano</option><option value="en">English</option><option value="ph">Tagalog</option></select>
-          </label>
+          <label>Lingua<select name="language"><option value="it">Italiano</option><option value="en">English</option><option value="ph">Tagalog</option></select></label>
         </div>
         <button class="account-button" type="submit">SALVA PROFILO</button>
         <p id="profileStatus" class="account-status" role="status" aria-live="polite"></p>
       </form>
     </section>
 
-    <section class="account-card" data-role-section="player,parent,coach,coordinator,staff,admin" hidden>
-      <h2 class="account-section-title">Le mie registrazioni</h2>
+    <section class="account-card" id="mie-registrazioni" data-role-section="player,parent,coach,coordinator,staff,volunteer,admin,super_admin" hidden>
+      <h2 class="account-section-title">Le mie registrazioni e attività</h2>
       <div id="accountRegistrations"><p class="account-muted">Caricamento...</p></div>
     </section>
 
     <section id="playerProfileSection" class="account-card" hidden>
       <h2 class="account-section-title">Profilo giocatore per i camp</h2>
       <p class="account-muted">Compila questi dati una sola volta. Nei camp verranno recuperati automaticamente insieme alla foto.</p>
-
       <form id="playerProfileForm" class="account-form" data-requires-auth>
         <div class="player-photo-editor">
           <img id="playerPhotoPreview" class="player-photo-preview" src="images/logo.png" alt="Anteprima foto giocatore">
-          <label>Foto giocatore <span aria-hidden="true">*</span>
-            <input id="playerPhotoInput" type="file" accept="image/jpeg,image/png,image/webp">
-            <small>JPG, PNG o WEBP. Massimo 5 MB. Se hai già una foto, non devi ricaricarla.</small>
-          </label>
+          <label>Foto giocatore <span aria-hidden="true">*</span><input id="playerPhotoInput" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG o WEBP. Massimo 5 MB. Se hai già una foto, non devi ricaricarla.</small></label>
         </div>
-
         <div class="account-grid">
           <label>Data di nascita <span aria-hidden="true">*</span><input type="date" name="birthDate" required></label>
-          <label>Sesso <span aria-hidden="true">*</span>
-            <select name="sex" required>
-              <option value="">Seleziona</option>
-              <option value="Maschio">Maschio</option>
-              <option value="Femmina">Femmina</option>
-              <option value="Altro">Altro / Preferisco non indicarlo</option>
-            </select>
-          </label>
+          <label>Sesso <span aria-hidden="true">*</span><select name="sex" required><option value="">Seleziona</option><option value="Maschio">Maschio</option><option value="Femmina">Femmina</option><option value="Altro">Altro / Preferisco non indicarlo</option></select></label>
           <label>Città di residenza <span aria-hidden="true">*</span><input name="residenceCity" maxlength="120" required></label>
           <label>Ruolo basket <span aria-hidden="true">*</span><input name="position" maxlength="30" placeholder="PG / SG / SF / PF / C" required></label>
           <label>Squadra attuale<input name="currentClub" maxlength="160"></label>
           <label>Altezza (cm)<input type="number" name="heightCm" min="80" max="250" inputmode="numeric"></label>
           <label>Peso (kg)<input type="number" name="weightKg" min="20" max="250" step="0.1" inputmode="decimal"></label>
-          <label>Passaporto italiano
-            <select name="italianPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
-          </label>
-          <label>Passaporto filippino
-            <select name="filipinoPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
-          </label>
+          <label>Passaporto italiano<select name="italianPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
+          <label>Passaporto filippino<select name="filipinoPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
           <label>Instagram<input name="instagram" maxlength="160" placeholder="@username"></label>
           <label>Highlights<input type="url" name="highlightsUrl" maxlength="500" placeholder="https://..."></label>
         </div>
-
         <button class="account-button" type="submit">SALVA PROFILO GIOCATORE</button>
         <p id="playerProfileStatus" class="account-status" role="status" aria-live="polite"></p>
       </form>
     </section>
 
-    <section class="account-card" data-role-section="parent" hidden>
-      <h2 class="account-section-title">Area genitore</h2>
-      <div class="account-feature-grid"><article class="account-feature"><h3>Giocatori collegati</h3><p>Gestione dei figli o atleti minorenni associati.</p></article><article class="account-feature"><h3>Camp</h3><p>Iscrizioni, consensi e stato del pagamento.</p></article><article class="account-feature"><h3>Comunicazioni</h3><p>Aggiornamenti ufficiali FIL-ITALIA.</p></article></div>
-    </section>
-
-    <section class="account-card" data-role-section="coach,coordinator,staff" hidden>
-      <h2 class="account-section-title">Area staff</h2>
-      <div class="account-feature-grid"><article class="account-feature"><h3>Giocatori</h3><p>Accesso limitato agli atleti assegnati.</p></article><article class="account-feature"><h3>Valutazioni</h3><p>Inserimento note tecniche e presenze.</p></article><article class="account-feature"><h3>Attività</h3><p>Camp e convocazioni della propria area.</p></article></div>
-    </section>
-
     <section class="account-card account-danger-zone">
       <h2 class="account-section-title">Eliminazione account</h2>
-      <p class="account-muted">
-        La richiesta verrà inviata all’amministratore. Dopo la verifica saranno eliminati
-        account, profilo giocatore, foto e dati collegati. L’operazione definitiva non è reversibile.
-      </p>
-      <label>Motivo facoltativo
-        <textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea>
-      </label>
-      <button id="requestDeletionButton" class="account-button danger" type="button">
-        RICHIEDI ELIMINAZIONE ACCOUNT
-      </button>
+      <p class="account-muted">La richiesta verrà inviata all’amministratore. Dopo la verifica saranno eliminati account, profilo giocatore, foto e dati collegati. L’operazione definitiva non è reversibile.</p>
+      <label>Motivo facoltativo<textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea></label>
+      <button id="requestDeletionButton" class="account-button danger" type="button">RICHIEDI ELIMINAZIONE ACCOUNT</button>
       <p id="deletionStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminDashboardSection" class="account-card admin-dashboard" hidden>
-      <div class="admin-dashboard-head">
-        <div><span class="admin-kicker">FIL-ITALIA CONTROL ROOM</span><h2 class="account-section-title">Dashboard amministratore</h2></div>
-        <button id="refreshAdminDashboard" class="account-button compact secondary" type="button">AGGIORNA</button>
-      </div>
-      <div class="admin-stat-grid">
-        <article class="admin-stat"><span>Da approvare</span><strong id="adminPendingCount">0</strong></article>
-        <article class="admin-stat"><span>Richieste eliminazione</span><strong id="adminDeletionCount">0</strong></article>
-        <article class="admin-stat"><span>Utenti attivi</span><strong id="adminActiveCount">0</strong></article>
-        <article class="admin-stat"><span>Utenti sospesi</span><strong id="adminSuspendedCount">0</strong></article>
-      </div>
-      <p id="adminDashboardStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminAccountsSection" class="account-card" hidden>
-      <h2 class="account-section-title">Gestione account</h2>
-      <p class="account-muted">Approva, rifiuta, sospendi o riattiva gli account. Ogni cambiamento invia automaticamente una mail all’utente.</p>
-      <div class="admin-filter-row">
-        <label>Mostra
-          <select id="adminAccountFilter"><option value="pending">Da approvare</option><option value="active">Attivi</option><option value="suspended">Sospesi</option><option value="rejected">Rifiutati</option><option value="all">Tutti</option></select>
-        </label>
-      </div>
-      <div id="managedAccountsList"></div>
-      <p id="adminStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminPlayerCardsSection" class="account-card" hidden>
-      <div class="admin-dashboard-head">
-        <div>
-          <h2 class="account-section-title">Player Card pubbliche</h2>
-          <p class="account-muted">Controlla i dati del giocatore e pubblica la card nella pagina Players. Email, telefono, peso e dati privati non vengono mostrati.</p>
-        </div>
-        <button id="refreshAdminPlayerCards" class="account-button compact secondary" type="button">AGGIORNA</button>
-      </div>
-      <div id="adminPlayerCardsList"><p class="account-muted">Caricamento...</p></div>
-      <p id="adminPlayerCardsStatus" class="account-status" role="status" aria-live="polite"></p>
-    </section>
-
-    <section id="adminDeletionSection" class="account-card" hidden>
-      <h2 class="account-section-title">Richieste eliminazione account</h2>
-      <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. In entrambi i casi l’utente riceverà una mail.</p>
-      <div id="deletionRequestsList"></div>
-      <p id="deletionAdminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
   </div>
 </main>
+
 <footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
-<script src="script.js?v=801"></script>
+<script src="account-page-shell-v1.js?v=1"></script>
 <script src="filitalia-i18n.js?v=800"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=800"></script>
-<script src="auth-client.js?v=1001"></script>
+<script src="auth-client.js?v=1002"></script>
+<script src="registrations-service-v1.js?v=2"></script>
 <script src="auth-admin-fix.js?v=1001"></script>
-<script src="auth-pages.js?v=1001"></script>
+<script src="account-loading-guard-v1.js?v=6"></script>
+<script src="auth-super-admin-compat-v1.js?v=1"></script>
+<script src="auth-pages.js?v=1003"></script>
+<script src="volunteer-role-v1.js?v=1"></script>
+<script src="unified-access-v1.js?v=2"></script>
 <script src="player-card-admin.js?v=1"></script>
+<script src="account-role-dashboard-v1.js?v=6"></script>
+<script src="account-i18n-v3.js?v=3"></script>
 </body>
 </html>

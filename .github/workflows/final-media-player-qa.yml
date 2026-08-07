@@ -1,0 +1,124 @@
+name: FIL-ITALIA Final Media Player QA
+
+on:
+  pull_request:
+    paths:
+      - 'idcamp.html'
+      - 'gallery-category-final-v1.css'
+      - 'gallery-category-final-v1.js'
+      - 'player.html'
+      - 'players.html'
+      - 'player-profile-final-v1.css'
+      - 'player-profile-final-v1.js'
+      - 'player-profile-settings-v1.js'
+      - 'player-routing-final-v1.js'
+      - 'event.html'
+      - 'event-back-final-v1.css'
+      - 'admin-light.html'
+      - 'admin-player-profile-v1.js'
+      - 'account-player-media-v1.js'
+      - 'account-role-dashboard-v1.js'
+      - 'supabase/migrations/20260730183000_player_profile_media_skills.sql'
+      - '.github/workflows/final-media-player-qa.yml'
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check JavaScript syntax
+        run: |
+          node --check gallery-category-final-v1.js
+          node --check player-profile-final-v1.js
+          node --check player-profile-settings-v1.js
+          node --check player-routing-final-v1.js
+          node --check account-player-media-v1.js
+          node --check admin-player-profile-v1.js
+          node --check account-role-dashboard-v1.js
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify final media and player pages
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          const fs=require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            async function ready(path,selector){
+              for(let i=0;i<70;i++){
+                await page.goto(`${root}/${path}${path.includes('?')?'&':'?'}finalmediaplayer=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{await page.waitForSelector(selector,{timeout:2400});return}catch(_){await sleep(1200)}
+              }
+              throw new Error(`${path} did not reach Deploy Preview`);
+            }
+            await ready('idcamp.html','.fil-month-archive .fil-month-group');
+            await page.waitForTimeout(1000);
+            const gallery=await page.evaluate(()=>{
+              const root=document.querySelector('.fil-month-archive');
+              const groups=[...document.querySelectorAll('.fil-month-group')];
+              const cards=[...document.querySelectorAll('.fil-gallery-album-card')];
+              const bad=cards.filter(card=>{const r=card.getBoundingClientRect();return r.left<0||r.right>innerWidth+1});
+              const groupRects=groups.map(group=>group.getBoundingClientRect());
+              const cardWidths=cards.map(card=>card.getBoundingClientRect().width);
+              return{
+                groups:groups.length,
+                cards:cards.length,
+                bad:bad.length,
+                overflow:document.documentElement.scrollWidth-innerWidth,
+                distinctTops:new Set(groupRects.map(rect=>Math.round(rect.top))).size,
+                minGroupWidth:Math.min(...groupRects.map(rect=>rect.width)),
+                rootWidth:root.getBoundingClientRect().width,
+                minCardWidth:Math.min(...cardWidths),
+                headings:groups.map(group=>group.querySelector('h2')?.textContent.trim()||'')
+              };
+            });
+            if(gallery.groups<1||gallery.cards<1||gallery.bad||gallery.overflow>2||gallery.distinctTops!==gallery.groups||gallery.minGroupWidth<gallery.rootWidth*.9||gallery.minCardWidth<245||gallery.headings.some(value=>value.includes('9999')))throw new Error(`Gallery layout invalid: ${JSON.stringify(gallery)}`);
+            await page.screenshot({path:'final-idcamp.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            await ready('players.html','#filPlayerCards [data-player-index]');
+            await page.locator('#filPlayerCards [data-player-index]').first().click();
+            await page.waitForURL(/player\.html\?id=/,{timeout:15000});
+            await page.waitForSelector('.player-profile-shell',{timeout:15000});
+            const player=await page.evaluate(()=>({
+              photos:document.querySelectorAll('.player-gallery-thumb').length,
+              skillsHidden:document.querySelector('.player-skills-panel')?.hidden===true,
+              name:document.querySelector('.player-profile-name')?.textContent.trim()||'',
+              overflow:document.documentElement.scrollWidth-innerWidth
+            }));
+            if(!player.name||player.photos<1||!player.skillsHidden||player.overflow>2)throw new Error(`Player profile invalid: ${JSON.stringify(player)}`);
+            await page.screenshot({path:'final-player.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            await ready('event.html?id=idcamp-venezia-2026','.event-premium-shell');
+            await page.waitForTimeout(700);
+            const event=await page.evaluate(()=>{
+              const back=document.querySelector('.players-list-link');
+              const row=document.querySelector('.players-button-row');
+              const shell=document.querySelector('.event-premium-shell');
+              const style=getComputedStyle(back),rowStyle=getComputedStyle(row);
+              return{backZ:Number(style.zIndex)||0,shellZ:Number(getComputedStyle(shell).zIndex)||0,color:style.color,background:style.backgroundColor,opacity:style.opacity,rowOpacity:rowStyle.opacity,visible:back.getBoundingClientRect().height>0};
+            });
+            if(!event.visible||event.backZ<=event.shellZ||event.color!=='rgb(255, 255, 255)'||event.opacity!=='1'||event.rowOpacity!=='1'||event.background==='rgba(0, 0, 0, 0)')throw new Error(`Event back link invalid: ${JSON.stringify(event)}`);
+            await page.screenshot({path:'final-event.jpg',type:'jpeg',quality:80,fullPage:false});
+            fs.writeFileSync('final-media-player.json',JSON.stringify({gallery,player,event},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload final visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-media-player-qa
+          path: |
+            final-idcamp.jpg
+            final-player.jpg
+            final-event.jpg
+            final-media-player.json
+          if-no-files-found: ignore

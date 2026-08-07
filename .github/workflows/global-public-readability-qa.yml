@@ -1,0 +1,161 @@
+name: FIL-ITALIA Global Public Readability QA
+
+on:
+  pull_request:
+    paths:
+      - "site-global-polish-v3.css"
+      - "site-global-polish-v3.js"
+      - "site-final-pass-v1.js"
+      - "site-final-fixes-v1.js"
+      - "site-final-priority-v2.css"
+      - "home-tricolore-v1.js"
+      - "public-pages-v1.js"
+      - "index.html"
+      - "players.html"
+      - "gallery.html"
+      - "staff.html"
+      - "news.html"
+      - "events.html"
+      - "idcamp*.html"
+      - ".github/workflows/global-public-readability-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "site-global-polish-v3.css"
+      - "site-global-polish-v3.js"
+      - "site-final-pass-v1.js"
+      - "site-final-fixes-v1.js"
+      - "site-final-priority-v2.css"
+      - "home-tricolore-v1.js"
+      - "public-pages-v1.js"
+      - "index.html"
+      - "players.html"
+      - "gallery.html"
+      - "staff.html"
+      - "news.html"
+      - "events.html"
+      - "idcamp*.html"
+      - ".github/workflows/global-public-readability-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify every public window
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root = 'https://deploy-preview-1--filitalia.netlify.app';
+          const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+          const pages = [
+            {path:'', body:'body.fil-final-site', content:'.home-hero-copy'},
+            {path:'players', body:'body.fil-page-players', content:'#playersPageContainer'},
+            {path:'gallery', body:'body.fil-page-gallery', content:'#galleryCategoryGrid'},
+            {path:'staff', body:'body.fil-page-staff', content:'#staffPageContainer'},
+            {path:'news', body:'body.fil-page-news', content:'#allNewsGrid'},
+            {path:'events', body:'body.fil-page-events', content:'#allEventsGrid'},
+            {path:'idcamp', body:'body[data-gallery-category="idcamp"]', content:'#galleryAlbumsGrid'}
+          ];
+          (async()=>{
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage({viewport:{width:1280,height:820}});
+            let deployed=false;
+            for(let attempt=0;attempt<90;attempt++){
+              await page.goto(`${root}/?globalqa=${Date.now()}-${attempt}`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await page.waitForSelector('html.fil-global-polish-ready .navbar.fil-final-navbar',{timeout:2200});
+                const count=await page.locator('.fil-global-socials .home-nav-social').count();
+                if(count===2){deployed=true;break}
+              }catch(_){ }
+              await sleep(1400);
+            }
+            if(!deployed)throw new Error('Global polish did not reach Deploy Preview');
+            const report={};
+            for(const item of pages){
+              await page.goto(`${root}/${item.path}?globalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+              await page.waitForSelector(item.body,{timeout:25000});
+              await page.waitForSelector('html.fil-global-polish-ready .navbar.fil-final-navbar',{timeout:25000});
+              await page.waitForSelector(item.content,{timeout:25000});
+              await page.waitForTimeout(1800);
+              const metrics=await page.evaluate(()=>{
+                const rect=element=>{const r=element.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,left:r.left,right:r.right,top:r.top,bottom:r.bottom,centerY:r.top+r.height/2}};
+                const nav=document.querySelector('.navbar.fil-final-navbar');
+                const firstLink=document.querySelector('#navLinks a');
+                const socials=[...document.querySelectorAll('.fil-global-socials .home-nav-social')];
+                const languages=[...document.querySelectorAll('.fil-final-actions .language-switch button')];
+                const auth=[...document.querySelectorAll('.fil-final-auth a')];
+                const title=document.querySelector('.players-page>h1,.home-hero-title');
+                const content=document.querySelector('#playersPageContainer,#galleryCategoryGrid,#staffPageContainer,#allNewsGrid,#allEventsGrid,#galleryAlbumsGrid,.home-hero-copy');
+                return {
+                  hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+                  nav:rect(nav),
+                  navLinks:document.querySelectorAll('#navLinks a').length,
+                  navFont:parseFloat(getComputedStyle(firstLink).fontSize),
+                  socialCount:socials.length,
+                  languageCount:languages.length,
+                  authCount:auth.length,
+                  linkCenter:rect(firstLink).centerY,
+                  socialCenters:socials.map(node=>rect(node).centerY),
+                  languageCenters:languages.map(node=>rect(node).centerY),
+                  authCenters:auth.map(node=>rect(node).centerY),
+                  title:title?rect(title):null,
+                  titleText:title?.textContent.trim()||'',
+                  content:content?rect(content):null,
+                  viewportWidth:window.innerWidth,
+                  documentWidth:document.documentElement.scrollWidth
+                };
+              });
+              if(metrics.hamburger!=='none')throw new Error(`${item.path||'home'}: desktop hamburger visible`);
+              if(metrics.navLinks!==9)throw new Error(`${item.path||'home'}: expected 9 nav links, got ${metrics.navLinks}`);
+              if(metrics.socialCount!==2)throw new Error(`${item.path||'home'}: expected 2 social icons, got ${metrics.socialCount}`);
+              if(metrics.languageCount!==3)throw new Error(`${item.path||'home'}: expected 3 language buttons, got ${metrics.languageCount}`);
+              if(metrics.authCount!==2)throw new Error(`${item.path||'home'}: expected 2 account buttons, got ${metrics.authCount}`);
+              if(metrics.navFont<10)throw new Error(`${item.path||'home'}: nav text too small (${metrics.navFont}px)`);
+              const centers=[...metrics.socialCenters,...metrics.languageCenters,...metrics.authCenters];
+              if(centers.some(value=>Math.abs(value-metrics.linkCenter)>6))throw new Error(`${item.path||'home'}: controls not vertically aligned ${JSON.stringify(metrics)}`);
+              if(metrics.documentWidth>metrics.viewportWidth+3)throw new Error(`${item.path||'home'}: horizontal overflow ${metrics.documentWidth}/${metrics.viewportWidth}`);
+              if(!metrics.titleText||!metrics.title||metrics.title.left<-2||metrics.title.right>metrics.viewportWidth+2)throw new Error(`${item.path||'home'}: title clipped ${JSON.stringify(metrics.title)}`);
+              if(!metrics.content||metrics.content.width<280||metrics.content.height<80)throw new Error(`${item.path||'home'}: content not readable ${JSON.stringify(metrics.content)}`);
+              report[item.path||'home']=metrics;
+              await page.screenshot({path:`global-${item.path||'home'}.jpg`,type:'jpeg',quality:76,fullPage:false});
+            }
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/?globalqa=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('html.fil-global-polish-ready .navbar.fil-final-navbar',{timeout:25000});
+            const mobileMetrics=await mobile.evaluate(()=>({
+              hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+              socials:getComputedStyle(document.querySelector('.fil-global-socials')).display,
+              width:document.documentElement.scrollWidth,
+              viewport:window.innerWidth
+            }));
+            if(mobileMetrics.hamburger==='none')throw new Error('Mobile hamburger missing');
+            if(mobileMetrics.width>mobileMetrics.viewport+3)throw new Error(`Mobile horizontal overflow ${JSON.stringify(mobileMetrics)}`);
+            report.mobile=mobileMetrics;
+            await mobile.screenshot({path:'global-mobile.jpg',type:'jpeg',quality:76});
+            fs.writeFileSync('global-public-readability.json',JSON.stringify(report,null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-public-readability
+          path: |
+            global-*.jpg
+            global-public-readability.json
+          if-no-files-found: warn
+          retention-days: 7

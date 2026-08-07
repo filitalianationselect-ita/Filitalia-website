@@ -1,0 +1,109 @@
+name: FIL-ITALIA Public Redesign Batch QA
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "fil-public-redesign-v1.css"
+      - "fil-public-redesign-v1.js"
+      - "contact.html"
+      - "public-pages-v1.js"
+      - "home-reference-navbar-v1.js"
+      - "home-staff-events-finalizer-v1.js"
+      - "_headers"
+      - ".github/workflows/public-redesign-batch-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify Staff News Gallery and Contact
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:900}});
+            async function ready(url,selector){
+              for(let i=0;i<80;i++){
+                await page.goto(`${root}${url}${url.includes('?')?'&':'?'}qa=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{await page.waitForSelector(selector,{state:'attached',timeout:1800});await page.waitForTimeout(350);if(await page.locator(selector).isVisible())return}catch(_){await sleep(1100)}
+              }
+              throw new Error(`${url} missing ${selector}`);
+            }
+            await ready('/#staff','#homeStaffGrid .fhs-stage');
+            await page.evaluate(()=>{const p=document.getElementById('staff'),s=document.querySelector('.home-horizontal-stage');if(s&&p)s.scrollTo({left:p.offsetLeft,behavior:'auto'})});
+            await page.waitForTimeout(500);
+            const staff=await page.evaluate(()=>{
+              const tabs=[...document.querySelectorAll('#homeStaffGrid .fhs-tab')];
+              const count=document.querySelector('#homeStaffGrid [data-fhs-count]')?.textContent||'';
+              const names=[];try{if(Array.isArray(staffData))staffData.forEach(p=>names.push(String(typeof p.name==='object'?(p.name.it||p.name.en||p.name.ph||''):p.name||'').toLowerCase().replace(/[^a-z0-9]/g,'')))}catch(_){}
+              return{tabs:tabs.length,count,unique:new Set(names.filter(Boolean)).size,arrows:document.querySelectorAll('#homeStaffGrid .fhs-card-wrap .fhs-arrow').length,overflow:document.getElementById('staff').scrollWidth-document.getElementById('staff').clientWidth};
+            });
+            if(staff.tabs<2||staff.tabs!==staff.unique)throw new Error(`Staff tabs ${staff.tabs}, unique ${staff.unique}`);
+            if(!staff.count.endsWith('/ '+String(staff.tabs).padStart(2,'0')))throw new Error(`Staff count ${staff.count}`);
+            if(staff.arrows!==2||staff.overflow>4)throw new Error(`Staff controls ${JSON.stringify(staff)}`);
+            await page.locator('#staff').screenshot({path:'batch-staff.jpg',type:'jpeg',quality:80});
+
+            await ready('/#news','#homeNewsGrid .fpr-home-news');
+            await page.evaluate(()=>{const p=document.getElementById('news'),s=document.querySelector('.home-horizontal-stage');if(s&&p)s.scrollTo({left:p.offsetLeft,behavior:'auto'})});
+            await page.waitForTimeout(400);
+            const homeNews=await page.evaluate(()=>({feature:document.querySelectorAll('#homeNewsGrid .fpr-news-feature').length,cards:document.querySelectorAll('#homeNewsGrid .fpr-news-card').length,overflow:document.getElementById('news').scrollWidth-document.getElementById('news').clientWidth}));
+            if(homeNews.feature!==1||homeNews.cards<1||homeNews.overflow>4)throw new Error(`Home News ${JSON.stringify(homeNews)}`);
+            await page.locator('#news').screenshot({path:'batch-home-news.jpg',type:'jpeg',quality:80});
+
+            await ready('/news.html','.fpr-news-page-hero');
+            const archive=await page.evaluate(()=>({filters:document.querySelectorAll('.fpr-news-filter-list button').length,feature:document.querySelectorAll('.fpr-news-archive .fpr-news-feature').length,cards:document.querySelectorAll('.fpr-news-card-grid .fpr-news-card').length,contact:document.querySelector('[data-key="navContact"]')?.getAttribute('href')}));
+            if(archive.filters<5||archive.feature!==1||archive.contact!=='contact.html')throw new Error(`News archive ${JSON.stringify(archive)}`);
+            await page.screenshot({path:'batch-news-page.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            await ready('/gallery.html','.fpr-gallery-shell');
+            const gallery=await page.evaluate(()=>({filters:document.querySelectorAll('.fpr-gallery-filters button').length,feature:document.querySelectorAll('.fpr-gallery-feature').length,cards:document.querySelectorAll('.fpr-gallery-grid .fpr-media-card').length,contact:document.querySelector('[data-key="navContact"]')?.getAttribute('href')}));
+            if(gallery.filters!==5||gallery.feature!==1||gallery.cards<1||gallery.contact!=='contact.html')throw new Error(`Gallery ${JSON.stringify(gallery)}`);
+            await page.screenshot({path:'batch-gallery.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            await ready('/contact.html','.fpr-contact-hero');
+            const contact=await page.evaluate(()=>({form:!!document.querySelector('.fpr-contact-form'),items:document.querySelectorAll('.fpr-contact-item').length,faq:document.querySelectorAll('.fpr-faq-item').length,nav:document.querySelector('[data-key="navContact"]')?.getAttribute('href')}));
+            if(!contact.form||contact.items<3||contact.faq<4||contact.nav!=='contact.html')throw new Error(`Contact ${JSON.stringify(contact)}`);
+            await page.screenshot({path:'batch-contact.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/gallery.html?mobile=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('.fpr-gallery-shell',{timeout:20000});
+            const mobileState=await mobile.evaluate(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,filters:document.querySelectorAll('.fpr-gallery-filters button').length}));
+            if(mobileState.overflow>4||mobileState.filters!==5)throw new Error(`Mobile gallery ${JSON.stringify(mobileState)}`);
+            await mobile.screenshot({path:'batch-gallery-mobile.jpg',type:'jpeg',quality:78,fullPage:true});
+            fs.writeFileSync('public-redesign-batch-qa.json',JSON.stringify({staff,homeNews,archive,gallery,contact,mobileState},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-redesign-batch-qa
+          path: |
+            batch-staff.jpg
+            batch-home-news.jpg
+            batch-news-page.jpg
+            batch-gallery.jpg
+            batch-contact.jpg
+            batch-gallery-mobile.jpg
+            public-redesign-batch-qa.json
+          if-no-files-found: warn
+          retention-days: 7

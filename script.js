@@ -1486,7 +1486,20 @@ function toggleMobileMenu(){
 function closeMobileMenu(){
   document.body.classList.remove("mobile-menu-open");
 }
+function isAccountSurface(){
+  const page=document.body&&document.body.dataset?document.body.dataset.accountPage:"";
+  return page==="login"||page==="account"||page==="reset-password";
+}
+function cleanupAccountBlockingLayers(){
+  if(!isAccountSurface()) return;
+  closeMobileMenu();
+  document.querySelectorAll(".mobile-menu-overlay,.share-sheet-overlay,#accountEmergencyActions,#accountEmergencyActionsStyle").forEach(node=>node.remove());
+}
 function ensureMobileOverlay(){
+  if(isAccountSurface()){
+    document.querySelectorAll(".mobile-menu-overlay").forEach(overlay=>overlay.remove());
+    return;
+  }
   if(document.querySelector(".mobile-menu-overlay")) return;
   const overlay = document.createElement("div");
   overlay.className = "mobile-menu-overlay";
@@ -1494,12 +1507,14 @@ function ensureMobileOverlay(){
   document.body.appendChild(overlay);
 }
 function initMobileMenu(){
+  cleanupAccountBlockingLayers();
   ensureMobileOverlay();
   document.querySelectorAll(".nav-links a").forEach(link => {
     link.addEventListener("click", closeMobileMenu);
   });
 }
 document.addEventListener("DOMContentLoaded", initMobileMenu);
+window.addEventListener("pageshow", cleanupAccountBlockingLayers);
 
 /* ===== EXTRA FORM LABELS ===== */
 Object.assign(translations.it, { sexLabel:"Sesso", guardianDocumentLabel:"Documento Genitore", residenceCityLabel:"Città di Residenza", campDateLabel:"Camp Date" });

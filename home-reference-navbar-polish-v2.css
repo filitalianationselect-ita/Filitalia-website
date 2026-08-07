@@ -1,0 +1,109 @@
+@import url("home-reference-navbar-force-v3.css?v=1");
+@import url("review-fixes-v1.css?v=1");
+
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) {
+  overflow-x: hidden !important;
+}
+
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .navbar {
+  height: 86px !important;
+  min-height: 86px !important;
+  overflow: hidden !important;
+}
+
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .navbar .home-nav-left,
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .navbar .home-nav-page-controls,
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .navbar .home-horizontal-controls,
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .mobile-menu-overlay {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .navbar .nav-links,
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready).mobile-menu-open .navbar .nav-links,
+body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .navbar .nav-links.active {
+  display: block !important;
+  position: static !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: none !important;
+}
+
+@media (max-width: 760px) {
+  body[data-home-layout="horizontal"]:not(.fil-final-site):not(.home-reference-navbar-ready) .navbar {
+    height: 74px !important;
+    min-height: 74px !important;
+  }
+}
+
+/* Laptop-width polish for the approved reference navbar */
+@media(min-width:961px) and (max-width:1380px){
+  body.home-reference-navbar-ready .navbar.home-reference-navbar{
+    grid-template-columns:minmax(145px,180px) minmax(0,1fr) auto!important;
+    column-gap:12px!important;
+    padding:0 16px!important;
+  }
+  body.home-reference-navbar-ready .home-reference-brand{
+    min-width:145px!important;
+    gap:8px!important;
+  }
+  body.home-reference-navbar-ready .home-reference-brand small{
+    display:none!important;
+  }
+  body.home-reference-navbar-ready .nav-links{
+    gap:clamp(8px,.9vw,13px)!important;
+  }
+  body.home-reference-navbar-ready .nav-links a{
+    font-size:clamp(.52rem,.61vw,.65rem)!important;
+    letter-spacing:.02em!important;
+  }
+  body.home-reference-navbar-ready .language-switch button{
+    display:none!important;
+  }
+  body.home-reference-navbar-ready .home-reference-actions{
+    gap:7px!important;
+  }
+  body.home-reference-navbar-ready .home-auth-link{
+    padding-inline:11px!important;
+  }
+}
+
+@media(min-width:961px) and (max-width:1120px){
+  body.home-reference-navbar-ready .navbar.home-reference-navbar{
+    grid-template-columns:132px minmax(0,1fr) auto!important;
+    column-gap:8px!important;
+    padding-inline:10px!important;
+  }
+  body.home-reference-navbar-ready .home-reference-brand{
+    min-width:132px!important;
+  }
+  body.home-reference-navbar-ready .home-reference-brand img{
+    width:38px!important;
+    height:38px!important;
+  }
+  body.home-reference-navbar-ready .home-reference-brand strong{
+    font-size:.78rem!important;
+  }
+  body.home-reference-navbar-ready .home-nav-social{
+    display:none!important;
+  }
+  body.home-reference-navbar-ready .nav-links{
+    gap:7px!important;
+  }
+  body.home-reference-navbar-ready .nav-links a{
+    font-size:.5rem!important;
+  }
+  body.home-reference-navbar-ready .home-auth-link{
+    padding-inline:9px!important;
+    font-size:.61rem!important;
+  }
+}

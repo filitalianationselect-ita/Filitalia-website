@@ -1,0 +1,179 @@
+name: FIL-ITALIA Home Visual Review
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - ".github/workflows/home-visual-review.yml"
+      - "index.html"
+      - "home-tricolore-v1.css"
+      - "home-tricolore-v1.js"
+      - "home-horizontal-v1.css"
+      - "home-horizontal-v1.js"
+      - "home-horizontal-mobile-v1.css"
+      - "home-content-v2.css"
+      - "home-content-v2.js"
+      - "home-concept2-final-v1.css"
+      - "home-concept2-final-v1.js"
+      - "home-reference-navbar-v1.css"
+      - "home-reference-navbar-v1.js"
+      - "public-concept2-final-v1.css"
+      - "public-pages-v1.js"
+      - "players.html"
+      - "gallery.html"
+      - "staff.html"
+      - "news.html"
+      - "events.html"
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/admin-panel-demo
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Capture Concept 2 pages
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const base=root+'/?visual-review=reference-navbar';
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const desktop=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
+            let ready=false;
+            for(let attempt=0;attempt<70;attempt++){
+              await desktop.goto(base+'&attempt='+attempt,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await desktop.waitForSelector('body.fil-concept2.home-reference-navbar-ready[data-horizontal-ready="true"]',{timeout:2200});
+                await desktop.waitForSelector('.home-reference-brand',{timeout:2200});
+                await desktop.waitForSelector('.home-program-cta',{timeout:2200});
+                await desktop.waitForSelector('#homeEventsGrid .fil-event-card-v2',{timeout:2200});
+                ready=true;
+                break;
+              }catch(error){await desktop.waitForTimeout(1500);}
+            }
+            if(!ready)throw new Error('Approved horizontal navbar was not available on Deploy Preview');
+            await desktop.waitForTimeout(1800);
+
+            const desktopNav=await desktop.locator('.nav-links a').evaluateAll(nodes=>nodes.map(node=>{
+              const r=node.getBoundingClientRect();
+              return {label:node.textContent.trim(),x:r.x,y:r.y,width:r.width,height:r.height};
+            }));
+            const desktopMenuVisible=await desktop.locator('.mobile-menu-button:visible').count();
+            const desktopBrand=await desktop.locator('.home-reference-brand').boundingBox();
+            const desktopLogin=await desktop.locator('.home-auth-login').boundingBox();
+            const desktopCreate=await desktop.locator('.home-auth-create').boundingBox();
+            const navRows=[...new Set(desktopNav.map(item=>Math.round(item.y)))];
+            if(desktopMenuVisible!==0)throw new Error('Hamburger is visible on desktop');
+            if(navRows.length!==1)throw new Error(`Desktop navigation wraps into ${navRows.length} rows`);
+            if(!desktopBrand||!desktopLogin||!desktopCreate)throw new Error('Desktop brand or account actions missing');
+
+            async function go(page,id){
+              await page.evaluate(target=>{
+                const link=document.querySelector(`.nav-links a[href="#${target}"]`);
+                if(link)link.click(); else location.hash=target;
+              },id);
+              await page.waitForTimeout(850);
+            }
+
+            const panels=['top','about','players','gallery','staff','news','events'];
+            for(const id of panels){
+              await go(desktop,id);
+              await desktop.screenshot({path:`/tmp/panel-${id}.jpg`,type:'jpeg',quality:76,fullPage:false});
+            }
+
+            const routes=['players','gallery','staff','news','events'];
+            const standalone={};
+            for(const route of routes){
+              const page=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
+              await page.goto(`${root}/${route}?visual-review=concept2-final`,{waitUntil:'networkidle',timeout:120000});
+              await page.waitForSelector(`body.fil-public-body.fil-page-${route}`,{timeout:15000});
+              await page.waitForTimeout(900);
+              await page.screenshot({path:`/tmp/standalone-${route}.jpg`,type:'jpeg',quality:76,fullPage:false});
+              standalone[route]={bodyClass:await page.locator('body').getAttribute('class'),title:await page.title(),background:await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundImage),navLinks:await page.locator('.nav-links a').count()};
+              await page.close();
+            }
+
+            const metrics={
+              url:desktop.url(),title:await desktop.title(),viewport:{width:1280,height:800},
+              bodyScrollWidth:await desktop.evaluate(()=>document.documentElement.scrollWidth),
+              bodyClientWidth:await desktop.evaluate(()=>document.documentElement.clientWidth),
+              stageScrollWidth:await desktop.locator('.home-horizontal-stage').evaluate(node=>node.scrollWidth),
+              panelCount:await desktop.locator('.home-horizontal-panel').count(),
+              navLabels:desktopNav.map(item=>item.label),desktopNav,desktopNavRows:navRows.length,
+              desktopMenuVisible,desktopBrand,desktopLogin,desktopCreate,
+              programCta:await desktop.locator('.home-program-cta').count(),
+              visiblePageControls:await desktop.locator('.home-horizontal-controls:visible,.home-nav-page-controls:visible').count(),
+              playerCards:await desktop.locator('#homePlayersGrid .player-card').count(),
+              eventOrder:await desktop.locator('#homeEventsGrid .fil-event-card-v2').evaluateAll(cards=>cards.map(card=>({id:card.dataset.eventId||'',date:card.querySelector('time')?.textContent?.trim()||'',title:card.querySelector('h3')?.textContent?.trim()||'',status:card.querySelector('.fil-event-status')?.textContent?.trim()||''}))),
+              standalone
+            };
+            if(metrics.visiblePageControls!==0)throw new Error('Horizontal arrow controls are still visible');
+            if(!metrics.navLabels.some(label=>/chi siamo/i.test(label)))throw new Error('Chi siamo is missing from the top menu');
+            if(metrics.programCta!==1)throw new Error('Join-program CTA missing or duplicated');
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            await mobile.goto(base+'&mobile=1',{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('body.home-reference-navbar-ready',{timeout:15000});
+            await mobile.waitForTimeout(800);
+            await mobile.screenshot({path:'/tmp/panel-mobile-home.jpg',type:'jpeg',quality:76,fullPage:false});
+            await mobile.locator('.mobile-menu-button').click();
+            await mobile.waitForSelector('body.mobile-menu-open .nav-links',{state:'visible',timeout:5000});
+            const mobileMenuPanel=await mobile.locator('.nav-links').boundingBox();
+            await mobile.screenshot({path:'/tmp/panel-mobile-menu.jpg',type:'jpeg',quality:76,fullPage:false});
+            if(!mobileMenuPanel||mobileMenuPanel.height>620||mobileMenuPanel.y<76)throw new Error('Mobile menu is not a compact dropdown');
+            metrics.mobile={
+              bodyScrollWidth:await mobile.evaluate(()=>document.documentElement.scrollWidth),
+              bodyClientWidth:await mobile.evaluate(()=>document.documentElement.clientWidth),
+              heroShell:await mobile.locator('.home-hero-shell').boundingBox(),
+              menuButton:await mobile.locator('.mobile-menu-button').boundingBox(),
+              loginButton:await mobile.locator('.home-auth-login').boundingBox(),
+              mobileMenuPanel
+            };
+            fs.writeFileSync('/tmp/home-metrics.json',JSON.stringify(metrics,null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Build contact sheet
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 <<'PY'
+          from PIL import Image, ImageOps, ImageDraw
+          files=[('panel-top.jpg','HOME'),('panel-about.jpg','CHI SIAMO'),('panel-players.jpg','PLAYERS'),('panel-gallery.jpg','MEDIA'),('panel-staff.jpg','STAFF'),('panel-news.jpg','NEWS'),('panel-events.jpg','EVENTI'),('panel-mobile-menu.jpg','MENU MOBILE'),('standalone-players.jpg','TUTTI I GIOCATORI'),('standalone-gallery.jpg','GALLERIA COMPLETA'),('standalone-staff.jpg','STAFF COMPLETO'),('standalone-news.jpg','NEWS COMPLETE'),('standalone-events.jpg','EVENTI COMPLETI')]
+          canvas=Image.new('RGB',(1280,3070),'white')
+          draw=ImageDraw.Draw(canvas)
+          for index,(filename,label) in enumerate(files):
+              image=Image.open('/tmp/'+filename).convert('RGB')
+              image=ImageOps.fit(image,(620,380),method=Image.Resampling.LANCZOS)
+              x=20+(index%2)*640
+              y=20+(index//2)*430
+              draw.text((x,y+5),label,fill='black')
+              canvas.paste(image,(x,y+30))
+          canvas.save('/tmp/panel-contact-sheet.jpg',quality=58,optimize=True)
+          PY
+      - name: Save visual evidence
+        run: |
+          rm -rf visual-review
+          mkdir -p visual-review
+          cp /tmp/panel-*.jpg visual-review/
+          cp /tmp/standalone-*.jpg visual-review/
+          cp /tmp/home-metrics.json visual-review/home-metrics.json
+          base64 -w 0 /tmp/panel-contact-sheet.jpg > /tmp/panel-contact-sheet.b64
+          split -b 18000 -d -a 2 /tmp/panel-contact-sheet.b64 visual-review/contact-sheet-part-
+          git config user.name "filitalia-visual-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A visual-review
+          git commit -m "test: capture approved horizontal navbar"
+          git push origin HEAD:agent/admin-panel-demo

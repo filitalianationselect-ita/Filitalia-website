@@ -1,0 +1,150 @@
+name: FIL-ITALIA Final Public QA
+
+on:
+  pull_request:
+    paths:
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-fixes-v1.js"
+      - "home-reference-navbar-v1.js"
+      - "public-pages-v1.js"
+      - "index.html"
+      - "news.html"
+      - "idcamp*.html"
+      - "nation-select-showcase-2026.html"
+      - "nbtc-manila-2026.html"
+      - ".github/workflows/final-public-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-fixes-v1.js"
+      - "home-reference-navbar-v1.js"
+      - "public-pages-v1.js"
+      - "index.html"
+      - "news.html"
+      - "idcamp*.html"
+      - "nation-select-showcase-2026.html"
+      - "nbtc-manila-2026.html"
+      - ".github/workflows/final-public-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify final public pages
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root = 'https://deploy-preview-1--filitalia.netlify.app';
+          const sleep = ms => new Promise(r => setTimeout(r, ms));
+          (async()=>{
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage({viewport:{width:1280,height:800}});
+            let ready = false;
+            for(let attempt=0;attempt<80;attempt++){
+              await page.goto(`${root}/?finalqa=${Date.now()}-${attempt}`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await page.waitForSelector('body.fil-final-site[data-horizontal-ready="true"]',{timeout:2200});
+                const title = await page.locator('.home-hero-title').innerText();
+                if(/TALENTO|TALENT|LUMALAGO/i.test(title)){ready=true;break}
+              }catch(_){ }
+              await sleep(1500);
+            }
+            if(!ready)throw new Error('Final Home did not reach the Deploy Preview');
+            await page.waitForTimeout(1500);
+            const home = await page.evaluate(()=>{
+              const box = el => {const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}};
+              const menu=document.querySelector('.mobile-menu-button');
+              const title=document.querySelector('.home-hero-title');
+              const copy=document.querySelector('.home-hero-copy');
+              const nav=document.querySelector('.navbar');
+              return {
+                menuDisplay:getComputedStyle(menu).display,
+                navHeight:box(nav).height,
+                navFont:parseFloat(getComputedStyle(document.querySelector('#navLinks a')).fontSize),
+                navCount:document.querySelectorAll('#navLinks a').length,
+                titleText:title.innerText.trim(),
+                titleDisplay:getComputedStyle(title).display,
+                titleOpacity:getComputedStyle(title).opacity,
+                copyBox:box(copy),
+                copyVisibility:getComputedStyle(copy).visibility
+              };
+            });
+            if(home.menuDisplay!=='none')throw new Error(`Desktop hamburger visible: ${home.menuDisplay}`);
+            if(home.navHeight<80)throw new Error(`Navbar too small: ${home.navHeight}px`);
+            if(home.navFont<10)throw new Error(`Navbar text too small: ${home.navFont}px`);
+            if(home.navCount!==9)throw new Error(`Unexpected Home nav count: ${home.navCount}`);
+            if(home.copyBox.width<350||home.copyBox.height<400||home.copyVisibility!=='visible'||home.titleOpacity==='0')throw new Error(`Home copy is blank: ${JSON.stringify(home)}`);
+            await page.screenshot({path:'final-home.jpg',type:'jpeg',quality:76});
+
+            async function checkPublic(path, bodySelector){
+              await page.goto(`${root}/${path}?finalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+              await page.waitForSelector(bodySelector,{timeout:20000});
+              await page.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+              await page.waitForTimeout(1400);
+              const value=await page.evaluate(()=>({
+                hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+                navCount:document.querySelectorAll('#navLinks a').length,
+                navHeight:document.querySelector('.navbar').getBoundingClientRect().height,
+                background:getComputedStyle(document.body).backgroundImage
+              }));
+              if(value.hamburger!=='none')throw new Error(`${path}: desktop hamburger visible`);
+              if(value.navCount!==9)throw new Error(`${path}: expected 9 nav links, got ${value.navCount}`);
+              if(value.navHeight<80)throw new Error(`${path}: navbar too small`);
+              return value;
+            }
+            const archive=await checkPublic('idcamp','body[data-gallery-category="idcamp"]');
+            const album=await checkPublic('idcamp-roma-2026','body[data-album-id="idcamp-roma-2026"]');
+            await page.screenshot({path:'final-album.jpg',type:'jpeg',quality:76});
+
+            await page.goto(`${root}/news?finalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await page.waitForSelector('#allNewsGrid .fil-news-final-card',{timeout:20000});
+            await page.waitForTimeout(2800);
+            const news=await page.evaluate(()=>{
+              const cards=[...document.querySelectorAll('#allNewsGrid>.fil-news-final-card')];
+              return {count:cards.length,featured:cards[0]?.classList.contains('is-featured'),dates:cards.map(c=>c.querySelector('time')?.textContent.trim()||''),tops:cards.map(c=>Math.round(c.getBoundingClientRect().top)),columns:getComputedStyle(document.getElementById('allNewsGrid')).gridTemplateColumns};
+            });
+            if(news.count<3)throw new Error(`News cards missing: ${news.count}`);
+            if(!news.featured)throw new Error('First News card is not featured');
+            if(!/12\s+(luglio|july)/i.test(news.dates[0]))throw new Error(`News are not chronological: ${news.dates.join(' | ')}`);
+            if(!news.columns.includes('px'))throw new Error(`News grid not active: ${news.columns}`);
+            await page.screenshot({path:'final-news.jpg',type:'jpeg',quality:76});
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/?finalqa=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+            const mobileMenu=await mobile.locator('.mobile-menu-button').evaluate(el=>getComputedStyle(el).display);
+            if(mobileMenu==='none')throw new Error('Mobile hamburger is missing');
+            await mobile.screenshot({path:'final-mobile.jpg',type:'jpeg',quality:76});
+            fs.writeFileSync('final-public-qa.json',JSON.stringify({home,archive,album,news,mobileMenu},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-public-qa
+          path: |
+            final-home.jpg
+            final-album.jpg
+            final-news.jpg
+            final-mobile.jpg
+            final-public-qa.json
+          if-no-files-found: warn
+          retention-days: 7

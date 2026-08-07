@@ -1,0 +1,171 @@
+name: FIL-ITALIA Public Content Quality
+
+on:
+  pull_request:
+    paths:
+      - "events-data.js"
+      - "news-data.js"
+      - "gallery-data.js"
+      - "public-content-bridge-v1.js"
+      - "public-content-layout-v1.js"
+      - "public-media-v1.js"
+      - "public-media-v1.css"
+      - "public-pages-v1.js"
+      - "public-pages-v1.css"
+      - "public-concept2-final-v1.css"
+      - "home-concept2-final-v1.js"
+      - "home-concept2-final-v1.css"
+      - "home-tricolore-v1.js"
+      - "admin-content-layout-v1.js"
+      - "admin-light.html"
+      - "index.html"
+      - "players.html"
+      - "staff.html"
+      - "gallery.html"
+      - "events.html"
+      - "news.html"
+      - "login.html"
+      - "reset-password.html"
+      - "account.html"
+      - "login-control-room-v1.css"
+      - "login-admin-workspace-v1.css"
+      - "login-form-polish-v1.css"
+      - "login-form-polish-v1.js"
+      - "reset-password-polish-v1.css"
+      - "reset-password-polish-v1.js"
+      - "login-identifier-v1.js"
+      - "auth-super-admin-compat-v1.js"
+      - "unified-access-v1.js"
+      - "supabase/config.toml"
+      - "supabase/functions/**"
+      - "supabase/migrations/**"
+      - "scripts/generate-runtime-config.js"
+      - "scripts/audit-public-content.js"
+      - "scripts/audit-preview-isolation.js"
+      - "scripts/audit-role-consistency.js"
+      - "package.json"
+      - ".github/workflows/public-content-quality.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "events-data.js"
+      - "news-data.js"
+      - "gallery-data.js"
+      - "public-content-bridge-v1.js"
+      - "public-content-layout-v1.js"
+      - "public-media-v1.js"
+      - "public-media-v1.css"
+      - "public-pages-v1.js"
+      - "public-pages-v1.css"
+      - "public-concept2-final-v1.css"
+      - "home-concept2-final-v1.js"
+      - "home-concept2-final-v1.css"
+      - "home-tricolore-v1.js"
+      - "admin-content-layout-v1.js"
+      - "admin-light.html"
+      - "index.html"
+      - "players.html"
+      - "staff.html"
+      - "gallery.html"
+      - "events.html"
+      - "news.html"
+      - "login.html"
+      - "reset-password.html"
+      - "account.html"
+      - "login-control-room-v1.css"
+      - "login-admin-workspace-v1.css"
+      - "login-form-polish-v1.css"
+      - "login-form-polish-v1.js"
+      - "reset-password-polish-v1.css"
+      - "reset-password-polish-v1.js"
+      - "login-identifier-v1.js"
+      - "auth-super-admin-compat-v1.js"
+      - "unified-access-v1.js"
+      - "supabase/config.toml"
+      - "supabase/functions/**"
+      - "supabase/migrations/**"
+      - "scripts/generate-runtime-config.js"
+      - "scripts/audit-public-content.js"
+      - "scripts/audit-preview-isolation.js"
+      - "scripts/audit-role-consistency.js"
+      - "package.json"
+      - ".github/workflows/public-content-quality.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  public-content:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check public scripts syntax
+        run: |
+          node --check public-content-bridge-v1.js
+          node --check public-content-layout-v1.js
+          node --check public-media-v1.js
+          node --check public-pages-v1.js
+          node --check home-tricolore-v1.js
+          node --check home-concept2-final-v1.js
+          node --check admin-content-layout-v1.js
+          node --check login-form-polish-v1.js
+          node --check reset-password-polish-v1.js
+          node --check login-identifier-v1.js
+          node --check auth-super-admin-compat-v1.js
+          node --check scripts/generate-runtime-config.js
+          node --check scripts/audit-public-content.js
+          node --check scripts/audit-preview-isolation.js
+          node --check scripts/audit-role-consistency.js
+      - name: Verify ordering media and page redesign wiring
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const names = ['index','players','gallery','staff','news','events'];
+          const files = Object.fromEntries(names.map(name => [name, fs.readFileSync(`${name}.html`, 'utf8')]));
+          const migration = fs.readFileSync('supabase/migrations/20260729132000_content_layout_media.sql','utf8');
+          const admin = fs.readFileSync('admin-light.html','utf8');
+          const required = [
+            [files.index,'id="homeMediaGrid"'],
+            [files.index,'public-content-layout-v1.js?v='],
+            [files.index,'public-media-v1.js?v='],
+            [files.players,'public-pages-v1.js?v='],
+            [files.gallery,'public-pages-v1.js?v='],
+            [files.staff,'public-pages-v1.js?v='],
+            [files.news,'public-pages-v1.js?v='],
+            [files.events,'public-pages-v1.js?v='],
+            [files.gallery,'public-media-v1.js?v='],
+            [admin,'admin-content-layout-v1.js?v='],
+            [migration,'create table if not exists public.admin_content_layout'],
+            [migration,'create table if not exists public.admin_media'],
+            [migration,'Public read published FIL-ITALIA media']
+          ];
+          const missing = required.filter(([body,value]) => !body.includes(value)).map(([,value]) => value);
+          if (missing.length) throw new Error(`Content layout/media/page wiring missing: ${missing.join(', ')}`);
+          console.log('Content ordering, media and public page redesign verified.');
+          NODE
+      - name: Protect News and Talent ID archives
+        run: node scripts/audit-public-content.js
+      - name: Protect deploy preview isolation
+        run: node scripts/audit-preview-isolation.js
+      - name: Protect Admin and Super Admin roles
+        run: node scripts/audit-role-consistency.js
+      - name: Verify private login and reset flow
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const login = fs.readFileSync('login.html', 'utf8');
+          const reset = fs.readFileSync('reset-password.html', 'utf8');
+          const config = fs.readFileSync('supabase/config.toml', 'utf8');
+          const migration = fs.readFileSync('supabase/migrations/20260728211500_login_aliases.sql', 'utf8');
+          const requiredLogin = ['Area riservata','Email o nome utente','login-form-polish-v1.css?v=1','login-identifier-v1.js?v=1','loginPasswordToggle'];
+          const requiredReset = ['Nuova password','reset-password-polish-v1.css?v=1','resetPasswordToggle','resetPasswordConfirmToggle'];
+          const missing = requiredLogin.filter(value => !login.includes(value)).concat(requiredReset.filter(value => !reset.includes(value)));
+          if (missing.length) throw new Error(`Auth references missing: ${missing.join(', ')}`);
+          if (/CONTROL ROOM|ADMIN PROTETTO|Solo ruoli autorizzati/i.test(login)) throw new Error('Public login reveals administrative hints');
+          if (!config.includes('[functions.sign-in-alias]') || !config.includes('verify_jwt = false')) throw new Error('Alias function configuration missing');
+          if (!migration.includes('enable row level security')) throw new Error('Private alias table RLS missing');
+          console.log('Private login, alias and password reset verified.');
+          NODE

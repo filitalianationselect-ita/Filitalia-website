@@ -1,0 +1,121 @@
+name: FIL-ITALIA Home Event Visuals QA
+
+on:
+  pull_request:
+    paths:
+      - 'home-events-placement-final-v1.css'
+      - 'home-events-placement-final-v1.js'
+      - 'event-pages-final-v1.css'
+      - 'event-detail-premium-v2.css'
+      - 'event-detail-premium-v2.js'
+      - 'home-reference-navbar-v1.js'
+      - 'event.html'
+      - 'events.html'
+      - '.github/workflows/home-event-visuals-qa.yml'
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify Home and event pages
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          const fs=require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            async function ready(path,selector){
+              for(let i=0;i<60;i++){
+                await page.goto(`${root}/${path}${path.includes('?')?'&':'?'}homeeventqa=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{await page.waitForSelector(selector,{timeout:2200});return}catch(_){await sleep(1200)}
+              }
+              throw new Error(`${path} did not reach Deploy Preview`);
+            }
+            await ready('','.fil-home-events-layout-final .home-hero-shell');
+            await page.waitForTimeout(1800);
+            const home=await page.evaluate(()=>{
+              const rail=document.querySelector('.home-event-rail');
+              const visual=document.querySelector('.home-hero-visual');
+              const actions=document.querySelector('.home-hero-actions');
+              const copy=document.querySelector('.home-hero-copy');
+              const desc=document.querySelector('#homeHeroDescription');
+              const r=el=>{const b=el.getBoundingClientRect();return{x:b.x,y:b.y,width:b.width,height:b.height,bottom:b.bottom}};
+              return{railParent:rail?.parentElement?.className||'',rail:r(rail),visual:r(visual),actions:r(actions),copy:r(copy),desc:r(desc)};
+            });
+            if(!String(home.railParent).includes('home-hero-visual'))throw new Error(`Event rail parent: ${home.railParent}`);
+            if(home.rail.y<=home.visual.y+180)throw new Error(`Event rail is not below player: ${JSON.stringify(home)}`);
+            if(home.actions.y<=home.desc.bottom+20)throw new Error(`Home actions are not lower: ${JSON.stringify(home)}`);
+            if(home.actions.x>=home.visual.x)throw new Error(`Home actions left column failed: ${JSON.stringify(home)}`);
+            await page.screenshot({path:'home-placement.jpg',type:'jpeg',quality:80,fullPage:false});
+
+            await page.goto(`${root}/?homeeventqa=events-${Date.now()}#events`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#homeEventsGrid .fhe-stage',{timeout:30000});
+            await page.waitForTimeout(1500);
+            const events=await page.evaluate(()=>{
+              const time=document.querySelector('#homeEventsGrid .fhe-mini time');
+              const mini=document.querySelector('#homeEventsGrid .fhe-mini');
+              const panel=document.querySelector('#events');
+              const s=el=>getComputedStyle(el);
+              return{count:document.querySelectorAll('#homeEventsGrid .fhe-mini').length,timeColor:s(time).color,timeBg:s(time).backgroundColor,miniBg:s(mini).backgroundImage,panelBg:s(panel).backgroundImage};
+            });
+            if(events.count<1)throw new Error('Home event cards missing');
+            if(events.timeBg==='rgba(0, 0, 0, 0)'||events.timeBg==='transparent')throw new Error(`Event date badge missing: ${JSON.stringify(events)}`);
+            if(!events.miniBg.includes('gradient'))throw new Error(`Event card background not unified: ${JSON.stringify(events)}`);
+            await page.screenshot({path:'home-events.jpg',type:'jpeg',quality:80,fullPage:false});
+
+            await ready('event.html?id=idcamp-roma-2026','.fil-event-detail-page .event-premium-shell');
+            await page.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+            await page.waitForTimeout(1500);
+            const detail=await page.evaluate(()=>{
+              const body=getComputedStyle(document.body);
+              const backdrop=getComputedStyle(document.body,'::before');
+              const hero=getComputedStyle(document.querySelector('.event-premium-hero'));
+              const title=getComputedStyle(document.querySelector('.event-premium-intro h1'));
+              const poster=document.querySelector('.event-premium-poster img');
+              const modal=document.querySelector('#infoModal');
+              return{
+                bodyBg:backdrop.backgroundImage,
+                heroBg:hero.backgroundImage,
+                title:title.color,
+                nav:document.querySelectorAll('#navLinks a').length,
+                fields:document.querySelectorAll('.event-detail-fields>div').length,
+                description:(document.querySelector('.event-detail-description')?.textContent||'').trim().length,
+                posterWidth:poster?.naturalWidth||0,
+                scrollHeight:document.documentElement.scrollHeight,
+                viewport:window.innerHeight,
+                bodyOverflow:body.overflowY,
+                modalVisible:modal?getComputedStyle(modal).display!=='none':false
+              };
+            });
+            if(!detail.bodyBg.includes('gradient')||!detail.heroBg.includes('gradient'))throw new Error(`Premium event background missing: ${JSON.stringify(detail)}`);
+            if(detail.title!=='rgb(255, 255, 255)')throw new Error(`Event detail title contrast: ${JSON.stringify(detail)}`);
+            if(detail.nav!==9||detail.fields!==4||detail.description<30||detail.posterWidth<1)throw new Error(`Premium event content invalid: ${JSON.stringify(detail)}`);
+            if(detail.bodyOverflow==='hidden'||detail.modalVisible)throw new Error(`Event page remains locked or modal based: ${JSON.stringify(detail)}`);
+            if(detail.scrollHeight<=detail.viewport+120)throw new Error(`Event page is not scrollable: ${JSON.stringify(detail)}`);
+            await page.screenshot({path:'event-detail.jpg',type:'jpeg',quality:82,fullPage:true});
+            fs.writeFileSync('home-event-visuals.json',JSON.stringify({home,events,detail},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-event-visuals-qa
+          path: |
+            home-placement.jpg
+            home-events.jpg
+            event-detail.jpg
+            home-event-visuals.json
+          if-no-files-found: ignore
