@@ -24,12 +24,16 @@ Portare FIL-ITALIA da un sistema ibrido Google Sheet + account Supabase a un reg
    - conflitti di identità
 4. Risolvere manualmente eventuali righe/conflitti prima dell'import.
 5. Applicare in Preview le migration, nell'ordine:
-   - `20260807_player_registry.sql`
-   - `20260807_player_registry_admin.sql`
-   - `20260807_account_registry_history.sql`
-   - `20260807_event_day.sql`
-   - `20260807_player_card_batch.sql`
-   - `20260807_registry_privacy.sql`
+   - `20260807170000_player_registry.sql`
+   - `20260807171000_player_registry_admin.sql`
+   - `20260807172000_registry_identity_resolution.sql`
+   - `20260807173000_registry_parent_resolution.sql`
+   - `20260807174000_registry_account_linking.sql`
+   - `20260807175000_account_registry_history.sql`
+   - `20260807180000_event_day.sql`
+   - `20260807181000_player_card_batch.sql`
+   - `20260807182000_registry_documents.sql`
+   - `20260807183000_registry_privacy.sql`
 6. Pubblicare in Preview le Edge Functions:
    - `register-camp`
    - `admin-import-registry`

@@ -85,6 +85,8 @@
 ### Quality gates
 - `npm run check-registry`;
 - workflow manuale `Player Registry Check`;
+- workflow manuale `Deploy Preview Backend` ripristinato sulla branch;
+- migration registry con timestamp univoci e ordine esplicito;
 - rollout documentato;
 - checklist test completa;
 - nessun deploy produzione automatico.
@@ -97,8 +99,8 @@
 - nessuna rimozione del codice legacy finché il nuovo sistema non è validato in Preview.
 
 ## Gate prima della Preview
-- i file migration creati nella branch condividono ancora il prefisso data `20260807`; se il deploy usa il migration tracker di Supabase, vanno rinominati con versioni/timestamp univoci prima di `supabase db push`;
-- avere l'export reale CAMPS;
-- avere secrets/credenziali Preview;
-- applicare migration e Edge Functions in Preview;
-- eseguire la checklist con dati/account reali.
+- avere l'export reale CAMPS per l'import storico; non serve per pubblicare il backend vuoto;
+- avere i secret dell'environment GitHub `filitalia-preview`;
+- eseguire `Deploy Preview Backend` dalla branch corrente;
+- verificare migration ed Edge Functions in Preview;
+- eseguire la checklist con dati/account di test prima dell'import reale.

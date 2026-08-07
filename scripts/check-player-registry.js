@@ -39,12 +39,16 @@ browserJs.forEach(relative => {
 });
 
 const migrations = [
-  "supabase/migrations/20260807_player_registry.sql",
-  "supabase/migrations/20260807_player_registry_admin.sql",
-  "supabase/migrations/20260807_account_registry_history.sql",
-  "supabase/migrations/20260807_event_day.sql",
-  "supabase/migrations/20260807_player_card_batch.sql",
-  "supabase/migrations/20260807_registry_privacy.sql"
+  "supabase/migrations/20260807170000_player_registry.sql",
+  "supabase/migrations/20260807171000_player_registry_admin.sql",
+  "supabase/migrations/20260807172000_registry_identity_resolution.sql",
+  "supabase/migrations/20260807173000_registry_parent_resolution.sql",
+  "supabase/migrations/20260807174000_registry_account_linking.sql",
+  "supabase/migrations/20260807175000_account_registry_history.sql",
+  "supabase/migrations/20260807180000_event_day.sql",
+  "supabase/migrations/20260807181000_player_card_batch.sql",
+  "supabase/migrations/20260807182000_registry_documents.sql",
+  "supabase/migrations/20260807183000_registry_privacy.sql"
 ];
 
 migrations.forEach(relative => {
@@ -123,4 +127,4 @@ if (errors.length) {
   errors.forEach(item => console.error(`- ${item}`));
   process.exit(1);
 }
-console.log("\nOK: controlli strutturali superati.");
+console.log("\nOK: controlli strutturali superati.\n");
