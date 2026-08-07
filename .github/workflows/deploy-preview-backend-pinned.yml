@@ -108,3 +108,5 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
             -d "{\"state\":\"$STATE\",\"context\":\"filitalia/preview-deploy-2.109.1/$STAGE\",\"description\":\"Preview backend pinned CLI: $STAGE\"}"
           [[ "$STATE" == success ]]
+
+# rerun after registry SQL keyword fix
