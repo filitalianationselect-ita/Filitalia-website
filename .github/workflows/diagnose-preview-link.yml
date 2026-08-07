@@ -53,8 +53,13 @@ jobs:
             if [[ -n "$SUPABASE_ACCESS_TOKEN" ]]; then SAFE=${SAFE//${SUPABASE_ACCESS_TOKEN}/REDACTED}; fi
             if [[ -n "$SUPABASE_DB_PASSWORD" ]]; then SAFE=${SAFE//${SUPABASE_DB_PASSWORD}/REDACTED}; fi
             if [[ -n "$PROJECT_REF" ]]; then SAFE=${SAFE//${PROJECT_REF}/REDACTED}; fi
-            LINE=$(printf '%s\n' "$SAFE" | grep -Ei 'error|failed|invalid|cannot|unable|refused|timeout|not found|unexpected|remote|database' | tail -n 1 || true)
-            if [[ -z "$LINE" ]]; then LINE=$(printf '%s\n' "$SAFE" | tail -n 1); fi
+            LINE=$(printf '%s\n' "$SAFE" \
+              | grep -Eiv 'try rerunning|with --debug|debug to troubleshoot' \
+              | grep -Ei 'error|failed|invalid|cannot|unable|refused|timeout|not found|unexpected|remote|database|connect|authentication|password|token|project' \
+              | head -n 1 || true)
+            if [[ -z "$LINE" ]]; then
+              LINE=$(printf '%s\n' "$SAFE" | grep -Eiv 'try rerunning|with --debug|debug to troubleshoot' | head -n 1 || true)
+            fi
             DETAIL=$(printf '%s' "$LINE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' | cut -c1-58)
             [[ -n "$DETAIL" ]] || DETAIL="unknown"
           fi
