@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   deploy_preview:
@@ -103,3 +104,30 @@ jobs:
           echo "Funzioni pubblicate: tutte quelle presenti in supabase/functions"
           if [[ -n "$GMAIL_CLIENT_ID" ]]; then echo "Gmail: configurato"; else echo "Gmail: non ancora configurato"; fi
           echo "Produzione non modificata."
+
+  report_status:
+    name: Report Preview backend result
+    needs: deploy_preview
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_RESULT: ${{ needs.deploy_preview.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$DEPLOY_RESULT" == "success" ]]; then
+            STATE="success"
+            DESCRIPTION="Preview backend deployed"
+          else
+            STATE="failure"
+            DESCRIPTION="Preview backend deploy failed"
+          fi
+          curl -fsSL -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -d "{\"state\":\"$STATE\",\"context\":\"filitalia/preview-backend\",\"description\":\"$DESCRIPTION\"}"
