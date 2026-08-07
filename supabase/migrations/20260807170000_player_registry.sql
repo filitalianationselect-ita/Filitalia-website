@@ -83,7 +83,7 @@ create table if not exists public.players (
   residence_city text,
   email text,
   phone text,
-  position text,
+  "position" text,
   current_club text,
   height_cm smallint check (height_cm is null or height_cm between 80 and 250),
   weight_kg numeric(5,1) check (weight_kg is null or weight_kg between 20 and 250),
@@ -270,7 +270,7 @@ create table if not exists public.public_player_cards_v2 (
   full_name text not null,
   birth_year smallint not null check (birth_year between 1900 and 2100),
   category text not null,
-  position text not null,
+  "position" text not null,
   height_cm smallint check (height_cm is null or height_cm between 80 and 250),
   current_club text,
   city text not null,
@@ -528,7 +528,7 @@ returns table (
   residence_city text,
   email text,
   phone text,
-  position text,
+  "position" text,
   current_club text,
   height_cm smallint,
   weight_kg numeric,
@@ -838,7 +838,7 @@ create or replace function public.admin_list_registry_players(
 )
 returns table (
   player_id uuid, full_name text, birth_date date, birth_year integer, sex text,
-  residence_city text, position text, current_club text, email text, phone text,
+  residence_city text, "position" text, current_club text, email text, phone text,
   player_status text, registration_count bigint, event_count bigint,
   last_event_date date, card_published boolean
 )
@@ -1173,7 +1173,7 @@ $$;
 create or replace function public.staff_list_event_participants(target_event_id uuid)
 returns table(
   registration_id uuid,player_id uuid,full_name text,birth_date date,sex text,
-  position text,current_club text,shirt_size text,registration_status text,
+  "position" text,current_club text,shirt_size text,registration_status text,
   attendance_status text,selection_status text,payment_status text
 )
 language plpgsql
