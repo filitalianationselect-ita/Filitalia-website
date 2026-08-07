@@ -63,9 +63,9 @@ begin
     nullif(trim(player_data->>'current_club'),''),
     nullif(player_data->>'height_cm','')::smallint,
     nullif(player_data->>'weight_kg','')::numeric,
-    case when player_data ? 'italian_passport' and player_data->>'italian_passport'<>'')
+    case when player_data ? 'italian_passport' and player_data->>'italian_passport'<>''
       then (player_data->>'italian_passport')::boolean else null end,
-    case when player_data ? 'filipino_passport' and player_data->>'filipino_passport'<>'')
+    case when player_data ? 'filipino_passport' and player_data->>'filipino_passport'<>''
       then (player_data->>'filipino_passport')::boolean else null end,
     nullif(trim(player_data->>'instagram'),''),
     nullif(trim(player_data->>'highlights_url'),''),
