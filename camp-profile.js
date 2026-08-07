@@ -25,6 +25,52 @@
     input.value = value || "";
   }
 
+  function normalizeIdentityPart(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim()
+      .replace(/\s+/g, "-");
+  }
+
+  function manualPlayerIdentityKey(form) {
+    const firstName = normalizeIdentityPart(byName(form, "Nome") && byName(form, "Nome").value);
+    const lastName = normalizeIdentityPart(byName(form, "Cognome") && byName(form, "Cognome").value);
+    const birthDate = String(byName(form, "Data Nascita") && byName(form, "Data Nascita").value || "").trim();
+
+    if (!firstName || !lastName || !birthDate) return "";
+    return "person:" + firstName + ":" + lastName + ":" + birthDate;
+  }
+
+  function syncManualPlayerIdentity(form) {
+    const profileId = String(byName(form, "Player Profile ID") && byName(form, "Player Profile ID").value || "").trim();
+    const identityKey = profileId ? "profile:" + profileId : manualPlayerIdentityKey(form);
+    ensureHidden(form, "Player Identity Key", identityKey);
+    ensureHidden(form, "Player Registry Version", "1");
+    return identityKey;
+  }
+
+  function bindIdentityFields(form) {
+    ["Nome", "Cognome", "Data Nascita"].forEach(function (name) {
+      const field = byName(form, name);
+      if (!field) return;
+      field.addEventListener("input", function () {
+        syncManualPlayerIdentity(form);
+      });
+      field.addEventListener("change", function () {
+        syncManualPlayerIdentity(form);
+      });
+    });
+
+    form.addEventListener("submit", function () {
+      syncManualPlayerIdentity(form);
+    }, true);
+
+    syncManualPlayerIdentity(form);
+  }
+
   function showNotice(message, type) {
     const notice = document.getElementById("campProfileNotice");
     if (!notice) return;
@@ -50,6 +96,7 @@
     if (field) field.hidden = true;
     ensureHidden(form, "Profile Photo Path", profile.avatar_path || "");
     ensureHidden(form, "Player Profile ID", profile.id || "");
+    syncManualPlayerIdentity(form);
   }
 
   async function init() {
@@ -58,6 +105,7 @@
 
     const auth = window.FilitaliaAuth;
     requireManualPhoto();
+    bindIdentityFields(form);
 
     if (!auth || !auth.configured) {
       showNotice(tx("campLoginNotice"), "info");
