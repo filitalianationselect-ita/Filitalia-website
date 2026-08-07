@@ -102,7 +102,7 @@
 
     <section class="account-card account-danger-zone">
       <h2 class="account-section-title">Eliminazione account</h2>
-      <p class="account-muted">La richiesta verrà inviata all’amministratore. Dopo la verifica saranno eliminati account, profilo giocatore, foto e dati collegati. L’operazione definitiva non è reversibile.</p>
+      <p class="account-muted">La richiesta verrà verificata dall’amministratore. L’eliminazione dell’account non cancella automaticamente i profili di figli o altri giocatori collegati: eventuali scollegamenti o richieste sui dati del singolo giocatore vengono gestiti separatamente per evitare cancellazioni accidentali.</p>
       <label>Motivo facoltativo<textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea></label>
       <button id="requestDeletionButton" class="account-button danger" type="button">RICHIEDI ELIMINAZIONE ACCOUNT</button>
       <p id="deletionStatus" class="account-status" role="status" aria-live="polite"></p>
@@ -138,7 +138,7 @@
 
     <section id="adminDeletionSection" class="account-card" hidden>
       <h2 class="account-section-title">Richieste eliminazione account</h2>
-      <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. In entrambi i casi l’utente riceverà una mail.</p>
+      <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. Per account collegati a giocatori/minorenni verifica prima l’impatto nel registro per non eliminare o scollegare dati della persona sbagliata.</p>
       <div id="deletionRequestsList"></div>
       <p id="deletionAdminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
