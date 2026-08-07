@@ -1,0 +1,100 @@
+name: Deploy Preview Backend
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Scrivi DEPLOY PREVIEW per confermare"
+        required: true
+        type: string
+      preview_origin:
+        description: "URL completo della Deploy Preview Netlify"
+        required: true
+        default: "https://deploy-preview-3--filitalia.netlify.app"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy_preview:
+    name: Supabase preview only
+    if: ${{ inputs.confirmation == 'DEPLOY PREVIEW' }}
+    runs-on: ubuntu-latest
+    environment: filitalia-preview
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_PREVIEW_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PREVIEW_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PREVIEW_PROJECT_REF }}
+      PREVIEW_ORIGIN: ${{ inputs.preview_origin }}
+      GMAIL_CLIENT_ID: ${{ secrets.GMAIL_PREVIEW_CLIENT_ID }}
+      GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_PREVIEW_CLIENT_SECRET }}
+      GMAIL_TOKEN_ENCRYPTION_KEY: ${{ secrets.GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY }}
+
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+
+      - name: Validate preview-only configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "SUPABASE_PREVIEW_ACCESS_TOKEN mancante"; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo "SUPABASE_PREVIEW_DB_PASSWORD mancante"; exit 1; }
+          test -n "$PROJECT_REF" || { echo "SUPABASE_PREVIEW_PROJECT_REF mancante"; exit 1; }
+          [[ "$PREVIEW_ORIGIN" == https://*--filitalia.netlify.app ]] || { echo "L'origine non è una Deploy Preview FIL-ITALIA"; exit 1; }
+          if [[ -n "$GMAIL_CLIENT_ID" || -n "$GMAIL_CLIENT_SECRET" || -n "$GMAIL_TOKEN_ENCRYPTION_KEY" ]]; then
+            test -n "$GMAIL_CLIENT_ID" || { echo "GMAIL_PREVIEW_CLIENT_ID mancante"; exit 1; }
+            test -n "$GMAIL_CLIENT_SECRET" || { echo "GMAIL_PREVIEW_CLIENT_SECRET mancante"; exit 1; }
+            test -n "$GMAIL_TOKEN_ENCRYPTION_KEY" || { echo "GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY mancante"; exit 1; }
+            [[ ${#GMAIL_TOKEN_ENCRYPTION_KEY} -ge 40 ]] || { echo "La chiave di cifratura Gmail non sembra valida"; exit 1; }
+            echo "Backend core e Gmail pronti."
+          else
+            echo "Backend core pronto. Gmail verrà configurato in seguito."
+          fi
+          echo "Ambiente preview verificato: $PREVIEW_ORIGIN"
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link preview Supabase project
+        run: supabase link --project-ref "$PROJECT_REF"
+
+      - name: Preview database changes
+        run: supabase db push --dry-run
+
+      - name: Apply all database migrations
+        run: supabase db push
+
+      - name: Configure preview core secrets
+        run: |
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            ADMIN_SITE_ORIGIN="$PREVIEW_ORIGIN"
+
+      - name: Configure optional Gmail secrets
+        if: ${{ env.GMAIL_CLIENT_ID != '' && env.GMAIL_CLIENT_SECRET != '' && env.GMAIL_TOKEN_ENCRYPTION_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CALLBACK="https://${PROJECT_REF}.supabase.co/functions/v1/gmail-oauth-callback"
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            GMAIL_CLIENT_ID="$GMAIL_CLIENT_ID" \
+            GMAIL_CLIENT_SECRET="$GMAIL_CLIENT_SECRET" \
+            GMAIL_REDIRECT_URI="$CALLBACK" \
+            GMAIL_TOKEN_ENCRYPTION_KEY="$GMAIL_TOKEN_ENCRYPTION_KEY"
+          echo "Callback Gmail preview: $CALLBACK"
+
+      - name: Deploy all preview Edge Functions
+        run: supabase functions deploy --project-ref "$PROJECT_REF"
+
+      - name: Preview backend summary
+        run: |
+          echo "Deploy Preview backend completato."
+          echo "Supabase project ref: $PROJECT_REF"
+          echo "Netlify origin: $PREVIEW_ORIGIN"
+          echo "Migrazioni applicate: tutte quelle presenti in supabase/migrations"
+          echo "Funzioni pubblicate: tutte quelle presenti in supabase/functions"
+          if [[ -n "$GMAIL_CLIENT_ID" ]]; then echo "Gmail: configurato"; else echo "Gmail: non ancora configurato"; fi
+          echo "Produzione non modificata."
