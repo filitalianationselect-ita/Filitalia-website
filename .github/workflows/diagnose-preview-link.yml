@@ -33,9 +33,11 @@ jobs:
           CODE=$?
           set -e
           REASON="unknown"
+          DETAIL="unknown"
           LOWER=$(printf '%s' "$OUTPUT" | tr '[:upper:]' '[:lower:]')
           if [[ $CODE -eq 0 ]]; then
             REASON="success"
+            DETAIL="success"
           elif [[ "$LOWER" == *"access token"* || "$LOWER" == *"unauthorized"* || "$LOWER" == *"401"* ]]; then
             REASON="access-token"
           elif [[ "$LOWER" == *"project"*"not found"* || "$LOWER" == *"invalid project"* || "$LOWER" == *"project ref"* ]]; then
@@ -45,19 +47,37 @@ jobs:
           elif [[ "$LOWER" == *"failed to connect"* || "$LOWER" == *"connection refused"* || "$LOWER" == *"timeout"* ]]; then
             REASON="connection"
           fi
+
+          if [[ $CODE -ne 0 ]]; then
+            SAFE="$OUTPUT"
+            if [[ -n "$SUPABASE_ACCESS_TOKEN" ]]; then SAFE=${SAFE//${SUPABASE_ACCESS_TOKEN}/REDACTED}; fi
+            if [[ -n "$SUPABASE_DB_PASSWORD" ]]; then SAFE=${SAFE//${SUPABASE_DB_PASSWORD}/REDACTED}; fi
+            if [[ -n "$PROJECT_REF" ]]; then SAFE=${SAFE//${PROJECT_REF}/REDACTED}; fi
+            LINE=$(printf '%s\n' "$SAFE" | grep -Ei 'error|failed|invalid|cannot|unable|refused|timeout|not found|unexpected|remote|database' | tail -n 1 || true)
+            if [[ -z "$LINE" ]]; then LINE=$(printf '%s\n' "$SAFE" | tail -n 1); fi
+            DETAIL=$(printf '%s' "$LINE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' | cut -c1-58)
+            [[ -n "$DETAIL" ]] || DETAIL="unknown"
+          fi
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
+          echo "detail=$DETAIL" >> "$GITHUB_OUTPUT"
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
       - name: Publish diagnostic result
         env:
           GH_TOKEN: ${{ github.token }}
           REASON: ${{ steps.diagnose.outputs.reason }}
+          DETAIL: ${{ steps.diagnose.outputs.detail }}
           CODE: ${{ steps.diagnose.outputs.code }}
         shell: bash
         run: |
           set -euo pipefail
           STATE="failure"
           if [[ "$REASON" == "success" && "$CODE" == "0" ]]; then STATE="success"; fi
-          CONTEXT="filitalia/preview-link/$REASON"
+          if [[ "$REASON" == "unknown" ]]; then
+            CONTEXT="filitalia/preview-link/error-$DETAIL"
+          else
+            CONTEXT="filitalia/preview-link/$REASON"
+          fi
+          CONTEXT=$(printf '%s' "$CONTEXT" | cut -c1-95)
           curl -fsSL -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
