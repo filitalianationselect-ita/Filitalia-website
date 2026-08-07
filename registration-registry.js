@@ -4,9 +4,7 @@
   let linkedPlayers = [];
   let originalSubmit = null;
 
-  function byName(form, name) {
-    return form ? form.elements.namedItem(name) : null;
-  }
+  function byName(form, name) { return form ? form.elements.namedItem(name) : null; }
 
   function setValue(form, name, value) {
     const field = byName(form, name);
@@ -47,24 +45,28 @@
     };
   }
 
-  function collectRegistryPayload(form) {
+  async function collectRegistryPayload(form) {
     const payload = {};
     const formData = new FormData(form);
 
-    formData.forEach(function (value, key) {
-      if (value instanceof File) return;
+    for (const pair of formData.entries()) {
+      const key = pair[0];
+      const value = pair[1];
+      if (value instanceof File) {
+        if (value.name && key === "Foto Giocatore" && typeof window.fileToPayload === "function") {
+          payload[key] = await window.fileToPayload(value);
+        }
+        continue;
+      }
       payload[key] = String(value == null ? "" : value);
-    });
+    }
 
     Object.assign(payload, selectedEventPayload());
     payload.submissionId = ensureSubmissionId(form);
     payload.sourcePage = payload.sourcePage || "camp-register.html";
     payload.submittedAt = new Date().toISOString();
     payload.language = localStorage.getItem("language") || "it";
-    payload["Canonical Player ID"] = String(
-      (byName(form, "Canonical Player ID") && byName(form, "Canonical Player ID").value) || ""
-    );
-
+    payload["Canonical Player ID"] = String((byName(form, "Canonical Player ID") && byName(form, "Canonical Player ID").value) || "");
     return payload;
   }
 
@@ -76,7 +78,6 @@
 
   function useLinkedPlayer(form, player) {
     if (!player) return;
-
     ensureHidden(form, "Canonical Player ID", player.player_id || "");
     ensureHidden(form, "Player Identity Key", "registry:" + (player.player_id || ""));
     ensureHidden(form, "Player Registry Version", "2");
@@ -93,10 +94,7 @@
     const photoField = document.getElementById("campPhotoField");
     if (player.photo_path) {
       ensureHidden(form, "Profile Photo Path", player.photo_path);
-      if (photo) {
-        photo.required = false;
-        photo.value = "";
-      }
+      if (photo) { photo.required = false; photo.value = ""; }
       if (photoField) photoField.hidden = true;
     } else {
       ensureHidden(form, "Profile Photo Path", "");
@@ -118,45 +116,47 @@
       select.appendChild(option);
     });
 
-    select.addEventListener("change", function () {
-      const selected = linkedPlayers.find(function (player) {
-        return String(player.player_id) === String(select.value);
-      });
+    function applySelected() {
+      const selected = linkedPlayers.find(function (player) { return String(player.player_id) === String(select.value); });
       useLinkedPlayer(form, selected);
-    });
+    }
+    select.addEventListener("change", applySelected);
 
     section.hidden = false;
-    select.value = linkedPlayers[0].player_id;
-    useLinkedPlayer(form, linkedPlayers[0]);
+    const requested = new URLSearchParams(window.location.search).get("player");
+    select.value = linkedPlayers.some(function (p) { return String(p.player_id) === String(requested); }) ? requested : linkedPlayers[0].player_id;
+    applySelected();
+  }
+
+  function fillGuardianFromAccount(form, profile) {
+    if (!profile || profile.role !== "parent") return;
+    setValue(form, "Nome Genitore", profile.first_name);
+    setValue(form, "Cognome Genitore", profile.last_name);
+    setValue(form, "Email Genitore", profile.email);
+    setValue(form, "Telefono Genitore", profile.phone);
   }
 
   async function loadLinkedPlayers(form) {
     const auth = window.FilitaliaAuth;
     if (!auth || !auth.configured || !auth.client) return;
-
     try {
       const session = await auth.getSession();
       if (!session) return;
-
       const profile = await auth.getOwnProfile();
       if (!profile || profile.status !== "active") return;
+      fillGuardianFromAccount(form, profile);
 
       if (profile.role === "player") {
         const ensured = await auth.client.rpc("ensure_self_player");
-        if (ensured.error && !String(ensured.error.message || "").includes("PLAYER_PROFILE_INCOMPLETE")) {
-          throw ensured.error;
-        }
+        if (ensured.error && !String(ensured.error.message || "").includes("PLAYER_PROFILE_INCOMPLETE")) throw ensured.error;
       }
-
-      if (profile.role !== "player" && profile.role !== "parent" && profile.role !== "admin") return;
+      if (!["player","parent","admin"].includes(profile.role)) return;
 
       const result = await auth.client.rpc("list_my_players");
       if (result.error) throw result.error;
       linkedPlayers = Array.isArray(result.data) ? result.data : [];
       renderLinkedPlayers(form);
     } catch (error) {
-      // Compatibility mode: until the registry migration is deployed, the
-      // existing camp form remains fully operational.
       console.info("Player registry selector unavailable; using legacy form.", error);
     }
   }
@@ -164,20 +164,13 @@
   async function mirrorToRegistry(form) {
     const auth = window.FilitaliaAuth;
     if (!auth || !auth.configured || !auth.client) return null;
-
-    const payload = collectRegistryPayload(form);
-    if (!payload["Nome"] || !payload["Cognome"] || !payload["Data Nascita"] || !payload["Camp Name"]) {
-      return null;
-    }
+    const payload = await collectRegistryPayload(form);
+    if (!payload["Nome"] || !payload["Cognome"] || !payload["Data Nascita"] || !payload["Camp Name"]) return null;
 
     try {
-      const result = await auth.client.functions.invoke("register-camp", {
-        body: { submission: payload }
-      });
+      const result = await auth.client.functions.invoke("register-camp", { body: { submission: payload } });
       if (result.error) throw result.error;
-      if (result.data && result.data.ok === false) {
-        throw new Error(result.data.error || "REGISTRY_WRITE_FAILED");
-      }
+      if (result.data && result.data.ok === false) throw new Error(result.data.error || "REGISTRY_WRITE_FAILED");
       window.__FILITALIA_LAST_REGISTRY_WRITE = result.data || { ok: true };
       return result.data || { ok: true };
     } catch (error) {
@@ -188,14 +181,10 @@
   }
 
   function installSubmitBridge() {
-    if (typeof window.submitSiteForm !== "function") return;
-    if (window.submitSiteForm.__registryWrapped) return;
-
+    if (typeof window.submitSiteForm !== "function" || window.submitSiteForm.__registryWrapped) return;
     originalSubmit = window.submitSiteForm;
     const wrapped = async function (form) {
-      if (form && form.id === "campForm") {
-        await mirrorToRegistry(form);
-      }
+      if (form && form.id === "campForm") await mirrorToRegistry(form);
       return originalSubmit(form);
     };
     wrapped.__registryWrapped = true;
