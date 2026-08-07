@@ -60,7 +60,7 @@ const eventsData = [
       en:"Palestra Comunale Ritiro, Messina, Italy",
       ph:"Palestra Comunale Ritiro, Messina, Italy"
     },
-    image: "images/camp-messina-2026.svg",
+    image: "images/camp-messina-2026.jpg",
     excerpt: {
       it:"Talent ID Camp Messina, 6 settembre 2026 dalle 09:00 alle 15:00 presso la Palestra Comunale Ritiro. Iscrizioni entro il 31 agosto.",
       en:"Messina Talent ID Camp on September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro. Registration closes August 31.",
@@ -157,14 +157,16 @@ const eventsData = [
   }
 ];
 
-// Event cards: show the event poster directly in every preview card.
+/* Event card preview with image. Kept here so no extra poster-loader files are needed. */
 window.addEventListener("load", function(){
   if(typeof window.buildEventCard !== "function") return;
 
   const style = document.createElement("style");
   style.id = "event-poster-preview-style";
   style.textContent = `
-    .event-card.event-card-with-cover{
+    .event-card.event-card-with-image,
+    #homeEventsGrid .event-card.event-card-with-image,
+    #allEventsGrid .event-card.event-card-with-image{
       padding:0 !important;
       height:auto !important;
       min-height:0 !important;
@@ -172,10 +174,9 @@ window.addEventListener("load", function(){
       overflow:hidden !important;
       display:flex !important;
       flex-direction:column !important;
-      justify-content:flex-start !important;
       background:#fff !important;
     }
-    .event-card-with-cover .event-cover{
+    .event-card-with-image .event-card-image{
       width:100% !important;
       aspect-ratio:1 / 1 !important;
       height:auto !important;
@@ -185,7 +186,7 @@ window.addEventListener("load", function(){
       background:#111 !important;
       flex-shrink:0 !important;
     }
-    .event-card-with-cover .event-card-content{
+    .event-card-with-image .event-card-body{
       width:100% !important;
       padding:18px 20px 20px !important;
       display:flex !important;
@@ -193,38 +194,19 @@ window.addEventListener("load", function(){
       align-items:center !important;
       flex:1 !important;
     }
-    .event-card-with-cover .event-card-date{
-      min-height:auto !important;
-      margin-bottom:8px !important;
-    }
-    .event-card-with-cover h3{
-      min-height:auto !important;
-      margin-bottom:10px !important;
-      font-size:1.25rem !important;
-    }
-    .event-card-with-cover .event-card-location{
-      margin-bottom:16px !important;
-      -webkit-line-clamp:2 !important;
-    }
-    .event-card-with-cover .event-card-actions{
+    .event-card-with-image .event-card-actions{
       width:100% !important;
       display:flex !important;
       gap:8px !important;
       margin-top:auto !important;
     }
-    .event-card-with-cover .event-share-button,
-    .event-card-with-cover .ticket-button{
+    .event-card-with-image .event-share-button,
+    .event-card-with-image .ticket-button{
       flex:1 1 0 !important;
       margin-top:0 !important;
       min-width:0 !important;
       padding:11px 10px !important;
       font-size:.76rem !important;
-    }
-    #homeEventsGrid .event-card.event-card-with-cover,
-    #allEventsGrid .event-card.event-card-with-cover{
-      height:auto !important;
-      min-height:0 !important;
-      max-height:none !important;
     }
   `;
   if(!document.getElementById(style.id)) document.head.appendChild(style);
@@ -234,16 +216,16 @@ window.addEventListener("load", function(){
     const link = item.ticket || defaultLink;
     const eventId = safe(item.id || item.slug || "");
     const title = localEvent(item,"title") || "Event";
-    const image = item.cardImage || item.image || "images/logo.png";
+    const image = item.image || "images/logo.png";
     const shareText = (typeof lang === "function" && lang() === "en") ? "Share" : ((typeof lang === "function" && lang() === "ph") ? "I-share" : "Condividi");
 
     return `
-      <div class="event-card event-card-with-cover" data-event-id="${eventId}" onclick="openEventByIndex(${index})">
-        <img class="event-cover" src="${safe(image)}" alt="${safe(title)}" onerror="this.onerror=null;this.src='images/logo.png';">
-        <div class="event-card-content">
-          <span class="event-card-date">${autoTextHTML(item,"date",localEvent(item,"date"),0)}</span>
+      <div class="event-card event-card-with-image" data-event-id="${eventId}" onclick="openEventByIndex(${index})">
+        <img class="event-card-image" src="${safe(image)}" alt="${safe(title)}" onerror="this.onerror=null;this.src='images/logo.png';">
+        <div class="event-card-body">
+          <span>${autoTextHTML(item,"date",localEvent(item,"date"),0)}</span>
           <h3>${autoTextHTML(item,"title",localEvent(item,"title"),48)}</h3>
-          <p class="event-card-location">${autoTextHTML(item,"location",localEvent(item,"location"),58)}</p>
+          <p>${autoTextHTML(item,"location",localEvent(item,"location"),58)}</p>
           <div class="event-card-actions">
             <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">${shareText}</button>
             <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
