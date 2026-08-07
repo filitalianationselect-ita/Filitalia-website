@@ -16,29 +16,14 @@
 <nav class="navbar">
   <a href="index.html" class="logo-area"><img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo"><div class="logo-text">FIL-ITALIA</div></a>
   <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
-  <div class="nav-links" id="navLinks">
-    <a href="index.html" data-key="navHome">Home</a>
-    <a href="players.html" data-key="navPlayers">Players</a>
-    <a href="gallery.html" data-key="navGallery">Gallery</a>
-    <a href="staff.html" data-key="navStaff">Staff</a>
-    <a href="news.html" data-key="navNews">News</a>
-    <a href="events.html" data-key="navEvents">Events</a>
-    <a href="register.html" data-key="navJoin">Join</a>
-    <a href="camp-register.html" data-key="navCamp">Camp</a>
-    <a href="index.html#contact" data-key="navContact">Contact</a>
-  </div>
-  <div class="language-switch">
-    <button onclick="setLanguage('it');setMessinaLanguage('it')">IT</button>
-    <button onclick="setLanguage('en');setMessinaLanguage('en')">EN</button>
-    <button onclick="setLanguage('ph');setMessinaLanguage('ph')">PH</button>
-  </div>
+  <div class="nav-links" id="navLinks"><a href="index.html" data-key="navHome">Home</a><a href="players.html" data-key="navPlayers">Players</a><a href="gallery.html" data-key="navGallery">Gallery</a><a href="staff.html" data-key="navStaff">Staff</a><a href="news.html" data-key="navNews">News</a><a href="events.html" data-key="navEvents">Events</a><a href="register.html" data-key="navJoin">Join</a><a href="camp-register.html" data-key="navCamp">Camp</a><a href="index.html#contact" data-key="navContact">Contact</a></div>
+  <div class="language-switch"><button onclick="setLanguage('it');setMessinaLanguage('it')">IT</button><button onclick="setLanguage('en');setMessinaLanguage('en')">EN</button><button onclick="setLanguage('ph');setMessinaLanguage('ph')">PH</button></div>
 </nav>
-
 <section class="players-page registration-page">
   <h1 id="messinaPageTitle">TALENT ID CAMP MESSINA</h1>
   <p id="messinaSubtitle" class="page-subtitle">FIL-EURO Nation Select arriva in Sicilia.</p>
   <div class="camp-landing-card">
-    <img id="messinaCampImage" src="images/camp-messina-2026.svg" onerror="this.onerror=null;this.src='images/ita.jpg';" alt="Talent ID Camp Messina">
+    <img id="messinaCampImage" src="images/logo.png" alt="Talent ID Camp Messina">
     <div class="camp-landing-info">
       <span id="messinaBadge" class="camp-badge">FIL-EURO NATION SELECT TALENT ID CAMP</span>
       <h2 id="messinaCampName">Talent ID Camp Messina</h2>
@@ -55,129 +40,25 @@
         <div class="camp-detail-item"><span id="messinaDeadlineLabel">Scadenza iscrizioni</span><span id="messinaDeadline">31/08/2026</span></div>
       </div>
       <p id="messinaImportant"><strong>Importante:</strong> l’iscrizione e il pagamento devono essere completati prima del camp. Non saranno accettati pagamenti sul posto.</p>
-      <div class="camp-actions">
-        <a id="messinaRegister" class="main-button" href="camp-register.html?event=idcamp-messina-2026">Registrati ora</a>
-        <a id="messinaBack" class="players-list-link" href="events.html">← Eventi</a>
-      </div>
+      <div class="camp-actions"><a id="messinaRegister" class="main-button" href="camp-register.html?event=idcamp-messina-2026">Registrati ora</a><a id="messinaBack" class="players-list-link" href="events.html">← Eventi</a></div>
     </div>
   </div>
 </section>
-
 <footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
 <script src="events-data.js?v=7"></script>
 <script src="script.js?v=801"></script>
+<script src="event-card-images.js?v=1"></script>
 <script>
 const messinaTranslations = {
-  it: {
-    lang:"it",
-    title:"FIL-ITALIA Talent ID Camp Messina",
-    meta:"FIL-EURO Nation Select Talent ID Camp Messina, 6 settembre 2026 presso la Palestra Comunale Ritiro.",
-    pageTitle:"TALENT ID CAMP MESSINA",
-    subtitle:"FIL-EURO Nation Select arriva in Sicilia.",
-    badge:"FIL-EURO NATION SELECT TALENT ID CAMP",
-    campName:"Talent ID Camp Messina",
-    intro:"FIL-EURO Nation Select arriva in Sicilia con il Talent ID Camp di Messina, in programma domenica 6 settembre 2026, dalle 09:00 alle 15:00, presso la Palestra Comunale Ritiro.",
-    audience:"Il camp è dedicato ai giovani giocatori delle categorie U12, U14, U16, U18 e U19 che vogliono mettersi alla prova ed entrare nel percorso di selezione FIL-EURO Nation Select.",
-    evaluation:"Durante la giornata i partecipanti saranno valutati attraverso skill work, situazioni di gioco e partite competitive, con l’obiettivo di individuare nuovi talenti da seguire all’interno del programma FIL-EURO.",
-    cityLabel:"Città", city:"Messina",
-    dateLabel:"Data", date:"06/09/2026",
-    timeLabel:"Orario", time:"09:00 - 15:00",
-    locationLabel:"Luogo", location:"Palestra Comunale Ritiro, Messina",
-    feeLabel:"Quota", fee:"€50 · T-shirt ufficiale inclusa",
-    u12:"Partecipazione gratuita",
-    deadlineLabel:"Scadenza iscrizioni", deadline:"31/08/2026",
-    important:"<strong>Importante:</strong> l’iscrizione e il pagamento devono essere completati prima del camp. Non saranno accettati pagamenti sul posto.",
-    register:"Registrati ora",
-    back:"← Eventi"
-  },
-  en: {
-    lang:"en",
-    title:"FIL-ITALIA Messina Talent ID Camp",
-    meta:"FIL-EURO Nation Select Messina Talent ID Camp, September 6, 2026 at Palestra Comunale Ritiro.",
-    pageTitle:"MESSINA TALENT ID CAMP",
-    subtitle:"FIL-EURO Nation Select is coming to Sicily.",
-    badge:"FIL-EURO NATION SELECT TALENT ID CAMP",
-    campName:"Messina Talent ID Camp",
-    intro:"FIL-EURO Nation Select is coming to Sicily with the Messina Talent ID Camp on Sunday, September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro.",
-    audience:"The camp is dedicated to U12, U14, U16, U18 and U19 players who want to challenge themselves and enter the FIL-EURO Nation Select selection pathway.",
-    evaluation:"Throughout the day, players will be evaluated through skill work, game situations and competitive games, with the goal of identifying new talent to follow within the FIL-EURO program.",
-    cityLabel:"City", city:"Messina",
-    dateLabel:"Date", date:"September 6, 2026",
-    timeLabel:"Time", time:"9:00 AM - 3:00 PM",
-    locationLabel:"Venue", location:"Palestra Comunale Ritiro, Messina",
-    feeLabel:"Registration fee", fee:"€50 · Official camp T-shirt included",
-    u12:"Free participation",
-    deadlineLabel:"Registration deadline", deadline:"August 31, 2026",
-    important:"<strong>Important:</strong> registration and payment must be completed before the camp. Payments will not be accepted on site.",
-    register:"Register now",
-    back:"← Events"
-  },
-  ph: {
-    lang:"fil",
-    title:"FIL-ITALIA Messina Talent ID Camp",
-    meta:"FIL-EURO Nation Select Messina Talent ID Camp, Setyembre 6, 2026 sa Palestra Comunale Ritiro.",
-    pageTitle:"MESSINA TALENT ID CAMP",
-    subtitle:"Darating ang FIL-EURO Nation Select sa Sicily.",
-    badge:"FIL-EURO NATION SELECT TALENT ID CAMP",
-    campName:"Messina Talent ID Camp",
-    intro:"Darating ang FIL-EURO Nation Select sa Sicily para sa Messina Talent ID Camp sa Linggo, Setyembre 6, 2026, mula 09:00 hanggang 15:00 sa Palestra Comunale Ritiro.",
-    audience:"Ang camp ay para sa U12, U14, U16, U18 at U19 players na gustong subukan ang kanilang kakayahan at makapasok sa FIL-EURO Nation Select selection pathway.",
-    evaluation:"Sa buong araw, susuriin ang mga players sa pamamagitan ng skill work, game situations at competitive games upang makahanap ng mga bagong talentong maaaring masundan sa loob ng FIL-EURO program.",
-    cityLabel:"Lungsod", city:"Messina",
-    dateLabel:"Petsa", date:"Setyembre 6, 2026",
-    timeLabel:"Oras", time:"09:00 - 15:00",
-    locationLabel:"Venue", location:"Palestra Comunale Ritiro, Messina",
-    feeLabel:"Registration fee", fee:"€50 · Kasama ang official camp T-shirt",
-    u12:"Libre ang participation",
-    deadlineLabel:"Huling araw ng registration", deadline:"Agosto 31, 2026",
-    important:"<strong>Mahalaga:</strong> kailangang makumpleto ang registration at payment bago ang camp. Walang tatanggaping payment sa venue.",
-    register:"Mag-register ngayon",
-    back:"← Events"
-  }
+  it: {lang:"it",title:"FIL-ITALIA Talent ID Camp Messina",meta:"FIL-EURO Nation Select Talent ID Camp Messina, 6 settembre 2026 presso la Palestra Comunale Ritiro.",pageTitle:"TALENT ID CAMP MESSINA",subtitle:"FIL-EURO Nation Select arriva in Sicilia.",badge:"FIL-EURO NATION SELECT TALENT ID CAMP",campName:"Talent ID Camp Messina",intro:"FIL-EURO Nation Select arriva in Sicilia con il Talent ID Camp di Messina, in programma domenica 6 settembre 2026, dalle 09:00 alle 15:00, presso la Palestra Comunale Ritiro.",audience:"Il camp è dedicato ai giovani giocatori delle categorie U12, U14, U16, U18 e U19 che vogliono mettersi alla prova ed entrare nel percorso di selezione FIL-EURO Nation Select.",evaluation:"Durante la giornata i partecipanti saranno valutati attraverso skill work, situazioni di gioco e partite competitive, con l’obiettivo di individuare nuovi talenti da seguire all’interno del programma FIL-EURO.",cityLabel:"Città",city:"Messina",dateLabel:"Data",date:"06/09/2026",timeLabel:"Orario",time:"09:00 - 15:00",locationLabel:"Luogo",location:"Palestra Comunale Ritiro, Messina",feeLabel:"Quota",fee:"€50 · T-shirt ufficiale inclusa",u12:"Partecipazione gratuita",deadlineLabel:"Scadenza iscrizioni",deadline:"31/08/2026",important:"<strong>Importante:</strong> l’iscrizione e il pagamento devono essere completati prima del camp. Non saranno accettati pagamenti sul posto.",register:"Registrati ora",back:"← Eventi"},
+  en: {lang:"en",title:"FIL-ITALIA Messina Talent ID Camp",meta:"FIL-EURO Nation Select Messina Talent ID Camp, September 6, 2026 at Palestra Comunale Ritiro.",pageTitle:"MESSINA TALENT ID CAMP",subtitle:"FIL-EURO Nation Select is coming to Sicily.",badge:"FIL-EURO NATION SELECT TALENT ID CAMP",campName:"Messina Talent ID Camp",intro:"FIL-EURO Nation Select is coming to Sicily with the Messina Talent ID Camp on Sunday, September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro.",audience:"The camp is dedicated to U12, U14, U16, U18 and U19 players who want to challenge themselves and enter the FIL-EURO Nation Select selection pathway.",evaluation:"Throughout the day, players will be evaluated through skill work, game situations and competitive games, with the goal of identifying new talent to follow within the FIL-EURO program.",cityLabel:"City",city:"Messina",dateLabel:"Date",date:"September 6, 2026",timeLabel:"Time",time:"9:00 AM - 3:00 PM",locationLabel:"Venue",location:"Palestra Comunale Ritiro, Messina",feeLabel:"Registration fee",fee:"€50 · Official camp T-shirt included",u12:"Free participation",deadlineLabel:"Registration deadline",deadline:"August 31, 2026",important:"<strong>Important:</strong> registration and payment must be completed before the camp. Payments will not be accepted on site.",register:"Register now",back:"← Events"},
+  ph: {lang:"fil",title:"FIL-ITALIA Messina Talent ID Camp",meta:"FIL-EURO Nation Select Messina Talent ID Camp, Setyembre 6, 2026 sa Palestra Comunale Ritiro.",pageTitle:"MESSINA TALENT ID CAMP",subtitle:"Darating ang FIL-EURO Nation Select sa Sicily.",badge:"FIL-EURO NATION SELECT TALENT ID CAMP",campName:"Messina Talent ID Camp",intro:"Darating ang FIL-EURO Nation Select sa Sicily para sa Messina Talent ID Camp sa Linggo, Setyembre 6, 2026, mula 09:00 hanggang 15:00 sa Palestra Comunale Ritiro.",audience:"Ang camp ay para sa U12, U14, U16, U18 at U19 players na gustong subukan ang kanilang kakayahan at makapasok sa FIL-EURO Nation Select selection pathway.",evaluation:"Sa buong araw, susuriin ang mga players sa pamamagitan ng skill work, game situations at competitive games upang makahanap ng mga bagong talentong maaaring masundan sa loob ng FIL-EURO program.",cityLabel:"Lungsod",city:"Messina",dateLabel:"Petsa",date:"Setyembre 6, 2026",timeLabel:"Oras",time:"09:00 - 15:00",locationLabel:"Venue",location:"Palestra Comunale Ritiro, Messina",feeLabel:"Registration fee",fee:"€50 · Kasama ang official camp T-shirt",u12:"Libre ang participation",deadlineLabel:"Huling araw ng registration",deadline:"Agosto 31, 2026",important:"<strong>Mahalaga:</strong> kailangang makumpleto ang registration at payment bago ang camp. Walang tatanggaping payment sa venue.",register:"Mag-register ngayon",back:"← Events"}
 };
-
 function setMessinaLanguage(language){
-  const t = messinaTranslations[language] || messinaTranslations.it;
-  document.documentElement.lang = t.lang;
-  document.title = t.title;
-  const meta = document.getElementById('messinaMetaDescription');
-  if(meta) meta.setAttribute('content', t.meta);
-  const values = {
-    messinaPageTitle:t.pageTitle,
-    messinaSubtitle:t.subtitle,
-    messinaBadge:t.badge,
-    messinaCampName:t.campName,
-    messinaIntro:t.intro,
-    messinaAudience:t.audience,
-    messinaEvaluation:t.evaluation,
-    messinaCityLabel:t.cityLabel,
-    messinaCity:t.city,
-    messinaDateLabel:t.dateLabel,
-    messinaDate:t.date,
-    messinaTimeLabel:t.timeLabel,
-    messinaTime:t.time,
-    messinaLocationLabel:t.locationLabel,
-    messinaLocation:t.location,
-    messinaFeeLabel:t.feeLabel,
-    messinaFee:t.fee,
-    messinaU12:t.u12,
-    messinaDeadlineLabel:t.deadlineLabel,
-    messinaDeadline:t.deadline,
-    messinaRegister:t.register,
-    messinaBack:t.back
-  };
-  Object.entries(values).forEach(([id,value])=>{
-    const el=document.getElementById(id);
-    if(el) el.textContent=value;
-  });
-  const important=document.getElementById('messinaImportant');
-  if(important) important.innerHTML=t.important;
+  const t=messinaTranslations[language]||messinaTranslations.it;document.documentElement.lang=t.lang;document.title=t.title;const meta=document.getElementById('messinaMetaDescription');if(meta)meta.setAttribute('content',t.meta);
+  const values={messinaPageTitle:t.pageTitle,messinaSubtitle:t.subtitle,messinaBadge:t.badge,messinaCampName:t.campName,messinaIntro:t.intro,messinaAudience:t.audience,messinaEvaluation:t.evaluation,messinaCityLabel:t.cityLabel,messinaCity:t.city,messinaDateLabel:t.dateLabel,messinaDate:t.date,messinaTimeLabel:t.timeLabel,messinaTime:t.time,messinaLocationLabel:t.locationLabel,messinaLocation:t.location,messinaFeeLabel:t.feeLabel,messinaFee:t.fee,messinaU12:t.u12,messinaDeadlineLabel:t.deadlineLabel,messinaDeadline:t.deadline,messinaRegister:t.register,messinaBack:t.back};
+  Object.entries(values).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value;});const important=document.getElementById('messinaImportant');if(important)important.innerHTML=t.important;
 }
-
-try{
-  setMessinaLanguage(localStorage.getItem('language') || 'it');
-}catch(error){
-  setMessinaLanguage('it');
-}
+try{setMessinaLanguage(localStorage.getItem('language')||'it');}catch(error){setMessinaLanguage('it');}
 </script>
 </body></html>
