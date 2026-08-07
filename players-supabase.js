@@ -27,6 +27,7 @@
 
   async function signedPhotoUrl(client, path) {
     if (!path) return "";
+    if (/^https?:\/\//i.test(String(path))) return String(path);
     try {
       const result = await client.storage.from("profile-media").createSignedUrl(path, 3600);
       if (result.error) throw result.error;
@@ -45,7 +46,6 @@
 
     if (!unified.error) return unified.data || [];
 
-    // Safe compatibility fallback before the registry migration is deployed.
     console.info("Unified Player Cards not deployed yet; loading legacy cards.");
     const legacy = await client
       .from("public_player_cards")
