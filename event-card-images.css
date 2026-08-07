@@ -1,0 +1,104 @@
+/* Event poster preview cards */
+.event-card.event-card-with-cover,
+#homeEventsGrid .event-card.event-card-with-cover,
+#allEventsGrid .event-card.event-card-with-cover{
+  padding:0 !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  text-align:center !important;
+  background:#fff !important;
+}
+
+.event-cover{
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+  aspect-ratio:1 / 1 !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  background:#eef0f2 !important;
+  flex-shrink:0 !important;
+}
+
+.event-card-content{
+  width:100%;
+  padding:17px 18px 18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  flex:1;
+}
+
+.event-card-with-cover .event-card-date{
+  min-height:0 !important;
+  margin-bottom:8px !important;
+  color:#0b8f3d !important;
+  font-size:.83rem !important;
+}
+
+.event-card-with-cover h3{
+  min-height:0 !important;
+  margin-bottom:8px !important;
+  font-size:1.18rem !important;
+  line-height:1.25 !important;
+}
+
+.event-card-with-cover .event-card-location{
+  margin:0 0 15px !important;
+  min-height:38px;
+  font-size:.82rem !important;
+  line-height:1.4 !important;
+}
+
+.event-card-with-cover .event-card-actions{
+  width:100%;
+  margin-top:auto;
+  display:grid !important;
+  grid-template-columns:1fr 1.35fr;
+  gap:8px;
+  align-items:stretch;
+}
+
+.event-card-with-cover .event-share-button,
+.event-card-with-cover .ticket-button{
+  min-width:0 !important;
+  min-height:42px !important;
+  margin:0 !important;
+  padding:10px 11px !important;
+  border-radius:999px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:.72rem !important;
+  font-weight:900 !important;
+  line-height:1.15 !important;
+  text-decoration:none !important;
+  text-transform:uppercase;
+}
+
+.event-card-with-cover .event-share-button{
+  border:2px solid #0b8f3d !important;
+  background:#fff !important;
+  color:#0b8f3d !important;
+  cursor:pointer;
+}
+
+.event-card-with-cover .ticket-button{
+  border:2px solid #c62828 !important;
+  background:#c62828 !important;
+  color:#fff !important;
+}
+
+@media(max-width:700px){
+  .event-card.event-card-with-cover,
+  #homeEventsGrid .event-card.event-card-with-cover,
+  #allEventsGrid .event-card.event-card-with-cover{
+    width:100% !important;
+    max-width:360px !important;
+  }
+}
