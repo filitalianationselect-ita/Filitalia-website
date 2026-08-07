@@ -60,7 +60,7 @@ const eventsData = [
       en:"Palestra Comunale Ritiro, Messina, Italy",
       ph:"Palestra Comunale Ritiro, Messina, Italy"
     },
-    image: "images/ita.jpg",
+    image: "images/camp-messina-2026.jpg",
     excerpt: {
       it:"Talent ID Camp Messina, 6 settembre 2026 dalle 09:00 alle 15:00 presso la Palestra Comunale Ritiro. Iscrizioni entro il 31 agosto.",
       en:"Messina Talent ID Camp on September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro. Registration closes August 31.",
