@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.109.1
       - name: Diagnose link safely
         id: diagnose
         shell: bash
@@ -47,19 +47,13 @@ jobs:
           elif [[ "$LOWER" == *"failed to connect"* || "$LOWER" == *"connection refused"* || "$LOWER" == *"timeout"* ]]; then
             REASON="connection"
           fi
-
           if [[ $CODE -ne 0 ]]; then
             SAFE="$OUTPUT"
             if [[ -n "$SUPABASE_ACCESS_TOKEN" ]]; then SAFE=${SAFE//${SUPABASE_ACCESS_TOKEN}/REDACTED}; fi
             if [[ -n "$SUPABASE_DB_PASSWORD" ]]; then SAFE=${SAFE//${SUPABASE_DB_PASSWORD}/REDACTED}; fi
             if [[ -n "$PROJECT_REF" ]]; then SAFE=${SAFE//${PROJECT_REF}/REDACTED}; fi
-            LINE=$(printf '%s\n' "$SAFE" \
-              | grep -Eiv 'try rerunning|with --debug|debug to troubleshoot' \
-              | grep -Ei 'error|failed|invalid|cannot|unable|refused|timeout|not found|unexpected|remote|database|connect|authentication|password|token|project' \
-              | head -n 1 || true)
-            if [[ -z "$LINE" ]]; then
-              LINE=$(printf '%s\n' "$SAFE" | grep -Eiv 'try rerunning|with --debug|debug to troubleshoot' | head -n 1 || true)
-            fi
+            LINE=$(printf '%s\n' "$SAFE" | grep -Eiv 'try rerunning|with --debug|debug to troubleshoot' | grep -Ei 'error|failed|invalid|cannot|unable|refused|timeout|not found|unexpected|remote|database|connect|authentication|password|token|project' | head -n 1 || true)
+            if [[ -z "$LINE" ]]; then LINE=$(printf '%s\n' "$SAFE" | grep -Eiv 'try rerunning|with --debug|debug to troubleshoot' | head -n 1 || true); fi
             DETAIL=$(printf '%s' "$LINE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' | cut -c1-58)
             [[ -n "$DETAIL" ]] || DETAIL="unknown"
           fi
@@ -77,15 +71,6 @@ jobs:
           set -euo pipefail
           STATE="failure"
           if [[ "$REASON" == "success" && "$CODE" == "0" ]]; then STATE="success"; fi
-          if [[ "$REASON" == "unknown" ]]; then
-            CONTEXT="filitalia/preview-link/error-$DETAIL"
-          else
-            CONTEXT="filitalia/preview-link/$REASON"
-          fi
+          if [[ "$REASON" == "unknown" ]]; then CONTEXT="filitalia/preview-link-2.109.1/error-$DETAIL"; else CONTEXT="filitalia/preview-link-2.109.1/$REASON"; fi
           CONTEXT=$(printf '%s' "$CONTEXT" | cut -c1-95)
-          curl -fsSL -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
-            -d "{\"state\":\"$STATE\",\"context\":\"$CONTEXT\",\"description\":\"Preview Supabase link diagnostic\"}"
+          curl -fsSL -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" -d "{\"state\":\"$STATE\",\"context\":\"$CONTEXT\",\"description\":\"Preview Supabase link diagnostic\"}"
