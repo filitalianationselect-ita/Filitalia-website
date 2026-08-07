@@ -1,6 +1,11 @@
 name: Deploy Preview Backend
 
 on:
+  push:
+    branches:
+      - agent/player-registry-dedupe
+    paths:
+      - '.github/workflows/deploy-preview-backend.yml'
   workflow_dispatch:
     inputs:
       confirmation:
@@ -19,14 +24,14 @@ permissions:
 jobs:
   deploy_preview:
     name: Supabase preview only
-    if: ${{ inputs.confirmation == 'DEPLOY PREVIEW' }}
+    if: ${{ github.event_name == 'push' || inputs.confirmation == 'DEPLOY PREVIEW' }}
     runs-on: ubuntu-latest
     environment: filitalia-preview
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_PREVIEW_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PREVIEW_DB_PASSWORD }}
       PROJECT_REF: ${{ secrets.SUPABASE_PREVIEW_PROJECT_REF }}
-      PREVIEW_ORIGIN: ${{ inputs.preview_origin }}
+      PREVIEW_ORIGIN: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_origin || 'https://deploy-preview-3--filitalia.netlify.app' }}
       GMAIL_CLIENT_ID: ${{ secrets.GMAIL_PREVIEW_CLIENT_ID }}
       GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_PREVIEW_CLIENT_SECRET }}
       GMAIL_TOKEN_ENCRYPTION_KEY: ${{ secrets.GMAIL_PREVIEW_TOKEN_ENCRYPTION_KEY }}
