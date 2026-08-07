@@ -1,0 +1,66 @@
+name: Diagnose Preview Supabase Link
+
+on:
+  push:
+    branches:
+      - agent/player-registry-dedupe
+    paths:
+      - '.github/workflows/diagnose-preview-link.yml'
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    environment: filitalia-preview
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_PREVIEW_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PREVIEW_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PREVIEW_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Diagnose link safely
+        id: diagnose
+        shell: bash
+        run: |
+          set +e
+          OUTPUT=$(supabase link --project-ref "$PROJECT_REF" 2>&1)
+          CODE=$?
+          set -e
+          REASON="unknown"
+          LOWER=$(printf '%s' "$OUTPUT" | tr '[:upper:]' '[:lower:]')
+          if [[ $CODE -eq 0 ]]; then
+            REASON="success"
+          elif [[ "$LOWER" == *"access token"* || "$LOWER" == *"unauthorized"* || "$LOWER" == *"401"* ]]; then
+            REASON="access-token"
+          elif [[ "$LOWER" == *"project"*"not found"* || "$LOWER" == *"invalid project"* || "$LOWER" == *"project ref"* ]]; then
+            REASON="project-ref"
+          elif [[ "$LOWER" == *"password authentication failed"* || "$LOWER" == *"database password"* || "$LOWER" == *"invalid password"* ]]; then
+            REASON="db-password"
+          elif [[ "$LOWER" == *"failed to connect"* || "$LOWER" == *"connection refused"* || "$LOWER" == *"timeout"* ]]; then
+            REASON="connection"
+          fi
+          echo "reason=$REASON" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+      - name: Publish diagnostic result
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REASON: ${{ steps.diagnose.outputs.reason }}
+          CODE: ${{ steps.diagnose.outputs.code }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATE="failure"
+          if [[ "$REASON" == "success" && "$CODE" == "0" ]]; then STATE="success"; fi
+          CONTEXT="filitalia/preview-link/$REASON"
+          curl -fsSL -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -d "{\"state\":\"$STATE\",\"context\":\"$CONTEXT\",\"description\":\"Preview Supabase link diagnostic\"}"
