@@ -30,7 +30,7 @@ const eventsData = [
     sortDate:"2026-09-06",time:"09:00 - 15:00",campCity:"Messina",
     campDate:{it:"6 Settembre 2026",en:"September 6, 2026",ph:"Setyembre 6, 2026"},
     location:{it:"Palestra Comunale Ritiro, Messina",en:"Palestra Comunale Ritiro, Messina, Italy",ph:"Palestra Comunale Ritiro, Messina, Italy"},
-    image:"images/camp-messina-2026.jpg?v=906",
+    image:"images/camp-messina-2026.jpg",
     excerpt:{it:"Talent ID Camp Messina, 6 settembre 2026 dalle 09:00 alle 15:00 presso la Palestra Comunale Ritiro. Iscrizioni entro il 31 agosto.",en:"Messina Talent ID Camp on September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro. Registration closes August 31.",ph:"Messina Talent ID Camp sa Setyembre 6, 2026, mula 09:00 hanggang 15:00 sa Palestra Comunale Ritiro. Hanggang Agosto 31 ang registration."},
     description:{it:"FIL-EURO Nation Select arriva in Sicilia con il Talent ID Camp di Messina, in programma domenica 6 settembre 2026, dalle 09:00 alle 15:00, presso la Palestra Comunale Ritiro. Il camp è dedicato ai giovani giocatori delle categorie U12, U14, U16, U18 e U19 che vogliono mettersi alla prova ed entrare nel percorso di selezione FIL-EURO Nation Select. Durante la giornata i partecipanti saranno valutati attraverso skill work, situazioni di gioco e partite competitive, con l’obiettivo di individuare nuovi talenti da seguire all’interno del programma FIL-EURO. La quota di iscrizione è di €50 e comprende la T-shirt ufficiale del camp. La partecipazione U12 è gratuita. Le iscrizioni chiuderanno il 31 agosto 2026 e non saranno accettati pagamenti sul posto.",en:"FIL-EURO Nation Select is coming to Sicily with the Messina Talent ID Camp on Sunday, September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro. The camp is dedicated to U12, U14, U16, U18 and U19 players who want to challenge themselves and enter the FIL-EURO Nation Select pathway. Players will be evaluated through skill work, game situations and competitive games, with the goal of identifying new talent for the FIL-EURO program. Registration is €50 and includes the official camp T-shirt. U12 participation is free. Registration closes on August 31, 2026, and payments will not be accepted on site.",ph:"Darating ang FIL-EURO Nation Select sa Sicily para sa Messina Talent ID Camp sa Linggo, Setyembre 6, 2026, mula 09:00 hanggang 15:00 sa Palestra Comunale Ritiro. Ang camp ay para sa U12, U14, U16, U18 at U19 players na gustong subukan ang kanilang kakayahan at makapasok sa FIL-EURO Nation Select pathway. Susuriin ang mga manlalaro sa pamamagitan ng skill work, game situations at competitive games upang makahanap ng mga bagong talento para sa FIL-EURO program. €50 ang registration at kasama ang official camp T-shirt. Libre ang U12. Hanggang Agosto 31, 2026 ang registration at walang tatanggaping bayad sa venue."},
     page:"messina-camp.html"
@@ -72,26 +72,3 @@ const eventsData = [
     page:"bologna-camp.html"
   }
 ];
-
-window.addEventListener("load", function(){
-  if(typeof window.buildEventCard !== "function") return;
-  const style=document.createElement("style");
-  style.id="event-poster-preview-style";
-  style.textContent=`
-    .event-card.event-card-with-image,#homeEventsGrid .event-card.event-card-with-image,#allEventsGrid .event-card.event-card-with-image{padding:0!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;background:#fff!important}
-    .event-card-with-image .event-card-image{width:100%!important;aspect-ratio:1/1!important;height:auto!important;object-fit:contain!important;object-position:center!important;display:block!important;background:#111!important;flex-shrink:0!important}
-    .event-card-with-image .event-card-body{width:100%!important;padding:18px 20px 20px!important;display:flex!important;flex-direction:column!important;align-items:center!important;flex:1!important}
-    .event-card-with-image .event-card-actions{width:100%!important;display:flex!important;gap:8px!important;margin-top:auto!important}
-    .event-card-with-image .event-share-button,.event-card-with-image .ticket-button{flex:1 1 0!important;margin-top:0!important;min-width:0!important;padding:11px 10px!important;font-size:.76rem!important}`;
-  if(!document.getElementById(style.id)) document.head.appendChild(style);
-  window.buildEventCard=function(item,index){
-    const defaultLink=`camp-register.html?event=${encodeURIComponent(item.id||"")}`;
-    const link=item.ticket||defaultLink;
-    const eventId=safe(item.id||item.slug||"");
-    const title=localEvent(item,"title")||"Event";
-    const image=(item.id==="idcamp-messina-2026")?"images/camp-messina-2026.jpg?v=906":(item.image||"images/logo.png");
-    const shareText=(typeof lang==="function"&&lang()==="en")?"Share":((typeof lang==="function"&&lang()==="ph")?"I-share":"Condividi");
-    return `<div class="event-card event-card-with-image" data-event-id="${eventId}" onclick="openEventByIndex(${index})"><img class="event-card-image" src="${safe(image)}" alt="${safe(title)}" onerror="this.onerror=null;this.src='images/logo.png';"><div class="event-card-body"><span>${autoTextHTML(item,"date",localEvent(item,"date"),0)}</span><h3>${autoTextHTML(item,"title",localEvent(item,"title"),48)}</h3><p>${autoTextHTML(item,"location",localEvent(item,"location"),58)}</p><div class="event-card-actions"><button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event',getVisibleEvents().find(e=>String(e.id||e.slug||'')==='${eventId}')||getVisibleEvents()[${index}]);">${shareText}</button><a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a></div></div></div>`;
-  };
-  if(typeof renderEvents==="function") renderEvents();
-});

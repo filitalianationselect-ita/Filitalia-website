@@ -844,96 +844,6 @@ function getVisibleEvents(){
     .sort((a,b) => getEventTimestamp(a) - getEventTimestamp(b));
 }
 
-function buildEventCard(item, index){
-  const defaultLink =
-    `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
-
-  const link = item.ticket || defaultLink;
-  const eventId = safe(item.id || item.slug || "");
-  const image = item.image || "images/logo.png";
-  const title = localEvent(item, "title") || "Event";
-
-  return `
-    <div class="event-card event-card-with-image"
-         onclick="openEventByIndex(${index})">
-
-      <img
-        class="event-card-image"
-        src="${safe(image)}"
-        alt="${safe(title)}"
-        onerror="this.onerror=null;this.src='images/logo.png';"
-      >
-
-      <div class="event-card-body">
-
-        <span>
-          ${autoTextHTML(item,"date",localEvent(item,"date"),0)}
-        </span>
-
-        <h3>
-          ${autoTextHTML(item,"title",localEvent(item,"title"),48)}
-        </h3>
-
-        <p>
-          ${autoTextHTML(item,"location",localEvent(item,"location"),58)}
-        </p>
-
-        <div class="event-card-actions">
-
-          <button
-            type="button"
-            class="event-share-button"
-            onclick="event.preventDefault();event.stopPropagation();shareFilitalia(
-              'event',
-              getVisibleEvents().find(e =>
-                String(e.id || e.slug || '') === '${eventId}'
-              ) || getVisibleEvents()[${index}]
-            );">
-            Condividi
-          </button>
-
-          <a
-            class="ticket-button"
-            href="${safe(link)}"
-            onclick="event.stopPropagation();">
-            ${safe(tr("registerNow"))}
-          </a>
-
-        </div>
-
-      </div>
-    </div>`;
-}
-
-function openEventByIndex(index){
-  const visibleEvents = getVisibleEvents();
-  currentInfoList = visibleEvents.map(data => ({type:"event",data}));
-  currentInfoIndex = index;
-  openInfo(currentInfoList[index]);
-}
-
-function renderEvents(){
-  if(typeof eventsData === "undefined") return;
-  const home = document.getElementById("homeEventsGrid");
-  const all = document.getElementById("allEventsGrid");
-  const visibleEvents = getVisibleEvents();
-
-  if(home){
-    home.innerHTML = visibleEvents
-      .slice(0,3)
-      .map((e,i) => buildEventCard(e, i))
-      .join("");
-  }
-
-  if(all){
-    all.innerHTML = visibleEvents
-      .map((e,i) => buildEventCard(e, i))
-      .join("");
-  }
-
-  translateAutoElements(document);
-}
-
 function buildNewsCard(item, index){
   const img = item.image ? safe(item.image) : "images/logo.png";
   const title = localNews(item,"title") || item.title || "News";
@@ -1559,22 +1469,6 @@ function getCampPageLink(item){
   return `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
 }
 
-function buildEventCard(item, index){
-  const link = getCampPageLink(item);
-  const readMore = tr("readMore");
-  const eventId = safe(String(item.id || item.slug || index));
-  return `
-    <div class="event-card" onclick="openEventByIndex(${index})">
-      <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
-      <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
-      <p>${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
-      <p>${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
-      <div class="event-read-more">${safe(readMore)}</div>
-      <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
-      <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
-    </div>`;
-}
-
 function populateCampEventSelect(){
   const select = document.getElementById("campEventSelect");
   if(!select || typeof eventsData === "undefined") return;
@@ -1827,14 +1721,17 @@ function eventDate(item){ return localEvent(item,"date") || item.date || item.ca
 function eventLocation(item){ return localEvent(item,"location") || item.location || item.campCity || ""; }
 function eventExcerpt(item){ return localEvent(item,"excerpt") || item.excerpt || ""; }
 function eventDescription(item){ return localEvent(item,"description") || item.description || eventExcerpt(item); }
-function eventPageLink(item){ return `event.html?id=${encodeURIComponent(item.id || item.slug || "")}`; }
+function eventPageLink(item){
+  if(item && item.page) return item.page;
+  return `event.html?id=${encodeURIComponent((item && (item.id || item.slug)) || "")}`;
+}
 function eventRegisterLink(item){ return `camp-register.html?event=${encodeURIComponent(item.id || "")}`; }
 function getEventByIdFinal(id){
   if(typeof eventsData === "undefined" || !Array.isArray(eventsData)) return null;
   return eventsData.find(e => String(e.id || e.slug || "") === String(id || "")) || null;
 }
 
-buildEventCard = function(item, index){
+function buildEventCard(item, index){
   const img = safe(eventImage(item));
   const title = eventTitle(item);
   const id = safe(String(item.id || item.slug || index));
@@ -1855,15 +1752,15 @@ buildEventCard = function(item, index){
         <button type="button" class="ticket-button event-main-action event-share-action" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getEventByIdFinal('${id}') || getVisibleEvents()[${index}]);">Condividi</button>
       </div>
     </div>`;
-};
+}
 
-openEventByIndex = function(index){
+function openEventByIndex(index){
   const item = getVisibleEvents()[index];
   if(!item) return;
   window.location.href = eventPageLink(item);
-};
+}
 
-renderEvents = function(){
+function renderEvents(){
   const home = document.getElementById("homeEventsGrid");
   const all = document.getElementById("allEventsGrid");
   if(typeof eventsData === "undefined" || !Array.isArray(eventsData)) return;
@@ -1871,7 +1768,7 @@ renderEvents = function(){
   if(home){ home.innerHTML = visibleEvents.slice(0,3).map((e,i)=>buildEventCard(e,i)).join(""); }
   if(all){ all.innerHTML = visibleEvents.map((e,i)=>buildEventCard(e,i)).join(""); }
   translateAutoElements(document);
-};
+}
 
 function renderEventDetailPage(){
   const container = document.getElementById("eventDetailContainer");
