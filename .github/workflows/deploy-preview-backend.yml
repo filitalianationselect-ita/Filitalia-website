@@ -68,10 +68,10 @@ jobs:
         run: supabase link --project-ref "$PROJECT_REF"
 
       - name: Preview database changes
-        run: supabase db push --dry-run
+        run: supabase db push --dry-run --include-all
 
       - name: Apply all database migrations
-        run: supabase db push
+        run: supabase db push --include-all
 
       - name: Configure preview core secrets
         run: |
