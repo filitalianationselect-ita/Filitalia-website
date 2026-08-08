@@ -48,7 +48,7 @@ begin
       add constraint profiles_role_check
       check (role in (
         'player','parent','coach','coordinator','city_coordinator','staff',
-        'scout','media','user','admin','super_admin'
+        'pending','scout','media','user','admin','super_admin'
       ));
   end if;
 end
