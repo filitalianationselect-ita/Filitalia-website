@@ -44,7 +44,7 @@ begin
         'alter table public.profiles add constraint profiles_%I_check check (%I in (%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L))',
         target_column,
         target_column,
-        'player','parent','coach','coordinator','city_coordinator','staff',
+        'pending','player','parent','coach','coordinator','city_coordinator','staff',
         'volunteer','scout','media','user','admin','super_admin'
       );
     end if;
