@@ -12,7 +12,7 @@ create table if not exists public.profiles (
   city text,
   language text not null default 'it',
   requested_role text not null default 'player',
-  role text not null default 'user',
+  role text not null default 'pending',
   status text not null default 'pending',
   avatar_path text,
   created_at timestamptz not null default now(),
@@ -27,7 +27,7 @@ alter table public.profiles
   add column if not exists city text,
   add column if not exists language text not null default 'it',
   add column if not exists requested_role text not null default 'player',
-  add column if not exists role text not null default 'user',
+  add column if not exists role text not null default 'pending',
   add column if not exists status text not null default 'pending',
   add column if not exists avatar_path text,
   add column if not exists created_at timestamptz not null default now(),
@@ -95,7 +95,7 @@ begin
     coalesce(new.raw_user_meta_data ->> 'last_name', ''),
     coalesce(nullif(new.raw_user_meta_data ->> 'language', ''), 'it'),
     coalesce(nullif(new.raw_user_meta_data ->> 'requested_role', ''), 'player'),
-    'user',
+    'pending',
     'pending'
   )
   on conflict (id) do update set
@@ -232,7 +232,7 @@ select
   coalesce(u.raw_user_meta_data ->> 'last_name', ''),
   coalesce(nullif(u.raw_user_meta_data ->> 'language', ''), 'it'),
   coalesce(nullif(u.raw_user_meta_data ->> 'requested_role', ''), 'player'),
-  'user',
+  'pending',
   'pending'
 from auth.users u
 on conflict (id) do nothing;
