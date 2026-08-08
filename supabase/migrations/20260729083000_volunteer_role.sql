@@ -41,7 +41,7 @@ begin
       end loop;
 
       execute format(
-        'alter table public.profiles add constraint profiles_%I_check check (%I in (%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L))',
+        'alter table public.profiles add constraint profiles_%I_check check (%I in (%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L,%L))',
         target_column,
         target_column,
         'player','parent','coach','coordinator','city_coordinator','staff',
