@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
 <link rel="stylesheet" href="account.css?v=920">
+<link rel="stylesheet" href="player-registry-account.css?v=1">
 <link rel="icon" type="image/png" href="images/logo.png">
 </head>
 <body data-account-page="account">
@@ -63,7 +64,6 @@
     <section id="playerProfileSection" class="account-card" hidden>
       <h2 class="account-section-title">Profilo giocatore per i camp</h2>
       <p class="account-muted">Compila questi dati una sola volta. Nei camp verranno recuperati automaticamente insieme alla foto.</p>
-
       <form id="playerProfileForm" class="account-form" data-requires-auth>
         <div class="player-photo-editor">
           <img id="playerPhotoPreview" class="player-photo-preview" src="images/logo.png" alt="Anteprima foto giocatore">
@@ -72,32 +72,19 @@
             <small>JPG, PNG o WEBP. Massimo 5 MB. Se hai già una foto, non devi ricaricarla.</small>
           </label>
         </div>
-
         <div class="account-grid">
           <label>Data di nascita <span aria-hidden="true">*</span><input type="date" name="birthDate" required></label>
-          <label>Sesso <span aria-hidden="true">*</span>
-            <select name="sex" required>
-              <option value="">Seleziona</option>
-              <option value="Maschio">Maschio</option>
-              <option value="Femmina">Femmina</option>
-              <option value="Altro">Altro / Preferisco non indicarlo</option>
-            </select>
-          </label>
+          <label>Sesso <span aria-hidden="true">*</span><select name="sex" required><option value="">Seleziona</option><option value="Maschio">Maschio</option><option value="Femmina">Femmina</option><option value="Altro">Altro / Preferisco non indicarlo</option></select></label>
           <label>Città di residenza <span aria-hidden="true">*</span><input name="residenceCity" maxlength="120" required></label>
           <label>Ruolo basket <span aria-hidden="true">*</span><input name="position" maxlength="30" placeholder="PG / SG / SF / PF / C" required></label>
           <label>Squadra attuale<input name="currentClub" maxlength="160"></label>
           <label>Altezza (cm)<input type="number" name="heightCm" min="80" max="250" inputmode="numeric"></label>
           <label>Peso (kg)<input type="number" name="weightKg" min="20" max="250" step="0.1" inputmode="decimal"></label>
-          <label>Passaporto italiano
-            <select name="italianPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
-          </label>
-          <label>Passaporto filippino
-            <select name="filipinoPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select>
-          </label>
+          <label>Passaporto italiano<select name="italianPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
+          <label>Passaporto filippino<select name="filipinoPassport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
           <label>Instagram<input name="instagram" maxlength="160" placeholder="@username"></label>
           <label>Highlights<input type="url" name="highlightsUrl" maxlength="500" placeholder="https://..."></label>
         </div>
-
         <button class="account-button" type="submit">SALVA PROFILO GIOCATORE</button>
         <p id="playerProfileStatus" class="account-status" role="status" aria-live="polite"></p>
       </form>
@@ -105,7 +92,7 @@
 
     <section class="account-card" data-role-section="parent" hidden>
       <h2 class="account-section-title">Area genitore</h2>
-      <div class="account-feature-grid"><article class="account-feature"><h3>Giocatori collegati</h3><p>Gestione dei figli o atleti minorenni associati.</p></article><article class="account-feature"><h3>Camp</h3><p>Iscrizioni, consensi e stato del pagamento.</p></article><article class="account-feature"><h3>Comunicazioni</h3><p>Aggiornamenti ufficiali FIL-ITALIA.</p></article></div>
+      <p class="account-muted">Caricamento giocatori collegati...</p>
     </section>
 
     <section class="account-card" data-role-section="coach,coordinator,staff" hidden>
@@ -115,16 +102,9 @@
 
     <section class="account-card account-danger-zone">
       <h2 class="account-section-title">Eliminazione account</h2>
-      <p class="account-muted">
-        La richiesta verrà inviata all’amministratore. Dopo la verifica saranno eliminati
-        account, profilo giocatore, foto e dati collegati. L’operazione definitiva non è reversibile.
-      </p>
-      <label>Motivo facoltativo
-        <textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea>
-      </label>
-      <button id="requestDeletionButton" class="account-button danger" type="button">
-        RICHIEDI ELIMINAZIONE ACCOUNT
-      </button>
+      <p class="account-muted">La richiesta verrà verificata dall’amministratore. L’eliminazione dell’account non cancella automaticamente i profili di figli o altri giocatori collegati: eventuali scollegamenti o richieste sui dati del singolo giocatore vengono gestiti separatamente per evitare cancellazioni accidentali.</p>
+      <label>Motivo facoltativo<textarea id="deletionReason" maxlength="500" rows="3" placeholder="Puoi indicare il motivo della richiesta"></textarea></label>
+      <button id="requestDeletionButton" class="account-button danger" type="button">RICHIEDI ELIMINAZIONE ACCOUNT</button>
       <p id="deletionStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
@@ -145,30 +125,20 @@
     <section id="adminAccountsSection" class="account-card" hidden>
       <h2 class="account-section-title">Gestione account</h2>
       <p class="account-muted">Approva, rifiuta, sospendi o riattiva gli account. Ogni cambiamento invia automaticamente una mail all’utente.</p>
-      <div class="admin-filter-row">
-        <label>Mostra
-          <select id="adminAccountFilter"><option value="pending">Da approvare</option><option value="active">Attivi</option><option value="suspended">Sospesi</option><option value="rejected">Rifiutati</option><option value="all">Tutti</option></select>
-        </label>
-      </div>
+      <div class="admin-filter-row"><label>Mostra<select id="adminAccountFilter"><option value="pending">Da approvare</option><option value="active">Attivi</option><option value="suspended">Sospesi</option><option value="rejected">Rifiutati</option><option value="all">Tutti</option></select></label></div>
       <div id="managedAccountsList"></div>
       <p id="adminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
     <section id="adminPlayerCardsSection" class="account-card" hidden>
-      <div class="admin-dashboard-head">
-        <div>
-          <h2 class="account-section-title">Player Card pubbliche</h2>
-          <p class="account-muted">Controlla i dati del giocatore e pubblica la card nella pagina Players. Email, telefono, peso e dati privati non vengono mostrati.</p>
-        </div>
-        <button id="refreshAdminPlayerCards" class="account-button compact secondary" type="button">AGGIORNA</button>
-      </div>
+      <div class="admin-dashboard-head"><div><h2 class="account-section-title">Player Card pubbliche</h2><p class="account-muted">Controlla i dati del giocatore e pubblica la card nella pagina Players. Email, telefono, peso e dati privati non vengono mostrati.</p></div><button id="refreshAdminPlayerCards" class="account-button compact secondary" type="button">AGGIORNA</button></div>
       <div id="adminPlayerCardsList"><p class="account-muted">Caricamento...</p></div>
       <p id="adminPlayerCardsStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
 
     <section id="adminDeletionSection" class="account-card" hidden>
       <h2 class="account-section-title">Richieste eliminazione account</h2>
-      <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. In entrambi i casi l’utente riceverà una mail.</p>
+      <p class="account-muted">Puoi annullare la richiesta mantenendo l’account attivo oppure eliminarlo definitivamente. Per account collegati a giocatori/minorenni verifica prima l’impatto nel registro per non eliminare o scollegare dati della persona sbagliata.</p>
       <div id="deletionRequestsList"></div>
       <p id="deletionAdminStatus" class="account-status" role="status" aria-live="polite"></p>
     </section>
@@ -183,5 +153,6 @@
 <script src="auth-admin-fix.js?v=1001"></script>
 <script src="auth-pages.js?v=1001"></script>
 <script src="player-card-admin.js?v=1"></script>
+<script src="player-registry-account.js?v=1"></script>
 </body>
 </html>

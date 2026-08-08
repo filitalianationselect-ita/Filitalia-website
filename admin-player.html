@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Giocatore | FIL-ITALIA Control Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-registry.css?v=1">
+<link rel="stylesheet" href="admin-player.css?v=1">
+<link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body class="registry-body">
+<div class="registry-shell">
+  <aside class="registry-side">
+    <a class="registry-brand" href="admin-registry.html"><img src="images/logo.png" alt="FIL-ITALIA"><div><strong>FIL-ITALIA</strong><small>Control Room</small></div></a>
+    <nav class="registry-nav"><a href="admin-registry.html">Dashboard</a><a class="active" href="admin-registry.html">Giocatori</a><a href="account.html">Account</a><a href="index.html">Sito pubblico</a></nav>
+  </aside>
+
+  <main class="registry-main">
+    <header class="registry-top">
+      <div><a class="registry-btn" href="admin-registry.html">← REGISTRO</a><span class="registry-kicker" style="display:block;margin-top:12px">SCHEDA GIOCATORE</span><h1 id="playerTitle">Caricamento...</h1><p id="playerSubtitle"></p></div>
+      <div class="registry-actions"><button id="refreshPlayer" class="registry-btn" type="button">AGGIORNA</button></div>
+    </header>
+
+    <div class="player-admin-layout">
+      <div class="player-admin-stack">
+        <section class="player-admin-card">
+          <h2>Profilo generale</h2>
+          <form id="playerEditForm">
+            <div class="player-admin-grid">
+              <label class="player-admin-field">Nome<input name="first_name" required></label>
+              <label class="player-admin-field">Cognome<input name="last_name" required></label>
+              <label class="player-admin-field">Data di nascita<input type="date" name="birth_date" required></label>
+              <label class="player-admin-field">Sesso<select name="sex"><option value="">-</option><option value="Maschio">Maschio</option><option value="Femmina">Femmina</option><option value="Altro">Altro</option></select></label>
+              <label class="player-admin-field">Città<input name="residence_city"></label>
+              <label class="player-admin-field">Ruolo<input name="position" placeholder="PG / SG / SF / PF / C"></label>
+              <label class="player-admin-field">Club<input name="current_club"></label>
+              <label class="player-admin-field">Altezza cm<input type="number" name="height_cm" min="80" max="250"></label>
+              <label class="player-admin-field">Peso kg<input type="number" name="weight_kg" min="20" max="250" step="0.1"></label>
+              <label class="player-admin-field">Email<input type="email" name="email"></label>
+              <label class="player-admin-field">Telefono<input name="phone"></label>
+              <label class="player-admin-field">Instagram<input name="instagram"></label>
+              <label class="player-admin-field full">Highlights<input type="url" name="highlights_url"></label>
+              <label class="player-admin-field">Passaporto italiano<select name="italian_passport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
+              <label class="player-admin-field">Passaporto filippino<select name="filipino_passport"><option value="">-</option><option value="true">Sì</option><option value="false">No</option></select></label>
+              <label class="player-admin-field full">Percorso foto / storage<input name="photo_path" placeholder="profile-media path"></label>
+            </div>
+            <div class="player-admin-save"><button class="registry-btn primary" type="submit">SALVA PROFILO</button><span id="profileSaveStatus" class="player-admin-message"></span></div>
+          </form>
+        </section>
+
+        <section class="player-admin-card">
+          <h2>Storico eventi</h2>
+          <div id="playerRegistrations" class="player-admin-timeline"></div>
+          <p id="registrationStatus" class="player-admin-message"></p>
+        </section>
+
+        <section class="player-admin-card">
+          <h2>Valutazione scouting</h2>
+          <form id="evaluationForm">
+            <div class="player-admin-grid">
+              <label class="player-admin-field full">Evento<select id="evaluationRegistration" name="registration_id" required></select></label>
+            </div>
+            <div class="player-score-grid">
+              <label class="player-admin-field">Skill 30%<input type="number" name="skill" min="0" max="10" step="0.1"></label>
+              <label class="player-admin-field">IQ 25%<input type="number" name="basketball_iq" min="0" max="10" step="0.1"></label>
+              <label class="player-admin-field">Defense 20%<input type="number" name="defense" min="0" max="10" step="0.1"></label>
+              <label class="player-admin-field">Athleticism 15%<input type="number" name="athleticism" min="0" max="10" step="0.1"></label>
+              <label class="player-admin-field">Mentality 10%<input type="number" name="mentality" min="0" max="10" step="0.1"></label>
+            </div>
+            <div class="player-admin-grid" style="margin-top:10px">
+              <label class="player-admin-field">Raccomandazione<select name="recommendation"><option value="">-</option><option value="monitor">Monitor</option><option value="invite">Invite</option><option value="select">Select</option><option value="priority">Priority</option><option value="not_select">Not select</option></select></label>
+              <label class="player-admin-field full">Note tecniche<textarea name="technical_notes" rows="3"></textarea></label>
+              <label class="player-admin-field full">Note private staff<textarea name="private_notes" rows="3"></textarea></label>
+            </div>
+            <div class="player-admin-save"><button class="registry-btn primary" type="submit">SALVA VALUTAZIONE</button><span id="evaluationStatus" class="player-admin-message"></span></div>
+          </form>
+          <div id="evaluationHistory" class="player-evaluation-history"></div>
+        </section>
+      </div>
+
+      <aside class="player-admin-stack">
+        <section class="player-admin-card">
+          <h2>Player Card pubblica</h2>
+          <div id="playerCardPreview" class="player-card-preview"></div>
+          <div class="player-admin-save"><button id="publishCard" class="registry-btn primary" type="button">PUBBLICA / AGGIORNA</button><button id="unpublishCard" class="registry-btn danger" type="button">NASCONDI</button></div>
+          <p id="cardStatus" class="player-admin-message"></p>
+        </section>
+
+        <section class="player-admin-card">
+          <h2>Account collegati</h2>
+          <div id="accountLinks" class="player-account-links"></div>
+        </section>
+
+        <section class="player-admin-card">
+          <h2>Pagamenti</h2>
+          <form id="paymentForm">
+            <div class="player-admin-grid">
+              <label class="player-admin-field full">Evento<select name="registration_id" id="paymentRegistration" required></select></label>
+              <label class="player-admin-field">Importo €<input type="number" name="amount_eur" min="0" step="0.01"></label>
+              <label class="player-admin-field">Stato<select name="status"><option value="paid">Pagato</option><option value="pending">Pending</option><option value="partial">Parziale</option><option value="waived">Esente</option><option value="refunded">Rimborsato</option><option value="not_required">Non richiesto</option></select></label>
+              <label class="player-admin-field">Metodo<input name="method" placeholder="Bonifico / contanti / altro"></label>
+              <label class="player-admin-field">Riferimento<input name="transaction_reference"></label>
+              <label class="player-admin-field full">Note<textarea name="notes" rows="2"></textarea></label>
+            </div>
+            <div class="player-admin-save"><button class="registry-btn primary" type="submit">REGISTRA PAGAMENTO</button><span id="paymentStatus" class="player-admin-message"></span></div>
+          </form>
+          <div id="paymentHistory" class="player-payment-history"></div>
+        </section>
+
+        <section class="player-admin-card">
+          <h2>Note interne</h2>
+          <form id="noteForm">
+            <div class="player-admin-grid">
+              <label class="player-admin-field">Tipo<select name="note_type"><option value="general">Generale</option><option value="scouting">Scouting</option><option value="eligibility">Eligibility</option><option value="communication">Comunicazione</option><option value="follow_up">Follow-up</option><option value="medical_admin">Medical admin</option></select></label>
+              <label class="player-admin-field full">Nota<textarea name="body" rows="3" required></textarea></label>
+            </div>
+            <div class="player-admin-save"><button class="registry-btn primary" type="submit">AGGIUNGI NOTA</button><span id="noteStatus" class="player-admin-message"></span></div>
+          </form>
+          <div id="noteHistory" class="player-note-history"></div>
+        </section>
+
+        <section class="player-admin-card">
+          <h2>Documenti</h2>
+          <div id="documentsList"><p class="registry-muted">Nessun documento.</p></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=800"></script>
+<script src="auth-client.js?v=1001"></script>
+<script src="admin-player.js?v=1"></script>
+<script src="admin-player-account-link.js?v=1"></script>
+</body>
+</html>

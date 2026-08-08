@@ -1,0 +1,62 @@
+name: Fix Registry Position Keyword
+
+on:
+  push:
+    branches:
+      - agent/player-registry-dedupe
+    paths:
+      - '.github/workflows/fix-registry-position-keyword.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/player-registry-dedupe
+      - name: Quote POSITION output/column identifiers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          names = [
+              '20260807170000_player_registry.sql',
+              '20260807171000_player_registry_admin.sql',
+              '20260807172000_registry_identity_resolution.sql',
+              '20260807173000_registry_parent_resolution.sql',
+              '20260807174000_registry_account_linking.sql',
+              '20260807175000_account_registry_history.sql',
+              '20260807180000_event_day.sql',
+              '20260807181000_player_card_batch.sql',
+              '20260807182000_registry_documents.sql',
+              '20260807183000_registry_privacy.sql',
+          ]
+          changed = []
+          for name in names:
+              path = Path('supabase/migrations') / name
+              text = path.read_text()
+              new = text.replace('position text', '"position" text')
+              if new != text:
+                  path.write_text(new)
+                  changed.append(name)
+          print('Changed:', ', '.join(changed) if changed else 'none')
+          PY
+          git diff --check
+          git diff -- supabase/migrations
+      - name: Commit keyword fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "filitalia-preview-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add supabase/migrations
+          git commit -m "Quote registry position identifiers"
+          git push origin HEAD:agent/player-registry-dedupe

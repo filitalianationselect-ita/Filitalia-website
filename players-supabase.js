@@ -12,6 +12,10 @@
       .trim();
   }
 
+  function playerKey(name, year) {
+    return normalizeName(name) + "|" + String(year || "").trim();
+  }
+
   function canLoad() {
     const cfg = window.FILITALIA_CONFIG || {};
     return Boolean(
@@ -27,10 +31,9 @@
 
   async function signedPhotoUrl(client, path) {
     if (!path) return "";
+    if (/^https?:\/\//i.test(String(path))) return String(path);
     try {
-      const result = await client.storage
-        .from("profile-media")
-        .createSignedUrl(path, 3600);
+      const result = await client.storage.from("profile-media").createSignedUrl(path, 3600);
       if (result.error) throw result.error;
       return result.data && result.data.signedUrl ? result.data.signedUrl : "";
     } catch (error) {
@@ -39,48 +42,55 @@
     }
   }
 
+  async function readCards(client) {
+    const unified = await client
+      .from("public_player_cards_unified")
+      .select("card_id,player_id,user_id,full_name,birth_year,category,position,height_cm,current_club,city,nationality,instagram,highlights_url,photo_path,published_at,source")
+      .order("published_at", { ascending: false });
+
+    if (!unified.error) return unified.data || [];
+
+    console.info("Unified Player Cards not deployed yet; loading legacy cards.");
+    const legacy = await client
+      .from("public_player_cards")
+      .select("user_id,full_name,birth_year,category,position,height_cm,current_club,city,nationality,instagram,highlights_url,photo_path,published_at")
+      .order("published_at", { ascending: false });
+    if (legacy.error) throw legacy.error;
+    return (legacy.data || []).map(function (row) {
+      return Object.assign({
+        card_id: row.user_id,
+        player_id: null,
+        source: "legacy_account"
+      }, row);
+    });
+  }
+
   async function loadPublishedPlayerCards() {
     if (!canLoad()) return;
     loaded = true;
 
     const cfg = window.FILITALIA_CONFIG;
-    const client = window.supabase.createClient(
-      cfg.supabaseUrl,
-      cfg.supabasePublishableKey,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false
-        }
-      }
-    );
+    const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
 
     try {
-      const result = await client
-        .from("public_player_cards")
-        .select("user_id,full_name,birth_year,category,position,height_cm,current_club,city,nationality,instagram,highlights_url,photo_path,published_at")
-        .order("published_at", { ascending: false });
-
-      if (result.error) throw result.error;
-
-      const rows = Array.isArray(result.data) ? result.data : [];
-      const existingNames = new Set(playersData.map(function (player) {
-        return normalizeName(player && player.name);
+      const rows = await readCards(client);
+      const existingPlayers = new Set(playersData.map(function (player) {
+        return playerKey(player && player.name, player && player.year);
       }));
 
       const dynamicPlayers = await Promise.all(rows.map(async function (row) {
-        const nameKey = normalizeName(row.full_name);
-        if (!nameKey || existingNames.has(nameKey)) return null;
+        const year = row.birth_year ? String(row.birth_year) : "";
+        const uniqueKey = playerKey(row.full_name, year);
+        if (!normalizeName(row.full_name) || existingPlayers.has(uniqueKey)) return null;
 
         const photoUrl = await signedPhotoUrl(client, row.photo_path);
-        const year = row.birth_year ? String(row.birth_year) : "";
         const position = row.position || "Player";
-
-        existingNames.add(nameKey);
+        existingPlayers.add(uniqueKey);
 
         return {
-          id: "account-" + row.user_id,
+          id: "registry-" + (row.card_id || row.player_id || row.user_id),
           name: row.full_name || "FIL-ITALIA Player",
           year: year,
           category: row.category || year,
@@ -98,14 +108,11 @@
           highlights: row.highlights_url || "#",
           imagePosition: "center top",
           status: "Active",
-          source: "supabase"
+          source: row.source || "supabase"
         };
       }));
 
-      dynamicPlayers.filter(Boolean).forEach(function (player) {
-        playersData.push(player);
-      });
-
+      dynamicPlayers.filter(Boolean).forEach(function (player) { playersData.push(player); });
       if (typeof renderHomePlayers === "function") renderHomePlayers();
       if (typeof renderPlayersPage === "function") renderPlayersPage();
     } catch (error) {

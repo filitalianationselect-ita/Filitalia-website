@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Event Day | FIL-ITALIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-event-day.css?v=1">
+<link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body class="event-day-body">
+<main class="event-day-shell">
+  <header class="event-day-top">
+    <div><a class="ed-btn" href="admin-registry.html">← CONTROL ROOM</a><h1 id="eventTitle">Event Day</h1><p id="eventMeta">Caricamento evento...</p></div>
+    <div class="event-day-actions"><button id="refreshEventDay" class="ed-btn" type="button">AGGIORNA</button><button id="markAllPresent" class="ed-btn good" type="button">✓ TUTTI PRESENTI</button></div>
+  </header>
+
+  <section class="event-day-stats">
+    <article class="ed-stat"><span>Iscritti</span><strong id="edRegistered">0</strong></article>
+    <article class="ed-stat"><span>Presenti</span><strong id="edPresent">0</strong></article>
+    <article class="ed-stat"><span>Da registrare</span><strong id="edUnknown">0</strong></article>
+    <article class="ed-stat"><span>Pagati</span><strong id="edPaid">0</strong></article>
+    <article class="ed-stat"><span>Selezionati</span><strong id="edSelected">0</strong></article>
+  </section>
+
+  <div class="event-day-tools">
+    <input id="eventDaySearch" type="search" placeholder="Cerca giocatore, anno, club, ruolo…">
+    <select id="eventDayFilter"><option value="all">Tutti</option><option value="unknown">Da registrare</option><option value="present">Presenti</option><option value="pending">Da pagare</option><option value="selected">Selezionati</option></select>
+    <select id="eventDayYear"><option value="">Tutti gli anni</option></select>
+  </div>
+
+  <section id="eventDayList" class="event-day-list"></section>
+  <p id="eventDayStatus" class="ed-status"></p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=800"></script>
+<script src="auth-client.js?v=1001"></script>
+<script src="admin-event-day.js?v=1"></script>
+</body>
+</html>
