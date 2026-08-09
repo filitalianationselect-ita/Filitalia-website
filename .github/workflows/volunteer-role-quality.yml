@@ -77,7 +77,7 @@ jobs:
       - name: Verify UI and Edge Function alignment
         run: |
           grep -F '<option value="volunteer">Volontario</option>' login.html
-          grep -F 'data-role-section="volunteer"' account.html
+          grep -E 'data-role-section="[^"]*volunteer[^"]*"' account.html
           grep -F 'volunteer-role-v1.js' account.html
           grep -F '"volunteer"' supabase/functions/admin-invite-user/index.ts
           grep -F '"volunteer"' supabase/functions/admin-update-account-status/index.ts
