@@ -1497,6 +1497,7 @@ function extractCityFromEvent(eventItem){
   if(text.includes("firenze") || text.includes("florence")) return "Firenze";
   if(text.includes("venezia") || text.includes("venice")) return "Venezia";
   if(text.includes("bologna")) return "Bologna";
+  if(text.includes("messina")) return "Messina";
   return "";
 }
 
