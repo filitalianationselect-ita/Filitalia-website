@@ -67,6 +67,8 @@ jobs:
           const broken = pages.filter(page=>!fs.existsSync(page)||!fs.readFileSync(page,'utf8').includes('public-content-bridge-v1.js'));
           if (broken.length) throw new Error(`Public bridge missing from: ${broken.join(', ')}`);
           NODE
+      - name: Verify Preview isolation policy
+        run: node scripts/audit-preview-isolation.js
       - name: Verify deploy preview runtime config
         env:
           CONTEXT: deploy-preview
@@ -80,6 +82,8 @@ jobs:
           grep -F 'https://preview-project.supabase.co' supabase-config.js
           grep -F '"isPreview": true' supabase-config.js
           grep -F '"usesPreviewDatabase": true' supabase-config.js
+          grep -F '"usesProductionDatabaseInPreview": false' supabase-config.js
+          grep -F '"demoMode": false' supabase-config.js
           mv /tmp/supabase-config.original.js supabase-config.js
       - name: Verify preview auth routing
         run: |
@@ -100,11 +104,18 @@ jobs:
           npm install --no-save --silent playwright >/tmp/playwright-npm.log 2>&1
           npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
           echo "Chromium installed."
-      - name: Generate local preview configuration
+      - name: Generate isolated local Preview configuration
         env:
           CONTEXT: deploy-preview
           DEPLOY_PRIME_URL: http://127.0.0.1:4173
-        run: node scripts/generate-runtime-config.js
+          FILITALIA_PREVIEW_SUPABASE_URL: ""
+          FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY: ""
+        run: |
+          node scripts/generate-runtime-config.js
+          grep -F '"isPreview": true' supabase-config.js
+          grep -F '"usesPreviewDatabase": false' supabase-config.js
+          grep -F '"usesProductionDatabaseInPreview": false' supabase-config.js
+          grep -F '"demoMode": true' supabase-config.js
       - name: Start static preview
         run: |
           python3 -m http.server 4173 >/tmp/filitalia-http.log 2>&1 &
