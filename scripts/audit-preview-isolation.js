@@ -34,12 +34,12 @@ function generate(extraEnv) {
   return context.window.FILITALIA_CONFIG;
 }
 
-const linked = generate({});
-if (!linked.isPreview || linked.demoMode || linked.usesPreviewDatabase || !linked.usesProductionDatabaseInPreview) {
-  throw new Error(`Preview without dedicated secrets must use the real FIL-ITALIA project: ${JSON.stringify(linked)}`);
+const unconfigured = generate({});
+if (!unconfigured.isPreview || !unconfigured.demoMode || unconfigured.usesPreviewDatabase || unconfigured.usesProductionDatabaseInPreview) {
+  throw new Error(`Preview without dedicated secrets must stay isolated in demo mode: ${JSON.stringify(unconfigured)}`);
 }
-if (!linked.supabaseUrl || !linked.supabasePublishableKey) {
-  throw new Error('Connected Preview must include the browser-safe Supabase URL and publishable key');
+if (unconfigured.supabaseUrl || unconfigured.supabasePublishableKey) {
+  throw new Error('Unconfigured Preview must not expose or use production Supabase credentials');
 }
 
 const isolated = generate({
@@ -49,8 +49,8 @@ const isolated = generate({
 if (!isolated.isPreview || isolated.demoMode || !isolated.usesPreviewDatabase || isolated.usesProductionDatabaseInPreview) {
   throw new Error(`Configured dedicated Preview must use only its isolated database: ${JSON.stringify(isolated)}`);
 }
-if (isolated.supabaseUrl !== 'https://preview-project.supabase.co') {
-  throw new Error('Configured Preview Supabase URL was not preserved');
+if (isolated.supabaseUrl !== 'https://preview-project.supabase.co' || isolated.supabasePublishableKey !== 'preview_publishable_key') {
+  throw new Error('Configured Preview Supabase values were not preserved');
 }
 
-console.log('Preview connection audit passed: real FIL-ITALIA data is used by default and dedicated Preview credentials still take priority.');
+console.log('Preview isolation audit passed: no production fallback; dedicated Preview credentials still take priority.');
