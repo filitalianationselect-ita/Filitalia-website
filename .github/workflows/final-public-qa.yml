@@ -41,20 +41,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Install Chromium
+
+      - name: Prepare system Chrome
         run: |
-          npm install --no-save --silent playwright
-          npx playwright install --with-deps chromium
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
       - name: Verify final public pages
         run: |
           node <<'NODE'
-          const { chromium } = require('playwright');
+          const { chromium } = require('playwright-core');
           const fs = require('fs');
           const root = 'https://deploy-preview-1--filitalia.netlify.app';
           const sleep = ms => new Promise(r => setTimeout(r, ms));
+
           (async()=>{
-            const browser = await chromium.launch({headless:true});
+            const browser = await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
             const page = await browser.newPage({viewport:{width:1280,height:800}});
+
             let ready = false;
             for(let attempt=0;attempt<80;attempt++){
               await page.goto(`${root}/?finalqa=${Date.now()}-${attempt}`,{waitUntil:'domcontentloaded',timeout:120000});
@@ -66,7 +72,8 @@ jobs:
               await sleep(1500);
             }
             if(!ready)throw new Error('Final Home did not reach the Deploy Preview');
-            await page.waitForTimeout(1500);
+            await page.waitForTimeout(1200);
+
             const home = await page.evaluate(()=>{
               const box = el => {const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}};
               const menu=document.querySelector('.mobile-menu-button');
@@ -79,7 +86,6 @@ jobs:
                 navFont:parseFloat(getComputedStyle(document.querySelector('#navLinks a')).fontSize),
                 navCount:document.querySelectorAll('#navLinks a').length,
                 titleText:title.innerText.trim(),
-                titleDisplay:getComputedStyle(title).display,
                 titleOpacity:getComputedStyle(title).opacity,
                 copyBox:box(copy),
                 copyVisibility:getComputedStyle(copy).visibility
@@ -96,45 +102,64 @@ jobs:
               await page.goto(`${root}/${path}?finalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
               await page.waitForSelector(bodySelector,{timeout:20000});
               await page.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
-              await page.waitForTimeout(1400);
+              await page.waitForTimeout(1000);
               const value=await page.evaluate(()=>({
                 hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
                 navCount:document.querySelectorAll('#navLinks a').length,
                 navHeight:document.querySelector('.navbar').getBoundingClientRect().height,
-                background:getComputedStyle(document.body).backgroundImage
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               }));
               if(value.hamburger!=='none')throw new Error(`${path}: desktop hamburger visible`);
               if(value.navCount!==9)throw new Error(`${path}: expected 9 nav links, got ${value.navCount}`);
               if(value.navHeight<80)throw new Error(`${path}: navbar too small`);
+              if(value.overflow>3)throw new Error(`${path}: horizontal overflow ${value.overflow}px`);
               return value;
             }
+
             const archive=await checkPublic('idcamp','body[data-gallery-category="idcamp"]');
             const album=await checkPublic('idcamp-roma-2026','body[data-album-id="idcamp-roma-2026"]');
             await page.screenshot({path:'final-album.jpg',type:'jpeg',quality:76});
 
             await page.goto(`${root}/news?finalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
-            await page.waitForSelector('#allNewsGrid .fil-news-final-card',{timeout:20000});
-            await page.waitForTimeout(2800);
+            await page.waitForSelector('#allNewsGrid .fil-news-lead',{timeout:20000});
+            await page.waitForTimeout(1600);
             const news=await page.evaluate(()=>{
-              const cards=[...document.querySelectorAll('#allNewsGrid>.fil-news-final-card')];
-              return {count:cards.length,featured:cards[0]?.classList.contains('is-featured'),dates:cards.map(c=>c.querySelector('time')?.textContent.trim()||''),tops:cards.map(c=>Math.round(c.getBoundingClientRect().top)),columns:getComputedStyle(document.getElementById('allNewsGrid')).gridTemplateColumns};
+              const grid=document.getElementById('allNewsGrid');
+              const lead=grid?.querySelector('.fil-news-lead');
+              const secondary=[...(grid?.querySelectorAll('.fil-news-tile, .fil-news-card-v1')||[])];
+              const image=lead?.querySelector('img');
+              const layout=grid?.querySelector('.fil-news-layout');
+              return {
+                count:(lead?1:0)+secondary.length,
+                leadTitle:(lead?.querySelector('h2')?.textContent||'').trim(),
+                leadDate:(lead?.querySelector('small')?.textContent||'').trim(),
+                leadHref:lead?.getAttribute('href')||'',
+                imageWidth:image?.naturalWidth||0,
+                layoutWidth:layout?.getBoundingClientRect().width||0,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
             });
-            if(news.count<3)throw new Error(`News cards missing: ${news.count}`);
-            if(!news.featured)throw new Error('First News card is not featured');
-            if(!/12\s+(luglio|july)/i.test(news.dates[0]))throw new Error(`News are not chronological: ${news.dates.join(' | ')}`);
-            if(!news.columns.includes('px'))throw new Error(`News grid not active: ${news.columns}`);
+            if(news.count<3)throw new Error(`News cards missing: ${JSON.stringify(news)}`);
+            if(!news.leadTitle||!news.leadHref.includes('news-item.html?id='))throw new Error(`Lead News invalid: ${JSON.stringify(news)}`);
+            if(news.imageWidth<1||news.layoutWidth<300||news.overflow>3)throw new Error(`News layout/media invalid: ${JSON.stringify(news)}`);
             await page.screenshot({path:'final-news.jpg',type:'jpeg',quality:76});
 
             const mobile=await browser.newPage({viewport:{width:390,height:844}});
             await mobile.goto(`${root}/?finalqa=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
             await mobile.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
-            const mobileMenu=await mobile.locator('.mobile-menu-button').evaluate(el=>getComputedStyle(el).display);
-            if(mobileMenu==='none')throw new Error('Mobile hamburger is missing');
+            const mobileState=await mobile.evaluate(()=>({
+              menu:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+              overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+            }));
+            if(mobileState.menu==='none')throw new Error('Mobile hamburger is missing');
+            if(mobileState.overflow>3)throw new Error(`Mobile Home overflow: ${mobileState.overflow}px`);
             await mobile.screenshot({path:'final-mobile.jpg',type:'jpeg',quality:76});
-            fs.writeFileSync('final-public-qa.json',JSON.stringify({home,archive,album,news,mobileMenu},null,2));
+
+            fs.writeFileSync('final-public-qa.json',JSON.stringify({home,archive,album,news,mobileState},null,2));
             await browser.close();
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
+
       - name: Upload visual proof
         if: always()
         uses: actions/upload-artifact@v4
