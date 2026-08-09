@@ -10,6 +10,8 @@ on:
       - "public-content-layout-v1.js"
       - "public-media-v1.js"
       - "public-media-v1.css"
+      - "home-gallery-full-v1.js"
+      - "home-gallery-full-v1.css"
       - "public-pages-v1.js"
       - "public-pages-v1.css"
       - "public-concept2-final-v1.css"
@@ -55,6 +57,8 @@ on:
       - "public-content-layout-v1.js"
       - "public-media-v1.js"
       - "public-media-v1.css"
+      - "home-gallery-full-v1.js"
+      - "home-gallery-full-v1.css"
       - "public-pages-v1.js"
       - "public-pages-v1.css"
       - "public-concept2-final-v1.css"
@@ -102,11 +106,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+
       - name: Check public scripts syntax
         run: |
           node --check public-content-bridge-v1.js
           node --check public-content-layout-v1.js
           node --check public-media-v1.js
+          node --check home-gallery-full-v1.js
           node --check public-pages-v1.js
           node --check home-tricolore-v1.js
           node --check home-concept2-final-v1.js
@@ -119,6 +125,7 @@ jobs:
           node --check scripts/audit-public-content.js
           node --check scripts/audit-preview-isolation.js
           node --check scripts/audit-role-consistency.js
+
       - name: Verify ordering media and page redesign wiring
         run: |
           node <<'NODE'
@@ -128,7 +135,9 @@ jobs:
           const migration = fs.readFileSync('supabase/migrations/20260729132000_content_layout_media.sql','utf8');
           const admin = fs.readFileSync('admin-light.html','utf8');
           const required = [
-            [files.index,'id="homeMediaGrid"'],
+            [files.index,'id="gallery"'],
+            [files.index,'home-gallery-full-panel'],
+            [files.index,'home-gallery-full-v1.js?v='],
             [files.index,'public-content-layout-v1.js?v='],
             [files.index,'public-media-v1.js?v='],
             [files.players,'public-pages-v1.js?v='],
@@ -144,14 +153,18 @@ jobs:
           ];
           const missing = required.filter(([body,value]) => !body.includes(value)).map(([,value]) => value);
           if (missing.length) throw new Error(`Content layout/media/page wiring missing: ${missing.join(', ')}`);
-          console.log('Content ordering, media and public page redesign verified.');
+          console.log('Content ordering, full Home gallery, media and public page redesign verified.');
           NODE
+
       - name: Protect News and Talent ID archives
         run: node scripts/audit-public-content.js
+
       - name: Protect deploy preview isolation
         run: node scripts/audit-preview-isolation.js
+
       - name: Protect Admin and Super Admin roles
         run: node scripts/audit-role-consistency.js
+
       - name: Verify private login and reset flow
         run: |
           node <<'NODE'
