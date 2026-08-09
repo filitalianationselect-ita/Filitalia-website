@@ -17,21 +17,20 @@ const productionPublishableKey = String(process.env.FILITALIA_SUPABASE_PUBLISHAB
 const previewSupabaseUrl = String(process.env.FILITALIA_PREVIEW_SUPABASE_URL || '').replace(/\/$/, '');
 const previewPublishableKey = String(process.env.FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY || '');
 const usesPreviewDatabase = Boolean(isPreview && previewSupabaseUrl && previewPublishableKey);
-const usesProductionDatabaseInPreview = Boolean(
-  isPreview && !usesPreviewDatabase && productionSupabaseUrl && productionPublishableKey
-);
 
-// A dedicated Preview database still takes priority when its two values are configured.
-// Without dedicated Preview values, this FIL-ITALIA Preview intentionally connects to
-// the real project through the browser-safe publishable key. Database access remains
-// protected by Supabase authentication and Row Level Security policies.
+// Deploy Previews must never fall back to the production Supabase project.
+// If dedicated Preview credentials are not configured, the Preview stays
+// static/demo-only. Production continues to use the production project.
 const supabaseUrl = isPreview
-  ? (usesPreviewDatabase ? previewSupabaseUrl : productionSupabaseUrl)
+  ? (usesPreviewDatabase ? previewSupabaseUrl : '')
   : productionSupabaseUrl;
 
 const supabasePublishableKey = isPreview
-  ? (usesPreviewDatabase ? previewPublishableKey : productionPublishableKey)
+  ? (usesPreviewDatabase ? previewPublishableKey : '')
   : productionPublishableKey;
+
+const usesProductionDatabaseInPreview = false;
+const demoMode = Boolean(isPreview && !usesPreviewDatabase);
 
 const config = {
   supabaseUrl,
@@ -41,7 +40,7 @@ const config = {
   isPreview,
   usesPreviewDatabase,
   usesProductionDatabaseInPreview,
-  demoMode: false
+  demoMode
 };
 
 const output = `/* Generated at Netlify build time. Publishable browser values only. */\nwindow.FILITALIA_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
