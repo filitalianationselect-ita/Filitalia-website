@@ -1585,31 +1585,6 @@ async function submitSiteForm(form){
   const payload = await collectFormData(form);
 
   try{
-    if(payload.eventId === "idcamp-messina-2026"){
-      const backupData = new FormData(form);
-      backupData.set("Camp Name", payload["Camp Name"] || "Talent ID Camp Messina");
-      backupData.set("Camp City", "Messina");
-      backupData.set("Camp Date", payload["Camp Date"] || "6 Settembre 2026");
-      backupData.set("eventId", payload.eventId);
-      backupData.set("submissionId", payload.submissionId);
-      backupData.set("_subject", "NUOVA REGISTRAZIONE — Talent ID Camp Messina");
-      backupData.set("_template", "table");
-      backupData.set("_captcha", "false");
-
-      const backupResponse = await fetch("https://formsubmit.co/ajax/Filitalia.nationselect@gmail.com", {
-        method: "POST",
-        headers: { "Accept": "application/json" },
-        body: backupData
-      });
-      const backupResult = await backupResponse.json().catch(() => ({}));
-      if(!backupResponse.ok || backupResult.success === false){
-        throw new Error(backupResult.message || "MESSINA_BACKUP_FAILED");
-      }
-
-      window.location.href = `thank-you.html?event=${encodeURIComponent(payload.eventId)}&city=Messina`;
-      return;
-    }
-
     await fetch(GOOGLE_SHEET_WEB_APP_URL, {
       method:"POST",
       mode:"no-cors",
