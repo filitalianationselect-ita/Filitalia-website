@@ -2,7 +2,7 @@ const SPREADSHEET_ID = "INCOLLA_QUI_ID_GOOGLE_SHEET";
 const PHOTO_FOLDER_ID = "INCOLLA_QUI_ID_CARTELLA_DRIVE_FOTO";
 
 const ALLOWED_FORM_TYPES = ["camp_registration", "general_join"];
-const ALLOWED_CITIES = ["Roma", "Milano", "Firenze", "Venezia", "Bologna"];
+const ALLOWED_CITIES = ["Roma", "Milano", "Firenze", "Venezia", "Bologna", "Messina"];
 const MAX_JSON_BYTES = 7 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MIN_FILL_TIME_MS = 3000;
