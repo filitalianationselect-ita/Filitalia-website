@@ -224,7 +224,7 @@
           </div>
           <div class="uc-summary"><strong id="ucCount">0 destinatari</strong><div id="ucNote" class="muted">Seleziona il camp o il destinatario.</div></div>
           <div class="uc-brand"><img src="images/logo.png" alt="FIL-ITALIA"><div><strong>Email ufficiale FIL-ITALIA</strong><span>Logo, sfondo verde, contenuto personalizzato, dettagli del camp e footer. Gli invii numerosi vengono divisi automaticamente in gruppi da 100.</span></div></div>
-          <div class="uc-templates"><button class="uc-template" data-uc-template="free">Messaggio libero</button><button class="uc-template" data-uc-template="info">Info camp</button><button class="uc-template" data-uc-template="payment">Pagamento</button><button class="uc-template" data-uc-template="documents">Documenti</button><button class="uc-template" data-uc-template="blsd">BLSD</button></div>
+          <div class="uc-templates"><button class="uc-template" data-uc-template="free">Messaggio libero</button><button class="uc-template" data-uc-template="registration">Registrazione ricevuta</button><button class="uc-template" data-uc-template="confirmed">Iscrizione confermata</button><button class="uc-template" data-uc-template="info">Info camp</button><button class="uc-template" data-uc-template="payment">Pagamento</button><button class="uc-template" data-uc-template="documents">Documenti</button><button class="uc-template" data-uc-template="shirt">Maglia</button><button class="uc-template" data-uc-template="reminder">Promemoria evento</button><button class="uc-template" data-uc-template="cancelled">Annullamento</button><button class="uc-template" data-uc-template="refund">Rimborso</button><button class="uc-template" data-uc-template="blsd">BLSD</button></div>
           <div class="uc-grid">
             <label class="full">OGGETTO<input id="ucSubject" value="Comunicazione FIL-ITALIA"></label>
             <label class="full">TESTO<textarea id="ucBody">Ciao {nome},\n\n\n\nFIL-ITALIA Nation Select</textarea></label>
@@ -310,9 +310,15 @@
   function applyTemplate(key) {
     const templates = {
       free: ["Comunicazione FIL-ITALIA", "Ciao {nome},\n\n\n\nFIL-ITALIA Nation Select"],
+      registration: ["Registrazione ricevuta: {evento}", "Ciao {nome},\n\nabbiamo ricevuto correttamente la registrazione a {evento}. Verificheremo i dati, i documenti e il pagamento e ti invieremo la conferma definitiva.\n\nFIL-ITALIA Nation Select"],
+      confirmed: ["Iscrizione confermata: {evento}", "Ciao {nome},\n\nla tua iscrizione a {evento} è confermata. Conserva questa email e controlla le informazioni dell’evento riportate qui sotto.\n\nFIL-ITALIA Nation Select"],
       info: ["Informazioni importanti: {evento}", "Ciao {nome},\n\nti inviamo le informazioni aggiornate relative a {evento}.\n\nFIL-ITALIA Nation Select"],
       payment: ["Pagamento da completare: {evento}", "Ciao {nome},\n\nil pagamento relativo a {evento} risulta ancora da completare.\n\nFIL-ITALIA Nation Select"],
-      documents: ["Documenti mancanti: {evento}", "Ciao {nome},\n\nper completare la partecipazione a {evento} manca ancora un documento richiesto.\n\nFIL-ITALIA Nation Select"],
+      documents: ["Documenti mancanti: {evento}", "Ciao {nome},\n\nper completare la partecipazione a {evento} manca ancora un documento richiesto. Rispondi a questa comunicazione o carica il documento richiesto appena possibile.\n\nFIL-ITALIA Nation Select"],
+      shirt: ["Conferma maglia: {evento}", "Ciao {nome},\n\ncontrolla la taglia indicata per {evento}. Per gli U12 la partecipazione è gratuita senza maglia; la maglia facoltativa costa €20. Per gli over U12 la quota attuale è €50 con maglia inclusa.\n\nFIL-ITALIA Nation Select"],
+      reminder: ["Promemoria: {evento}", "Ciao {nome},\n\nti ricordiamo il prossimo appuntamento con {evento}. Trovi data, orario e luogo qui sotto. Presentati con anticipo e porta i documenti richiesti.\n\nFIL-ITALIA Nation Select"],
+      cancelled: ["Aggiornamento iscrizione: {evento}", "Ciao {nome},\n\nla registrazione relativa a {evento} è stata annullata. Contattaci se ritieni che si tratti di un errore o se desideri ulteriori informazioni.\n\nFIL-ITALIA Nation Select"],
+      refund: ["Aggiornamento rimborso: {evento}", "Ciao {nome},\n\nla richiesta di rimborso relativa a {evento} è stata registrata. Ti comunicheremo separatamente tempi e modalità di accredito.\n\nFIL-ITALIA Nation Select"],
       blsd: ["Verifica BLSD FIL-ITALIA", "Ciao {nome},\n\nti chiediamo di confermare lo stato del tuo attestato BLSD.\n\nFIL-ITALIA Nation Select"]
     };
     const value = templates[key] || templates.free;
