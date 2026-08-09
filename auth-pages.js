@@ -610,23 +610,51 @@
     if (!configGuard()) return;
 
     let profile;
+    let session;
     try {
-      const session = await auth.getSession();
-      if (!session) {
+      session = await auth.getSession();
+      if (!session || !session.user) {
         window.location.replace("login.html");
         return;
       }
-      profile = await auth.getOwnProfile();
-      if (!profile) throw new Error("PROFILE_NOT_FOUND");
-      renderProfile(profile);
-      initDeletionRequest(profile);
-      auth.syncOwnProfileToSheet().catch(function (error) {
-        console.warn("Google Sheet profile sync unavailable", error);
-      });
     } catch (error) {
       setStatus("profileStatus", auth.friendlyError(error), "error");
       return;
     }
+
+    try {
+      profile = await auth.getOwnProfile();
+    } catch (error) {
+      console.warn("FIL-ITALIA profile load unavailable; using safe session fallback", error);
+    }
+
+    if (!profile) {
+      const user = session.user;
+      const metadata = user.user_metadata || {};
+      const requestedRole = ["player", "parent", "coach", "coordinator", "staff"].includes(String(metadata.requested_role || ""))
+        ? String(metadata.requested_role)
+        : "player";
+      profile = {
+        id: user.id,
+        email: user.email || "",
+        first_name: metadata.first_name || "",
+        last_name: metadata.last_name || "",
+        phone: "",
+        city: "",
+        language: metadata.language || "it",
+        requested_role: requestedRole,
+        role: requestedRole,
+        status: "pending",
+        avatar_path: null
+      };
+      setStatus("profileStatus", "Account aperto. Il profilo è ancora in sincronizzazione.", "warning");
+    }
+
+    renderProfile(profile);
+    initDeletionRequest(profile);
+    auth.syncOwnProfileToSheet().catch(function (error) {
+      console.warn("Google Sheet profile sync unavailable", error);
+    });
 
     const logout = byId("logoutButton");
     if (logout) {
