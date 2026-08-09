@@ -209,6 +209,7 @@ function cleanCityName(city) {
   if (c.includes("firenze") || c.includes("florence")) return "Firenze";
   if (c.includes("venezia") || c.includes("venice")) return "Venezia";
   if (c.includes("bologna")) return "Bologna";
+  if (c.includes("messina")) return "Messina";
   return "";
 }
 
