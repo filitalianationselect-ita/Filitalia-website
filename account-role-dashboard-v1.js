@@ -97,7 +97,8 @@
       });
       box.appendChild(toggle);
     }
-    toggle.textContent=registrationMovementsExpanded?movementText('hide',cards.length):movementText('show',cards.length);
+    const nextToggleText=registrationMovementsExpanded?movementText('hide',cards.length):movementText('show',cards.length);
+    if(toggle.textContent!==nextToggleText) toggle.textContent=nextToggleText;
   }
 
   function profileCompletion(role){
