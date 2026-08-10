@@ -26,7 +26,7 @@
   let lastSignature = "";
 
   const style = d.createElement("style");
-  style.textContent = ".reg-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}";
+  style.textContent = ".reg-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}.person .avatar{position:relative;overflow:hidden}.person .avatar img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}.person .avatar span{position:relative;z-index:0}";
   d.head.appendChild(style);
 
   function esc(value) {
@@ -77,6 +77,16 @@
   function state(player) { return complete(player) && player.certificate ? "Confermata" : !complete(player) && !player.certificate ? "Incompleta" : "In attesa"; }
   function initials(name) { return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part[0]; }).join("").toUpperCase(); }
 
+  function historicPhoto(payload) {
+    const source = payload && typeof payload === "object" ? payload : {};
+    const raw = source["Foto Giocatore"] || source["Foto giocatore"] || source.player_photo || source.photo || "";
+    const value = raw && typeof raw === "object"
+      ? (raw.url || raw.value || raw.public_url || raw.preview_url || "")
+      : raw;
+    const url = String(value || "").trim();
+    return /^https?:\/\//i.test(url) ? url : "";
+  }
+
   function mapUnifiedRegistration(row) {
     const payload = row && row.original_data && typeof row.original_data === "object" ? row.original_data : {};
     const birthDate = String(row && (row.birth_date || payload.birth_date || payload["Data Nascita"]) || "");
@@ -100,6 +110,7 @@
       present: false,
       notes: String(row && (row.admin_notes || row.notes) || ""),
       status: String(row && row.registration_status || "received"),
+      photo: historicPhoto(payload),
       payload: payload,
       createdAt: row && row.created_at || null,
       updatedAt: row && row.updated_at || null
@@ -114,7 +125,7 @@
     const documentStatus = docs(player);
     const registrationState = state(player);
     const search = [player.name, player.year, event.city, player.email, player.parent].join(" ").toLowerCase();
-    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar">${esc(initials(player.name))}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small reg-sync-player-card" data-player="${esc(player.id)}">Player Card</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
+    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar"><span>${esc(initials(player.name))}</span>${player.photo ? '<img src="' + esc(player.photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy" referrerpolicy="no-referrer">' : ''}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small reg-sync-player-card" data-player="${esc(player.id)}">Player Card</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
   }
 
   function signature() {
