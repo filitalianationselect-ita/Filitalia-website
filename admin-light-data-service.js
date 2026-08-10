@@ -48,6 +48,16 @@
     });
   }
 
+  function historicPhoto(payload) {
+    const source = payload && typeof payload === "object" ? payload : {};
+    const raw = source["Foto Giocatore"] || source["Foto giocatore"] || source.player_photo || source.photo || "";
+    const value = raw && typeof raw === "object"
+      ? (raw.url || raw.value || raw.public_url || raw.preview_url || "")
+      : raw;
+    const url = String(value || "").trim();
+    return /^https?:\/\//i.test(url) ? url : "";
+  }
+
   function mapRegistration(row, operation) {
     const payload = row && row.original_data && typeof row.original_data === "object" ? row.original_data : {};
     const op = operation || {};
@@ -72,7 +82,7 @@
       certificate: certificateStatus === "received" || certificateStatus === "approved",
       certificateStatus: certificateStatus,
       certificateFile: clean(op.certificate_path, 600),
-      photo: clean(op.player_photo_path, 600),
+      photo: clean(op.player_photo_path, 600) || historicPhoto(payload),
       present: Boolean(op.present),
       notes: clean(op.notes || row.admin_notes || row.notes, 5000),
       status: clean(row.registration_status, 40) || "received",
