@@ -7,8 +7,9 @@
   const catalog = window.FilitaliaEventCatalog;
   const FALLBACK_EVENTS = [
     { id: "idcamp-roma-2026", city: "Roma", label: "Roma · 5 agosto 2026" },
-    { id: "idcamp-firenze-2026", city: "Firenze", label: "Firenze · 6 settembre 2026" },
+    { id: "idcamp-messina-2026", city: "Messina", label: "Messina · 6 settembre 2026" },
     { id: "idcamp-venezia-2026", city: "Venezia", label: "Venezia · 13 settembre 2026" },
+    { id: "idcamp-firenze-2026", city: "Firenze", label: "Firenze · 20 settembre 2026" },
     { id: "idcamp-milano-2026", city: "Milano", label: "Milano · data da confermare" }
   ];
   const seed = {
