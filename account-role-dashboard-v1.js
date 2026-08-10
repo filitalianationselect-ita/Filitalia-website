@@ -189,7 +189,7 @@
     if(isAdmin&&isActive){
       updateAdminHero(role);
       removeLegacyAdminCard();
-      removeAdminPortal();
+      ensureAdminPortal(role);
     }else{
       removeAdminPortal();
     }
