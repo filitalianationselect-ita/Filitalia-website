@@ -549,12 +549,11 @@ body[data-account-page="account"] footer {
     height: auto !important;
     flex: 0 0 100% !important;
     flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 12px !important;
-    padding: 5px 0 0 !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    padding: 8px 0 0 !important;
+    overflow: visible !important;
     opacity: 1 !important;
     transform: none !important;
     background: transparent !important;
@@ -569,11 +568,14 @@ body[data-account-page="account"] footer {
   }
 
   body[data-account-page="account"] #navLinks a {
-    flex: 0 0 auto;
+    flex: 1 1 calc(33.333% - 6px);
     width: auto !important;
-    padding: 5px 0 !important;
-    border: 0 !important;
-    font-size: 12px !important;
+    min-width: 92px;
+    padding: 9px 8px !important;
+    border: 1px solid var(--account-line) !important;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 11px !important;
   }
 
   .account-workspace-hero {
