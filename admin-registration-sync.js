@@ -27,7 +27,7 @@
   let lastSignature = "";
 
   const style = d.createElement("style");
-  style.textContent = ".reg-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}.person .avatar{position:relative;overflow:hidden}.person .avatar img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}.person .avatar span{position:relative;z-index:0}";
+  style.textContent = ".reg-sync-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-photo{border-color:#9ccbb8!important;background:#eef9f4!important;color:#07583b!important}.reg-sync-photo[disabled]{opacity:.6;cursor:wait}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}.person .avatar{position:relative;overflow:hidden}.person .avatar img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}.person .avatar span{position:relative;z-index:0}";
   d.head.appendChild(style);
 
   function esc(value) {
@@ -126,7 +126,7 @@
     const documentStatus = docs(player);
     const registrationState = state(player);
     const search = [player.name, player.year, event.city, player.email, player.parent].join(" ").toLowerCase();
-    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar"><span>${esc(initials(player.name))}</span>${player.photo ? '<img src="' + esc(player.photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy" referrerpolicy="no-referrer">' : ''}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small reg-sync-player-card" data-player="${esc(player.id)}">Player Card</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
+    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar"><span>${esc(initials(player.name))}</span>${player.photo ? '<img src="' + esc(player.photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy" referrerpolicy="no-referrer">' : ''}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small secondary reg-sync-photo" data-player="${esc(player.id)}">Foto</button><button class="btn small reg-sync-player-card" data-player="${esc(player.id)}">Player Card</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
   }
 
   function signature() {
@@ -199,6 +199,85 @@
     }
     await window.FilitaliaPlayerLive.openFromRegistration(registration);
   }
+  function imageElement(file) {
+    return new Promise(function (resolve, reject) {
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = function () { URL.revokeObjectURL(url); resolve(image); };
+      image.onerror = function () { URL.revokeObjectURL(url); reject(new Error("INVALID_IMAGE")); };
+      image.src = url;
+    });
+  }
+
+  function canvasBlob(canvas, type, quality) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (blob) { blob ? resolve(blob) : reject(new Error("PHOTO_COMPRESSION_FAILED")); }, type, quality);
+    });
+  }
+
+  async function preparePlayerPhoto(file) {
+    if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("INVALID_FILE_TYPE");
+    if (file.size > 20 * 1024 * 1024) throw new Error("FILE_TOO_LARGE");
+    const image = await imageElement(file);
+    const maxSide = 1800;
+    const ratio = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+    const canvas = d.createElement("canvas");
+    canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * ratio));
+    canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * ratio));
+    const context = canvas.getContext("2d", { alpha: false });
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    let quality = 0.88;
+    let blob = await canvasBlob(canvas, "image/jpeg", quality);
+    while (blob.size > 4.8 * 1024 * 1024 && quality > 0.55) {
+      quality -= 0.08;
+      blob = await canvasBlob(canvas, "image/jpeg", quality);
+    }
+    if (blob.size > 5 * 1024 * 1024) throw new Error("PHOTO_COMPRESSION_FAILED");
+    return new File([blob], String(file.name || "foto").replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+  }
+
+  async function choosePlayerPhoto(id, button) {
+    const player = rows.find(function (item) { return String(item.id) === String(id); });
+    if (!player) return;
+    const input = d.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/png,image/webp";
+    input.hidden = true;
+    d.body.appendChild(input);
+    input.onchange = async function () {
+      const file = input.files && input.files[0];
+      input.remove();
+      if (!file) return;
+      const previous = button.textContent;
+      button.disabled = true;
+      button.textContent = "Caricamento…";
+      try {
+        if (!window.FilitaliaAdminData || !window.FilitaliaAdminData.uploadFile) throw new Error("UPLOAD_UNAVAILABLE");
+        const prepared = await preparePlayerPhoto(file);
+        await window.FilitaliaAdminData.uploadFile(player.eventId || eventId(), player.id, "player_photo", prepared);
+        lastSignature = "";
+        await load();
+        if (window.showToast) window.showToast("Foto giocatore caricata.");
+        else alert("Foto giocatore caricata.");
+      } catch (error) {
+        console.error(error);
+        const code = String(error && (error.message || error.code) || error);
+        const notice = code.includes("INVALID_FILE_TYPE") ? "Seleziona una foto JPG, PNG o WEBP."
+          : code.includes("FILE_TOO_LARGE") ? "La foto supera 20 MB."
+          : code.includes("PHOTO_COMPRESSION_FAILED") ? "Non sono riuscito a comprimere la foto sotto 5 MB."
+          : "Non sono riuscito a caricare la foto.";
+        if (window.showToast) window.showToast(notice);
+        else alert(notice);
+      } finally {
+        button.disabled = false;
+        button.textContent = previous;
+      }
+    };
+    input.click();
+  }
+
   function exportCsv(ids) {
     const list = ids ? rows.filter(function (player) { return ids.includes(String(player.id)); }) : rows;
     if (window.FilitaliaAdminData) window.FilitaliaAdminData.exportCsv(list, "filitalia-" + String(eventInfo().city || "evento").toLowerCase() + "-registrazioni.csv");
@@ -251,6 +330,7 @@
     lastSignature = nextSignature;
     stats();
     d.querySelectorAll(".reg-sync-open").forEach(function (button) { button.onclick = function () { openPlayer(button.dataset.player); }; });
+    d.querySelectorAll(".reg-sync-photo").forEach(function (button) { button.onclick = function () { choosePlayerPhoto(button.dataset.player, button); }; });
     d.querySelectorAll(".reg-sync-player-card").forEach(function (button) { button.onclick = function () { openPlayerCard(button.dataset.player); }; });
     d.querySelectorAll(".reg-sync-delete").forEach(function (button) { button.onclick = function () { deletePlayer(button.dataset.player); }; });
     bindChecks();
@@ -265,15 +345,9 @@
     try {
       const realMode = window.FilitaliaAdminLight
         && window.FilitaliaAdminLight.getMode() === "real";
-      if (realMode && eventId() === "__all__"
-          && window.FilitaliaRegistrations
-          && window.FilitaliaRegistrations.listForEvent) {
-        rows = (await window.FilitaliaRegistrations.listForEvent("")).map(mapUnifiedRegistration);
-      } else {
-        rows = realMode && window.FilitaliaAdminData
-          ? await window.FilitaliaAdminData.loadEvent(eventId())
-          : demo();
-      }
+      rows = realMode && window.FilitaliaAdminData
+        ? await window.FilitaliaAdminData.loadEvent(eventId())
+        : demo();
     } catch (error) { console.error(error); rows = demo(); }
     render();
     busy = false;
