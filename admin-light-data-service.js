@@ -95,11 +95,11 @@
   async function loadEvent(eventId) {
     await requireAdmin();
     const safeEventId = clean(eventId, 160);
-    const registrationsResult = await client()
+    let registrationsQuery = client()
       .from("registrations")
-      .select("id,submission_id,account_id,player_id,camp_event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,guardian_name,birth_date,shirt_size,privacy_consent,media_consent,registration_status,payment_status,payment_amount,notes,admin_notes,original_data,created_at,updated_at")
-      .eq("camp_event_id", safeEventId)
-      .order("created_at", { ascending: true });
+      .select("id,submission_id,account_id,player_id,camp_event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,guardian_name,birth_date,shirt_size,privacy_consent,media_consent,registration_status,payment_status,payment_amount,notes,admin_notes,original_data,created_at,updated_at");
+    if (safeEventId && safeEventId !== "__all__") registrationsQuery = registrationsQuery.eq("camp_event_id", safeEventId);
+    const registrationsResult = await registrationsQuery.order("created_at", { ascending: true });
     let registrationRows;
     if (registrationsResult.error) {
       if (!missingUnifiedRegistrations(registrationsResult.error)
@@ -112,16 +112,28 @@
       registrationRows = registrationsResult.data || [];
     }
 
-    const operationsResult = await client()
+    let operationsQuery = client()
       .from("event_admin_operations")
-      .select("registration_id,event_id,payment_status,payment_amount,payment_method,payment_date,payment_reference,certificate_status,certificate_path,player_photo_path,present,notes,updated_at")
-      .eq("event_id", safeEventId);
+      .select("registration_id,event_id,payment_status,payment_amount,payment_method,payment_date,payment_reference,certificate_status,certificate_path,player_photo_path,present,notes,updated_at");
+    if (safeEventId && safeEventId !== "__all__") operationsQuery = operationsQuery.eq("event_id", safeEventId);
+    const operationsResult = await operationsQuery;
     if (operationsResult.error && !String(operationsResult.error.message || "").toLowerCase().includes("schema cache")) {
       throw operationsResult.error;
     }
 
     const operations = new Map(((operationsResult && operationsResult.data) || []).map(function (row) { return [String(row.registration_id), row]; }));
-    return registrationRows.map(function (row) { return mapRegistration(row, operations.get(String(row.id))); });
+    const mapped = registrationRows.map(function (row) { return mapRegistration(row, operations.get(String(row.id))); });
+    await Promise.all(mapped.map(async function (registration) {
+      if (!registration.photo || /^https?:\/\//i.test(registration.photo)) return;
+      try {
+        const signed = await client().storage.from(DOCUMENT_BUCKET).createSignedUrl(registration.photo, 900);
+        if (!signed.error && signed.data && signed.data.signedUrl) registration.photo = signed.data.signedUrl;
+        else registration.photo = "";
+      } catch (_) {
+        registration.photo = "";
+      }
+    }));
+    return mapped;
   }
 
   async function addAudit(eventId, registrationId, action, details) {
