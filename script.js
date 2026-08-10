@@ -266,7 +266,15 @@ const translations = {
     allYears:"Lahat ng years",
     allPositions:"Lahat ng positions",
     noPlayers:"Walang nahanap na player.",
-    viewAlbum:"Tingnan Album →"
+    viewAlbum:"Tingnan ang album →",
+    joinSiteSubtitle:"Kumpletuhin ang form sa website. Ipapadala ang data sa FIL-ITALIA Google Sheet.",
+    campSiteSubtitle:"Mag-register sa FIL-ITALIA camp o event sa website. Ipapadala ang data sa camp database.",
+    generalInfoTitle:"Pangkalahatang impormasyon", roleInfoTitle:"Role at profile", guardianPrivacyTitle:"Privacy at menor de edad", campEventInfoTitle:"Event", athleteInfoTitle:"Impormasyon ng participant",
+    firstNameLabel:"Pangalan", lastNameLabel:"Apelyido", birthDateLabel:"Petsa ng kapanganakan", cityLabel:"Lungsod", emailLabel:"Email", phoneLabel:"Telepono", roleLabel:"Role", selectRoleOption:"Pumili ng role",
+    nationalityLabel:"Nasyonalidad / Pinagmulan", heightLabel:"Taas", positionLabel:"Posisyon sa basketball", clubLabel:"Team / Club", experienceLabel:"Karanasan", highlightsLabel:"Highlights / social link", messageLabel:"Mensahe / Notes",
+    guardianNameLabel:"Pangalan ng magulang/guardian, kung menor de edad", guardianPhoneLabel:"Contact ng magulang/guardian", privacyConsentLabel:"Tinatanggap ko ang pagproseso ng data ayon sa Privacy Policy.", mediaConsentLabel:"Pinapahintulutan ko ang paggamit ng litrato/video para sa opisyal na FIL-ITALIA communications.",
+    submitJoinButton:"IPADALA ANG APPLICATION", submitCampButton:"MAG-REGISTER SA CAMP", eventLabel:"Event / Camp", selectEventOption:"Pumili ng event", campCityLabel:"Lungsod ng event", shirtSizeLabel:"Sukat ng shirt", allergiesLabel:"Allergies / mahalagang medical information",
+    formSending:"Ipinapadala...", formSuccess:"Matagumpay na naipadala ang registration. Salamat!", formConfigError:"Hindi pa configured ang koneksyon sa registration database.", formError:"Hindi naipadala. Subukan ulit o makipag-ugnayan sa FIL-ITALIA."
   }
 };
 
