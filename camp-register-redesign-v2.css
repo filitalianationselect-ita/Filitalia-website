@@ -248,7 +248,7 @@ body.fil-page-camp-register footer{margin:0!important;padding:34px 20px!importan
 body.fil-page-camp-register footer p,body.fil-page-camp-register footer a{color:#cfe1d8!important}
 
 @media(max-width:900px){
-  .camp-registration-main{width:min(100% - 24px,760px);padding-top:22px}
+  .camp-registration-main{width:min(calc(100% - 24px),760px);padding-top:22px}
   .camp-registration-hero{grid-template-columns:1fr;padding:28px;border-radius:25px}
   .camp-registration-summary{max-width:none}
   .camp-registration-workspace{grid-template-columns:1fr}
@@ -256,11 +256,15 @@ body.fil-page-camp-register footer p,body.fil-page-camp-register footer a{color:
   .camp-form-intro{align-items:flex-start;flex-direction:column}
 }
 @media(max-width:620px){
-  .camp-registration-main{width:min(100% - 16px,560px);padding-bottom:44px}
+  html,body.fil-page-camp-register{max-width:100%;overflow-x:hidden}
+  .camp-registration-main{width:min(calc(100% - 16px),560px);padding-bottom:44px}
   .camp-registration-hero{padding:22px 18px;border-radius:20px}
-  .camp-registration-brand{font-size:.62rem}.camp-registration-brand img{width:40px;height:40px}
-  .camp-registration-copy h1{font-size:clamp(2.55rem,14vw,4rem)}
+  .camp-registration-copy,.camp-registration-summary{min-width:0}
+  .camp-registration-brand{max-width:100%;font-size:.58rem;letter-spacing:.06em}.camp-registration-brand img{width:40px;height:40px;flex:0 0 40px}
+  .camp-registration-brand span{min-width:0;overflow-wrap:anywhere}
+  .camp-registration-copy h1{max-width:100%;font-size:clamp(2.2rem,12vw,3.4rem);line-height:.92;overflow-wrap:anywhere}
   .camp-registration-copy>p{font-size:.92rem;line-height:1.6}
+  .camp-registration-summary h2,.camp-registration-summary li span,.camp-form-intro h2,.camp-form-intro p{overflow-wrap:anywhere}
   .camp-form-shell{padding:14px;border-radius:22px}
   body.fil-page-camp-register .form-section-card{padding:19px 15px!important;border-radius:17px!important}
   body.fil-page-camp-register .form-section-card::before{top:15px;right:14px;width:30px;height:30px}
