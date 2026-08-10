@@ -132,7 +132,10 @@
             frame.dataset.enhancersLoaded = String(Number(frame.dataset.enhancersLoaded || "0") + 1);
             resolve();
           };
-          script.onerror = function () { reject(new Error("script:" + source)); };
+          script.onerror = function () {
+            console.warn("Modulo amministrativo secondario non disponibile:", source);
+            resolve();
+          };
           frame.contentDocument.body.appendChild(script);
         });
       }
