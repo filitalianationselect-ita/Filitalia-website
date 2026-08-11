@@ -72,6 +72,8 @@ function labels(){
   if(language==='ph')return{badge:'FIL-ITALIA EVENT',date:'PETSA',time:'ORAS',place:'LUGAR',city:'LUNGSOD',story:'ANG PROGRAMA',details:'DETALYE NG EVENT',aside:'FIL-ITALIA NATION SELECT',asideText:'Development, competition at international opportunities sa pamamagitan ng basketball.',register:'MAG-REGISTER',share:'I-SHARE'};
   return{badge:'EVENTO FIL-ITALIA',date:'DATA',time:'ORARIO',place:'LUOGO',city:'CITTÀ',story:'IL PROGRAMMA',details:'DETTAGLI DELL’EVENTO',aside:'FIL-ITALIA NATION SELECT',asideText:'Sviluppo, competizione e opportunità internazionali attraverso il basket.',register:'REGISTRATI ORA',share:'CONDIVIDI'};
 }
+function eventSponsors(id){const today=new Date().toISOString().slice(0,10);return(window.sponsorsData||[]).filter(function(s){if((s.status||'active')!=='active'||(s.starts_at&&s.starts_at>today)||(s.ends_at&&s.ends_at<today))return false;return s.plan_type!=='event'||(Array.isArray(s.event_ids)&&s.event_ids.map(String).includes(String(id)))})}
+function sponsorHtml(id){const list=eventSponsors(id);if(!list.length)return'';const l=currentLanguage(),heading=l==='it'?'Grazie ai nostri Sponsor':l==='ph'?'Salamat sa aming mga Sponsor':'Thank you to our Sponsors',fallback=l==='it'?'Ringraziamo per il sostegno a questo evento.':l==='ph'?'Salamat sa pagsuporta sa event na ito.':'Thank you for supporting this event.';return'<section class="event-sponsors"><span class="event-premium-kicker">PARTNER</span><h2>'+escapeHtml(heading)+'</h2><div class="event-sponsors-grid">'+list.map(function(s){const message=localized(s.thanks_message)||fallback,body='<div class="event-sponsor-logo">'+(s.logo_url?'<img src="'+escapeHtml(s.logo_url)+'" alt="'+escapeHtml(s.name)+'" onerror="this.src=\'images/logo.png\'">':'<strong>'+escapeHtml(s.name)+'</strong>')+'</div><div><h3>'+escapeHtml(s.name)+'</h3><p>'+escapeHtml(message)+'</p></div>';return s.website_url?'<a class="event-sponsor-card" href="'+escapeHtml(s.website_url)+'" target="_blank" rel="noopener">'+body+'</a>':'<article class="event-sponsor-card">'+body+'</article>'}).join('')+'</div></section>'}
 function setCover(element,image){
   if(!element)return;
   const clean=String(image||'images/logo.png').replace(/["\\\n\r]/g,'');
@@ -144,6 +146,7 @@ function renderPremiumEventDetail(){
           <span class="event-premium-tricolor" aria-hidden="true"><i></i><i></i><i></i></span>\
         </aside>\
       </section>\
+      '+sponsorHtml(eventId(item,eventSource().indexOf(item)))+'\
     </div>';
 
   const shell=container.querySelector('.event-premium-shell');
