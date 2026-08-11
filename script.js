@@ -5,7 +5,7 @@ window.FILITALIA_FORM_ENDPOINT = GOOGLE_SHEET_WEB_APP_URL;
 
 const translations = {
   it: {
-    navHome:"Home", navPlayers:"Giocatori", navGallery:"Galleria", navStaff:"Staff", navNews:"News", navEvents:"Eventi", navJoin:"Account", navCamp:"Registrazione Camp", navContact:"Contatti",
+    navHome:"Home", navPlayers:"Giocatori", navGallery:"Galleria", navStaff:"Staff", navNews:"News", navEvents:"Eventi", navSponsors:"Sponsor", navJoin:"Account", navCamp:"Registrazione Camp", navContact:"Contatti",
     heroText:"Rappresentiamo la nuova generazione del talento cestistico Fil-Italiano",
     heroButton:"Vedi giocatori",
     aboutTitle:"CHI SIAMO",
@@ -96,7 +96,7 @@ const translations = {
   },
 
   en: {
-    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
+    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navSponsors:"Sponsors", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
     heroText:"Representing the next generation of Fil-Italian basketball talent",
     heroButton:"View Players",
     aboutTitle:"ABOUT US",
@@ -187,7 +187,7 @@ const translations = {
   },
 
   ph: {
-    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
+    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navSponsors:"Sponsors", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
     heroText:"Kinakatawan ang susunod na henerasyon ng Fil-Italian basketball talent",
     heroButton:"Tingnan ang Players",
     aboutTitle:"TUNGKOL SA AMIN",
@@ -296,6 +296,12 @@ function safe(value){
     '"':"&quot;"
   }[char]));
 }
+
+/* Sponsor page entry: automatically available in every public navigation. */
+(function ensureSponsorNavigation(){
+  function mount(){document.querySelectorAll('.nav-links').forEach(function(nav){if(nav.querySelector('a[href="sponsors.html"]'))return;const link=document.createElement('a');link.href='sponsors.html';link.dataset.key='navSponsors';link.textContent=(localStorage.getItem('language')==='en'?'Sponsors':localStorage.getItem('language')==='ph'?'Sponsors':'Sponsor');const contact=nav.querySelector('[data-key="navContact"]');contact?nav.insertBefore(link,contact):nav.appendChild(link)})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+})();
 
 function getSavedLanguage(){
   try{
