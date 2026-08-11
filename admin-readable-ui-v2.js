@@ -179,16 +179,6 @@ tbody tr:hover{background:#f5faf7!important}
   th,td{padding:12px!important}.eventday-body{padding:14px!important}
 }
 @media(max-width:520px){.grid4{grid-template-columns:1fr!important}.stat{min-height:auto!important}.btn{width:auto!important}.topbar{align-items:flex-start!important}}
-@media(max-width:900px){
-  #mobileNav.mobile-bar{
-    position:sticky!important;
-    top:0!important;
-    bottom:auto!important;
-    z-index:99999!important;
-    transform:none!important;
-  }
-  body{padding-bottom:24px!important}
-}
 `;
 d.head.appendChild(s);
 })();
