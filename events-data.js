@@ -12,7 +12,7 @@ const eventsData = [
       "ph": "Malapit nang ianunsyo ang petsa"
     },
     "sortDate": "2026-12-31",
-    "time": "09:00 - 15:00",
+    "time": "Da confermare",
     "campCity": "Milano",
     "campDate": {
       "it": "Data in arrivo",
@@ -202,7 +202,7 @@ const eventsData = [
       "ph": "Setyembre 6, 2026"
     },
     "sortDate": "2026-09-06",
-    "time": "Da confermare",
+    "time": "09:00 - 15:00",
     "campCity": "Messina",
     "campDate": {
       "it": "6 Settembre 2026",
