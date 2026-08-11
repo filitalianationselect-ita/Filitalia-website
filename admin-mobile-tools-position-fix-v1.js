@@ -7,11 +7,13 @@
     @media (max-width:900px){
       .mobile-bar#mobileNav,
       #mobileNav.mobile-bar{
-        bottom:72px!important;
+        position:sticky!important;
+        top:0!important;
+        bottom:auto!important;
         padding:8px 8px 10px!important;
         box-shadow:0 -10px 28px rgba(3,35,24,.22)!important;
       }
-      body{padding-bottom:156px!important}
+      body{padding-bottom:24px!important}
       #filMobileToolsSheet.fil-mobile-tools-sheet{
         box-sizing:border-box!important;
         align-items:flex-start!important;
@@ -41,4 +43,19 @@
     }
   `;
   document.head.appendChild(style);
+  function moveNavigation(){
+    if(!window.matchMedia("(max-width:900px)").matches)return;
+    const dock=document.getElementById("filMobileToolsDock");
+    const navigation=document.getElementById("mobileNav");
+    if(dock&&navigation&&dock.nextElementSibling!==navigation){
+      dock.insertAdjacentElement("afterend",navigation);
+    }
+  }
+  let attempts=0;
+  const timer=setInterval(function(){
+    attempts+=1;
+    moveNavigation();
+    if((document.getElementById("filMobileToolsDock")&&document.getElementById("mobileNav"))||attempts>80)clearInterval(timer);
+  },200);
+  window.addEventListener("resize",moveNavigation);
 })();
