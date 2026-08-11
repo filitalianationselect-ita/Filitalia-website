@@ -49,10 +49,12 @@
           justify-self: end;
         }
 
-        .fil-mobile-tools-dock #mobileNav.mobile-bar {
+        body > #mobileNav.mobile-bar {
+          display: none !important;
+        }
+
+        .fil-mobile-primary-nav {
           position: static !important;
-          inset: auto !important;
-          z-index: auto !important;
           display: flex !important;
           width: 100% !important;
           max-width: 100% !important;
@@ -67,7 +69,7 @@
           -webkit-overflow-scrolling: touch;
         }
 
-        .fil-mobile-tools-dock #mobileNav.mobile-bar button {
+        .fil-mobile-primary-nav button {
           flex: 0 0 auto !important;
           min-width: 76px !important;
           min-height: 40px !important;
@@ -204,6 +206,26 @@
     button.type = "button";
     button.setAttribute("aria-label", "Apri strumenti amministratore");
     button.textContent = "☰  STRUMENTI";
+
+    const originalNavigation = d.getElementById("mobileNav");
+    const topNavigation = d.createElement("nav");
+    topNavigation.id = "filMobilePrimaryNav";
+    topNavigation.className = "fil-mobile-primary-nav";
+    if (originalNavigation) {
+      originalNavigation.querySelectorAll("button[data-page]").forEach(function (originalButton) {
+        const topButton = originalButton.cloneNode(true);
+        topButton.removeAttribute("id");
+        topButton.addEventListener("click", function () {
+          topNavigation.querySelectorAll("button").forEach(function (item) {
+            item.classList.toggle("active", item === topButton);
+          });
+          originalButton.click();
+        });
+        topNavigation.appendChild(topButton);
+      });
+      originalNavigation.style.setProperty("display", "none", "important");
+    }
+    dock.appendChild(topNavigation);
     dock.appendChild(button);
 
     const sheet = d.createElement("div");
@@ -243,8 +265,6 @@
     });
 
     d.body.insertBefore(dock, d.body.firstChild);
-    const mobileNavigation = d.getElementById("mobileNav");
-    if (mobileNavigation) dock.insertBefore(mobileNavigation, button);
     d.body.appendChild(sheet);
     return true;
   }
