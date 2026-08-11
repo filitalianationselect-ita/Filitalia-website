@@ -77,6 +77,14 @@
           font-size: 10px !important;
         }
 
+        .fil-mobile-primary-nav .fil-mobile-tools-button {
+          justify-self: auto;
+          border-radius: 10px;
+          background: transparent;
+          color: #cfe3d8;
+          box-shadow: none;
+        }
+
         .fil-mobile-tools-sheet {
           position: fixed;
           z-index: 3400;
@@ -225,8 +233,20 @@
       });
       originalNavigation.style.setProperty("display", "none", "important");
     }
+    const sponsorButton = d.createElement("button");
+    sponsorButton.type = "button";
+    sponsorButton.textContent = "Sponsor";
+    sponsorButton.addEventListener("click", function () {
+      const sponsorNavigation = d.querySelector("[data-sponsor-nav]");
+      if (sponsorNavigation) sponsorNavigation.click();
+      topNavigation.querySelectorAll("button").forEach(function (item) {
+        item.classList.toggle("active", item === sponsorButton);
+      });
+    });
+    topNavigation.appendChild(sponsorButton);
+    button.textContent = "Strumenti";
+    topNavigation.appendChild(button);
     dock.appendChild(topNavigation);
-    dock.appendChild(button);
 
     const sheet = d.createElement("div");
     sheet.id = "filMobileToolsSheet";
