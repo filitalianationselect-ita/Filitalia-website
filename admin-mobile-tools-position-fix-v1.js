@@ -7,11 +7,11 @@
     @media (max-width:900px){
       .mobile-bar#mobileNav,
       #mobileNav.mobile-bar{
-        bottom:180px!important;
+        bottom:72px!important;
         padding:8px 8px 10px!important;
         box-shadow:0 -10px 28px rgba(3,35,24,.22)!important;
       }
-      body{padding-bottom:270px!important}
+      body{padding-bottom:156px!important}
       #filMobileToolsSheet.fil-mobile-tools-sheet{
         box-sizing:border-box!important;
         align-items:flex-start!important;
