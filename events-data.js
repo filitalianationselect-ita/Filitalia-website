@@ -12,7 +12,7 @@ const eventsData = [
       "ph": "Malapit nang ianunsyo ang petsa"
     },
     "sortDate": "2026-12-31",
-    "time": "Da confermare",
+    "time": "09:00 - 15:00",
     "campCity": "Milano",
     "campDate": {
       "it": "Data in arrivo",
@@ -210,20 +210,20 @@ const eventsData = [
       "ph": "Setyembre 6, 2026"
     },
     "location": {
-      "it": "Messina, Italia",
-      "en": "Messina, Italy",
-      "ph": "Messina, Italy"
+      "it": "Palestra Comunale Ritiro, Messina",
+      "en": "Palestra Comunale Ritiro, Messina, Italy",
+      "ph": "Palestra Comunale Ritiro, Messina, Italy"
     },
-    "image": "images/ita.jpg",
+    "image": "images/camp-messina-2026.jpg",
     "excerpt": {
-      "it": "Talent ID Camp FIL-ITALIA a Messina. Registrazioni entro il 31 agosto; non sono accettati pagamenti sul posto.",
-      "en": "FIL-ITALIA Talent ID Camp in Messina. Registration closes on 31 August; no on-site payments.",
-      "ph": "FIL-ITALIA Talent ID Camp sa Messina. Hanggang Agosto 31 ang registration; walang bayad sa venue."
+      "it": "Talent ID Camp Messina, 6 settembre 2026 dalle 09:00 alle 15:00 presso la Palestra Comunale Ritiro. Iscrizioni entro il 31 agosto.",
+      "en": "Messina Talent ID Camp on September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro. Registration closes August 31.",
+      "ph": "Messina Talent ID Camp sa Setyembre 6, 2026, mula 09:00 hanggang 15:00 sa Palestra Comunale Ritiro. Hanggang Agosto 31 ang registration."
     },
     "description": {
-      "it": "Il Talent ID Camp di Messina si svolgerà il 6 settembre 2026. Le registrazioni chiudono il 31 agosto e il pagamento deve essere completato prima dell'evento.",
-      "en": "The Messina Talent ID Camp will take place on 6 September 2026. Registration closes on 31 August and payment must be completed before the event.",
-      "ph": "Gaganapin ang Messina Talent ID Camp sa Setyembre 6, 2026. Magsasara ang registration sa Agosto 31 at kailangang makumpleto ang bayad bago ang event."
+      "it": "FIL-EURO Nation Select arriva in Sicilia con il Talent ID Camp di Messina, in programma domenica 6 settembre 2026, dalle 09:00 alle 15:00, presso la Palestra Comunale Ritiro. Il camp è dedicato ai giovani giocatori delle categorie U12, U14, U16, U18 e U19 che vogliono mettersi alla prova ed entrare nel percorso di selezione FIL-EURO Nation Select. Durante la giornata i partecipanti saranno valutati attraverso skill work, situazioni di gioco e partite competitive, con l'obiettivo di individuare nuovi talenti da seguire all'interno del programma FIL-EURO. La quota di iscrizione è di €50 e comprende la T-shirt ufficiale del camp. La partecipazione U12 è gratuita. Le iscrizioni chiuderanno il 31 agosto 2026 e non saranno accettati pagamenti sul posto.",
+      "en": "FIL-EURO Nation Select is coming to Sicily with the Messina Talent ID Camp on Sunday, September 6, 2026, from 9:00 AM to 3:00 PM at Palestra Comunale Ritiro. The camp is dedicated to U12, U14, U16, U18 and U19 players who want to challenge themselves and enter the FIL-EURO Nation Select pathway. Players will be evaluated through skill work, game situations and competitive games, with the goal of identifying new talent for the FIL-EURO program. Registration is €50 and includes the official camp T-shirt. U12 participation is free. Registration closes on August 31, 2026, and payments will not be accepted on site.",
+      "ph": "Darating ang FIL-EURO Nation Select sa Sicily para sa Messina Talent ID Camp sa Linggo, Setyembre 6, 2026, mula 09:00 hanggang 15:00 sa Palestra Comunale Ritiro. Ang camp ay para sa U12, U14, U16, U18 at U19 players na gustong subukan ang kanilang kakayahan at makapasok sa FIL-EURO Nation Select pathway. Susuriin ang mga manlalaro sa pamamagitan ng skill work, game situations at competitive games upang makahanap ng mga bagong talento para sa FIL-EURO program. €50 ang registration at kasama ang official camp T-shirt. Libre ang U12. Hanggang Agosto 31, 2026 ang registration at walang tatanggaping bayad sa venue."
     },
     "registrationDeadline": "2026-08-31",
     "onSitePayment": false,
