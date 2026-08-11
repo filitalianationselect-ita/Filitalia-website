@@ -244,7 +244,7 @@
 
     d.body.insertBefore(dock, d.body.firstChild);
     const mobileNavigation = d.getElementById("mobileNav");
-    if (mobileNavigation) dock.appendChild(mobileNavigation);
+    if (mobileNavigation) dock.insertBefore(mobileNavigation, button);
     d.body.appendChild(sheet);
     return true;
   }
