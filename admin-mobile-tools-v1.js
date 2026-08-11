@@ -73,16 +73,43 @@
           flex: 0 0 auto !important;
           min-width: 76px !important;
           min-height: 40px !important;
+          border: 1px solid rgba(255, 255, 255, .16) !important;
+          border-radius: 10px !important;
           padding: 8px 7px !important;
+          background: #174b38 !important;
+          color: #f4fbf7 !important;
+          box-shadow: none !important;
           font-size: 10px !important;
+          font-weight: 900 !important;
+          opacity: 1 !important;
+        }
+
+        .fil-mobile-primary-nav button.active {
+          border-color: #ffffff !important;
+          background: #ffffff !important;
+          color: #0b6243 !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, .18) !important;
+        }
+
+        .fil-mobile-primary-nav .fil-mobile-sponsor-button {
+          border-color: #e7b9be !important;
+          background: #a8192c !important;
+          color: #ffffff !important;
         }
 
         .fil-mobile-primary-nav .fil-mobile-tools-button {
           justify-self: auto;
           border-radius: 10px;
-          background: transparent;
-          color: #cfe3d8;
+          border-color: #e8c974 !important;
+          background: #d6a72f !important;
+          color: #173d2e !important;
           box-shadow: none;
+        }
+
+        .fil-mobile-primary-nav .fil-mobile-sponsor-button.active,
+        .fil-mobile-primary-nav .fil-mobile-tools-button.active {
+          border-color: #ffffff !important;
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, .48) !important;
         }
 
         .fil-mobile-tools-sheet {
@@ -235,6 +262,7 @@
     }
     const sponsorButton = d.createElement("button");
     sponsorButton.type = "button";
+    sponsorButton.className = "fil-mobile-sponsor-button";
     sponsorButton.textContent = "Sponsor";
     sponsorButton.addEventListener("click", function () {
       const sponsorNavigation = d.querySelector("[data-sponsor-nav]");
