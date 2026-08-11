@@ -19,13 +19,16 @@
         }
 
         .fil-mobile-tools-dock {
-          position: relative;
-          z-index: 40;
-          display: flex;
-          justify-content: flex-end;
+          position: sticky;
+          top: 0;
+          z-index: 2400;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 8px;
           padding: 9px 12px;
           border-bottom: 1px solid #c8ddd2;
           background: #f4faf7;
+          box-shadow: 0 8px 24px rgba(3, 48, 32, .12);
         }
 
         .fil-mobile-tools-button {
@@ -43,6 +46,33 @@
           font-size: 13px;
           font-weight: 900;
           cursor: pointer;
+          justify-self: end;
+        }
+
+        .fil-mobile-tools-dock #mobileNav.mobile-bar {
+          position: static !important;
+          inset: auto !important;
+          z-index: auto !important;
+          display: flex !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          padding: 7px !important;
+          gap: 5px !important;
+          overflow-x: auto !important;
+          border-radius: 14px !important;
+          background: #0c2f22 !important;
+          box-shadow: none !important;
+          transform: none !important;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .fil-mobile-tools-dock #mobileNav.mobile-bar button {
+          flex: 0 0 auto !important;
+          min-width: 76px !important;
+          min-height: 40px !important;
+          padding: 8px 7px !important;
+          font-size: 10px !important;
         }
 
         .fil-mobile-tools-sheet {
@@ -213,6 +243,8 @@
     });
 
     d.body.insertBefore(dock, d.body.firstChild);
+    const mobileNavigation = d.getElementById("mobileNav");
+    if (mobileNavigation) dock.appendChild(mobileNavigation);
     d.body.appendChild(sheet);
     return true;
   }
