@@ -183,11 +183,11 @@ tbody tr:hover{background:#f5faf7!important}
   #mobileNav.mobile-bar{
     position:fixed!important;
     top:auto!important;
-    bottom:180px!important;
+    bottom:72px!important;
     z-index:99999!important;
     transform:none!important;
   }
-  body{padding-bottom:270px!important}
+  body{padding-bottom:156px!important}
 }
 `;
 d.head.appendChild(s);
