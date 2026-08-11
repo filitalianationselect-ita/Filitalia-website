@@ -1,26 +1,473 @@
-(function(){
-'use strict';
-const cfg=window.FILITALIA_CONFIG||{};
-const base={news:typeof newsData!=='undefined'&&Array.isArray(newsData)?newsData.slice():[],players:typeof playersData!=='undefined'&&Array.isArray(playersData)?playersData.slice():[],staff:typeof staffData!=='undefined'&&Array.isArray(staffData)?staffData.slice():[],events:typeof eventsData!=='undefined'&&Array.isArray(eventsData)?eventsData.slice():[],sponsors:Array.isArray(window.sponsorsData)?window.sponsorsData.slice():[]};
-const overlay={news:new Map(),players:new Map(),staff:new Map(),events:new Map(),sponsors:new Map()};
-function local(key){try{const value=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(value)?value:[]}catch(_){return []}}
-function dateLabel(value,locale){if(!value)return locale==='it'?'Data da confermare':'Date to be confirmed';try{return new Date(value+'T12:00:00').toLocaleDateString(locale==='it'?'it-IT':'en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(_){return value}}
-function textBlock(value,fallback){const source=value&&typeof value==='object'?value:{it:typeof value==='string'?value:''};return{it:source.it||fallback.it||'',en:source.en||fallback.en||source.it||'',ph:source.ph||fallback.ph||source.en||source.it||''}}
-function newsMap(x){const publishDate=x.publishDate||x.publish_date||x.sortDate||'';return{id:x.id,title:x.title||{it:x.titleIt||''},date:{it:dateLabel(publishDate,'it'),en:dateLabel(publishDate,'en'),ph:dateLabel(publishDate,'en')},sortDate:publishDate,expireDate:x.expireDate||x.expire_date||'',image:x.imageUrl||x.image_url||'images/logo.png',excerpt:x.excerpt||{},description:x.description||{}}}
-function playerMap(x){const height=x.heightCm||x.height_cm;return{id:x.id,name:x.name,year:x.year||x.birth_year||'',category:x.category||'',role:x.position||'',position:x.position||'',height:height?String(height)+' cm':'',club:x.club||'',city:x.city||'',nationality:x.nationality||'',instagram:x.instagram||'',image:x.imageUrl||x.image_url||'images/logo.png',cardImage:x.cardImageUrl||x.card_image_url||x.imageUrl||x.image_url||'images/logo.png',highlights:x.highlightsUrl||x.highlights_url||'#',bio:x.bio||{},goal:x.goal||'',camps:x.camps||[],photos:x.photos||[],evaluations:x.evaluations||{},skillsPublic:Boolean(x.skillsPublic??x.skills_public),sourceUserId:x.linkedUserId||x.linked_user_id||x.userId||x.user_id||'',status:'Active'}}
-function staffMap(x){return{id:x.id,name:x.name,role:x.role||{it:x.roleIt||'',en:x.roleEn||''},department:x.department||'Staff',image:x.imageUrl||x.image_url||'images/logo.png',bio:x.bio||{it:x.bioIt||'',en:x.bioEn||''}}}
-function eventMap(x){const date=x.date||x.event_date||'',name=x.name||x.title?.it||'Evento FIL-ITALIA',city=x.city||x.campCity||'',venue=x.venue||x.location?.it||'',start=x.startTime||x.start_time||'',end=x.endTime||x.end_time||'',time=[start,end].filter(Boolean).join(' - ')||'Da confermare',type=x.type||x.event_type||'Evento',categories=(x.categories||[]).join(', '),fallbackExcerpt={it:type+(categories?' · '+categories:''),en:(type||'Event')+(categories?' · '+categories:''),ph:(type||'Event')+(categories?' · '+categories:'')},fallbackDescription={it:name+(city?' a '+city:'')+'.',en:name+(city?' in '+city:'')+'.',ph:name+(city?' in '+city:'')+'.'};return{id:x.id,title:{it:name,en:name,ph:name},date:{it:dateLabel(date,'it'),en:dateLabel(date,'en'),ph:dateLabel(date,'en')},sortDate:date||'2099-12-31',time,campCity:city,campDate:{it:dateLabel(date,'it'),en:dateLabel(date,'en'),ph:dateLabel(date,'en')},location:{it:[venue,city].filter(Boolean).join(', '),en:[venue,city].filter(Boolean).join(', '),ph:[venue,city].filter(Boolean).join(', ')},image:x.imageUrl||x.image_url||'images/ita.jpg',excerpt:textBlock(x.excerpt,fallbackExcerpt),description:textBlock(x.description,fallbackDescription),page:'camp-register.html?event='+encodeURIComponent(x.id)}}
-function sponsorMap(x){return{id:x.id,name:x.name||'',logo_url:x.logo_url||'',website_url:x.website_url||'',plan_type:x.plan_type||'event',starts_at:x.starts_at||'',ends_at:x.ends_at||'',status:x.status||'active',featured:Boolean(x.featured),event_ids:Array.isArray(x.event_ids)?x.event_ids:[],description:textBlock(x.description,{it:'',en:'',ph:''}),thanks_message:textBlock(x.thanks_message,{it:'',en:'',ph:''})}}
-function fallbackKey(type,item,index){const title=item&&item.title&&typeof item.title==='object'?(item.title.it||item.title.en||''):(item&&item.title)||item?.name||'';return type+':'+String(title).toLowerCase().replace(/[^a-z0-9]+/g,'-')+':'+index}
-function key(type,item,index){return item&&item.id!=null&&String(item.id).trim()?String(item.id):fallbackKey(type,item,index)}
-function merge(type){const seen=new Set();let result=base[type].map((item,index)=>{const k=key(type,item,index);seen.add(k);return overlay[type].get(k)||item});overlay[type].forEach((item,k)=>{if(!seen.has(k))result.push(item)});if(type==='staff'){const unique=new Map();result.forEach(item=>{const name=String(item&&item.name&&typeof item.name==='object'?(item.name.it||item.name.en||item.name.ph||''):(item&&item.name)||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-');const k=name||String(item&&item.id||'');if(!unique.has(k))unique.set(k,item);else unique.set(k,Object.assign({},unique.get(k),item))});result=Array.from(unique.values())}if(type==='news')result.sort((a,b)=>String(b.sortDate||'').localeCompare(String(a.sortDate||'')));if(type==='events'){result=result.filter(item=>{const title=translated(item&&item.title)||String(item&&item.name||'');return !/^id\s*session\b/i.test(title)&&!/^test\b/i.test(title)});result.sort((a,b)=>String(a.sortDate||'2099-12-31').localeCompare(String(b.sortDate||'2099-12-31')))}return result}
-function replaceArray(target,items){if(Array.isArray(target))target.splice(0,target.length,...items)}
-function esc(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-function translated(value){const language=(()=>{try{return localStorage.getItem('language')||'it'}catch(_){return'it'}})();return value&&typeof value==='object'?(value[language]||value.it||value.en||value.ph||''):String(value||'')}
-function renderNewsDetail(){const container=document.getElementById('newsDetailContainer');if(!container)return;let list=[];try{if(typeof newsData!=='undefined')list=newsData}catch(_){}if(!list.length)return;const id=new URLSearchParams(location.search).get('id')||location.pathname.split('/').filter(Boolean).pop(),item=list.find(x=>String(x.id||x.slug||'')===String(id))||list[0],title=translated(item.title)||'FIL-ITALIA News',date=translated(item.date),image=item.image||'images/logo.png',body=translated(item.description||item.excerpt);document.title=title+' | FIL-ITALIA';container.innerHTML=`<article class="news-detail-card"><header class="news-detail-header"><span class="event-detail-badge">FIL-ITALIA NEWS</span><h1>${esc(title)}</h1><p class="news-detail-date">${esc(date)}</p></header><div class="news-detail-image-wrap"><img src="${esc(image)}" alt="${esc(title)}" onerror="this.src='images/logo.png'"></div><div class="news-detail-content">${body&&/<\/?[a-z][\s\S]*>/i.test(body)?body:'<p>'+esc(body).replace(/\n+/g,'</p><p>')+'</p>'}</div></article>`}
-function put(type,items,mapper){if(!Array.isArray(items)||!items.length)return false;items.map(mapper).forEach((item,index)=>overlay[type].set(key(type,item,index),item));return true}
-function apply(payload){let changed=false;try{if(put('news',payload.news,newsMap)&&typeof newsData!=='undefined'){replaceArray(newsData,merge('news'));changed=true}}catch(_){}try{if(put('players',payload.players,playerMap)&&typeof playersData!=='undefined'){replaceArray(playersData,merge('players'));changed=true}}catch(_){}try{if(put('staff',payload.staff,staffMap)&&typeof staffData!=='undefined'){replaceArray(staffData,merge('staff'));changed=true}}catch(_){}try{if(put('events',payload.events,eventMap)&&typeof eventsData!=='undefined'){replaceArray(eventsData,merge('events'));changed=true}}catch(_){}try{if(put('sponsors',payload.sponsors,sponsorMap)){window.sponsorsData=merge('sponsors');changed=true}}catch(_){}if(!changed)return;['renderHomePlayers','renderPlayersPage','renderHomeStaff','renderStaffPage','renderEvents','renderNews','populateCampEventSelect','renderPlayerProfile','renderSponsorsPage','renderPremiumEventDetail'].forEach(name=>{try{if(typeof window[name]==='function')window[name]()}catch(error){console.warn('Bridge render',name,error)}});renderNewsDetail();window.dispatchEvent(new CustomEvent('filitalia:public-content-updated',{detail:payload}))}
-const today=new Date().toISOString().slice(0,10);const localPayload={news:local('filitalia_admin_news_v1').filter(x=>x.status==='published'&&(!x.expireDate||x.expireDate>=today)),players:local('filitalia_admin_players_v1').filter(x=>x.status==='active'),staff:local('filitalia_admin_staff_v1').filter(x=>x.status==='active'),events:local('filitalia_admin_events_v3').filter(x=>x.status==='published'),sponsors:local('filitalia_admin_sponsors_v1').filter(x=>x.status==='active')};if(Object.values(localPayload).some(x=>x.length))setTimeout(()=>apply(localPayload),0);
-async function remote(){if(!cfg.supabaseUrl||!cfg.supabasePublishableKey||!window.supabase)return null;const client=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:false,autoRefreshToken:false}});const [news,players,staff,events,sponsors]=await Promise.all([client.from('admin_news').select('*').eq('status','published').order('publish_date',{ascending:false}),client.from('admin_players').select('*').eq('status','active').order('name'),client.from('admin_staff').select('*').eq('status','active').order('name'),client.from('admin_events').select('*').eq('status','published').order('event_date',{ascending:true}),client.from('admin_sponsors').select('*').eq('status','active').order('featured',{ascending:false}).order('name')]);const errors=[news.error,players.error,staff.error,events.error,sponsors.error].filter(Boolean);if(errors.length===5)throw errors[0];const payload={news:news.data||[],players:players.data||[],staff:staff.data||[],events:events.data||[],sponsors:sponsors.data||[]};if(Object.values(payload).some(x=>x.length))apply(payload);return payload}
-window.FilitaliaPublicContentReady=new Promise(resolve=>{let attempts=0;const timer=setInterval(()=>{attempts++;if(window.supabase&&window.FILITALIA_CONFIG){clearInterval(timer);remote().then(resolve).catch(error=>{console.warn('Contenuti pubblici dinamici non disponibili',error);resolve(localPayload)})}else if(attempts>40){clearInterval(timer);resolve(localPayload)}},100)});
+(function () {
+  "use strict";
+  const cfg = window.FILITALIA_CONFIG || {};
+  const base = {
+    news:
+      typeof newsData !== "undefined" && Array.isArray(newsData)
+        ? newsData.slice()
+        : [],
+    players:
+      typeof playersData !== "undefined" && Array.isArray(playersData)
+        ? playersData.slice()
+        : [],
+    staff:
+      typeof staffData !== "undefined" && Array.isArray(staffData)
+        ? staffData.slice()
+        : [],
+    events:
+      typeof eventsData !== "undefined" && Array.isArray(eventsData)
+        ? eventsData.slice()
+        : [],
+    sponsors: Array.isArray(window.sponsorsData)
+      ? window.sponsorsData.slice()
+      : [],
+  };
+  const overlay = {
+    news: new Map(),
+    players: new Map(),
+    staff: new Map(),
+    events: new Map(),
+    sponsors: new Map(),
+  };
+  function local(key) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || "null");
+      return Array.isArray(value) ? value : [];
+    } catch (_) {
+      return [];
+    }
+  }
+  function dateLabel(value, locale) {
+    if (!value)
+      return locale === "it" ? "Data da confermare" : "Date to be confirmed";
+    try {
+      return new Date(value + "T12:00:00").toLocaleDateString(
+        locale === "it" ? "it-IT" : "en-GB",
+        { day: "numeric", month: "long", year: "numeric" },
+      );
+    } catch (_) {
+      return value;
+    }
+  }
+  function textBlock(value, fallback) {
+    const source =
+      value && typeof value === "object"
+        ? value
+        : { it: typeof value === "string" ? value : "" };
+    return {
+      it: source.it || fallback.it || "",
+      en: source.en || fallback.en || source.it || "",
+      ph: source.ph || fallback.ph || source.en || source.it || "",
+    };
+  }
+  function newsMap(x) {
+    const publishDate = x.publishDate || x.publish_date || x.sortDate || "";
+    return {
+      id: x.id,
+      title: x.title || { it: x.titleIt || "" },
+      date: {
+        it: dateLabel(publishDate, "it"),
+        en: dateLabel(publishDate, "en"),
+        ph: dateLabel(publishDate, "en"),
+      },
+      sortDate: publishDate,
+      expireDate: x.expireDate || x.expire_date || "",
+      image: x.imageUrl || x.image_url || "images/logo.png",
+      excerpt: x.excerpt || {},
+      description: x.description || {},
+    };
+  }
+  function playerMap(x) {
+    const height = x.heightCm || x.height_cm;
+    return {
+      id: x.id,
+      name: x.name,
+      year: x.year || x.birth_year || "",
+      category: x.category || "",
+      role: x.position || "",
+      position: x.position || "",
+      height: height ? String(height) + " cm" : "",
+      club: x.club || "",
+      city: x.city || "",
+      nationality: x.nationality || "",
+      instagram: x.instagram || "",
+      image: x.imageUrl || x.image_url || "images/logo.png",
+      cardImage:
+        x.cardImageUrl ||
+        x.card_image_url ||
+        x.imageUrl ||
+        x.image_url ||
+        "images/logo.png",
+      highlights: x.highlightsUrl || x.highlights_url || "#",
+      bio: x.bio || {},
+      goal: x.goal || "",
+      camps: x.camps || [],
+      photos: x.photos || [],
+      evaluations: x.evaluations || {},
+      skillsPublic: Boolean(x.skillsPublic ?? x.skills_public),
+      sourceUserId:
+        x.linkedUserId || x.linked_user_id || x.userId || x.user_id || "",
+      status: "Active",
+    };
+  }
+  function staffMap(x) {
+    return {
+      id: x.id,
+      name: x.name,
+      role: x.role || { it: x.roleIt || "", en: x.roleEn || "" },
+      department: x.department || "Staff",
+      image: x.imageUrl || x.image_url || "images/logo.png",
+      bio: x.bio || { it: x.bioIt || "", en: x.bioEn || "" },
+    };
+  }
+  function eventMap(x) {
+    const date = x.date || x.event_date || "",
+      name = x.name || x.title?.it || "Evento FIL-ITALIA",
+      city = x.city || x.campCity || "",
+      venue = x.venue || x.location?.it || "",
+      start = x.startTime || x.start_time || "",
+      end = x.endTime || x.end_time || "",
+      time = [start, end].filter(Boolean).join(" - ") || "Da confermare",
+      type = x.type || x.event_type || "Evento",
+      categories = (x.categories || []).join(", "),
+      fallbackExcerpt = {
+        it: type + (categories ? " · " + categories : ""),
+        en: (type || "Event") + (categories ? " · " + categories : ""),
+        ph: (type || "Event") + (categories ? " · " + categories : ""),
+      },
+      fallbackDescription = {
+        it: name + (city ? " a " + city : "") + ".",
+        en: name + (city ? " in " + city : "") + ".",
+        ph: name + (city ? " in " + city : "") + ".",
+      };
+    return {
+      id: x.id,
+      title: { it: name, en: name, ph: name },
+      date: {
+        it: dateLabel(date, "it"),
+        en: dateLabel(date, "en"),
+        ph: dateLabel(date, "en"),
+      },
+      sortDate: date || "2099-12-31",
+      time,
+      campCity: city,
+      campDate: {
+        it: dateLabel(date, "it"),
+        en: dateLabel(date, "en"),
+        ph: dateLabel(date, "en"),
+      },
+      location: {
+        it: [venue, city].filter(Boolean).join(", "),
+        en: [venue, city].filter(Boolean).join(", "),
+        ph: [venue, city].filter(Boolean).join(", "),
+      },
+      image: x.imageUrl || x.image_url || "images/ita.jpg",
+      excerpt: textBlock(x.excerpt, fallbackExcerpt),
+      description: textBlock(x.description, fallbackDescription),
+      page: "camp-register.html?event=" + encodeURIComponent(x.id),
+    };
+  }
+  function sponsorMap(x) {
+    return {
+      id: x.id,
+      name: x.name || "",
+      logo_url: x.logo_url || "",
+      website_url: x.website_url || "",
+      plan_type: x.plan_type || "event",
+      starts_at: x.starts_at || "",
+      ends_at: x.ends_at || "",
+      status: x.status || "active",
+      featured: Boolean(x.featured),
+      show_text: x.show_text !== false,
+      event_ids: Array.isArray(x.event_ids) ? x.event_ids : [],
+      description: textBlock(x.description, { it: "", en: "", ph: "" }),
+      thanks_message: textBlock(x.thanks_message, { it: "", en: "", ph: "" }),
+    };
+  }
+  function fallbackKey(type, item, index) {
+    const title =
+      item && item.title && typeof item.title === "object"
+        ? item.title.it || item.title.en || ""
+        : (item && item.title) || item?.name || "";
+    return (
+      type +
+      ":" +
+      String(title)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-") +
+      ":" +
+      index
+    );
+  }
+  function key(type, item, index) {
+    return item && item.id != null && String(item.id).trim()
+      ? String(item.id)
+      : fallbackKey(type, item, index);
+  }
+  function merge(type) {
+    const seen = new Set();
+    let result = base[type].map((item, index) => {
+      const k = key(type, item, index);
+      seen.add(k);
+      return overlay[type].get(k) || item;
+    });
+    overlay[type].forEach((item, k) => {
+      if (!seen.has(k)) result.push(item);
+    });
+    if (type === "staff") {
+      const unique = new Map();
+      result.forEach((item) => {
+        const name = String(
+          item && item.name && typeof item.name === "object"
+            ? item.name.it || item.name.en || item.name.ph || ""
+            : (item && item.name) || "",
+        )
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-");
+        const k = name || String((item && item.id) || "");
+        if (!unique.has(k)) unique.set(k, item);
+        else unique.set(k, Object.assign({}, unique.get(k), item));
+      });
+      result = Array.from(unique.values());
+    }
+    if (type === "news")
+      result.sort((a, b) =>
+        String(b.sortDate || "").localeCompare(String(a.sortDate || "")),
+      );
+    if (type === "events") {
+      result = result.filter((item) => {
+        const title =
+          translated(item && item.title) || String((item && item.name) || "");
+        return !/^id\s*session\b/i.test(title) && !/^test\b/i.test(title);
+      });
+      result.sort((a, b) =>
+        String(a.sortDate || "2099-12-31").localeCompare(
+          String(b.sortDate || "2099-12-31"),
+        ),
+      );
+    }
+    return result;
+  }
+  function replaceArray(target, items) {
+    if (Array.isArray(target)) target.splice(0, target.length, ...items);
+  }
+  function esc(value) {
+    return String(value || "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;",
+        })[c],
+    );
+  }
+  function translated(value) {
+    const language = (() => {
+      try {
+        return localStorage.getItem("language") || "it";
+      } catch (_) {
+        return "it";
+      }
+    })();
+    return value && typeof value === "object"
+      ? value[language] || value.it || value.en || value.ph || ""
+      : String(value || "");
+  }
+  function renderNewsDetail() {
+    const container = document.getElementById("newsDetailContainer");
+    if (!container) return;
+    let list = [];
+    try {
+      if (typeof newsData !== "undefined") list = newsData;
+    } catch (_) {}
+    if (!list.length) return;
+    const id =
+        new URLSearchParams(location.search).get("id") ||
+        location.pathname.split("/").filter(Boolean).pop(),
+      item =
+        list.find((x) => String(x.id || x.slug || "") === String(id)) ||
+        list[0],
+      title = translated(item.title) || "FIL-ITALIA News",
+      date = translated(item.date),
+      image = item.image || "images/logo.png",
+      body = translated(item.description || item.excerpt);
+    document.title = title + " | FIL-ITALIA";
+    container.innerHTML = `<article class="news-detail-card"><header class="news-detail-header"><span class="event-detail-badge">FIL-ITALIA NEWS</span><h1>${esc(title)}</h1><p class="news-detail-date">${esc(date)}</p></header><div class="news-detail-image-wrap"><img src="${esc(image)}" alt="${esc(title)}" onerror="this.src='images/logo.png'"></div><div class="news-detail-content">${body && /<\/?[a-z][\s\S]*>/i.test(body) ? body : "<p>" + esc(body).replace(/\n+/g, "</p><p>") + "</p>"}</div></article>`;
+  }
+  function put(type, items, mapper) {
+    if (!Array.isArray(items) || !items.length) return false;
+    items
+      .map(mapper)
+      .forEach((item, index) =>
+        overlay[type].set(key(type, item, index), item),
+      );
+    return true;
+  }
+  function apply(payload) {
+    let changed = false;
+    try {
+      if (
+        put("news", payload.news, newsMap) &&
+        typeof newsData !== "undefined"
+      ) {
+        replaceArray(newsData, merge("news"));
+        changed = true;
+      }
+    } catch (_) {}
+    try {
+      if (
+        put("players", payload.players, playerMap) &&
+        typeof playersData !== "undefined"
+      ) {
+        replaceArray(playersData, merge("players"));
+        changed = true;
+      }
+    } catch (_) {}
+    try {
+      if (
+        put("staff", payload.staff, staffMap) &&
+        typeof staffData !== "undefined"
+      ) {
+        replaceArray(staffData, merge("staff"));
+        changed = true;
+      }
+    } catch (_) {}
+    try {
+      if (
+        put("events", payload.events, eventMap) &&
+        typeof eventsData !== "undefined"
+      ) {
+        replaceArray(eventsData, merge("events"));
+        changed = true;
+      }
+    } catch (_) {}
+    try {
+      if (put("sponsors", payload.sponsors, sponsorMap)) {
+        window.sponsorsData = merge("sponsors");
+        changed = true;
+      }
+    } catch (_) {}
+    if (!changed) return;
+    [
+      "renderHomePlayers",
+      "renderPlayersPage",
+      "renderHomeStaff",
+      "renderStaffPage",
+      "renderEvents",
+      "renderNews",
+      "populateCampEventSelect",
+      "renderPlayerProfile",
+      "renderSponsorsPage",
+      "renderPremiumEventDetail",
+    ].forEach((name) => {
+      try {
+        if (typeof window[name] === "function") window[name]();
+      } catch (error) {
+        console.warn("Bridge render", name, error);
+      }
+    });
+    renderNewsDetail();
+    window.dispatchEvent(
+      new CustomEvent("filitalia:public-content-updated", { detail: payload }),
+    );
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const localPayload = {
+    news: local("filitalia_admin_news_v1").filter(
+      (x) =>
+        x.status === "published" && (!x.expireDate || x.expireDate >= today),
+    ),
+    players: local("filitalia_admin_players_v1").filter(
+      (x) => x.status === "active",
+    ),
+    staff: local("filitalia_admin_staff_v1").filter(
+      (x) => x.status === "active",
+    ),
+    events: local("filitalia_admin_events_v3").filter(
+      (x) => x.status === "published",
+    ),
+    sponsors: local("filitalia_admin_sponsors_v1").filter(
+      (x) => x.status === "active",
+    ),
+  };
+  if (Object.values(localPayload).some((x) => x.length))
+    setTimeout(() => apply(localPayload), 0);
+  async function remote() {
+    if (!cfg.supabaseUrl || !cfg.supabasePublishableKey || !window.supabase)
+      return null;
+    const client = window.supabase.createClient(
+      cfg.supabaseUrl,
+      cfg.supabasePublishableKey,
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+    const [news, players, staff, events, sponsors] = await Promise.all([
+      client
+        .from("admin_news")
+        .select("*")
+        .eq("status", "published")
+        .order("publish_date", { ascending: false }),
+      client
+        .from("admin_players")
+        .select("*")
+        .eq("status", "active")
+        .order("name"),
+      client
+        .from("admin_staff")
+        .select("*")
+        .eq("status", "active")
+        .order("name"),
+      client
+        .from("admin_events")
+        .select("*")
+        .eq("status", "published")
+        .order("event_date", { ascending: true }),
+      client
+        .from("admin_sponsors")
+        .select("*")
+        .eq("status", "active")
+        .order("featured", { ascending: false })
+        .order("name"),
+    ]);
+    const errors = [
+      news.error,
+      players.error,
+      staff.error,
+      events.error,
+      sponsors.error,
+    ].filter(Boolean);
+    if (errors.length === 5) throw errors[0];
+    const payload = {
+      news: news.data || [],
+      players: players.data || [],
+      staff: staff.data || [],
+      events: events.data || [],
+      sponsors: sponsors.data || [],
+    };
+    if (Object.values(payload).some((x) => x.length)) apply(payload);
+    return payload;
+  }
+  window.FilitaliaPublicContentReady = new Promise((resolve) => {
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts++;
+      if (window.supabase && window.FILITALIA_CONFIG) {
+        clearInterval(timer);
+        remote()
+          .then(resolve)
+          .catch((error) => {
+            console.warn("Contenuti pubblici dinamici non disponibili", error);
+            resolve(localPayload);
+          });
+      } else if (attempts > 40) {
+        clearInterval(timer);
+        resolve(localPayload);
+      }
+    }, 100);
+  });
 })();
