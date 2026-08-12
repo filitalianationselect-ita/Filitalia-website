@@ -198,6 +198,17 @@ body.fil-page-camp-register .form-grid select:focus{border-color:#0a9d58!importa
 body.fil-page-camp-register input[type=file]{padding:12px!important;height:auto!important;line-height:1.3!important}
 body.fil-page-camp-register #campPhotoField{grid-column:1/-1;padding:15px;border:1px dashed #9fc6b2;border-radius:15px;background:#f0f8f4}
 body.fil-page-camp-register #campPhotoField small{color:#668074;font-size:.72rem;line-height:1.45;font-weight:600}
+body.fil-page-camp-register .camp-player-entry [name="Foto Giocatore"]{grid-column:auto}
+.camp-players-container{display:grid;gap:18px}
+.camp-player-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.camp-player-heading h2{display:flex;align-items:center;gap:9px}
+.camp-player-number{display:inline-grid;place-items:center;width:29px;height:29px;border-radius:999px;color:#fff;background:#0a7b47;font-size:.75rem}
+.camp-remove-player{flex:0 0 auto;margin:0 48px 15px 0;border:1px solid #e7bcc3;border-radius:10px;padding:8px 11px;color:#a8192c;background:#fff5f6;font:800 .72rem inherit;cursor:pointer}
+.camp-multi-actions{padding:20px;border:1px dashed #9fc6b2;border-radius:18px;background:#f0f8f4;text-align:center}
+.camp-add-player{width:100%;min-height:52px;border:1px solid #0a7b47;border-radius:13px;color:#075f38;background:#fff;font:900 .78rem inherit;letter-spacing:.025em;cursor:pointer}
+.camp-add-player:hover{color:#fff;background:#0a7b47}
+.camp-add-player:disabled{opacity:.5;cursor:not-allowed}
+.camp-multi-actions p{margin:10px auto 0;max-width:680px;color:#61796e;font-size:.76rem;line-height:1.5}
 
 body.fil-page-camp-register .check-row{
   display:flex!important;
@@ -270,5 +281,6 @@ body.fil-page-camp-register footer p,body.fil-page-camp-register footer a{color:
   body.fil-page-camp-register .form-section-card::before{top:15px;right:14px;width:30px;height:30px}
   body.fil-page-camp-register .form-grid{grid-template-columns:1fr!important;gap:13px!important}
   body.fil-page-camp-register .form-grid label:first-child:nth-last-child(3),body.fil-page-camp-register #campPhotoField{grid-column:auto}
+  .camp-player-heading{align-items:flex-start}.camp-remove-player{margin:0 38px 13px 0;padding:7px 9px}
   .camp-registration-aside{grid-template-columns:1fr}
 }

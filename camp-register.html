@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="public-concept2-final-v1.css?v=1">
 <link rel="stylesheet" href="site-final-pass-v1.css?v=4">
 <link rel="stylesheet" href="site-final-priority-v2.css?v=2">
-<link rel="stylesheet" href="camp-register-redesign-v2.css?v=2">
+<link rel="stylesheet" href="camp-register-redesign-v2.css?v=3">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
@@ -97,9 +97,13 @@
           </div>
         </div>
 
-        <div class="form-section-card" data-step="03">
-          <h2 data-key="athleteInfoTitle">Dati giocatore</h2>
-          <div class="form-grid">
+        <div id="campPlayersContainer" class="camp-players-container">
+        <div class="form-section-card camp-player-entry" data-step="03" data-player-index="1">
+          <div class="camp-player-heading">
+            <h2><span data-key="athleteInfoTitle">Dati giocatore</span> <span class="camp-player-number">1</span></h2>
+            <button type="button" class="camp-remove-player" hidden>Rimuovi</button>
+          </div>
+          <div class="form-grid camp-player-fields">
             <label><span data-key="playerFirstNameLabel">Nome Giocatore</span><input name="Nome" required maxlength="250" autocomplete="given-name"></label>
             <label><span data-key="playerLastNameLabel">Cognome Giocatore</span><input name="Cognome" required maxlength="250" autocomplete="family-name"></label>
             <label><span data-key="sexLabel">Sesso</span><select name="Sesso"><option value="">Seleziona</option><option value="Maschio">Maschio</option><option value="Femmina">Femmina</option></select></label>
@@ -111,12 +115,18 @@
             <label id="campPhotoField"><span data-key="playerPhotoLabel">Foto Giocatore</span><input id="campPlayerPhoto" type="file" name="Foto Giocatore" accept="image/jpeg,image/png,image/webp" required><small>Non serve quando accedi con un profilo Player attivo che possiede già una foto salvata.</small></label>
           </div>
         </div>
+        </div>
+
+        <div class="camp-multi-actions">
+          <button type="button" id="campAddPlayer" class="camp-add-player">＋ AGGIUNGI UN ALTRO GIOCATORE</button>
+          <p>Il camp, i dati del genitore e i consensi restano gli stessi. Ogni giocatore avrà la propria registrazione e la propria foto.</p>
+        </div>
 
         <div class="form-section-card" data-step="04">
           <h2 data-key="privacyTitle">Privacy e consensi</h2>
           <label class="check-row"><input type="checkbox" name="Privacy Consent" value="yes" required><span data-key="privacyConsentLabel">Accetto il trattamento dei dati secondo la Privacy Policy.</span></label>
           <label class="check-row"><input type="checkbox" name="Media Consent" value="yes"><span data-key="mediaConsentLabel">Autorizzo l'utilizzo di foto e video per le comunicazioni ufficiali FIL-ITALIA.</span></label>
-          <button type="submit" class="submit-registration-button" data-key="submitCampButton">ISCRIVITI AL CAMP</button>
+          <button type="submit" class="submit-registration-button" data-key="submitCampButton">INVIA LE ISCRIZIONI</button>
           <p class="form-status" id="campFormStatus"></p>
         </div>
       </form>
@@ -143,8 +153,8 @@
 <script src="camp-event-selection-fix-v1.js?v=1"></script>
 <script src="camp-event-fields-v1.js?v=1"></script>
 <script src="filitalia-antispam.js?v=800"></script>
-<script src="camp-registration-submit-v1.js?v=2"></script>
-<script src="form-required-fields.js?v=800"></script>\n<script src="camp-u12-pricing-fix-v1.js?v=1"></script>
+<script src="camp-registration-submit-v1.js?v=3"></script>
+<script src="form-required-fields.js?v=800"></script>\n<script src="camp-u12-pricing-fix-v1.js?v=2"></script>
 <script src="site-final-pass-v1.js?v=4"></script>
 </body>
 </html>
