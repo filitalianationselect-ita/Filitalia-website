@@ -515,32 +515,10 @@
   async function adminSetAccountStatus(userId, role, status) {
     if (!allowedAdminRoles.has(role)) throw new Error("INVALID_ROLE");
     if (!allowedStatuses.has(status)) throw new Error("INVALID_STATUS");
-
-    let notificationResult = null;
-    try {
-      notificationResult = await invokeFunction("admin-update-account-status", {
-        user_id: userId,
-        role: role,
-        status: status
-      });
-    } catch (notificationError) {
-      console.warn("Admin notification function unavailable; applying account update through authenticated RPC.", notificationError);
-    }
-
-    const updateResult = await requireClient().rpc("admin_set_account_status", {
-      target_user_id: userId,
-      new_role: role,
-      new_status: status
-    });
-    if (updateResult.error) throw updateResult.error;
-
-    const updatedProfile = Array.isArray(updateResult.data)
-      ? updateResult.data[0]
-      : updateResult.data;
-
-    return Object.assign({}, notificationResult || {}, {
-      profile: updatedProfile || null,
-      email_sent: notificationResult ? notificationResult.email_sent !== false : false
+    return invokeFunction("admin-update-account-status", {
+      user_id: userId,
+      role: role,
+      status: status
     });
   }
 
