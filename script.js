@@ -1473,17 +1473,62 @@ function initDynamicRoleSections(){
   update();
 }
 
-function fileToPayload(file){
+function imageFromFile(file){
   return new Promise((resolve,reject) => {
-    if(!file) return resolve(null);
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+    image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("INVALID_IMAGE")); };
+    image.src = url;
+  });
+}
+
+function canvasToJpeg(canvas,quality){
+  return new Promise((resolve,reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("PHOTO_COMPRESSION_FAILED")),"image/jpeg",quality);
+  });
+}
+
+async function compressRegistrationPhoto(file){
+  if(!file || !/^image\/(jpeg|png|webp)$/i.test(file.type || "")) return file;
+  if(file.size > 20 * 1024 * 1024) throw new Error("PHOTO_TOO_LARGE");
+  const image = await imageFromFile(file);
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const maxSide = 1280;
+  const ratio = Math.min(1,maxSide / Math.max(sourceWidth,sourceHeight));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1,Math.round(sourceWidth * ratio));
+  canvas.height = Math.max(1,Math.round(sourceHeight * ratio));
+  const context = canvas.getContext("2d",{alpha:false});
+  context.fillStyle = "#fff";
+  context.fillRect(0,0,canvas.width,canvas.height);
+  context.drawImage(image,0,0,canvas.width,canvas.height);
+  let quality = .82;
+  let blob = await canvasToJpeg(canvas,quality);
+  while(blob.size > 480 * 1024 && quality > .5){
+    quality -= .07;
+    blob = await canvasToJpeg(canvas,quality);
+  }
+  return new File([blob],String(file.name || "foto").replace(/\.[^.]+$/,"") + ".jpg",{type:"image/jpeg"});
+}
+
+async function fileToPayload(file){
+  if(!file) return null;
+  const originalSize = file.size || 0;
+  const prepared = await compressRegistrationPhoto(file);
+  return new Promise((resolve,reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve({
-      fileName: file.name,
-      mimeType: file.type || "application/octet-stream",
+      fileName: prepared.name,
+      mimeType: prepared.type || "application/octet-stream",
+      size: prepared.size || 0,
+      originalSize: originalSize,
+      compressed: prepared !== file,
       data: String(reader.result).split(",")[1] || ""
     });
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(prepared);
   });
 }
 
