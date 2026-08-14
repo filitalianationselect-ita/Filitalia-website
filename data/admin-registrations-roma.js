@@ -1,0 +1,91 @@
+window.FILITALIA_ADMIN_EVENT = {
+  id: "EVT-2026-ROMA-001",
+  city: "Roma",
+  title: "Talent ID Camp Roma",
+  date: "5 agosto 2026",
+  time: "15:00–20:00",
+  venue: "Stella Azzurra Roma"
+};
+
+window.FILITALIA_ADMIN_REGISTRATIONS = [
+  {
+    id: 1,
+    name: "Marco Rossi",
+    year: "2011",
+    cat: "U16",
+    status: "paid",
+    shirt: "XL",
+    email: "marco.rossi@email.it",
+    parent: "Andrea Rossi",
+    certificate: true,
+    checked: true,
+    shirtDone: true,
+    present: true,
+    photo: false,
+    notes: "Buon ball handling."
+  },
+  {
+    id: 2,
+    name: "Luca Bianchi",
+    year: "2013",
+    cat: "U14",
+    status: "pending",
+    shirt: "M",
+    email: "famiglia.bianchi@email.it",
+    parent: "Paolo Bianchi",
+    certificate: false,
+    checked: false,
+    shirtDone: false,
+    present: false,
+    photo: false,
+    notes: ""
+  },
+  {
+    id: 3,
+    name: "David Panopio",
+    year: "2010",
+    cat: "U16",
+    status: "paid",
+    shirt: "L",
+    email: "d.panopio@email.it",
+    parent: "Maria Panopio",
+    certificate: true,
+    checked: false,
+    shirtDone: false,
+    present: false,
+    photo: true,
+    notes: "Da inserire nel gruppo avanzato."
+  },
+  {
+    id: 4,
+    name: "Jayson Mendoza",
+    year: "2014",
+    cat: "U12",
+    status: "paid",
+    shirt: "S",
+    email: "mendoza.family@email.it",
+    parent: "Carlo Mendoza",
+    certificate: true,
+    checked: false,
+    shirtDone: false,
+    present: false,
+    photo: false,
+    notes: ""
+  },
+  {
+    id: 5,
+    name: "Nico De Luca",
+    year: "2009",
+    cat: "U18",
+    status: "pending",
+    shirt: "XL",
+    email: "nico.deluca@email.it",
+    parent: "Elena De Luca",
+    certificate: false,
+    checked: false,
+    shirtDone: false,
+    present: false,
+    photo: false,
+    notes: "Certificato da controllare."
+  }
+];
