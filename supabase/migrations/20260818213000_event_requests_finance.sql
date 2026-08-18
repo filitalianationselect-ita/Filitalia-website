@@ -91,10 +91,42 @@ begin
 end;
 $$;
 
+create or replace function public.protect_event_request_decisions()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if public.is_active_admin() then return new; end if;
+  if auth.uid() is null or old.requested_by is distinct from auth.uid() then
+    raise exception 'EVENT_REQUEST_NOT_OWNED';
+  end if;
+  if new.requested_by is distinct from old.requested_by then
+    raise exception 'EVENT_REQUEST_OWNER_IMMUTABLE';
+  end if;
+  if old.status not in ('draft','submitted','review') then
+    raise exception 'EVENT_REQUEST_ALREADY_DECIDED';
+  end if;
+  if new.status not in ('draft','submitted','review','cancelled') then
+    raise exception 'EVENT_REQUEST_ADMIN_DECISION_REQUIRED';
+  end if;
+  new.approved_by := old.approved_by;
+  new.approved_at := old.approved_at;
+  new.event_id := old.event_id;
+  return new;
+end;
+$$;
+
 drop trigger if exists event_requests_touch_updated_at on public.event_requests;
 create trigger event_requests_touch_updated_at
 before update on public.event_requests
 for each row execute function public.touch_event_finance_updated_at();
+
+drop trigger if exists event_requests_protect_decisions on public.event_requests;
+create trigger event_requests_protect_decisions
+before update on public.event_requests
+for each row execute function public.protect_event_request_decisions();
 
 drop trigger if exists event_finance_items_touch_updated_at on public.event_finance_items;
 create trigger event_finance_items_touch_updated_at
@@ -105,16 +137,73 @@ alter table public.event_requests enable row level security;
 alter table public.event_finance_items enable row level security;
 
 drop policy if exists event_requests_manage on public.event_requests;
-create policy event_requests_manage
-on public.event_requests for all to authenticated
-using (public.can_manage_event_finance())
-with check (public.can_manage_event_finance());
+drop policy if exists event_requests_select on public.event_requests;
+drop policy if exists event_requests_insert on public.event_requests;
+drop policy if exists event_requests_update on public.event_requests;
+drop policy if exists event_requests_delete on public.event_requests;
+
+create policy event_requests_select
+on public.event_requests for select to authenticated
+using (public.is_active_admin() or requested_by = auth.uid());
+
+create policy event_requests_insert
+on public.event_requests for insert to authenticated
+with check (public.can_manage_event_finance() and requested_by = auth.uid());
+
+create policy event_requests_update
+on public.event_requests for update to authenticated
+using (public.is_active_admin() or requested_by = auth.uid())
+with check (public.is_active_admin() or requested_by = auth.uid());
+
+create policy event_requests_delete
+on public.event_requests for delete to authenticated
+using (public.is_active_admin() or (requested_by = auth.uid() and status in ('draft','submitted','cancelled')));
 
 drop policy if exists event_finance_items_manage on public.event_finance_items;
-create policy event_finance_items_manage
-on public.event_finance_items for all to authenticated
-using (public.can_manage_event_finance())
-with check (public.can_manage_event_finance());
+drop policy if exists event_finance_items_select on public.event_finance_items;
+drop policy if exists event_finance_items_insert on public.event_finance_items;
+drop policy if exists event_finance_items_update on public.event_finance_items;
+drop policy if exists event_finance_items_delete on public.event_finance_items;
+
+create policy event_finance_items_select
+on public.event_finance_items for select to authenticated
+using (
+  public.is_active_admin()
+  or created_by = auth.uid()
+  or exists (select 1 from public.event_requests r where r.id = request_id and r.requested_by = auth.uid())
+);
+
+create policy event_finance_items_insert
+on public.event_finance_items for insert to authenticated
+with check (
+  public.can_manage_event_finance()
+  and created_by = auth.uid()
+  and (
+    request_id is null
+    or exists (select 1 from public.event_requests r where r.id = request_id and (r.requested_by = auth.uid() or public.is_active_admin()))
+  )
+);
+
+create policy event_finance_items_update
+on public.event_finance_items for update to authenticated
+using (
+  public.is_active_admin()
+  or created_by = auth.uid()
+  or exists (select 1 from public.event_requests r where r.id = request_id and r.requested_by = auth.uid())
+)
+with check (
+  public.is_active_admin()
+  or created_by = auth.uid()
+  or exists (select 1 from public.event_requests r where r.id = request_id and r.requested_by = auth.uid())
+);
+
+create policy event_finance_items_delete
+on public.event_finance_items for delete to authenticated
+using (
+  public.is_active_admin()
+  or created_by = auth.uid()
+  or exists (select 1 from public.event_requests r where r.id = request_id and r.requested_by = auth.uid())
+);
 
 revoke all on public.event_requests from anon, authenticated;
 revoke all on public.event_finance_items from anon, authenticated;
