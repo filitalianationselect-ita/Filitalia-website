@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Richieste eventi | FIL-ITALIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf4f0;color:#173b2c;font-family:Montserrat,system-ui,sans-serif}.shell{max-width:980px;margin:auto;padding:24px}.hero{background:linear-gradient(135deg,#0b3f2c,#17724f);color:#fff;border-radius:24px;padding:28px;box-shadow:0 20px 55px rgba(8,53,37,.18)}.hero h1{margin:6px 0 8px;font-size:clamp(28px,5vw,48px)}.hero p{margin:0;max-width:720px;color:#d5e8df;line-height:1.6}.eyebrow{font-size:11px;font-weight:900;letter-spacing:.16em}.panel{margin-top:16px;background:#fff;border:1px solid #cfe0d7;border-radius:20px;padding:20px}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #bcd3c7;border-radius:12px;padding:12px 16px;background:#fff;color:#184833;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}.btn.primary{background:#126344;border-color:#126344;color:#fff}.muted{color:#6c7d74;font-size:13px;line-height:1.6}.status{margin-top:12px;font-size:13px;color:#46675a}@media(max-width:620px){.shell{padding:13px}.hero{padding:21px;border-radius:18px}.actions{display:grid}.btn{width:100%}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=800"></script>
+<script src="auth-client.js?v=1002"></script>
+<script src="admin-event-catalog-v3.js?v=6"></script>
+</head>
+<body>
+<main class="shell">
+  <section class="hero"><span class="eyebrow">FIL-ITALIA OPERATIONS</span><h1>Richiesta evento</h1><p>Proponi un camp, torneo o attività con budget previsto. La direzione potrà revisionare costi, approvare la richiesta e trasformarla direttamente in un evento.</p></section>
+  <section class="panel"><h2 style="margin-top:0">Gestione richieste</h2><p class="muted">Inserisci palestra, data, partecipanti previsti, quota e principali costi. Puoi poi aprire il budget e aggiungere altre voci.</p><div class="actions"><button id="newRequest" class="btn primary" type="button">＋ NUOVA RICHIESTA</button><button id="myRequests" class="btn" type="button">LE MIE RICHIESTE</button><a class="btn" href="account.html">TORNA ALL'ACCOUNT</a></div><p id="requestPageStatus" class="status">Verifica accesso...</p></section>
+</main>
+<script src="admin-event-finance-v1.js?v=1"></script>
+<script>
+(function(){
+  const status=document.getElementById('requestPageStatus');
+  function waitFinance(){return new Promise(function(resolve,reject){let tries=0;const timer=setInterval(function(){tries++;if(window.FilitaliaEventFinance){clearInterval(timer);resolve(window.FilitaliaEventFinance)}else if(tries>80){clearInterval(timer);reject(new Error('Modulo richieste non disponibile'))}},100)})}
+  async function init(){
+    try{
+      if(!window.FilitaliaAuth||!window.FilitaliaAuth.client)throw new Error('SUPABASE_NOT_CONFIGURED');
+      const session=await window.FilitaliaAuth.getSession();if(!session){location.replace('login.html?next=event-request.html');return}
+      const profile=await window.FilitaliaAuth.getOwnProfile();
+      const role=String(profile&&(profile.actual_role||profile.role)||'');
+      if(!profile||profile.status!=='active'||!['admin','super_admin','coordinator','city_coordinator','coach'].includes(role)){location.replace('account.html');return}
+      const finance=await waitFinance();status.textContent='Accesso attivo · '+role;
+      document.getElementById('newRequest').onclick=function(){finance.newRequest()};
+      document.getElementById('myRequests').onclick=function(){finance.openRequests()};
+    }catch(error){status.textContent='Richieste non disponibili: '+String(error&&error.message||error)}
+  }
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+})();
+</script>
+</body>
+</html>
