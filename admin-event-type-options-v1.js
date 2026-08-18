@@ -170,3 +170,13 @@
     if (mount() || attempts > 80) window.clearInterval(timer);
   }, 250);
 })();
+
+(function () {
+  "use strict";
+  if (document.querySelector('script[data-event-finance-v1]')) return;
+  const script = document.createElement('script');
+  script.src = 'admin-event-finance-v1.js?v=1';
+  script.defer = true;
+  script.dataset.eventFinanceV1 = 'true';
+  document.body.appendChild(script);
+})();
