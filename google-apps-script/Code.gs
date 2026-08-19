@@ -13,7 +13,7 @@
 */
 
 const ALLOWED_FORM_TYPES = Object.freeze(["camp_registration", "general_join", "profile_sync"]);
-const ALLOWED_CITIES = Object.freeze(["Roma", "Milano", "Firenze", "Venezia", "Bologna"]);
+const ALLOWED_CITIES = Object.freeze(["Roma", "Milano", "Firenze", "Venezia", "Bologna", "Messina"]);
 const ALLOWED_JOIN_ROLES = Object.freeze(["Player", "Coach", "Staff", "Referee", "Volunteer / Other"]);
 const ALLOWED_IMAGE_MIME = Object.freeze(["image/jpeg", "image/png", "image/webp"]);
 const MAX_JSON_BYTES = 7 * 1024 * 1024;
@@ -883,6 +883,7 @@ function cleanCityName_(city) {
   if (c.includes("firenze") || c.includes("florence")) return "Firenze";
   if (c.includes("venezia") || c.includes("venice")) return "Venezia";
   if (c.includes("bologna")) return "Bologna";
+  if (c.includes("messina")) return "Messina";
   return "";
 }
 
