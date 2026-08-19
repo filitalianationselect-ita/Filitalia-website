@@ -1,3 +1,3 @@
 Deploy Preview backend for deploy-preview-1.
 Authorized by project owner on 2026-08-19.
-Attempt: 9 — apply canonical Player Registry schema and run registration QA on Preview only.
+Attempt: 10 — include all missing Player Registry migrations and run registration QA on Preview only.
