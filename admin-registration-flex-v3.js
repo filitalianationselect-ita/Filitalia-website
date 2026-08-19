@@ -7,3 +7,11 @@ function paint(){const event=current();if(!event||!$('lfCat'))return;const q=cat
 function capture(){const event=current(),isNew=($('registrationLightTitle')?.textContent||'').toLowerCase().includes('nuova'),q=event?catalog.quote(event.id,{category:$('lfCat')?.value,shirtSize:$('lfShirt')?.value,promoCode:$('lfPromoCode')?.value}):null;pendingPromo=isNew&&q?.promoApplied?{eventId:event.id,code:q.promoCode}:null;setTimeout(async()=>{const closed=!$('registrationLightModal')?.classList.contains('show');if(closed&&pendingPromo){try{await catalog.consumePromo(pendingPromo.eventId,pendingPromo.code)}catch(e){console.warn(e)}$('lfPromoCode').value='';pendingPromo=null}},900)}
 let n=0;const t=setInterval(()=>{n++;if(ensure()||n>100)clearInterval(t)},150);const observer=new MutationObserver(()=>{if($('registrationLightModal')?.classList.contains('show'))setTimeout(ensure,30)});observer.observe(d.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
 })();
+
+(function(){
+'use strict';
+const sources=['admin-payment-accounting-v2.js?v=1','admin-event-finance-v2.js?v=1'];
+let chain=Promise.resolve();
+sources.forEach(source=>{chain=chain.then(()=>new Promise(resolve=>{const script=document.createElement('script');script.src=source;script.onload=resolve;script.onerror=()=>{console.warn('Modulo operativo non disponibile:',source);resolve()};document.body.appendChild(script)}))});
+window.FilitaliaFinanceV2Ready=chain;
+})();
