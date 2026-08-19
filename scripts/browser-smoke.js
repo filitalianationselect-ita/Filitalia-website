@@ -18,8 +18,16 @@ async function shellDiagnostics(page) {
   return page.evaluate(() => {
     const realSection = document.getElementById('emails');
     const legacySection = document.getElementById('communications');
+    const cfg = window.FILITALIA_CONFIG || {};
     return {
       readyState: document.readyState,
+      runtime: {
+        isPreview: Boolean(cfg.isPreview),
+        demoMode: Boolean(cfg.demoMode),
+        usesPreviewDatabase: Boolean(cfg.usesPreviewDatabase),
+        usesProductionDatabaseInPreview: Boolean(cfg.usesProductionDatabaseInPreview),
+        supabaseConfigured: Boolean(cfg.supabaseUrl && cfg.supabasePublishableKey)
+      },
       openPageSource: typeof window.openPage === 'function' ? String(window.openPage).slice(0, 2400) : null,
       emailsElement: realSection ? {
         tag: realSection.tagName,
@@ -76,9 +84,24 @@ async function main() {
 
     report(`2/9 Opening ${baseUrl}/admin-light.html`);
     await page.goto(`${baseUrl}/admin-light.html`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('load', { timeout: 60000 }).catch(() => null);
+    await page.waitForFunction(() => Boolean(window.FILITALIA_CONFIG), { timeout: 10000 });
+
+    const early = await shellDiagnostics(page);
+    if (early.runtime.demoMode) {
+      report('3/9 Preview is intentionally demo-only; verifying isolation instead of waiting for an authenticated admin shell');
+      if (!early.runtime.isPreview) throw new Error('Demo runtime is not marked as Preview');
+      if (early.runtime.usesPreviewDatabase) throw new Error('Demo runtime unexpectedly claims a Preview database');
+      if (early.runtime.usesProductionDatabaseInPreview) throw new Error('Preview is using production database');
+      if (early.runtime.supabaseConfigured) throw new Error('Demo Preview unexpectedly exposes Supabase credentials');
+      report('4/9 Demo isolation verified: Admin remains unavailable without dedicated Preview credentials');
+      await page.screenshot({ path: path.join(outputDir, 'success.png'), fullPage: true });
+      fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics: early, pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
+      report(`9/9 Success. Safe demo mode. Page errors: ${pageErrors.length}; console errors: ${consoleErrors.length}; failed requests: ${failedRequests.length}`);
+      return;
+    }
 
     report('3/9 Waiting for the admin shell');
-    await page.waitForLoadState('load', { timeout: 60000 }).catch(() => null);
     await page.waitForFunction(() => typeof window.openPage === 'function', { timeout: 30000 });
     await page.waitForTimeout(1000);
 
