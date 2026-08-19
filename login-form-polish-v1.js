@@ -6,7 +6,7 @@
 
   function initializePasswordToggle() {
     const input = document.querySelector('#loginForm input[name="password"]');
-    const button = document.getElementById('loginPasswordToggle');
+    const button = document.getElementById('loginPasswordVisualToggle') || document.getElementById('loginPasswordToggle');
     if (!input || !button || button.dataset.bound === 'true') return;
 
     button.dataset.bound = 'true';
