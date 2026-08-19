@@ -79,13 +79,13 @@ jobs:
         id: dry_run
         if: ${{ steps.link.outcome == 'success' }}
         continue-on-error: true
-        run: supabase db push --dry-run
+        run: supabase db push --include-all --dry-run
 
       - name: Apply pending database migrations
         id: db_push
         if: ${{ steps.dry_run.outcome == 'success' }}
         continue-on-error: true
-        run: supabase db push
+        run: supabase db push --include-all --yes
 
       - name: Configure preview core secrets
         id: core_secrets
