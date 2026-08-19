@@ -53,6 +53,7 @@ jobs:
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "SUPABASE_PREVIEW_ACCESS_TOKEN mancante"; exit 1; }
           test -n "$SUPABASE_DB_PASSWORD" || { echo "SUPABASE_PREVIEW_DB_PASSWORD mancante"; exit 1; }
           test -n "$PROJECT_REF" || { echo "SUPABASE_PREVIEW_PROJECT_REF mancante"; exit 1; }
+          [[ "$PROJECT_REF" == "cfqqovqkjrsarwmopyvl" ]] || { echo "BLOCCATO: il secret Preview punta al progetto sbagliato ($PROJECT_REF). Atteso cfqqovqkjrsarwmopyvl."; exit 1; }
           [[ "$PREVIEW_ORIGIN" == https://*--filitalia.netlify.app ]] || { echo "L'origine non è una Deploy Preview FIL-ITALIA"; exit 1; }
           if [[ -n "$GMAIL_CLIENT_ID" || -n "$GMAIL_CLIENT_SECRET" || -n "$GMAIL_TOKEN_ENCRYPTION_KEY" ]]; then
             test -n "$GMAIL_CLIENT_ID" || { echo "GMAIL_PREVIEW_CLIENT_ID mancante"; exit 1; }
