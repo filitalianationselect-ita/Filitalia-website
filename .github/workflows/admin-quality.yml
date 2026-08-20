@@ -91,7 +91,7 @@ jobs:
           grep -F 'preview-auth-routing-v1.js' admin-light.html
 
   browser_smoke:
-    name: Chromium communications flow
+    name: Chromium Preview Admin gate
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -113,16 +113,17 @@ jobs:
         run: |
           node scripts/generate-runtime-config.js
           grep -F '"isPreview": true' supabase-config.js
-          grep -F '"usesPreviewDatabase": false' supabase-config.js
+          grep -F '"usesPreviewDatabase": true' supabase-config.js
           grep -F '"usesProductionDatabaseInPreview": false' supabase-config.js
-          grep -F '"demoMode": true' supabase-config.js
+          grep -F '"demoMode": false' supabase-config.js
+          grep -F 'cfqqovqkjrsarwmopyvl' supabase-config.js
       - name: Start static preview
         run: |
           python3 -m http.server 4173 >/tmp/filitalia-http.log 2>&1 &
           for i in {1..20}; do curl -fsS http://127.0.0.1:4173/admin-light.html >/dev/null && exit 0; sleep 1; done
           cat /tmp/filitalia-http.log
           exit 1
-      - name: Test Communications in Chromium
+      - name: Test Preview Admin gate in Chromium
         env:
           BROWSER_TEST_URL: http://127.0.0.1:4173
           BROWSER_TEST_OUTPUT: browser-smoke-output
