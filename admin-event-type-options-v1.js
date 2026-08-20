@@ -180,3 +180,13 @@
   script.dataset.eventFinanceV1 = 'true';
   document.body.appendChild(script);
 })();
+
+(function () {
+  "use strict";
+  if (document.querySelector('script[data-event-finance-ledger-v2]')) return;
+  const script = document.createElement('script');
+  script.src = 'admin-event-finance-ledger-v2.js?v=1';
+  script.defer = true;
+  script.dataset.eventFinanceLedgerV2 = 'true';
+  document.body.appendChild(script);
+})();
