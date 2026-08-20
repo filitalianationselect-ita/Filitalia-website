@@ -125,6 +125,14 @@
       await markSheet(registration.id, "failed", { message: String(error?.message || error), batchId: payload.registrationBatchId });
     }
   }
+  async function syncPhoto(registration) {
+    if (!registration || !registration._photo_sync_payload || !window.FilitaliaRegistrations?.uploadRegistrationPhoto) return;
+    try {
+      await window.FilitaliaRegistrations.uploadRegistrationPhoto(registration);
+    } catch (error) {
+      console.warn("FIL-ITALIA registration photo sync fallback to Drive", error);
+    }
+  }
   async function submit(form) {
     if (form.dataset.filitaliaSubmitting === "true") return;
     if (!form.checkValidity()) { form.reportValidity(); return; }
@@ -149,6 +157,7 @@
         try {
           const registration = await window.FilitaliaRegistrations.createCampRegistration(payload);
           await copyToSheet(payload, registration);
+          await syncPhoto(registration);
         } catch (error) {
           const detail = String(error?.code || error?.message || "").toLowerCase();
           if (detail !== "23505" && !detail.includes("duplicate")) failed.push({ payload, error });
