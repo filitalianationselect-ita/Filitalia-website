@@ -5,6 +5,8 @@ const vm = require('vm');
 const { spawnSync } = require('child_process');
 
 const generator = path.resolve(__dirname, 'generate-runtime-config.js');
+const expectedPreviewProject = 'cfqqovqkjrsarwmopyvl';
+const productionProject = 'exwykgaotochaguizxxt';
 
 function generate(extraEnv) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'filitalia-preview-config-'));
@@ -34,23 +36,42 @@ function generate(extraEnv) {
   return context.window.FILITALIA_CONFIG;
 }
 
-const unconfigured = generate({});
-if (!unconfigured.isPreview || !unconfigured.demoMode || unconfigured.usesPreviewDatabase || unconfigured.usesProductionDatabaseInPreview) {
-  throw new Error(`Preview without dedicated secrets must stay isolated in demo mode: ${JSON.stringify(unconfigured)}`);
+const builtInPreview = generate({});
+if (!builtInPreview.isPreview || builtInPreview.demoMode || !builtInPreview.usesPreviewDatabase || builtInPreview.usesProductionDatabaseInPreview) {
+  throw new Error(`Deploy Preview must use its dedicated Preview database: ${JSON.stringify(builtInPreview)}`);
 }
-if (unconfigured.supabaseUrl || unconfigured.supabasePublishableKey) {
-  throw new Error('Unconfigured Preview must not expose or use production Supabase credentials');
+if (!String(builtInPreview.supabaseUrl || '').includes(expectedPreviewProject)) {
+  throw new Error(`Deploy Preview is not pinned to ${expectedPreviewProject}: ${builtInPreview.supabaseUrl}`);
+}
+if (String(builtInPreview.supabaseUrl || '').includes(productionProject)) {
+  throw new Error('Deploy Preview must never expose or use the production Supabase URL');
+}
+if (!String(builtInPreview.supabasePublishableKey || '').startsWith('sb_publishable_')) {
+  throw new Error('Deploy Preview must use a publishable browser key');
 }
 
-const isolated = generate({
-  FILITALIA_PREVIEW_SUPABASE_URL: 'https://preview-project.supabase.co',
-  FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY: 'preview_publishable_key'
+const isolatedOverride = generate({
+  FILITALIA_PREVIEW_SUPABASE_URL: 'https://rotated-preview-project.supabase.co',
+  FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_rotated_preview_key'
 });
-if (!isolated.isPreview || isolated.demoMode || !isolated.usesPreviewDatabase || isolated.usesProductionDatabaseInPreview) {
-  throw new Error(`Configured dedicated Preview must use only its isolated database: ${JSON.stringify(isolated)}`);
+if (!isolatedOverride.isPreview || isolatedOverride.demoMode || !isolatedOverride.usesPreviewDatabase || isolatedOverride.usesProductionDatabaseInPreview) {
+  throw new Error(`Configured dedicated Preview must remain isolated: ${JSON.stringify(isolatedOverride)}`);
 }
-if (isolated.supabaseUrl !== 'https://preview-project.supabase.co' || isolated.supabasePublishableKey !== 'preview_publishable_key') {
-  throw new Error('Configured Preview Supabase values were not preserved');
+if (isolatedOverride.supabaseUrl !== 'https://rotated-preview-project.supabase.co' || isolatedOverride.supabasePublishableKey !== 'sb_publishable_rotated_preview_key') {
+  throw new Error('Configured Preview Supabase overrides were not preserved');
 }
 
-console.log('Preview isolation audit passed: no production fallback; dedicated Preview credentials still take priority.');
+let productionFallbackBlocked = false;
+try {
+  generate({
+    FILITALIA_PREVIEW_SUPABASE_URL: 'https://exwykgaotochaguizxxt.supabase.co',
+    FILITALIA_PREVIEW_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_should_be_blocked'
+  });
+} catch (_) {
+  productionFallbackBlocked = true;
+}
+if (!productionFallbackBlocked) {
+  throw new Error('Preview runtime did not block the production Supabase project');
+}
+
+console.log('Preview isolation audit passed: dedicated Preview database is active and production fallback is blocked.');
