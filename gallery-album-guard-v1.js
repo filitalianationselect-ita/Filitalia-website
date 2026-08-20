@@ -10,6 +10,13 @@
     }
   }
 
+  function albumData() {
+    try {
+      if (typeof galleryData !== "undefined" && Array.isArray(galleryData)) return galleryData;
+    } catch (_) {}
+    return Array.isArray(window.galleryData) ? window.galleryData : [];
+  }
+
   function localizeAlbumDate(value) {
     const raw = String(value || "").trim();
     const language = currentLanguage();
@@ -43,10 +50,11 @@
 
   function renderSafeAlbumPage() {
     const grid = document.getElementById("albumImagesGrid");
-    if (!grid || !Array.isArray(window.galleryData)) return;
+    const data = albumData();
+    if (!grid || !data.length) return;
 
     const albumId = document.body && document.body.dataset ? document.body.dataset.albumId : "";
-    const album = window.galleryData.find(function (item) { return item.id === albumId; });
+    const album = data.find(function (item) { return item.id === albumId; });
     if (!album) return;
 
     const title = document.getElementById("albumTitle");
