@@ -1,3 +1,3 @@
 Deploy Preview backend for deploy-preview-1.
 Authorized by project owner on 2026-08-20.
-Attempt: 16 — validate pending migrations incrementally through the Supabase Management API to identify the exact SQL migration blocking Preview.
+Attempt: 17 — rerun incremental Management API dry-run and surface the exact PostgreSQL error for the first failing canonical migration on Preview only.
