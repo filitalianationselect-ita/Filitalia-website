@@ -1,3 +1,3 @@
 Deploy Preview backend for deploy-preview-1.
 Authorized by project owner on 2026-08-20.
-Attempt: 15 — deploy canonical Preview migrations through the Supabase Management API, avoiding direct Postgres connectivity; then deploy Edge Functions to cfqqovqkjrsarwmopyvl only.
+Attempt: 16 — validate pending migrations incrementally through the Supabase Management API to identify the exact SQL migration blocking Preview.
