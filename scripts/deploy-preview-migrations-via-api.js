@@ -212,6 +212,12 @@ set name = excluded.name,
 main().catch(error => {
   const message = String(error && error.message ? error.message : error)
     .replace(/Bearer\s+[^\s]+/gi, 'Bearer [redacted]');
-  console.error(`[preview-migrations] ${message}`);
+  const match = /^(dry-run through|apply)\s+(\d{14}_[^:]+):\s*(.*)$/s.exec(message);
+  if (match) {
+    console.error(`[preview-migrations] failed ${match[2]}`);
+    console.error(`[preview-migrations-error] ${match[3]}`);
+  } else {
+    console.error(`[preview-migrations-error] ${message}`);
+  }
   process.exit(1);
 });
