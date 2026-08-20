@@ -80,7 +80,20 @@ jobs:
         id: dry_run
         if: ${{ steps.link.outcome == 'success' }}
         continue-on-error: true
-        run: supabase db push --include-all --dry-run
+        shell: bash
+        run: |
+          set +e
+          OUTPUT="$(supabase db push --include-all --dry-run 2>&1)"
+          CODE=$?
+          printf '%s\n' "$OUTPUT"
+          REASON="$(printf '%s\n' "$OUTPUT" | grep -Eiv '^[[:space:]]*$' | grep -Ei 'error|failed|not found|mismatch|migration|duplicate|invalid|remote|local' | tail -n 1)"
+          if [[ -z "$REASON" ]]; then
+            REASON="$(printf '%s\n' "$OUTPUT" | grep -Eiv '^[[:space:]]*$' | tail -n 1)"
+          fi
+          SLUG="$(printf '%s' "$REASON" | tr '[:upper:]' '[:lower:]' | sed -E 's#https?://[^ ]+#url#g; s/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-58)"
+          [[ -n "$SLUG" ]] || SLUG="unknown"
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          exit "$CODE"
 
       - name: Apply pending database migrations
         id: db_push
@@ -123,6 +136,7 @@ jobs:
           CLI: ${{ steps.cli.outcome }}
           LINK: ${{ steps.link.outcome }}
           DRY_RUN: ${{ steps.dry_run.outcome }}
+          DRY_SLUG: ${{ steps.dry_run.outputs.slug }}
           DB_PUSH: ${{ steps.db_push.outcome }}
           CORE_SECRETS: ${{ steps.core_secrets.outcome }}
           GMAIL_SECRETS: ${{ steps.gmail_secrets.outcome }}
@@ -136,7 +150,7 @@ jobs:
           elif [[ "$VALIDATE" != "success" ]]; then STAGE="validate"; STATE="failure";
           elif [[ "$CLI" != "success" ]]; then STAGE="cli"; STATE="failure";
           elif [[ "$LINK" != "success" ]]; then STAGE="link"; STATE="failure";
-          elif [[ "$DRY_RUN" != "success" ]]; then STAGE="dry-run"; STATE="failure";
+          elif [[ "$DRY_RUN" != "success" ]]; then STAGE="dry-run-${DRY_SLUG:-unknown}"; STATE="failure";
           elif [[ "$DB_PUSH" != "success" ]]; then STAGE="db-push"; STATE="failure";
           elif [[ "$CORE_SECRETS" != "success" ]]; then STAGE="core-secrets"; STATE="failure";
           elif [[ "$GMAIL_SECRETS" != "success" && "$GMAIL_SECRETS" != "skipped" ]]; then STAGE="gmail-secrets"; STATE="failure";
