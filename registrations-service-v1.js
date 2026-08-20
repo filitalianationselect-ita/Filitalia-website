@@ -2,6 +2,8 @@
   "use strict";
 
   const TABLE = "registrations";
+  const PHOTO_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+  const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
   function clean(value, maxLength) {
     return String(value == null ? "" : value)
@@ -44,6 +46,56 @@
     }
   }
 
+  function secureToken() {
+    if (!window.crypto || typeof window.crypto.getRandomValues !== "function") {
+      throw new Error("SECURE_RANDOM_UNAVAILABLE");
+    }
+    const bytes = new Uint8Array(32);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes).map(function (byte) { return byte.toString(16).padStart(2, "0"); }).join("");
+  }
+
+  async function sha256Hex(value) {
+    if (!window.crypto || !window.crypto.subtle) throw new Error("SECURE_HASH_UNAVAILABLE");
+    const digest = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+    return Array.from(new Uint8Array(digest)).map(function (byte) { return byte.toString(16).padStart(2, "0"); }).join("");
+  }
+
+  function uploadedPhoto(payload) {
+    const photo = payload && payload["Foto Giocatore"];
+    if (!photo || typeof photo !== "object" || !photo.data) return null;
+    const mimeType = clean(photo.mimeType || photo.type, 80).toLowerCase();
+    const data = String(photo.data || "");
+    const size = Number(photo.size || Math.ceil(data.length * 3 / 4));
+    if (!PHOTO_MIME.has(mimeType) || !data || !Number.isFinite(size) || size <= 0 || size > MAX_PHOTO_BYTES) return null;
+    return {
+      mimeType: mimeType,
+      data: data,
+      size: size,
+      fileName: clean(photo.fileName || photo.name, 180)
+    };
+  }
+
+  async function linkUploadedPhoto(registration, token, photo) {
+    if (!registration || !registration.id || !registration.submission_id || !token || !photo) return null;
+    let lastError = null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const result = await client().functions.invoke("link-registration-photo", {
+        body: {
+          registrationId: registration.id,
+          submissionId: registration.submission_id,
+          token: token,
+          mimeType: photo.mimeType,
+          fileName: photo.fileName,
+          data: photo.data
+        }
+      });
+      if (!result.error && result.data && result.data.ok) return result.data;
+      lastError = result.error || new Error((result.data && result.data.error) || "PHOTO_SYNC_FAILED");
+    }
+    throw lastError || new Error("PHOTO_SYNC_FAILED");
+  }
+
   function safeOriginalValue(value) {
     if (value && typeof value === "object" && !Array.isArray(value)) {
       if (Object.prototype.hasOwnProperty.call(value, "data")) {
@@ -64,7 +116,7 @@
     const source = payload && typeof payload === "object" ? payload : {};
     const output = {};
     Object.keys(source).forEach(function (key) {
-      if (key === "accountAccessToken") return;
+      if (key === "accountAccessToken" || key === "photoSyncToken") return;
       output[key] = safeOriginalValue(source[key]);
     });
     return output;
@@ -77,7 +129,7 @@
       .join(" ");
   }
 
-  async function campRecordFromPayload(payload) {
+  async function campRecordFromPayload(payload, photoToken) {
     const accountId = await sessionUserId();
     const firstName = clean(payload.Nome || payload["Nome Giocatore"], 100);
     const lastName = clean(payload.Cognome || payload["Cognome Giocatore"], 100);
@@ -119,7 +171,8 @@
       payment_status: "pending",
       notes: clean(payload.Note, 2000) || null,
       original_data: sanitizeOriginal(payload),
-      sheet_copy_status: "queued"
+      sheet_copy_status: "queued",
+      photo_sync_token_hash: photoToken ? await sha256Hex(photoToken) : null
     };
   }
 
@@ -129,13 +182,27 @@
   }
 
   async function createCampRegistration(payload) {
-    const record = requireSubmissionId(await campRecordFromPayload(payload || {}));
+    const source = payload || {};
+    const photo = uploadedPhoto(source);
+    const photoToken = photo ? secureToken() : "";
+    const record = requireSubmissionId(await campRecordFromPayload(source, photoToken));
     const result = await client()
       .from(TABLE)
       .insert(record)
       .select("id,submission_id,camp_event_id,event_name,event_city,event_date,registration_status,payment_status,created_at")
       .single();
     if (result.error) throw result.error;
+
+    if (photo && photoToken) {
+      try {
+        await linkUploadedPhoto(result.data, photoToken, photo);
+      } catch (error) {
+        // Registration is already safely stored. Google Drive remains the fallback
+        // copy and historical backfill can recover the photo if Supabase is down.
+        console.error("FIL-ITALIA registration photo sync failed", error);
+      }
+    }
+
     return result.data;
   }
 
