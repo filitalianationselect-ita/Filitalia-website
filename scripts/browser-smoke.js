@@ -20,13 +20,15 @@ async function shellDiagnostics(page) {
     const legacySection = document.getElementById('communications');
     const cfg = window.FILITALIA_CONFIG || {};
     return {
+      href: location.href,
       readyState: document.readyState,
       runtime: {
         isPreview: Boolean(cfg.isPreview),
         demoMode: Boolean(cfg.demoMode),
         usesPreviewDatabase: Boolean(cfg.usesPreviewDatabase),
         usesProductionDatabaseInPreview: Boolean(cfg.usesProductionDatabaseInPreview),
-        supabaseConfigured: Boolean(cfg.supabaseUrl && cfg.supabasePublishableKey)
+        supabaseConfigured: Boolean(cfg.supabaseUrl && cfg.supabasePublishableKey),
+        supabaseUrl: String(cfg.supabaseUrl || '')
       },
       openPageSource: typeof window.openPage === 'function' ? String(window.openPage).slice(0, 2400) : null,
       emailsElement: realSection ? {
@@ -85,23 +87,47 @@ async function main() {
     report(`2/9 Opening ${baseUrl}/admin-light.html`);
     await page.goto(`${baseUrl}/admin-light.html`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForLoadState('load', { timeout: 60000 }).catch(() => null);
+    await page.waitForTimeout(1200);
     await page.waitForFunction(() => Boolean(window.FILITALIA_CONFIG), { timeout: 10000 });
 
     const early = await shellDiagnostics(page);
+    if (!early.runtime.isPreview) throw new Error('Runtime is not marked as Preview');
+    if (early.runtime.usesProductionDatabaseInPreview || early.runtime.supabaseUrl.includes('exwykgaotochaguizxxt')) {
+      throw new Error(`Preview is using production database: ${JSON.stringify(early.runtime)}`);
+    }
+
     if (early.runtime.demoMode) {
-      report('3/9 Preview is intentionally demo-only; verifying isolation instead of waiting for an authenticated admin shell');
-      if (!early.runtime.isPreview) throw new Error('Demo runtime is not marked as Preview');
+      report('3/9 Preview is demo-only; verifying isolation');
       if (early.runtime.usesPreviewDatabase) throw new Error('Demo runtime unexpectedly claims a Preview database');
-      if (early.runtime.usesProductionDatabaseInPreview) throw new Error('Preview is using production database');
       if (early.runtime.supabaseConfigured) throw new Error('Demo Preview unexpectedly exposes Supabase credentials');
-      report('4/9 Demo isolation verified: Admin remains unavailable without dedicated Preview credentials');
+      report('4/9 Demo isolation verified');
       await page.screenshot({ path: path.join(outputDir, 'success.png'), fullPage: true });
       fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics: early, pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
       report(`9/9 Success. Safe demo mode. Page errors: ${pageErrors.length}; console errors: ${consoleErrors.length}; failed requests: ${failedRequests.length}`);
       return;
     }
 
-    report('3/9 Waiting for the admin shell');
+    if (!early.runtime.usesPreviewDatabase || !early.runtime.supabaseConfigured || !early.runtime.supabaseUrl.includes('cfqqovqkjrsarwmopyvl')) {
+      throw new Error(`Configured Preview is not using the dedicated database: ${JSON.stringify(early.runtime)}`);
+    }
+
+    // A real Preview has no test credentials in CI. The correct unauthenticated
+    // behavior is to gate Admin behind login, not expose the shell.
+    const authGated = /login\.html/i.test(page.url()) || !early.openPageSource;
+    if (authGated) {
+      report('3/9 Dedicated Preview database is active; verifying unauthenticated Admin gate');
+      const bodyText = await page.locator('body').innerText().catch(() => '');
+      if (!/login\.html/i.test(page.url()) && !/Accedi|accesso|login/i.test(bodyText)) {
+        throw new Error(`Admin did not expose a clear authentication gate: ${page.url()}`);
+      }
+      report('4/9 Admin is safely gated behind login on the dedicated Preview database');
+      await page.screenshot({ path: path.join(outputDir, 'success.png'), fullPage: true });
+      fs.writeFileSync(path.join(outputDir, 'diagnostics.json'), JSON.stringify({ diagnostics: early, pageErrors, consoleErrors, failedRequests }, null, 2), 'utf8');
+      report(`9/9 Success. Real Preview auth gate verified. Page errors: ${pageErrors.length}; console errors: ${consoleErrors.length}; failed requests: ${failedRequests.length}`);
+      return;
+    }
+
+    report('3/9 Waiting for the authenticated admin shell');
     await page.waitForFunction(() => typeof window.openPage === 'function', { timeout: 30000 });
     await page.waitForTimeout(1000);
 
