@@ -5,11 +5,17 @@ const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_BYTES = 5 * 1024 * 1024;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const HASH_RE = /^[0-9a-f]{64}$/;
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "authorization, x-client-info, apikey, content-type",
+  "access-control-allow-methods": "POST, OPTIONS",
+};
 
 function json(status: number, payload: Record<string, unknown>) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
+      ...CORS,
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
     },
@@ -42,6 +48,7 @@ async function sha256Hex(value: string): Promise<string> {
 }
 
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response("ok", { status: 200, headers: CORS });
   if (req.method !== "POST") return json(405, { ok: false, error: "METHOD_NOT_ALLOWED" });
 
   const contentLength = Number(req.headers.get("content-length") || 0);
