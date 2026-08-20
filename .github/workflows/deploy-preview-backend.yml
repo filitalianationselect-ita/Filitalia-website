@@ -31,7 +31,7 @@ jobs:
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_PREVIEW_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PREVIEW_DB_PASSWORD }}
-      PROJECT_REF: ${{ secrets.SUPABASE_PREVIEW_PROJECT_REF }}
+      PROJECT_REF: cfqqovqkjrsarwmopyvl
       PREVIEW_ORIGIN: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_origin || 'https://deploy-preview-1--filitalia.netlify.app' }}
       GMAIL_CLIENT_ID: ${{ secrets.GMAIL_PREVIEW_CLIENT_ID }}
       GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_PREVIEW_CLIENT_SECRET }}
@@ -52,8 +52,8 @@ jobs:
           set -euo pipefail
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "SUPABASE_PREVIEW_ACCESS_TOKEN mancante"; exit 1; }
           test -n "$SUPABASE_DB_PASSWORD" || { echo "SUPABASE_PREVIEW_DB_PASSWORD mancante"; exit 1; }
-          test -n "$PROJECT_REF" || { echo "SUPABASE_PREVIEW_PROJECT_REF mancante"; exit 1; }
-          [[ "$PROJECT_REF" == "cfqqovqkjrsarwmopyvl" ]] || { echo "BLOCCATO: il secret Preview punta al progetto sbagliato ($PROJECT_REF). Atteso cfqqovqkjrsarwmopyvl."; exit 1; }
+          [[ "$PROJECT_REF" == "cfqqovqkjrsarwmopyvl" ]] || { echo "BLOCCATO: Preview deve usare cfqqovqkjrsarwmopyvl."; exit 1; }
+          [[ "$PROJECT_REF" != "exwykgaotochaguizxxt" ]] || { echo "BLOCCATO: il progetto produzione non può essere usato dalla Preview."; exit 1; }
           [[ "$PREVIEW_ORIGIN" == https://*--filitalia.netlify.app ]] || { echo "L'origine non è una Deploy Preview FIL-ITALIA"; exit 1; }
           if [[ -n "$GMAIL_CLIENT_ID" || -n "$GMAIL_CLIENT_SECRET" || -n "$GMAIL_TOKEN_ENCRYPTION_KEY" ]]; then
             test -n "$GMAIL_CLIENT_ID" || { echo "GMAIL_PREVIEW_CLIENT_ID mancante"; exit 1; }
