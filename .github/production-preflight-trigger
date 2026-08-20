@@ -1,4 +1,4 @@
 FIL-ITALIA production backend preflight only.
 No database changes are authorized by this trigger.
-Run: 2026-08-19.
-Attempt: 2 precise credential diagnostics.
+Run: 2026-08-20.
+Attempt: 3 final credential diagnostics after Preview registration QA.
