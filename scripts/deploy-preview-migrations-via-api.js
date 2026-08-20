@@ -67,6 +67,31 @@ function sqlLiteral(value) {
   return `'${String(value).replace(/'/g, "''")}'`;
 }
 
+function collectErrorStrings(value, output = []) {
+  if (typeof value === 'string') {
+    if (value.trim()) output.push(value.trim());
+    return output;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectErrorStrings(item, output);
+    return output;
+  }
+  if (value && typeof value === 'object') {
+    for (const item of Object.values(value)) collectErrorStrings(item, output);
+  }
+  return output;
+}
+
+function formatApiError(payload) {
+  const strings = collectErrorStrings(payload);
+  const preferred = strings.find(value => /ERROR:|SQLSTATE|does not exist|already exists|duplicate|violat|cannot|syntax|column|relation|function|constraint|permission/i.test(value));
+  const message = preferred || strings[0] || 'unknown Management API error';
+  return message
+    .replace(/Bearer\s+[^\s]+/gi, 'Bearer [redacted]')
+    .replace(/\s+/g, ' ')
+    .slice(0, 1500);
+}
+
 async function runQuery(sql, label) {
   const response = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`, {
     method: 'POST',
@@ -86,10 +111,7 @@ async function runQuery(sql, label) {
   }
 
   if (!response.ok) {
-    const safe = typeof payload === 'string'
-      ? payload
-      : JSON.stringify(payload || {});
-    throw new Error(`${label}: HTTP ${response.status}: ${safe.slice(0, 1200)}`);
+    throw new Error(`${label}: ${formatApiError(payload)}`);
   }
 
   return payload;
@@ -136,12 +158,16 @@ async function main() {
   }
 
   if (MODE === 'dry-run') {
-    const validationSql = [
-      'begin;',
-      ...prepared.map(item => `\n-- DRY RUN ${item.version}_${item.name}\n${item.body}\n`),
-      'rollback;',
-    ].join('\n');
-    await runQuery(validationSql, 'migration dry-run');
+    for (let index = 0; index < prepared.length; index += 1) {
+      const current = prepared[index];
+      const validationSql = [
+        'begin;',
+        ...prepared.slice(0, index + 1).map(item => `\n-- DRY RUN ${item.version}_${item.name}\n${item.body}\n`),
+        'rollback;',
+      ].join('\n');
+      await runQuery(validationSql, `dry-run through ${current.version}_${current.name}`);
+      console.log(`[preview-migrations] validated ${current.version}_${current.name}`);
+    }
     console.log(`[preview-migrations] dry-run passed for ${prepared.length} pending migrations`);
     return;
   }
