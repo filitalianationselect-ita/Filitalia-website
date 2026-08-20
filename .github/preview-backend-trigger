@@ -1,3 +1,3 @@
 Deploy Preview backend for deploy-preview-1.
 Authorized by project owner on 2026-08-20.
-Attempt: 13 — normalized legacy migration timestamps and repaired Preview history; run dry-run, canonical Registry migrations and Edge Functions on cfqqovqkjrsarwmopyvl only.
+Attempt: 14 — diagnostic dry-run after migration history repair; surface the exact sanitized failure reason before any Preview database write.
