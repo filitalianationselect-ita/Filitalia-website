@@ -15,6 +15,7 @@ const expected = [
   'gmail-oauth-callback',
   'gmail-oauth-start',
   'google-admin-data',
+  'link-registration-photo',
   'send-filitalia-branded-email',
   'sign-in-alias'
 ].sort();
@@ -51,7 +52,8 @@ for (const file of textFiles) {
   }
 }
 
-const adminProtected = expected.filter(name => !['gmail-oauth-callback', 'sign-in-alias'].includes(name));
+const customPublic = ['gmail-oauth-callback', 'sign-in-alias', 'link-registration-photo'];
+const adminProtected = expected.filter(name => !customPublic.includes(name));
 for (const name of adminProtected) {
   const content = fs.readFileSync(path.join(functionsRoot, name, 'index.ts'), 'utf8');
   if (!content.includes('NOT_AUTHENTICATED')) errors.push(`${name} does not expose authentication failure handling`);
@@ -64,15 +66,25 @@ if (!config.includes('[functions.gmail-oauth-callback]\nverify_jwt = false')) {
 if (!config.includes('[functions.sign-in-alias]\nverify_jwt = false')) {
   errors.push('sign-in-alias must accept unauthenticated login requests');
 }
+if (!config.includes('[functions.link-registration-photo]\nverify_jwt = false')) {
+  errors.push('link-registration-photo must use its registration-scoped one-time token instead of a user JWT');
+}
 
 const aliasFunction = fs.readFileSync(path.join(functionsRoot, 'sign-in-alias', 'index.ts'), 'utf8');
 if (!aliasFunction.includes('INVALID_LOGIN')) errors.push('sign-in-alias must return a generic login failure');
 if (!aliasFunction.includes('login_aliases')) errors.push('sign-in-alias does not use the private alias table');
 if (!aliasFunction.includes('signInWithPassword')) errors.push('sign-in-alias does not delegate password verification to Supabase Auth');
 
+const photoFunction = fs.readFileSync(path.join(functionsRoot, 'link-registration-photo', 'index.ts'), 'utf8');
+for (const required of ['photo_sync_token_hash', 'service_attach_registration_storage_photo', 'profile-media', 'TOKEN_EXPIRED', 'INVALID_OR_USED_TOKEN', 'OPTIONS', 'access-control-allow-origin']) {
+  if (!photoFunction.includes(required)) errors.push(`link-registration-photo missing security control: ${required}`);
+}
+if (!photoFunction.includes('5 * 1024 * 1024')) errors.push('link-registration-photo must keep the 5 MB image limit');
+if (!photoFunction.includes('detectedMime')) errors.push('link-registration-photo must validate image signatures');
+
 console.log(`Edge Functions: ${activeFunctions.join(', ')}`);
 if (errors.length) {
   errors.forEach(error => console.error(`- ${error}`));
   process.exit(1);
 }
-console.log('Edge Function configuration is consistent, private-alias aware and branded-email only.');
+console.log('Edge Function configuration is consistent, private-alias aware, one-time-photo-token aware and branded-email only.');
