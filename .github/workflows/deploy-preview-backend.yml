@@ -30,7 +30,6 @@ jobs:
     environment: filitalia-preview
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_PREVIEW_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PREVIEW_DB_PASSWORD }}
       PROJECT_REF: cfqqovqkjrsarwmopyvl
       PREVIEW_ORIGIN: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_origin || 'https://deploy-preview-1--filitalia.netlify.app' }}
       GMAIL_CLIENT_ID: ${{ secrets.GMAIL_PREVIEW_CLIENT_ID }}
@@ -51,7 +50,6 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "SUPABASE_PREVIEW_ACCESS_TOKEN mancante"; exit 1; }
-          test -n "$SUPABASE_DB_PASSWORD" || { echo "SUPABASE_PREVIEW_DB_PASSWORD mancante"; exit 1; }
           [[ "$PROJECT_REF" == "cfqqovqkjrsarwmopyvl" ]] || { echo "BLOCCATO: Preview deve usare cfqqovqkjrsarwmopyvl."; exit 1; }
           [[ "$PROJECT_REF" != "exwykgaotochaguizxxt" ]] || { echo "BLOCCATO: il progetto produzione non può essere usato dalla Preview."; exit 1; }
           [[ "$PREVIEW_ORIGIN" == https://*--filitalia.netlify.app ]] || { echo "L'origine non è una Deploy Preview FIL-ITALIA"; exit 1; }
@@ -62,34 +60,17 @@ jobs:
             [[ ${#GMAIL_TOKEN_ENCRYPTION_KEY} -ge 40 ]] || { echo "La chiave di cifratura Gmail non sembra valida"; exit 1; }
           fi
 
-      - name: Install Supabase CLI
-        id: cli
-        if: ${{ steps.validate.outcome == 'success' }}
-        continue-on-error: true
-        uses: supabase/setup-cli@v1
-        with:
-          version: 2.109.1
-
-      - name: Link preview Supabase project
-        id: link
-        if: ${{ steps.cli.outcome == 'success' }}
-        continue-on-error: true
-        run: supabase link --project-ref "$PROJECT_REF"
-
       - name: Preview database changes
         id: dry_run
-        if: ${{ steps.link.outcome == 'success' }}
+        if: ${{ steps.validate.outcome == 'success' }}
         continue-on-error: true
         shell: bash
         run: |
           set +e
-          OUTPUT="$(supabase db push --include-all --dry-run 2>&1)"
+          OUTPUT="$(node scripts/deploy-preview-migrations-via-api.js --dry-run 2>&1)"
           CODE=$?
           printf '%s\n' "$OUTPUT"
-          REASON="$(printf '%s\n' "$OUTPUT" | grep -Eiv '^[[:space:]]*$' | grep -Ei 'error|failed|not found|mismatch|migration|duplicate|invalid|remote|local' | tail -n 1)"
-          if [[ -z "$REASON" ]]; then
-            REASON="$(printf '%s\n' "$OUTPUT" | grep -Eiv '^[[:space:]]*$' | tail -n 1)"
-          fi
+          REASON="$(printf '%s\n' "$OUTPUT" | grep -Eiv '^[[:space:]]*$' | tail -n 1)"
           SLUG="$(printf '%s' "$REASON" | tr '[:upper:]' '[:lower:]' | sed -E 's#https?://[^ ]+#url#g; s/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-58)"
           [[ -n "$SLUG" ]] || SLUG="unknown"
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
@@ -99,11 +80,20 @@ jobs:
         id: db_push
         if: ${{ steps.dry_run.outcome == 'success' }}
         continue-on-error: true
-        run: supabase db push --include-all --yes
+        shell: bash
+        run: node scripts/deploy-preview-migrations-via-api.js --apply
+
+      - name: Install Supabase CLI for functions and secrets
+        id: cli
+        if: ${{ steps.db_push.outcome == 'success' }}
+        continue-on-error: true
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
 
       - name: Configure preview core secrets
         id: core_secrets
-        if: ${{ steps.db_push.outcome == 'success' }}
+        if: ${{ steps.cli.outcome == 'success' }}
         continue-on-error: true
         run: supabase secrets set --project-ref "$PROJECT_REF" ADMIN_SITE_ORIGIN="$PREVIEW_ORIGIN"
 
@@ -133,11 +123,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CHECKOUT: ${{ steps.checkout.outcome }}
           VALIDATE: ${{ steps.validate.outcome }}
-          CLI: ${{ steps.cli.outcome }}
-          LINK: ${{ steps.link.outcome }}
           DRY_RUN: ${{ steps.dry_run.outcome }}
           DRY_SLUG: ${{ steps.dry_run.outputs.slug }}
           DB_PUSH: ${{ steps.db_push.outcome }}
+          CLI: ${{ steps.cli.outcome }}
           CORE_SECRETS: ${{ steps.core_secrets.outcome }}
           GMAIL_SECRETS: ${{ steps.gmail_secrets.outcome }}
           FUNCTIONS: ${{ steps.functions.outcome }}
@@ -148,10 +137,9 @@ jobs:
           STATE="success"
           if [[ "$CHECKOUT" != "success" ]]; then STAGE="checkout"; STATE="failure";
           elif [[ "$VALIDATE" != "success" ]]; then STAGE="validate"; STATE="failure";
-          elif [[ "$CLI" != "success" ]]; then STAGE="cli"; STATE="failure";
-          elif [[ "$LINK" != "success" ]]; then STAGE="link"; STATE="failure";
           elif [[ "$DRY_RUN" != "success" ]]; then STAGE="dry-run-${DRY_SLUG:-unknown}"; STATE="failure";
           elif [[ "$DB_PUSH" != "success" ]]; then STAGE="db-push"; STATE="failure";
+          elif [[ "$CLI" != "success" ]]; then STAGE="cli"; STATE="failure";
           elif [[ "$CORE_SECRETS" != "success" ]]; then STAGE="core-secrets"; STATE="failure";
           elif [[ "$GMAIL_SECRETS" != "success" && "$GMAIL_SECRETS" != "skipped" ]]; then STAGE="gmail-secrets"; STATE="failure";
           elif [[ "$FUNCTIONS" != "success" ]]; then STAGE="functions"; STATE="failure";
