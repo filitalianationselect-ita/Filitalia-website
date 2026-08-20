@@ -8,6 +8,7 @@ on:
       - "site-final-fixes-v1.js"
       - "home-reference-navbar-v1.js"
       - "public-pages-v1.js"
+      - "gallery-album-guard-v1.js"
       - "index.html"
       - "news.html"
       - "idcamp*.html"
@@ -22,6 +23,7 @@ on:
       - "site-final-fixes-v1.js"
       - "home-reference-navbar-v1.js"
       - "public-pages-v1.js"
+      - "gallery-album-guard-v1.js"
       - "index.html"
       - "news.html"
       - "idcamp*.html"
@@ -118,24 +120,33 @@ jobs:
 
             const archive=await checkPublic('idcamp','body[data-gallery-category="idcamp"]');
             const album=await checkPublic('idcamp-roma-2026','body[data-album-id="idcamp-roma-2026"]');
+            await page.waitForTimeout(1500);
+            const albumState=await page.evaluate(()=>{
+              const images=[...document.querySelectorAll('#albumImagesGrid img')];
+              return {
+                visible:images.filter(img=>!img.hidden&&getComputedStyle(img).display!=='none').length,
+                broken:images.filter(img=>!img.hidden&&img.complete&&img.naturalWidth<1).length,
+                subtitle:(document.getElementById('albumSubtitle')?.textContent||'').trim()
+              };
+            });
+            if(albumState.visible<1||albumState.broken>0)throw new Error(`Album fallback invalid: ${JSON.stringify(albumState)}`);
+            if(!/agosto/i.test(albumState.subtitle))throw new Error(`Roma album date is not localized: ${albumState.subtitle}`);
             await page.screenshot({path:'final-album.jpg',type:'jpeg',quality:76});
 
             await page.goto(`${root}/news?finalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
-            await page.waitForSelector('#allNewsGrid .fil-news-lead',{timeout:20000});
-            await page.waitForTimeout(1600);
+            await page.waitForSelector('#allNewsGrid .fpr-news-feature',{timeout:20000});
+            await page.waitForTimeout(1200);
             const news=await page.evaluate(()=>{
               const grid=document.getElementById('allNewsGrid');
-              const lead=grid?.querySelector('.fil-news-lead');
-              const secondary=[...(grid?.querySelectorAll('.fil-news-tile, .fil-news-card-v1')||[])];
+              const lead=grid?.querySelector('.fpr-news-feature');
+              const secondary=[...(grid?.querySelectorAll('.fpr-news-card')||[])];
               const image=lead?.querySelector('img');
-              const layout=grid?.querySelector('.fil-news-layout');
               return {
                 count:(lead?1:0)+secondary.length,
                 leadTitle:(lead?.querySelector('h2')?.textContent||'').trim(),
-                leadDate:(lead?.querySelector('small')?.textContent||'').trim(),
                 leadHref:lead?.getAttribute('href')||'',
                 imageWidth:image?.naturalWidth||0,
-                layoutWidth:layout?.getBoundingClientRect().width||0,
+                layoutWidth:grid?.getBoundingClientRect().width||0,
                 overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
               };
             });
@@ -155,7 +166,7 @@ jobs:
             if(mobileState.overflow>3)throw new Error(`Mobile Home overflow: ${mobileState.overflow}px`);
             await mobile.screenshot({path:'final-mobile.jpg',type:'jpeg',quality:76});
 
-            fs.writeFileSync('final-public-qa.json',JSON.stringify({home,archive,album,news,mobileState},null,2));
+            fs.writeFileSync('final-public-qa.json',JSON.stringify({home,archive,album,albumState,news,mobileState},null,2));
             await browser.close();
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
