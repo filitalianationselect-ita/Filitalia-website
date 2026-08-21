@@ -170,6 +170,10 @@
   }
 
   function openMediaManager() {
+    if (window.FilitaliaContentLayout && typeof window.FilitaliaContentLayout.openMedia === "function") {
+      window.FilitaliaContentLayout.openMedia().catch(console.error);
+      return;
+    }
     const launcher = d.getElementById("filLayoutLauncher");
     if (!launcher) {
       if (typeof window.showToast === "function") window.showToast("Gestione Media in caricamento. Riprova tra un istante.");
@@ -204,8 +208,17 @@
     });
   }
 
+  function removeLegacyEventDuplicates() {
+    ["eventRequestNewV1", "eventRequestsV1", "eventFinanceModal", "eventRequestModal", "eventRequestsListModal", "eventFinanceV1Style"].forEach(function (id) {
+      const node = d.getElementById(id);
+      if (node) node.remove();
+    });
+    d.querySelectorAll(".event-finance-v1").forEach(function (node) { node.remove(); });
+  }
+
   function mount() {
     ensureStyle();
+    removeLegacyEventDuplicates();
     if (!createNewsPage()) return false;
     renderMediaPage();
     prepareNavigation(d.getElementById("sideNav"), false);

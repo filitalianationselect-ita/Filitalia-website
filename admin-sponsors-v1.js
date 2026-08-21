@@ -53,8 +53,8 @@
     return true;
   }
   function addNav() {
-    const nav = d.querySelector(
-      'aside nav,.sidebar,.side-nav,[role="navigation"]',
+    const nav = $("sideNav") || d.querySelector(
+      'aside nav,.side-nav,[role="navigation"]',
     );
     if (!nav || nav.querySelector("[data-sponsor-nav]")) return;
     const model = nav.querySelector("[data-section],[data-page],button,a");
@@ -62,12 +62,14 @@
     b.removeAttribute("href");
     b.setAttribute("type", "button");
     b.dataset.sponsorNav = "1";
-    b.textContent = "Sponsor";
+    b.textContent = "🤝 Sponsor";
     b.onclick = (e) => {
       e.preventDefault();
       show();
     };
-    nav.appendChild(b);
+    const news = nav.querySelector('[data-page="news"]');
+    if (news) nav.insertBefore(b, news);
+    else nav.appendChild(b);
     d.addEventListener(
       "click",
       (e) => {
