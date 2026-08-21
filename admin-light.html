@@ -126,21 +126,35 @@
         localStorage.setItem(demoSeedFix, "1");
       }
 
-      for (const source of enhancerSources) {
-        await new Promise(function (resolve, reject) {
+      const enhancerLoads = enhancerSources.map(function (source) {
+        return new Promise(function (resolve) {
           const script = frame.contentDocument.createElement("script");
           script.src = new URL(source, baseUrl).href;
+          script.async = false;
+          let settled = false;
+          const finish = function () {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timeout);
+            resolve();
+          };
+          const timeout = window.setTimeout(function () {
+            console.warn("Modulo amministrativo lento, caricamento saltato:", source);
+            script.remove();
+            finish();
+          }, 20000);
           script.onload = function () {
             frame.dataset.enhancersLoaded = String(Number(frame.dataset.enhancersLoaded || "0") + 1);
-            resolve();
+            finish();
           };
           script.onerror = function () {
             console.warn("Modulo amministrativo secondario non disponibile:", source);
-            resolve();
+            finish();
           };
           frame.contentDocument.body.appendChild(script);
         });
-      }
+      });
+      await Promise.all(enhancerLoads);
       frame.dataset.frameAuth = String(Boolean(frame.contentWindow.FilitaliaAuth));
       frame.dataset.frameAdminData = String(Boolean(frame.contentWindow.FilitaliaAdminData));
       frame.dataset.frameAdminLight = String(Boolean(frame.contentWindow.FilitaliaAdminLight));
