@@ -130,7 +130,7 @@
       portal=d.createElement('section');
       portal.id='adminPortalLaunch';
       portal.className='admin-portal-launch';
-      portal.innerHTML='<div class="admin-portal-launch-copy"><span class="admin-portal-launch-eyebrow">ACCESSO AMMINISTRATIVO</span><h2>Pannello Super Admin</h2><p>Apri il centro di controllo completo per utenti, ruoli, Player, Staff, eventi, iscrizioni, pagamenti, documenti, media e comunicazioni.</p></div><div class="admin-portal-launch-actions"><a class="admin-portal-launch-button" href="admin-light.html">APRI PANNELLO SUPER ADMIN</a><span class="admin-portal-launch-note">Accesso riservato e protetto</span></div>';
+      portal.innerHTML='<div class="admin-portal-launch-copy"><span class="admin-portal-launch-eyebrow">ACCESSO AMMINISTRATIVO</span><h2>Pannello Super Admin</h2><p>Apri il centro di controllo completo per utenti, ruoli, Player, Staff, eventi, iscrizioni, pagamenti, documenti, media e comunicazioni.</p></div><div class="admin-portal-launch-actions"><a class="admin-portal-launch-button" href="admin-light.html?ntl-drawer-state=hidden">APRI PANNELLO SUPER ADMIN</a><span class="admin-portal-launch-note">Accesso riservato e protetto</span></div>';
       const roleIntro=d.querySelector('.account-role-intro');
       if(roleIntro) roleIntro.insertAdjacentElement('afterend',portal);
     }
@@ -183,7 +183,7 @@
     const isAdmin=role==='admin'||role==='super_admin';
     if(adminAction){
       adminAction.hidden=!(isAdmin&&isActive);
-      adminAction.href='admin-light.html';
+      adminAction.href='admin-light.html?ntl-drawer-state=hidden';
       adminAction.textContent=role==='super_admin'?'Apri pannello Super Admin':'Apri pannello Admin';
     }
 

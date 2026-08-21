@@ -216,7 +216,7 @@
     const adminAction = byId("accountAdminAction");
     if (adminAction) {
       adminAction.hidden = !isActiveAdmin(profile);
-      adminAction.href = "admin-light.html";
+      adminAction.href = "admin-light.html?ntl-drawer-state=hidden";
       adminAction.textContent = accountRole(profile) === "super_admin" ? "Apri pannello Super Admin" : "Apri pannello Admin";
     }
   }

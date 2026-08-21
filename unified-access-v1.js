@@ -3,6 +3,7 @@
 
   const ADMIN_ROLES = new Set(["admin", "super_admin"]);
   const ACTIVE_STATUS = "active";
+  const ADMIN_PANEL_URL = "admin-light.html?ntl-drawer-state=hidden";
 
   function authApi() {
     return window.FilitaliaAuth || null;
@@ -52,7 +53,7 @@
     }
 
     if (!context.session) {
-      window.location.replace(loginUrl(settings.next || "admin-light.html"));
+      window.location.replace(loginUrl(settings.next || ADMIN_PANEL_URL));
       throw new Error("NOT_AUTHENTICATED");
     }
 
@@ -68,7 +69,7 @@
   function createAdminLink(container) {
     if (!container || container.querySelector("[data-filitalia-admin-link]")) return null;
     const link = document.createElement("a");
-    link.href = "admin-light.html";
+    link.href = ADMIN_PANEL_URL;
     link.textContent = "Amministrazione";
     link.setAttribute("data-filitalia-admin-link", "true");
     link.className = "filitalia-admin-link";
@@ -104,7 +105,7 @@
     const card = document.createElement("section");
     card.id = "openAdminPanelCard";
     card.className = "account-card admin-dashboard";
-    card.innerHTML = '<div class="admin-dashboard-head"><div><span class="admin-kicker">FIL-ITALIA CONTROL ROOM</span><h2 class="account-section-title">Amministrazione</h2><p class="account-muted">Gestisci sito, eventi, utenti, registrazioni, pagamenti e comunicazioni dallo stesso account.</p></div><a class="account-button" href="admin-light.html">APRI AMMINISTRAZIONE</a></div>';
+    card.innerHTML = '<div class="admin-dashboard-head"><div><span class="admin-kicker">FIL-ITALIA CONTROL ROOM</span><h2 class="account-section-title">Amministrazione</h2><p class="account-muted">Gestisci sito, eventi, utenti, registrazioni, pagamenti e comunicazioni dallo stesso account.</p></div><a class="account-button" href="' + ADMIN_PANEL_URL + '">APRI AMMINISTRAZIONE</a></div>';
     shell.insertBefore(card, shell.firstChild && shell.firstChild.nextSibling ? shell.firstChild.nextSibling : shell.firstChild);
   }
 

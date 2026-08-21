@@ -10,15 +10,23 @@
   <script src="auth-client.js?v=1002"></script>
   <script src="registrations-service-v1.js?v=3"></script>
   <script src="preview-auth-routing-v1.js?v=1"></script>
-  <script src="unified-access-v1.js?v=2"></script>
+  <script src="unified-access-v1.js?v=3"></script>
 </head>
 <body style="font-family:Arial,sans-serif;padding:30px">
   <div id="adminBootstrapStatus">Verifica accesso amministratore…</div>
   <script>
   (async function () {
     try {
+      const drawerState = new URLSearchParams(window.location.search).get("ntl-drawer-state");
+      if (drawerState !== "hidden") {
+        const cleanAdminUrl = new URL(window.location.href);
+        cleanAdminUrl.searchParams.set("ntl-drawer-state", "hidden");
+        window.location.replace(cleanAdminUrl.href);
+        return;
+      }
+
       await window.FilitaliaAccess.guardAdmin({
-        next: "admin-light.html",
+        next: "admin-light.html?ntl-drawer-state=hidden",
         allowUnconfiguredPreview: true
       });
 
