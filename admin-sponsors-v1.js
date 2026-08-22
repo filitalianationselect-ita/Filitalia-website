@@ -61,6 +61,8 @@
     const b = model ? model.cloneNode(false) : d.createElement("button");
     b.removeAttribute("href");
     b.setAttribute("type", "button");
+    b.classList.remove("active");
+    b.dataset.page = "sponsorsAdmin";
     b.dataset.sponsorNav = "1";
     b.textContent = "🤝 Sponsor";
     b.onclick = (e) => {
@@ -83,6 +85,8 @@
     );
   }
   function show() {
+    d.querySelectorAll('#sideNav button.active, #mobileNav button.active, #filMobilePrimaryNav button.active').forEach((button) => button.classList.remove("active"));
+    d.querySelectorAll('[data-sponsor-nav]').forEach((button) => button.classList.add("active"));
     d.querySelectorAll("section[id]").forEach((s) => {
       if (s.id !== "sponsorsAdmin") s.style.display = "none";
     });
@@ -91,6 +95,7 @@
     load();
   }
   function hide() {
+    d.querySelectorAll('[data-sponsor-nav]').forEach((button) => button.classList.remove("active"));
     const s = $("sponsorsAdmin");
     if (s) {
       s.classList.remove("active");

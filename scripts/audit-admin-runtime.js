@@ -92,6 +92,9 @@ requireFragments(operations, [
 requireFragments(sponsors, [
   'const news = nav.querySelector(\'[data-page="news"]\')',
   'nav.insertBefore(b, news)',
+  'b.classList.remove("active")',
+  'b.dataset.page = "sponsorsAdmin"',
+  "d.querySelectorAll('[data-sponsor-nav]').forEach((button) => button.classList.remove(\"active\"))",
   '🤝 Sponsor'
 ], 'admin sponsor navigation');
 
