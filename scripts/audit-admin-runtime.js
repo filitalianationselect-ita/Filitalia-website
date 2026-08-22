@@ -1,0 +1,78 @@
+const fs = require('fs');
+const zlib = require('zlib');
+
+function read(file) {
+  if (!fs.existsSync(file)) throw new Error(`Missing admin runtime asset: ${file}`);
+  return fs.readFileSync(file, 'utf8');
+}
+
+function requireFragments(source, fragments, label) {
+  const missing = fragments.filter(fragment => !source.includes(fragment));
+  if (missing.length) throw new Error(`${label} is missing: ${missing.join(' | ')}`);
+}
+
+const admin = read('admin-light.html');
+const payload = read('admin-light-base-payload.txt');
+const actions = read('admin-content-actions-unlock-v1.js');
+const layout = read('admin-content-layout-v1.js');
+const sponsors = read('admin-sponsors-v1.js');
+const operations = read('admin-operations-suite-v1.js');
+
+if (/raw\.githubusercontent\.com/i.test(admin)) {
+  throw new Error('Admin runtime still depends on a remote GitHub payload');
+}
+
+requireFragments(admin, [
+  'admin-light-base-payload.txt?v=1',
+  'ntl-drawer-state',
+  'Promise.all(enhancerLoads)',
+  'script.async = false',
+  'Modulo amministrativo lento'
+], 'admin-light.html');
+
+const payloadMatch = payload.match(/atob\(["']([A-Za-z0-9+/=]+)["']\)/);
+if (!payloadMatch) {
+  throw new Error('Local admin payload is invalid');
+}
+const baseHtml = zlib.gunzipSync(Buffer.from(payloadMatch[1], 'base64')).toString('utf8');
+requireFragments(baseHtml, ['<!doctype html>', 'id="sideNav"', 'id="events"', 'id="media"'], 'local admin base');
+
+const enhancerBlock = admin.match(/const scripts = ([\s\S]*?);\n\n      const enhancerDocument/);
+if (!enhancerBlock) throw new Error('Admin enhancer list not found');
+const enhancerSources = [...enhancerBlock[1].matchAll(/src="([^"?]+\.js)(?:\?[^"']*)?/g)].map(match => match[1]);
+const duplicates = enhancerSources.filter((source, index) => enhancerSources.indexOf(source) !== index);
+if (duplicates.length) {
+  throw new Error(`Duplicate admin modules: ${[...new Set(duplicates)].join(', ')}`);
+}
+
+for (const obsolete of ['admin-event-finance-v1.js', 'admin-event-finance-ledger-v2.js']) {
+  if (fs.existsSync(obsolete) || admin.includes(obsolete)) {
+    throw new Error(`Obsolete duplicate controls module is still present: ${obsolete}`);
+  }
+}
+
+requireFragments(actions, [
+  'removeLegacyEventDuplicates',
+  'FilitaliaContentLayout.openMedia',
+  'data-page="events"',
+  'data-page="news"',
+  'data-page="media"'
+], 'admin content actions');
+
+requireFragments(layout, [
+  'async function openMedia()',
+  'FilitaliaContentLayout=Object.freeze({open,openMedia,close,refresh:loadAll})'
+], 'admin media layout');
+
+requireFragments(operations, [
+  "$('newsAddOps').onclick=()=>openNews()",
+  "$('news')&&$('players')&&$('staff')&&$('users')&&$('payments')"
+], 'admin news operations');
+
+requireFragments(sponsors, [
+  'const news = nav.querySelector(\'[data-page="news"]\')',
+  'nav.insertBefore(b, news)',
+  '🤝 Sponsor'
+], 'admin sponsor navigation');
+
+console.log(`Admin runtime audit passed: ${enhancerSources.length} unique modules, local base payload, News/Media/Eventi/Sponsor controls verified.`);

@@ -30,9 +30,9 @@
         allowUnconfiguredPreview: true
       });
 
-      const base = "https://raw.githubusercontent.com/filitalianationselect-ita/Filitalia-website/2f83d056150790ee5d88e26c4eb8d627c73ec582/admin-light.html";
+      const base = "admin-light-base-payload.txt?v=1";
       const wrapper = await fetch(base).then(function (response) {
-        if (!response.ok) throw new Error("base");
+        if (!response.ok) throw new Error("ADMIN_BASE_UNAVAILABLE");
         return response.text();
       });
       const match = wrapper.match(/atob\(["']([^"']+)["']\)/);
