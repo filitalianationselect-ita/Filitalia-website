@@ -25,7 +25,11 @@ if (/raw\.githubusercontent\.com/i.test(admin)) {
 requireFragments(admin, [
   'admin-light-base-payload.txt?v=1',
   'ntl-drawer-state',
-  'Promise.all(enhancerLoads)',
+  'loadCriticalEnhancers',
+  'loadSectionEnhancers',
+  'criticalEnhancerNames',
+  'sectionEnhancerNames',
+  'bootstrapPhase = "interactive"',
   'script.async = false',
   'Modulo amministrativo lento'
 ], 'admin-light.html');
@@ -43,6 +47,22 @@ const enhancerSources = [...enhancerBlock[1].matchAll(/src="([^"?]+\.js)(?:\?[^"
 const duplicates = enhancerSources.filter((source, index) => enhancerSources.indexOf(source) !== index);
 if (duplicates.length) {
   throw new Error(`Duplicate admin modules: ${[...new Set(duplicates)].join(', ')}`);
+}
+
+const criticalBlock = admin.match(/const criticalEnhancerNames = \[([\s\S]*?)\n      \];/);
+if (!criticalBlock) throw new Error('Critical admin enhancer list not found');
+const criticalNames = [...criticalBlock[1].matchAll(/"([^"]+\.js)"/g)].map(match => match[1]);
+if (criticalNames.length > 15) {
+  throw new Error(`Too many blocking admin modules: ${criticalNames.length}`);
+}
+for (const required of [
+  'admin-core-service-v1.js',
+  'admin-events-v3.js',
+  'admin-operations-suite-v1.js',
+  'admin-content-layout-v1.js',
+  'admin-content-actions-unlock-v1.js'
+]) {
+  if (!criticalNames.includes(required)) throw new Error(`Essential admin module is not loaded at bootstrap: ${required}`);
 }
 
 for (const obsolete of ['admin-event-finance-v1.js', 'admin-event-finance-ledger-v2.js']) {
@@ -75,4 +95,4 @@ requireFragments(sponsors, [
   '🤝 Sponsor'
 ], 'admin sponsor navigation');
 
-console.log(`Admin runtime audit passed: ${enhancerSources.length} unique modules, local base payload, News/Media/Eventi/Sponsor controls verified.`);
+console.log(`Admin runtime audit passed: ${criticalNames.length} blocking modules, ${enhancerSources.length - criticalNames.length} lazy modules, News/Media/Eventi/Sponsor controls verified.`);

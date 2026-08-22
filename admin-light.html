@@ -134,35 +134,170 @@
         localStorage.setItem(demoSeedFix, "1");
       }
 
-      const enhancerLoads = enhancerSources.map(function (source) {
-        return new Promise(function (resolve) {
+      const loadedEnhancers = new Map();
+      const criticalEnhancerNames = [
+        "admin-scroll-stability-v1.js",
+        "admin-access-freedom-v1.js",
+        "admin-light-data-service.js",
+        "admin-event-catalog-v3.js",
+        "admin-event-links-v1.js",
+        "admin-core-service-v1.js",
+        "admin-operations-suite-v1.js",
+        "admin-content-layout-v1.js",
+        "admin-sponsors-v1.js",
+        "admin-events-v3.js",
+        "admin-readable-ui-v2.js",
+        "admin-content-actions-unlock-v1.js",
+        "admin-exit-actions-v1.js"
+      ];
+      const sectionEnhancerNames = {
+        dashboard: [
+          "admin-live-operations-v1.js",
+          "admin-setup-center-v2.js",
+          "admin-project-audit-v1.js",
+          "admin-site-connection-v1.js",
+          "admin-deploy-preview-center-v1.js"
+        ],
+        events: [
+          "admin-promo-limits-v1.js",
+          "admin-event-field-settings-v1.js",
+          "admin-event-type-options-v1.js",
+          "admin-registration-flex-v3.js",
+          "admin-event-links-ui-v1.js",
+          "admin-event-propagation-v1.js",
+          "admin-event-links-filter-v1.js",
+          "admin-event-links-maintenance-v1.js"
+        ],
+        registrations: [
+          "admin-registrations-v2.js",
+          "admin-google-real-data-v1.js",
+          "admin-promo-limits-v1.js",
+          "admin-light-integration-loader-v2.js",
+          "admin-registration-flex-v3.js",
+          "admin-documents-guard.js",
+          "admin-documents-service.js",
+          "admin-documents-v2.js",
+          "admin-registration-sync.js",
+          "admin-live-operations-v1.js",
+          "admin-registration-scope-fix-v1.js"
+        ],
+        payments: [
+          "admin-light-integration-loader-v2.js",
+          "admin-registration-flex-v3.js",
+          "admin-live-operations-v1.js"
+        ],
+        players: [
+          "admin-player-table-mobile-v1.js",
+          "admin-alt-player-editor-v1.js",
+          "admin-player-profile-v1.js",
+          "admin-player-live-v1.js"
+        ],
+        staff: [
+          "admin-staff-edit-mobile-v1.js",
+          "admin-alt-staff-editor-v1.js"
+        ],
+        emails: [
+          "admin-email-page-alias-v1.js",
+          "admin-communications-v1.js"
+        ],
+        news: [
+          "admin-event-links-ui-v1.js",
+          "admin-event-propagation-v1.js",
+          "admin-event-links-filter-v1.js"
+        ],
+        media: [
+          "admin-content-layout-mobile-v2.js",
+          "admin-event-links-ui-v1.js",
+          "admin-event-propagation-v1.js",
+          "admin-event-links-filter-v1.js"
+        ],
+        users: ["admin-setup-center-v2.js"],
+        settings: [
+          "admin-setup-center-v2.js",
+          "admin-project-audit-v1.js",
+          "admin-site-connection-v1.js",
+          "admin-deploy-preview-center-v1.js"
+        ]
+      };
+      const mobileEnhancerNames = [
+        "admin-mobile-tools-v1.js",
+        "admin-mobile-export-fix-v1.js",
+        "admin-mobile-modal-polish-v1.js",
+        "admin-content-layout-mobile-v2.js"
+      ];
+
+      function sourceByName(name) {
+        return enhancerSources.find(function (source) {
+          return source.split("?")[0].endsWith(name);
+        });
+      }
+
+      function loadEnhancer(source) {
+        if (!source) return Promise.resolve(false);
+        if (loadedEnhancers.has(source)) return loadedEnhancers.get(source);
+        const pending = new Promise(function (resolve) {
           const script = frame.contentDocument.createElement("script");
           script.src = new URL(source, baseUrl).href;
           script.async = false;
           let settled = false;
-          const finish = function () {
+          const finish = function (loaded) {
             if (settled) return;
             settled = true;
             window.clearTimeout(timeout);
-            resolve();
+            if (loaded) frame.dataset.enhancersLoaded = String(Number(frame.dataset.enhancersLoaded || "0") + 1);
+            resolve(loaded);
           };
           const timeout = window.setTimeout(function () {
             console.warn("Modulo amministrativo lento, caricamento saltato:", source);
             script.remove();
-            finish();
-          }, 20000);
-          script.onload = function () {
-            frame.dataset.enhancersLoaded = String(Number(frame.dataset.enhancersLoaded || "0") + 1);
-            finish();
-          };
+            finish(false);
+          }, 8000);
+          script.onload = function () { finish(true); };
           script.onerror = function () {
             console.warn("Modulo amministrativo secondario non disponibile:", source);
-            finish();
+            finish(false);
           };
           frame.contentDocument.body.appendChild(script);
         });
-      });
-      await Promise.all(enhancerLoads);
+        loadedEnhancers.set(source, pending);
+        return pending;
+      }
+
+      async function loadEnhancerNames(names) {
+        for (const name of names) {
+          await loadEnhancer(sourceByName(name));
+          await new Promise(function (resolve) { window.setTimeout(resolve, 0); });
+        }
+      }
+
+      async function loadCriticalEnhancers() {
+        frame.dataset.bootstrapPhase = "critical";
+        await loadEnhancerNames(criticalEnhancerNames);
+        frame.dataset.bootstrapPhase = "interactive";
+      }
+
+      async function loadSectionEnhancers(pageId) {
+        const names = sectionEnhancerNames[pageId] || [];
+        if (!names.length) return;
+        frame.dataset.sectionLoading = pageId;
+        await loadEnhancerNames(names);
+        if (frame.dataset.sectionLoading === pageId) frame.dataset.sectionLoading = "";
+      }
+
+      await loadCriticalEnhancers();
+      frame.contentDocument.addEventListener("click", function (event) {
+        const button = event.target.closest("button[data-page]");
+        if (button) loadSectionEnhancers(button.dataset.page).catch(console.error);
+      }, true);
+      const activePage = frame.contentDocument.querySelector(".page.active");
+      if (activePage) window.setTimeout(function () {
+        loadSectionEnhancers(activePage.id).catch(console.error);
+      }, 250);
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        window.setTimeout(function () { loadEnhancerNames(mobileEnhancerNames).catch(console.error); }, 500);
+      }
+      frame.contentWindow.FilitaliaAdminLoadSection = loadSectionEnhancers;
+      frame.contentWindow.FilitaliaAdminLoadAll = function () { return loadEnhancerNames(enhancerSources.map(function (source) { return source.split("/").pop().split("?")[0]; })); };
       frame.dataset.frameAuth = String(Boolean(frame.contentWindow.FilitaliaAuth));
       frame.dataset.frameAdminData = String(Boolean(frame.contentWindow.FilitaliaAdminData));
       frame.dataset.frameAdminLight = String(Boolean(frame.contentWindow.FilitaliaAdminLight));
