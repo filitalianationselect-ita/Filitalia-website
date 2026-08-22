@@ -99,12 +99,14 @@
         "prezzo apertura registrazione"
       );
 
-      source = replaceOnce(
-        source,
-        '<button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button>',
-        '<button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button><button id="edDelete" class="btn secondary danger-btn">Elimina</button>',
-        "bottone elimina"
-      );
+      if (!source.includes('id="edDelete"')) {
+        source = replaceOnce(
+          source,
+          '<button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button>',
+          '<button id="edPayment" class="btn secondary">💳 Pagamento</button><button id="edEdit" class="btn secondary">✎ Modifica</button><button id="edDelete" class="btn secondary danger-btn">Elimina</button>',
+          "bottone elimina"
+        );
+      }
 
       source = replaceOnce(
         source,

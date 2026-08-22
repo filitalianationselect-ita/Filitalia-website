@@ -9,6 +9,66 @@
     style.id = "filAdminMobileModalPolishStyle";
     style.textContent = `
       @media (max-width: 900px) {
+        html, body {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+
+        .eventday-overlay {
+          box-sizing: border-box !important;
+          width: 100vw !important;
+          max-width: 100vw !important;
+          overflow-x: hidden !important;
+        }
+
+        .eventday-body {
+          box-sizing: border-box !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          padding: 10px !important;
+        }
+
+        .eventday-grid,
+        .eventday-stats,
+        .eventday-info,
+        .eventday-docs {
+          grid-template-columns: minmax(0, 1fr) !important;
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+
+        .eventday-panel,
+        .eventday-detail,
+        .eventday-profile,
+        .light-integration-actions {
+          box-sizing: border-box !important;
+          width: 100% !important;
+          min-width: 0 !important;
+          max-width: 100% !important;
+        }
+
+        .eventday-profile,
+        .light-integration-actions {
+          flex-wrap: wrap !important;
+        }
+
+        .eventday-detail {
+          padding: 13px !important;
+        }
+
+        .eventday-detail b,
+        .eventday-detail .muted {
+          overflow-wrap: anywhere !important;
+        }
+
+        .reg-drawer {
+          box-sizing: border-box !important;
+          width: 100vw !important;
+          max-width: 100vw !important;
+          overflow-x: hidden !important;
+        }
+
         .event-editor,
         .ops-overlay,
         .fil-player-admin-overlay {

@@ -106,4 +106,15 @@ requireFragments(read('admin-events-v3.js'), [
   "removeEvent(button.dataset.id)"
 ], 'admin event action delegation');
 
+requireFragments(read('admin-light-integration-loader-v2.js'), [
+  "if (!source.includes('id=\"edDelete\"'))"
+], 'single registration delete action');
+
+requireFragments(read('admin-mobile-modal-polish-v1.js'), [
+  '.eventday-overlay',
+  'overflow-x: hidden !important',
+  '.eventday-grid',
+  '.reg-drawer'
+], 'mobile registration layout');
+
 console.log(`Admin runtime audit passed: ${criticalNames.length} blocking modules, ${enhancerSources.length - criticalNames.length} lazy modules, News/Media/Eventi/Sponsor controls verified.`);
