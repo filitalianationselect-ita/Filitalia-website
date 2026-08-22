@@ -18,6 +18,7 @@
     guardianDocument: true,
     shirtSize: true,
     playerPhoto: true,
+    medicalCertificate: true,
     mediaConsent: true,
     notes: false,
     privacyConsent: true
@@ -38,6 +39,7 @@
     ["guardianDocument", "Documento genitore", "Genitore"],
     ["shirtSize", "Taglia maglia", "Extra"],
     ["playerPhoto", "Foto giocatore", "Extra"],
+    ["medicalCertificate", "Certificato medico", "Extra"],
     ["mediaConsent", "Consenso foto/video", "Extra"],
     ["notes", "Note libere", "Extra"]
   ];

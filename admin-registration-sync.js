@@ -74,8 +74,13 @@
     return "Da verificare";
   }
   function payClass(value) { return value === "Pagato" || value === "Gratuito" ? "green" : value === "Da pagare" || value === "Rimborsato" ? "red" : "orange"; }
-  function docs(player) { return player.certificate ? "Completi" : "Certificato mancante"; }
-  function state(player) { return complete(player) && player.certificate ? "Confermata" : !complete(player) && !player.certificate ? "Incompleta" : "In attesa"; }
+  function certificateRequired(player) {
+    const id = player && (player.eventId || player.camp_event_id || eventId());
+    const settings = window.FilitaliaEventFieldSettings?.settingsFor?.(id);
+    return !settings || settings.medicalCertificate !== false;
+  }
+  function docs(player) { return !certificateRequired(player) ? "Non richiesto" : player.certificate ? "Completi" : "Certificato mancante"; }
+  function state(player) { const certificateOk = !certificateRequired(player) || player.certificate; return complete(player) && certificateOk ? "Confermata" : !complete(player) && !certificateOk ? "Incompleta" : "In attesa"; }
   function initials(name) { return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part[0]; }).join("").toUpperCase(); }
 
   function historicPhoto(payload) {

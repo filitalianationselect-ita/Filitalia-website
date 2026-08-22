@@ -117,4 +117,16 @@ requireFragments(read('admin-mobile-modal-polish-v1.js'), [
   '.reg-drawer'
 ], 'mobile registration layout');
 
+requireFragments(read('admin-event-field-settings-v1.js'), [
+  'medicalCertificate',
+  'Certificato medico'
+], 'per-event medical certificate setting');
+
+requireFragments(read('admin-medical-certificate-visibility-v1.js'), [
+  'settings.medicalCertificate !== false',
+  'STATO CERTIFICATO',
+  'data-ed-task="certificate"',
+  'edCertificate'
+], 'medical certificate visibility');
+
 console.log(`Admin runtime audit passed: ${criticalNames.length} blocking modules, ${enhancerSources.length - criticalNames.length} lazy modules, News/Media/Eventi/Sponsor controls verified.`);
