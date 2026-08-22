@@ -1,0 +1,148 @@
+/* FIL-ITALIA Players visual cleanup */
+body.fil-page-players .navbar .logo-area{
+  min-width:auto!important;
+  gap:0!important;
+}
+body.fil-page-players .navbar .logo-text{
+  display:none!important;
+}
+body.fil-page-players .navbar .nav-logo{
+  width:68px!important;
+  height:54px!important;
+  object-fit:contain!important;
+}
+
+body.fil-page-players .fil-page-brand{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:46px!important;
+  padding:0 17px!important;
+  border-radius:999px!important;
+}
+body.fil-page-players .fil-page-brand img{
+  display:none!important;
+}
+body.fil-page-players .fil-page-brand::before{
+  content:"";
+  width:13px;
+  height:13px;
+  flex:0 0 13px;
+  border-radius:50%;
+  background:linear-gradient(90deg,#159657 0 33%,#fff 33% 66%,#d52e43 66%);
+  box-shadow:0 0 0 5px rgba(255,255,255,.08);
+}
+body.fil-page-players .fil-page-brand span{
+  color:#a7f3c9!important;
+  font-size:.78rem!important;
+  font-weight:900!important;
+  letter-spacing:.06em!important;
+  white-space:nowrap!important;
+}
+
+body.fil-page-players .fil-player-page-spotlight{
+  position:relative!important;
+}
+body.fil-page-players .fil-player-spotlight-copy{
+  position:relative!important;
+  z-index:4!important;
+  align-self:center!important;
+  margin:28px!important;
+  padding:30px 32px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:22px!important;
+  background:linear-gradient(135deg,rgba(1,17,11,.93),rgba(3,46,30,.84))!important;
+  box-shadow:0 22px 52px rgba(0,0,0,.34)!important;
+  backdrop-filter:blur(13px)!important;
+}
+body.fil-page-players .fil-player-spotlight-copy small{
+  color:#92f1bd!important;
+  font-weight:900!important;
+  letter-spacing:.1em!important;
+}
+body.fil-page-players .fil-player-spotlight-copy h2{
+  margin:10px 0 12px!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:clamp(2.15rem,4.6vw,4.8rem)!important;
+  line-height:.94!important;
+  text-shadow:0 4px 18px rgba(0,0,0,.7)!important;
+  overflow-wrap:anywhere!important;
+}
+body.fil-page-players .fil-player-spotlight-copy p{
+  margin:0!important;
+  color:#e7f7ef!important;
+  -webkit-text-fill-color:#e7f7ef!important;
+  font-size:1rem!important;
+  font-weight:750!important;
+  line-height:1.55!important;
+  text-shadow:0 2px 10px rgba(0,0,0,.62)!important;
+}
+
+body.fil-page-players .fil-roster-card::after{
+  background:linear-gradient(0deg,rgba(0,11,7,.99) 0%,rgba(0,15,10,.92) 32%,rgba(0,15,10,.2) 73%,transparent 100%)!important;
+}
+body.fil-page-players .fil-roster-card-copy{
+  z-index:6!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  padding:15px 16px!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  border-radius:17px!important;
+  background:rgba(1,20,13,.82)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.3)!important;
+  backdrop-filter:blur(10px)!important;
+}
+body.fil-page-players .fil-roster-card-copy small{
+  color:#91efba!important;
+  -webkit-text-fill-color:#91efba!important;
+  font-weight:900!important;
+}
+body.fil-page-players .fil-roster-card-copy strong{
+  display:block!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:1.38rem!important;
+  font-weight:900!important;
+  line-height:1.08!important;
+  text-shadow:0 3px 14px rgba(0,0,0,.8)!important;
+  overflow-wrap:anywhere!important;
+}
+body.fil-page-players .fil-roster-card-copy span{
+  display:block!important;
+  color:#e3f3eb!important;
+  -webkit-text-fill-color:#e3f3eb!important;
+  font-size:.82rem!important;
+  font-weight:700!important;
+  line-height:1.35!important;
+  text-shadow:0 2px 9px rgba(0,0,0,.72)!important;
+}
+
+@media(max-width:620px){
+  body.fil-page-players .navbar .nav-logo{
+    width:58px!important;
+    height:46px!important;
+  }
+  body.fil-page-players .fil-page-brand{
+    max-width:100%!important;
+    min-height:42px!important;
+    padding:0 14px!important;
+  }
+  body.fil-page-players .fil-page-brand span{
+    font-size:.7rem!important;
+    white-space:normal!important;
+  }
+  body.fil-page-players .fil-player-spotlight-copy{
+    margin:14px!important;
+    padding:22px!important;
+  }
+  body.fil-page-players .fil-player-spotlight-copy h2{
+    font-size:clamp(2rem,11vw,3.25rem)!important;
+  }
+  body.fil-page-players .fil-roster-card-copy{
+    left:14px!important;
+    right:14px!important;
+    bottom:14px!important;
+  }
+}

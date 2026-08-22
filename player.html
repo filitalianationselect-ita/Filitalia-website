@@ -6,110 +6,35 @@
 <meta name="description" content="Profilo giocatore FIL-ITALIA Nation Select.">
 <meta property="og:image" content="images/logo.png">
 <meta property="og:title" content="FIL-ITALIA Player">
-<meta property="og:description" content="Profilo giocatore FIL-ITALIA Nation Select.">
+<meta property="og:description" content="Profilo ufficiale giocatore FIL-ITALIA Nation Select.">
 <title>FIL-ITALIA Player</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
+<link rel="stylesheet" href="site-final-pass-v1.css?v=4">
+<link rel="stylesheet" href="player-profile-final-v1.css?v=1">
 <link rel="icon" type="image/png" href="images/logo.png">
-<link rel="apple-touch-icon" href="images/logo.png">
 </head>
-<body>
+<body class="fil-public-body fil-player-profile-page">
 <div class="background-logo"></div>
 <nav class="navbar">
-  <a href="index.html" class="logo-area">
-    <img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo">
-    <div class="logo-text">FIL-ITALIA</div>
-  </a>
-  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
-  <div class="nav-links" id="navLinks">
-    <a href="index.html" data-key="navHome">Home</a>
-    <a href="players.html" data-key="navPlayers">Players</a>
-    <a href="gallery.html" data-key="navGallery">Gallery</a>
-    <a href="staff.html" data-key="navStaff">Staff</a>
-    <a href="news.html" data-key="navNews">News</a>
-    <a href="events.html" data-key="navEvents">Events</a>
-    <a href="account.html" data-filitalia-account-link="true">Account</a>
-    <a href="camp-register.html" data-key="navCamp">Camp</a>
-    <a href="index.html#contact" data-key="navContact">Contact</a>
-  </div>
-  <div class="language-switch">
-    <button onclick="setLanguage('it')">IT</button>
-    <button onclick="setLanguage('en')">EN</button>
-    <button onclick="setLanguage('ph')">PH</button>
-  </div>
+<a href="index.html" class="logo-area"><img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA"><div class="logo-text">FIL-ITALIA</div></a>
+<button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Apri menu">☰</button>
+<div class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="index.html#about">Chi siamo</a><a href="players.html" aria-current="page">Players</a><a href="gallery.html">Media</a><a href="staff.html">Staff</a><a href="news.html">News</a><a href="events.html">Events</a><a href="camp-register.html">Camp</a><a href="contact.html">Contact</a></div>
+<div class="language-switch"><button onclick="setLanguage('it')">IT</button><button onclick="setLanguage('en')">EN</button><button onclick="setLanguage('ph')">PH</button></div>
 </nav>
-
-<section class="event-detail-page players-page">
-  <div class="players-button-row"><a href="players.html" class="players-list-link" data-i18n="backPlayers">← Torna ai Giocatori</a></div>
-  <div id="playerDetailContainer"></div>
-</section>
-
-<footer>
-<img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
-<p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
-<div class="footer-links"><a href="privacy.html">Privacy Policy</a></div>
-</footer>
+<main class="player-profile-page"><a class="player-profile-back" href="players.html">← TORNA AI GIOCATORI</a><div id="playerProfileContainer"><div class="player-profile-empty"><h1>Caricamento profilo…</h1></div></div></main>
+<footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
 <script src="players-data.js?v=800"></script>
-<script src="script.js?v=801"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=20260822-2"></script>
+<script src="public-content-bridge-v1.js?v=20260822-2"></script>
+<script src="players-supabase.js?v=20260822-2"></script>
+<script src="script.js?v=802"></script>
 <script src="filitalia-i18n.js?v=800"></script>
-<script>
-(function(){
-  function txt(value){
-    const L = (typeof lang === "function" ? lang() : "it");
-    if(value && typeof value === "object") return value[L] || value.it || value.en || value.ph || "";
-    return value == null ? "" : String(value);
-  }
-  function esc(value){
-    return String(value || "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
-  }
-  function slug(value){
-    return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-  }
-  function findPlayer(id){
-    const list = (typeof playersData !== "undefined" && Array.isArray(playersData)) ? playersData : [];
-    return list.find(p => String(p.id || p.slug || slug(p.name)) === String(id || "")) || list[0];
-  }
-  function render(){
-    const container = document.getElementById("playerDetailContainer");
-    if(!container) return;
-    const params = new URLSearchParams(window.location.search);
-    const player = findPlayer(params.get("id"));
-    if(!player){
-      container.innerHTML = `<div class="event-detail-card"><div class="event-detail-info"><h1>${window.FilitaliaI18n.t("playerNotFound")}</h1></div></div>`;
-      return;
-    }
-    const name = txt(player.name) || "FIL-ITALIA Player";
-    const role = typeof getPlayerRole === "function" ? getPlayerRole(player) : (player.role || player.cardRoleText || "Player");
-    const city = typeof getPlayerCity === "function" ? getPlayerCity(player) : (player.city || "");
-    const image = player.image || player.cardImage || "images/logo.png";
-    document.title = name + " | FIL-ITALIA";
-    container.innerHTML = `
-      <div class="event-detail-card">
-        <div class="event-detail-image-wrap">
-         <img src="${esc(image)}" alt="${esc(name)}" style="object-position:${esc(player.imagePosition || 'center 30% ')};" onerror="this.onerror=null;this.src='images/logo.png';">
-        </div>
-        <div class="event-detail-info">
-          <span class="event-detail-badge">${window.FilitaliaI18n.t("playerProfileBadge")}</span>
-          <h1>${esc(name)}</h1>
-          <p class="event-detail-description">${esc(role)}</p>
-          <div class="event-detail-fields">
-            <div><strong>${window.FilitaliaI18n.t("category")}</strong><span>${esc(player.category || player.year || "")}</span></div>
-            <div><strong>${window.FilitaliaI18n.t("height")}</strong><span>${esc(player.height || "")}</span></div>
-            <div><strong>${window.FilitaliaI18n.t("club")}</strong><span>${esc(player.club || "")}</span></div>
-            <div><strong>${window.FilitaliaI18n.t("city")}</strong><span>${esc(city)}</span></div>
-          </div>
-          <div class="event-detail-actions">
-            ${player.highlights && player.highlights !== "#" ? `<a class="ticket-button event-main-action" href="${esc(player.highlights)}" target="_blank" rel="noopener">Highlights</a>` : ""}
-            <button type="button" class="ticket-button event-main-action event-share-action" onclick="shareFilitalia('player', playersData.find(p => String(p.id || p.slug || '') === '${esc(player.id || player.slug || slug(player.name))}') || ${JSON.stringify(player).replace(/"/g,'&quot;')}, 'player.html?id=${encodeURIComponent(player.id || player.slug || slug(player.name))}')">${window.FilitaliaI18n.t("share")}</button>
-          </div>
-        </div>
-      </div>`;
-  }
-  document.addEventListener("DOMContentLoaded", render);
-  window.addEventListener("filitalia-language-changed", render);
-})();
-</script>
+<script src="site-final-pass-v1.js?v=4"></script>
+<script src="player-profile-settings-v1.js?v=20260822-2"></script>
+<script src="player-profile-final-v1.js?v=20260822-2"></script>
 </body>
 </html>

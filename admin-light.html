@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Amministrazione | FIL-ITALIA</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=20260822-2"></script>
+  <script src="auth-client.js?v=1002"></script>
+  <script src="registrations-service-v1.js?v=3"></script>
+  <script src="preview-auth-routing-v1.js?v=1"></script>
+  <script src="unified-access-v1.js?v=3"></script>
+</head>
+<body style="font-family:Arial,sans-serif;padding:30px">
+  <div id="adminBootstrapStatus">Verifica accesso amministratore…</div>
+  <script>
+  (async function () {
+    try {
+      const drawerState = new URLSearchParams(window.location.search).get("ntl-drawer-state");
+      if (drawerState !== "hidden") {
+        const cleanAdminUrl = new URL(window.location.href);
+        cleanAdminUrl.searchParams.set("ntl-drawer-state", "hidden");
+        window.location.replace(cleanAdminUrl.href);
+        return;
+      }
+
+      await window.FilitaliaAccess.guardAdmin({
+        next: "admin-light.html?ntl-drawer-state=hidden",
+        allowUnconfiguredPreview: true
+      });
+
+      const base = "admin-light-base-payload.txt?v=1";
+      const wrapper = await fetch(base).then(function (response) {
+        if (!response.ok) throw new Error("ADMIN_BASE_UNAVAILABLE");
+        return response.text();
+      });
+      const match = wrapper.match(/atob\(["']([^"']+)["']\)/);
+      if (!match) throw new Error("payload");
+
+      const bytes = Uint8Array.from(atob(match[1]), function (character) { return character.charCodeAt(0); });
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+      let html = await new Response(stream).text();
+      const scripts = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></scr'+'ipt>' +
+        '<script src="supabase-config.js?v=20260822-2"></scr'+'ipt>' +
+        '<script src="auth-client.js?v=1002"></scr'+'ipt>' +
+        '<script src="registrations-service-v1.js?v=3"></scr'+'ipt>' +
+        '<script>(function(){const fix="filitalia_demo_seed_fix_v2";if(!localStorage.getItem(fix)){localStorage.removeItem("filitalia_admin_light_eventday_v2");localStorage.setItem(fix,"1")}})()</scr'+'ipt>' +
+        '<script src="admin-registrations-v2.js?v=3"></scr'+'ipt>' +
+        '<script src="admin-scroll-stability-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-access-freedom-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-light-data-service.js?v=9"></scr'+'ipt>' +
+        '<script src="admin-google-real-data-v1.js?v=5"></scr'+'ipt>' +
+        '<script src="admin-event-catalog-v3.js?v=7"></scr'+'ipt>' +
+        '<script src="admin-promo-limits-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-event-links-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-email-page-alias-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-light-integration-loader-v2.js?v=7"></scr'+'ipt>' +
+        '<script src="admin-events-v3.js?v=5"></scr'+'ipt>' +
+        '<script src="admin-event-field-settings-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-medical-certificate-visibility-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-event-type-options-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-registration-flex-v3.js?v=3"></scr'+'ipt>' +
+        '<script src="admin-documents-guard.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-documents-service.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-documents-v2.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-registration-sync.js?v=18"></scr'+'ipt>' +
+        '<script src="admin-setup-center-v2.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-readable-ui-v2.js?v=8"></scr'+'ipt>' +
+        '<script src="admin-sponsors-v1.js?v=3"></scr'+'ipt>' +
+        '<script src="admin-live-operations-v1.js?v=4"></scr'+'ipt>' +
+        '<script src="admin-core-service-v1.js?v=5"></scr'+'ipt>' +
+        '<script src="admin-content-actions-unlock-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-operations-suite-v1.js?v=3"></scr'+'ipt>' +
+        '<script src="admin-player-table-mobile-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-staff-edit-mobile-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-alt-staff-editor-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-alt-player-editor-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-content-layout-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-content-layout-mobile-v2.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-event-links-ui-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-communications-v1.js?v=6"></scr'+'ipt>' +
+        '<script src="admin-event-propagation-v1.js?v=4"></scr'+'ipt>' +
+        '<script src="admin-registration-scope-fix-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-event-links-filter-v1.js?v=3"></scr'+'ipt>' +
+        '<script src="admin-event-links-maintenance-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-project-audit-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-site-connection-v1.js?v=4"></scr'+'ipt>' +
+        '<script src="admin-deploy-preview-center-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-exit-actions-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-player-profile-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-mobile-tools-v1.js?v=8"></scr'+'ipt>' +
+        '<script src="admin-mobile-export-fix-v1.js?v=1"></scr'+'ipt>' +
+        '<script src="admin-mobile-modal-polish-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-player-live-v1.js?v=5"></scr'+'ipt>';
+
+      const enhancerDocument = new DOMParser().parseFromString(scripts, "text/html");
+      const enhancerSources = Array.from(enhancerDocument.scripts)
+        .map(function (script) { return script.getAttribute("src"); })
+        .filter(function (source) {
+          return source
+            && !source.includes("@supabase/supabase-js")
+            && !source.includes("supabase-config.js")
+            && !source.includes("auth-client.js")
+            && !source.includes("registrations-service-v1.js");
+        });
+      window.FilitaliaAdminEnhancerSources = enhancerSources.slice();
+
+      const baseUrl = new URL(".", window.location.href).href;
+      if (!/<base[\s>]/i.test(html)) {
+        html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + baseUrl + '">');
+      }
+
+      document.body.style.cssText = "margin:0;padding:0;overflow:hidden;background:#eef4f0";
+      document.body.innerHTML = '<iframe id="adminLightFrame" title="Pannello amministratore FIL-ITALIA" style="display:block;width:100%;height:100vh;border:0"></iframe>';
+      const frame = document.getElementById("adminLightFrame");
+      frame.dataset.enhancerSources = String(enhancerSources.length);
+      frame.dataset.enhancersLoaded = "0";
+      const frameLoaded = new Promise(function (resolve) {
+        frame.addEventListener("load", resolve, { once: true });
+      });
+      frame.srcdoc = html;
+      await frameLoaded;
+
+      frame.contentWindow.supabase = window.supabase;
+      frame.contentWindow.FILITALIA_CONFIG = window.FILITALIA_CONFIG;
+      frame.contentWindow.FilitaliaAuth = window.FilitaliaAuth;
+      frame.contentWindow.FilitaliaRegistrations = window.FilitaliaRegistrations;
+      frame.dataset.authBridge = String(Boolean(window.FilitaliaAuth));
+      frame.dataset.authConfigured = String(Boolean(window.FilitaliaAuth && window.FilitaliaAuth.configured));
+
+      const demoSeedFix = "filitalia_demo_seed_fix_v2";
+      if (!localStorage.getItem(demoSeedFix)) {
+        localStorage.removeItem("filitalia_admin_light_eventday_v2");
+        localStorage.setItem(demoSeedFix, "1");
+      }
+
+      const loadedEnhancers = new Map();
+      const criticalEnhancerNames = [
+        "admin-scroll-stability-v1.js",
+        "admin-access-freedom-v1.js",
+        "admin-light-data-service.js",
+        "admin-event-catalog-v3.js",
+        "admin-event-field-settings-v1.js",
+        "admin-medical-certificate-visibility-v1.js",
+        "admin-event-links-v1.js",
+        "admin-core-service-v1.js",
+        "admin-operations-suite-v1.js",
+        "admin-content-layout-v1.js",
+        "admin-sponsors-v1.js",
+        "admin-events-v3.js",
+        "admin-readable-ui-v2.js",
+        "admin-content-actions-unlock-v1.js",
+        "admin-exit-actions-v1.js"
+      ];
+      const sectionEnhancerNames = {
+        dashboard: [
+          "admin-live-operations-v1.js",
+          "admin-setup-center-v2.js",
+          "admin-project-audit-v1.js",
+          "admin-site-connection-v1.js",
+          "admin-deploy-preview-center-v1.js"
+        ],
+        events: [
+          "admin-promo-limits-v1.js",
+          "admin-event-field-settings-v1.js",
+          "admin-medical-certificate-visibility-v1.js",
+          "admin-event-type-options-v1.js",
+          "admin-registration-flex-v3.js",
+          "admin-event-links-ui-v1.js",
+          "admin-event-propagation-v1.js",
+          "admin-event-links-filter-v1.js",
+          "admin-event-links-maintenance-v1.js"
+        ],
+        registrations: [
+          "admin-event-field-settings-v1.js",
+          "admin-medical-certificate-visibility-v1.js",
+          "admin-registrations-v2.js",
+          "admin-google-real-data-v1.js",
+          "admin-promo-limits-v1.js",
+          "admin-light-integration-loader-v2.js",
+          "admin-registration-flex-v3.js",
+          "admin-documents-guard.js",
+          "admin-documents-service.js",
+          "admin-documents-v2.js",
+          "admin-registration-sync.js",
+          "admin-live-operations-v1.js",
+          "admin-registration-scope-fix-v1.js"
+        ],
+        payments: [
+          "admin-light-integration-loader-v2.js",
+          "admin-registration-flex-v3.js",
+          "admin-live-operations-v1.js"
+        ],
+        players: [
+          "admin-player-table-mobile-v1.js",
+          "admin-alt-player-editor-v1.js",
+          "admin-player-profile-v1.js",
+          "admin-player-live-v1.js"
+        ],
+        staff: [
+          "admin-staff-edit-mobile-v1.js",
+          "admin-alt-staff-editor-v1.js"
+        ],
+        emails: [
+          "admin-email-page-alias-v1.js",
+          "admin-communications-v1.js"
+        ],
+        news: [
+          "admin-event-links-ui-v1.js",
+          "admin-event-propagation-v1.js",
+          "admin-event-links-filter-v1.js"
+        ],
+        media: [
+          "admin-content-layout-mobile-v2.js",
+          "admin-event-links-ui-v1.js",
+          "admin-event-propagation-v1.js",
+          "admin-event-links-filter-v1.js"
+        ],
+        users: ["admin-setup-center-v2.js"],
+        settings: [
+          "admin-setup-center-v2.js",
+          "admin-project-audit-v1.js",
+          "admin-site-connection-v1.js",
+          "admin-deploy-preview-center-v1.js"
+        ]
+      };
+      const mobileEnhancerNames = [
+        "admin-mobile-tools-v1.js",
+        "admin-mobile-export-fix-v1.js",
+        "admin-mobile-modal-polish-v1.js",
+        "admin-content-layout-mobile-v2.js"
+      ];
+
+      function sourceByName(name) {
+        return enhancerSources.find(function (source) {
+          return source.split("?")[0].endsWith(name);
+        });
+      }
+
+      function loadEnhancer(source) {
+        if (!source) return Promise.resolve(false);
+        if (loadedEnhancers.has(source)) return loadedEnhancers.get(source);
+        const pending = new Promise(function (resolve) {
+          const script = frame.contentDocument.createElement("script");
+          script.src = new URL(source, baseUrl).href;
+          script.async = false;
+          let settled = false;
+          const finish = function (loaded) {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timeout);
+            if (loaded) frame.dataset.enhancersLoaded = String(Number(frame.dataset.enhancersLoaded || "0") + 1);
+            resolve(loaded);
+          };
+          const timeout = window.setTimeout(function () {
+            console.warn("Modulo amministrativo lento, caricamento saltato:", source);
+            script.remove();
+            finish(false);
+          }, 8000);
+          script.onload = function () { finish(true); };
+          script.onerror = function () {
+            console.warn("Modulo amministrativo secondario non disponibile:", source);
+            finish(false);
+          };
+          frame.contentDocument.body.appendChild(script);
+        });
+        loadedEnhancers.set(source, pending);
+        return pending;
+      }
+
+      async function loadEnhancerNames(names) {
+        for (const name of names) {
+          await loadEnhancer(sourceByName(name));
+          await new Promise(function (resolve) { window.setTimeout(resolve, 0); });
+        }
+      }
+
+      async function loadCriticalEnhancers() {
+        frame.dataset.bootstrapPhase = "critical";
+        await loadEnhancerNames(criticalEnhancerNames);
+        frame.dataset.bootstrapPhase = "interactive";
+      }
+
+      async function loadSectionEnhancers(pageId) {
+        const names = sectionEnhancerNames[pageId] || [];
+        if (!names.length) return;
+        frame.dataset.sectionLoading = pageId;
+        await loadEnhancerNames(names);
+        if (frame.dataset.sectionLoading === pageId) frame.dataset.sectionLoading = "";
+      }
+
+      await loadCriticalEnhancers();
+      frame.contentDocument.addEventListener("click", function (event) {
+        const button = event.target.closest("button[data-page]");
+        if (button) loadSectionEnhancers(button.dataset.page).catch(console.error);
+      }, true);
+      const activePage = frame.contentDocument.querySelector(".page.active");
+      if (activePage) window.setTimeout(function () {
+        loadSectionEnhancers(activePage.id).catch(console.error);
+      }, 250);
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        window.setTimeout(function () { loadEnhancerNames(mobileEnhancerNames).catch(console.error); }, 500);
+      }
+      frame.contentWindow.FilitaliaAdminLoadSection = loadSectionEnhancers;
+      frame.contentWindow.FilitaliaAdminLoadAll = function () { return loadEnhancerNames(enhancerSources.map(function (source) { return source.split("/").pop().split("?")[0]; })); };
+      frame.dataset.frameAuth = String(Boolean(frame.contentWindow.FilitaliaAuth));
+      frame.dataset.frameAdminData = String(Boolean(frame.contentWindow.FilitaliaAdminData));
+      frame.dataset.frameAdminLight = String(Boolean(frame.contentWindow.FilitaliaAdminLight));
+      try {
+        await frame.contentWindow.FilitaliaAdminData.requireAdmin();
+        frame.dataset.adminAuthorized = "true";
+        const realRegistrations = await frame.contentWindow.FilitaliaRegistrations.listForEvent("");
+        frame.contentWindow.FilitaliaRealRegistrations = realRegistrations;
+        frame.dataset.realRegistrationCount = String(realRegistrations.length);
+        frame.dataset.realRegistrationEvents = realRegistrations
+          .map(function (row) { return String(row.camp_event_id || row.event_city || "senza-evento"); })
+          .join(",");
+
+        const mappedRegistrations = realRegistrations.map(function (row) {
+          const payload = row.original_data && typeof row.original_data === "object" ? row.original_data : {};
+          const birthDate = String(row.birth_date || payload.birth_date || payload["Data Nascita"] || "");
+          return {
+            id: String(row.id),
+            eventId: String(row.camp_event_id || ""),
+            name: String(row.participant_name || "Partecipante senza nome"),
+            email: String(row.participant_email || row.guardian_email || ""),
+            phone: String(row.participant_phone || row.guardian_phone || ""),
+            parent: String(row.guardian_name || payload.parent_name || payload.guardian_name || ""),
+            year: birthDate ? birthDate.slice(0, 4) : String(payload.birth_year || "—"),
+            cat: String(payload.category || payload.Categoria || "—"),
+            shirt: String(row.shirt_size || "—"),
+            payment: String(row.payment_status || "pending"),
+            amount: row.payment_amount == null ? null : Number(row.payment_amount),
+            certificate: false,
+            present: false,
+            notes: String(row.admin_notes || row.notes || ""),
+            status: String(row.registration_status || "received"),
+            payload: payload,
+            createdAt: row.created_at || null,
+            updatedAt: row.updated_at || null
+          };
+        });
+        const originalAdminData = frame.contentWindow.FilitaliaAdminData;
+        frame.contentWindow.FilitaliaAdminData = originalAdminData;
+      } catch (adminError) {
+        frame.dataset.adminAuthorized = "false";
+        frame.dataset.adminError = String(adminError && adminError.message || adminError).slice(0, 120);
+      }
+
+      const realAdminBridge = Object.freeze({
+        getMode: function () { return "real"; },
+        refresh: async function () {
+          if (frame.contentWindow.FilitaliaRegistrationSync) {
+            await frame.contentWindow.FilitaliaRegistrationSync.refresh();
+          }
+        },
+        setEvent: async function (eventId) {
+          const eventSelect = frame.contentDocument.getElementById("lightEventSelect");
+          if (eventSelect) eventSelect.value = eventId;
+          return true;
+        },
+        openEventDay: async function () {
+          const eventDay = frame.contentDocument.getElementById("eventDayLight");
+          if (eventDay) eventDay.classList.add("show");
+        }
+      });
+
+      function enforceRealRegistrations() {
+        if (frame.dataset.adminAuthorized !== "true") return;
+        frame.contentWindow.FilitaliaAdminLight = realAdminBridge;
+        const registrationEvent = frame.contentDocument.getElementById("regEvent");
+        if (registrationEvent
+            && Array.from(registrationEvent.options).some(function (option) { return option.value === "__all__"; })) {
+          registrationEvent.value = "__all__";
+        }
+        const modeText = frame.contentDocument.getElementById("adminDataModeText");
+        const modePill = frame.contentDocument.getElementById("adminDataModePill");
+        const modeButton = frame.contentDocument.getElementById("adminRealLoginBtn");
+        if (modeText) modeText.textContent = "Collegato a Supabase. Le modifiche vengono salvate realmente.";
+        if (modePill) {
+          modePill.classList.add("real");
+          modePill.innerHTML = '<span class="real-mode-dot"></span>DATI REALI';
+        }
+        if (modeButton) {
+          modeButton.textContent = "Dati reali collegati";
+          modeButton.disabled = true;
+        }
+        if (frame.contentWindow.FilitaliaRegistrationSync) {
+          frame.contentWindow.FilitaliaRegistrationSync.refresh();
+        }
+      }
+
+      enforceRealRegistrations();
+      [400, 1800, 4200].forEach(function (delay) {
+        window.setTimeout(enforceRealRegistrations, delay);
+      });
+    } catch (error) {
+      if (["NOT_AUTHENTICATED", "NOT_AUTHORIZED", "SUPABASE_NOT_CONFIGURED"].includes(String(error && error.message))) return;
+      console.error(error);
+      document.body.innerHTML = '<h2>Errore caricamento pannello</h2><p>Aggiorna la pagina con Cmd + Shift + R oppure Ctrl + F5.</p><p><a href="account.html">Torna al tuo account</a></p>';
+    }
+  })();
+  </script>
+</body>
+</html>

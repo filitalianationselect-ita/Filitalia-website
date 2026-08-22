@@ -1,0 +1,286 @@
+/* FIL-ITALIA Camp Registration redesign v2 */
+:root{
+  --camp-green:#0a7b47;
+  --camp-green-dark:#052f20;
+  --camp-green-deep:#031b12;
+  --camp-mint:#eaf6ef;
+  --camp-red:#d83347;
+  --camp-ink:#153528;
+  --camp-muted:#61796e;
+  --camp-line:#d7e6de;
+  --camp-white:#ffffff;
+}
+
+html{scroll-behavior:smooth}
+body.fil-page-camp-register{
+  min-height:100vh;
+  margin:0;
+  color:var(--camp-ink);
+  background:
+    radial-gradient(circle at 8% 12%,rgba(22,190,103,.13),transparent 30%),
+    radial-gradient(circle at 93% 32%,rgba(216,51,71,.09),transparent 25%),
+    linear-gradient(180deg,#eef8f2 0,#f8fbf9 34%,#edf5f1 100%);
+}
+body.fil-page-camp-register .background-logo{display:none!important}
+
+.camp-registration-main{
+  width:min(1240px,calc(100% - 38px));
+  margin:0 auto;
+  padding:42px 0 72px;
+}
+
+.camp-registration-hero{
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);
+  gap:28px;
+  padding:clamp(28px,4vw,54px);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:32px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 88% 15%,rgba(46,225,130,.24),transparent 28%),
+    radial-gradient(circle at 12% 86%,rgba(216,51,71,.18),transparent 27%),
+    linear-gradient(135deg,#03180f,#063d28 58%,#09251a);
+  box-shadow:0 30px 78px rgba(5,47,32,.22);
+}
+.camp-registration-hero::after{
+  content:"CAMP";
+  position:absolute;
+  right:-.04em;
+  bottom:-.25em;
+  color:rgba(255,255,255,.035);
+  font-size:clamp(8rem,21vw,19rem);
+  font-weight:900;
+  letter-spacing:-.1em;
+  pointer-events:none;
+}
+.camp-registration-copy,.camp-registration-summary{position:relative;z-index:2}
+.camp-registration-brand{
+  display:inline-flex;
+  align-items:center;
+  gap:11px;
+  margin-bottom:20px;
+  padding:8px 14px 8px 9px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  background:rgba(255,255,255,.07);
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.09em;
+}
+.camp-registration-brand img{width:46px;height:46px;object-fit:contain;border-radius:11px;background:#fff}
+.camp-registration-copy h1{
+  max-width:760px;
+  margin:0;
+  color:#fff;
+  font-size:clamp(3rem,6.4vw,6.5rem);
+  line-height:.86;
+  letter-spacing:-.075em;
+}
+.camp-registration-copy h1 span{display:block;color:#2ce181}
+.camp-registration-copy>p{
+  max-width:720px;
+  margin:22px 0 0;
+  color:#d5e9df;
+  font-size:clamp(1rem,1.5vw,1.18rem);
+  line-height:1.7;
+  font-weight:600;
+}
+.camp-registration-back{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:23px;
+  padding:12px 16px;
+  border:1px solid rgba(255,255,255,.23);
+  border-radius:13px;
+  color:#fff!important;
+  background:rgba(255,255,255,.07);
+  font-size:.78rem;
+  font-weight:900;
+  text-decoration:none;
+}
+.camp-registration-back:hover{background:rgba(255,255,255,.14)}
+
+.camp-registration-summary{
+  align-self:center;
+  padding:24px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:24px;
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(16px);
+  box-shadow:0 20px 48px rgba(0,0,0,.18);
+}
+.camp-registration-summary small{color:#92dbb5;font-weight:900;letter-spacing:.11em}
+.camp-registration-summary h2{margin:8px 0 17px;color:#fff;font-size:1.55rem;letter-spacing:-.035em}
+.camp-registration-summary ul{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.camp-registration-summary li{display:flex;gap:11px;align-items:flex-start;color:#e4f1eb;font-size:.88rem;line-height:1.5}
+.camp-registration-summary li b{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;border-radius:9px;color:#052f20;background:#2ce181;font-size:.74rem}
+
+.camp-registration-workspace{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 280px;
+  gap:24px;
+  align-items:start;
+  margin-top:24px;
+}
+.camp-form-shell{
+  padding:clamp(20px,3vw,34px);
+  border:1px solid var(--camp-line);
+  border-radius:30px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 24px 64px rgba(18,61,43,.12);
+}
+.camp-form-intro{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:25px;padding-bottom:22px;border-bottom:1px solid #e0ebe5}
+.camp-form-intro small{color:var(--camp-green);font-weight:900;letter-spacing:.12em}
+.camp-form-intro h2{margin:7px 0 0;color:var(--camp-ink);font-size:clamp(1.8rem,3vw,2.8rem);letter-spacing:-.055em}
+.camp-form-intro p{max-width:420px;margin:0;color:var(--camp-muted);font-size:.85rem;line-height:1.55}
+
+body.fil-page-camp-register .site-registration-form{display:grid!important;gap:18px!important;width:100%!important;max-width:none!important;margin:0!important}
+body.fil-page-camp-register .form-section-card{
+  position:relative;
+  margin:0!important;
+  padding:24px!important;
+  border:1px solid #dce9e2!important;
+  border-radius:22px!important;
+  background:#fbfdfc!important;
+  box-shadow:none!important;
+}
+body.fil-page-camp-register .form-section-card::before{
+  content:attr(data-step);
+  position:absolute;
+  top:20px;
+  right:20px;
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  color:#fff;
+  background:linear-gradient(135deg,#0da15c,#087341);
+  font-size:.72rem;
+  font-weight:900;
+}
+body.fil-page-camp-register .form-section-card h2{
+  margin:0 52px 18px 0!important;
+  color:#123c2b!important;
+  font-size:1.25rem!important;
+  letter-spacing:-.025em;
+}
+body.fil-page-camp-register .form-note{margin:-10px 50px 18px 0!important;color:#6d8278!important;font-size:.8rem!important}
+body.fil-page-camp-register .form-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
+body.fil-page-camp-register .form-grid label{display:flex!important;flex-direction:column!important;gap:7px!important;min-width:0;color:#315748!important;font-size:.74rem!important;font-weight:900!important;letter-spacing:.025em}
+body.fil-page-camp-register .form-grid label:first-child:nth-last-child(3){grid-column:1/-1}
+body.fil-page-camp-register .form-grid input,
+body.fil-page-camp-register .form-grid select,
+body.fil-page-camp-register .form-grid textarea{
+  width:100%!important;
+  min-height:52px!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0 15px!important;
+  border:1px solid #cbded4!important;
+  border-radius:13px!important;
+  color:#17382b!important;
+  -webkit-text-fill-color:#17382b!important;
+  background:#fff!important;
+  box-shadow:0 5px 15px rgba(14,69,45,.035)!important;
+  font-family:inherit!important;
+  font-size:16px!important;
+  font-weight:700!important;
+  color-scheme:light!important;
+}
+body.fil-page-camp-register .form-grid input[readonly]{color:#547064!important;-webkit-text-fill-color:#547064!important;background:#eef5f1!important}
+body.fil-page-camp-register .form-grid input:focus,
+body.fil-page-camp-register .form-grid select:focus{border-color:#0a9d58!important;outline:3px solid rgba(10,157,88,.15)!important;outline-offset:1px!important}
+body.fil-page-camp-register input[type=file]{padding:12px!important;height:auto!important;line-height:1.3!important}
+body.fil-page-camp-register #campPhotoField{grid-column:1/-1;padding:15px;border:1px dashed #9fc6b2;border-radius:15px;background:#f0f8f4}
+body.fil-page-camp-register #campPhotoField small{color:#668074;font-size:.72rem;line-height:1.45;font-weight:600}
+body.fil-page-camp-register .camp-player-entry [name="Foto Giocatore"]{grid-column:auto}
+.camp-players-container{display:grid;gap:18px}
+.camp-player-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.camp-player-heading h2{display:flex;align-items:center;gap:9px}
+.camp-player-number{display:inline-grid;place-items:center;width:29px;height:29px;border-radius:999px;color:#fff;background:#0a7b47;font-size:.75rem}
+.camp-remove-player{flex:0 0 auto;margin:0 48px 15px 0;border:1px solid #e7bcc3;border-radius:10px;padding:8px 11px;color:#a8192c;background:#fff5f6;font:800 .72rem inherit;cursor:pointer}
+.camp-multi-actions{padding:20px;border:1px dashed #9fc6b2;border-radius:18px;background:#f0f8f4;text-align:center}
+.camp-add-player{width:100%;min-height:52px;border:1px solid #0a7b47;border-radius:13px;color:#075f38;background:#fff;font:900 .78rem inherit;letter-spacing:.025em;cursor:pointer}
+.camp-add-player:hover{color:#fff;background:#0a7b47}
+.camp-add-player:disabled{opacity:.5;cursor:not-allowed}
+.camp-multi-actions p{margin:10px auto 0;max-width:680px;color:#61796e;font-size:.76rem;line-height:1.5}
+
+body.fil-page-camp-register .check-row{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:12px!important;
+  margin:12px 0!important;
+  padding:14px!important;
+  border:1px solid #dce8e2!important;
+  border-radius:14px!important;
+  color:#355649!important;
+  background:#fff!important;
+  font-size:.82rem!important;
+  line-height:1.5!important;
+  font-weight:700!important;
+}
+body.fil-page-camp-register .check-row input{flex:0 0 20px;width:20px!important;height:20px!important;margin:1px 0 0!important;accent-color:var(--camp-green)}
+body.fil-page-camp-register .submit-registration-button{
+  width:100%!important;
+  min-height:58px!important;
+  margin:18px 0 0!important;
+  border:0!important;
+  border-radius:15px!important;
+  color:#fff!important;
+  background:linear-gradient(90deg,#087743,#12ad62)!important;
+  box-shadow:0 16px 32px rgba(8,119,67,.24)!important;
+  font-family:inherit!important;
+  font-size:.86rem!important;
+  font-weight:900!important;
+  letter-spacing:.045em!important;
+  cursor:pointer!important;
+}
+body.fil-page-camp-register .submit-registration-button:hover{transform:translateY(-2px);filter:brightness(1.04)}
+body.fil-page-camp-register .form-status{margin:12px 0 0!important;text-align:center;font-weight:800}
+body.fil-page-camp-register .form-profile-notice{margin:0 0 18px!important;padding:15px 17px!important;border-radius:14px!important}
+
+.camp-registration-aside{position:sticky;top:112px;display:grid;gap:14px}
+.camp-aside-card{padding:21px;border:1px solid var(--camp-line);border-radius:21px;background:#fff;box-shadow:0 18px 42px rgba(18,61,43,.09)}
+.camp-aside-card.dark{color:#fff;border-color:#0b4932;background:linear-gradient(145deg,#052f20,#0a5438)}
+.camp-aside-card small{color:var(--camp-green);font-size:.65rem;font-weight:900;letter-spacing:.12em}
+.camp-aside-card.dark small{color:#79e4ad}
+.camp-aside-card h3{margin:8px 0 9px;color:inherit;font-size:1.15rem;letter-spacing:-.03em}
+.camp-aside-card p{margin:0;color:#667d72;font-size:.79rem;line-height:1.55}
+.camp-aside-card.dark p{color:#c8dfd3}
+.camp-aside-card a{display:inline-flex;margin-top:14px;color:var(--camp-green);font-size:.75rem;font-weight:900;text-decoration:none}
+.camp-aside-card.dark a{color:#fff}
+
+body.fil-page-camp-register footer{margin:0!important;padding:34px 20px!important;color:#cfe1d8!important;background:#041d14!important}
+body.fil-page-camp-register footer p,body.fil-page-camp-register footer a{color:#cfe1d8!important}
+
+@media(max-width:900px){
+  .camp-registration-main{width:min(calc(100% - 24px),760px);padding-top:22px}
+  .camp-registration-hero{grid-template-columns:1fr;padding:28px;border-radius:25px}
+  .camp-registration-summary{max-width:none}
+  .camp-registration-workspace{grid-template-columns:1fr}
+  .camp-registration-aside{position:static;grid-template-columns:1fr 1fr}
+  .camp-form-intro{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:620px){
+  html,body.fil-page-camp-register{max-width:100%;overflow-x:hidden}
+  .camp-registration-main{width:min(calc(100% - 16px),560px);padding-bottom:44px}
+  .camp-registration-hero{padding:22px 18px;border-radius:20px}
+  .camp-registration-copy,.camp-registration-summary{min-width:0}
+  .camp-registration-brand{max-width:100%;font-size:.58rem;letter-spacing:.06em}.camp-registration-brand img{width:40px;height:40px;flex:0 0 40px}
+  .camp-registration-brand span{min-width:0;overflow-wrap:anywhere}
+  .camp-registration-copy h1{max-width:100%;font-size:clamp(2.2rem,12vw,3.4rem);line-height:.92;overflow-wrap:anywhere}
+  .camp-registration-copy>p{font-size:.92rem;line-height:1.6}
+  .camp-registration-summary h2,.camp-registration-summary li span,.camp-form-intro h2,.camp-form-intro p{overflow-wrap:anywhere}
+  .camp-form-shell{padding:14px;border-radius:22px}
+  body.fil-page-camp-register .form-section-card{padding:19px 15px!important;border-radius:17px!important}
+  body.fil-page-camp-register .form-section-card::before{top:15px;right:14px;width:30px;height:30px}
+  body.fil-page-camp-register .form-grid{grid-template-columns:1fr!important;gap:13px!important}
+  body.fil-page-camp-register .form-grid label:first-child:nth-last-child(3),body.fil-page-camp-register #campPhotoField{grid-column:auto}
+  .camp-player-heading{align-items:flex-start}.camp-remove-player{margin:0 38px 13px 0;padding:7px 9px}
+  .camp-registration-aside{grid-template-columns:1fr}
+}

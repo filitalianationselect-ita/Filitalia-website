@@ -1,0 +1,76 @@
+/* FIL-ITALIA album archive, grouped by month */
+body[data-gallery-category]{
+  min-height:100vh;
+  color:#fff;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(214,35,52,.13),transparent 28%),
+    radial-gradient(circle at 8% 88%,rgba(22,174,96,.14),transparent 32%),
+    linear-gradient(135deg,#010c08 0%,#05261b 58%,#03120d 100%)!important;
+}
+body[data-gallery-category] .background-logo{display:none!important}
+body[data-gallery-category] .players-page{
+  width:min(1380px,calc(100% - 44px))!important;
+  margin:0 auto!important;
+  padding:52px 0 90px!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+body[data-gallery-category] .players-page>h1{
+  margin:0!important;
+  color:#fff!important;
+  font-size:clamp(3.2rem,7vw,7rem)!important;
+  line-height:.88!important;
+  letter-spacing:-.06em!important;
+  text-align:left!important;
+}
+body[data-gallery-category] .players-button-row{justify-content:flex-start!important;margin:22px 0 0!important}
+body[data-gallery-category] .players-list-link{
+  display:inline-flex!important;align-items:center!important;min-height:44px!important;padding:0 17px!important;
+  border:1px solid rgba(255,255,255,.18)!important;border-radius:999px!important;background:rgba(8,134,74,.82)!important;
+  color:#fff!important;font-size:.76rem!important;font-weight:900!important;text-decoration:none!important;
+}
+body[data-gallery-category] .page-subtitle{max-width:720px!important;margin:18px 0 0!important;color:#b9d0c5!important;text-align:left!important;font-weight:600!important;line-height:1.6!important}
+#galleryAlbumsGrid.fil-month-archive{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  gap:48px!important;
+  width:100%!important;
+  margin-top:42px!important;
+  overflow:visible!important;
+}
+.fil-month-group{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;width:100%;min-width:0}
+.fil-month-head{display:flex;align-items:end;justify-content:space-between;gap:18px;padding-bottom:13px;border-bottom:1px solid rgba(255,255,255,.15)}
+.fil-month-head>div{display:flex;align-items:center;gap:15px;min-width:0}
+.fil-month-index{display:grid;place-items:center;width:43px;height:43px;flex:0 0 auto;border-radius:13px;background:#d92f48;color:#fff;font-size:.76rem;font-weight:900}
+.fil-month-head h2{margin:0!important;color:#fff!important;font-size:clamp(1.8rem,3.6vw,3.4rem)!important;line-height:1!important;letter-spacing:-.045em!important;text-align:left!important}
+.fil-month-head span:last-child{color:#7eeeb0;font-size:.73rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
+.fil-month-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(260px,320px))!important;
+  justify-content:start!important;
+  align-items:stretch!important;
+  gap:18px!important;
+  min-width:0;
+}
+.fil-gallery-album-card{position:relative;display:flex;flex-direction:column;width:100%;min-width:0;overflow:hidden;border:1px solid rgba(255,255,255,.13);border-radius:24px;background:linear-gradient(145deg,#083426,#061e17);color:#fff;text-decoration:none;box-shadow:0 24px 60px rgba(0,0,0,.24);transition:transform .18s ease,border-color .18s ease}
+.fil-gallery-album-card:hover,.fil-gallery-album-card:focus-visible{transform:translateY(-4px);border-color:rgba(111,240,169,.48)}
+.fil-gallery-album-media{position:relative;display:block;aspect-ratio:16/11;overflow:hidden;background:#03140e}
+.fil-gallery-album-media img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .35s ease}
+.fil-gallery-album-card:hover img{transform:scale(1.035)}
+.fil-gallery-album-media:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(2,19,13,.68))}
+.fil-gallery-album-date{position:absolute;z-index:2;left:15px;bottom:14px;display:inline-flex;min-height:29px;align-items:center;padding:0 10px;border-radius:999px;background:#d92f48;color:#fff;font-size:.66rem;font-weight:900}
+.fil-gallery-album-copy{display:flex;flex:1;flex-direction:column;align-items:flex-start;padding:20px}
+.fil-gallery-album-copy small{color:#73eeaa;font-size:.67rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.fil-gallery-album-copy h3{margin:9px 0 0;color:#fff;font-size:clamp(1.2rem,1.8vw,1.55rem);line-height:1.08;letter-spacing:-.035em;text-align:left}
+.fil-gallery-album-copy p{margin:10px 0 0;color:#b8cfc4;font-size:.82rem;font-weight:600;line-height:1.45;text-align:left}
+.fil-gallery-album-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;margin-top:auto;padding-top:18px}
+.fil-gallery-album-open{color:#fff;font-size:.73rem;font-weight:900}
+.fil-gallery-album-share{min-height:38px;padding:0 13px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#07864a;color:#fff;font:900 .68rem Montserrat,sans-serif;cursor:pointer}
+.fil-gallery-empty{padding:42px;border:1px solid rgba(255,255,255,.13);border-radius:24px;background:rgba(255,255,255,.045);color:#c3d8ce;text-align:center}
+@media(max-width:1100px){.fil-month-grid{grid-template-columns:repeat(2,minmax(250px,1fr))!important}}
+@media(max-width:640px){
+ body[data-gallery-category] .players-page{width:calc(100% - 24px)!important;padding-top:30px!important}
+ .fil-month-head{align-items:flex-start;flex-direction:column}.fil-month-head span:last-child{padding-left:58px}
+ .fil-month-grid{grid-template-columns:1fr!important}.fil-gallery-album-card{border-radius:20px}
+}

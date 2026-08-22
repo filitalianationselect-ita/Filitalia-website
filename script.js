@@ -5,7 +5,7 @@ window.FILITALIA_FORM_ENDPOINT = GOOGLE_SHEET_WEB_APP_URL;
 
 const translations = {
   it: {
-    navHome:"Home", navPlayers:"Giocatori", navGallery:"Galleria", navStaff:"Staff", navNews:"News", navEvents:"Eventi", navJoin:"Account", navCamp:"Registrazione Camp", navContact:"Contatti",
+    navHome:"Home", navPlayers:"Giocatori", navGallery:"Galleria", navStaff:"Staff", navNews:"News", navEvents:"Eventi", navSponsors:"Sponsor", navJoin:"Account", navCamp:"Registrazione Camp", navContact:"Contatti",
     heroText:"Rappresentiamo la nuova generazione del talento cestistico Fil-Italiano",
     heroButton:"Vedi giocatori",
     aboutTitle:"CHI SIAMO",
@@ -96,7 +96,7 @@ const translations = {
   },
 
   en: {
-    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
+    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navSponsors:"Sponsors", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
     heroText:"Representing the next generation of Fil-Italian basketball talent",
     heroButton:"View Players",
     aboutTitle:"ABOUT US",
@@ -187,7 +187,7 @@ const translations = {
   },
 
   ph: {
-    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
+    navHome:"Home", navPlayers:"Players", navGallery:"Gallery", navStaff:"Staff", navNews:"News", navEvents:"Events", navSponsors:"Sponsors", navJoin:"Account", navCamp:"Camp Registration", navContact:"Contact",
     heroText:"Kinakatawan ang susunod na henerasyon ng Fil-Italian basketball talent",
     heroButton:"Tingnan ang Players",
     aboutTitle:"TUNGKOL SA AMIN",
@@ -266,7 +266,15 @@ const translations = {
     allYears:"Lahat ng years",
     allPositions:"Lahat ng positions",
     noPlayers:"Walang nahanap na player.",
-    viewAlbum:"Tingnan Album →"
+    viewAlbum:"Tingnan ang album →",
+    joinSiteSubtitle:"Kumpletuhin ang form sa website. Ipapadala ang data sa FIL-ITALIA Google Sheet.",
+    campSiteSubtitle:"Mag-register sa FIL-ITALIA camp o event sa website. Ipapadala ang data sa camp database.",
+    generalInfoTitle:"Pangkalahatang impormasyon", roleInfoTitle:"Role at profile", guardianPrivacyTitle:"Privacy at menor de edad", campEventInfoTitle:"Event", athleteInfoTitle:"Impormasyon ng participant",
+    firstNameLabel:"Pangalan", lastNameLabel:"Apelyido", birthDateLabel:"Petsa ng kapanganakan", cityLabel:"Lungsod", emailLabel:"Email", phoneLabel:"Telepono", roleLabel:"Role", selectRoleOption:"Pumili ng role",
+    nationalityLabel:"Nasyonalidad / Pinagmulan", heightLabel:"Taas", positionLabel:"Posisyon sa basketball", clubLabel:"Team / Club", experienceLabel:"Karanasan", highlightsLabel:"Highlights / social link", messageLabel:"Mensahe / Notes",
+    guardianNameLabel:"Pangalan ng magulang/guardian, kung menor de edad", guardianPhoneLabel:"Contact ng magulang/guardian", privacyConsentLabel:"Tinatanggap ko ang pagproseso ng data ayon sa Privacy Policy.", mediaConsentLabel:"Pinapahintulutan ko ang paggamit ng litrato/video para sa opisyal na FIL-ITALIA communications.",
+    submitJoinButton:"IPADALA ANG APPLICATION", submitCampButton:"MAG-REGISTER SA CAMP", eventLabel:"Event / Camp", selectEventOption:"Pumili ng event", campCityLabel:"Lungsod ng event", shirtSizeLabel:"Sukat ng shirt", allergiesLabel:"Allergies / mahalagang medical information",
+    formSending:"Ipinapadala...", formSuccess:"Matagumpay na naipadala ang registration. Salamat!", formConfigError:"Hindi pa configured ang koneksyon sa registration database.", formError:"Hindi naipadala. Subukan ulit o makipag-ugnayan sa FIL-ITALIA."
   }
 };
 
@@ -288,6 +296,12 @@ function safe(value){
     '"':"&quot;"
   }[char]));
 }
+
+/* Sponsor page entry: automatically available in every public navigation. */
+(function ensureSponsorNavigation(){
+  function mount(){document.querySelectorAll('.nav-links').forEach(function(nav){if(nav.querySelector('a[href="sponsors.html"]'))return;const link=document.createElement('a');link.href='sponsors.html';link.dataset.key='navSponsors';link.textContent=(localStorage.getItem('language')==='en'?'Sponsors':localStorage.getItem('language')==='ph'?'Sponsors':'Sponsor');const contact=nav.querySelector('[data-key="navContact"]');contact?nav.insertBefore(link,contact):nav.appendChild(link)})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+})();
 
 function getSavedLanguage(){
   try{
@@ -842,6 +856,55 @@ function getVisibleEvents(){
     .filter(eventItem => getEventTimestamp(eventItem) >= todayTime)
     .slice()
     .sort((a,b) => getEventTimestamp(a) - getEventTimestamp(b));
+}
+
+function buildEventCard(item, index){
+  const defaultLink =
+  `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
+  const link = item.ticket || defaultLink;
+  const eventId = safe(item.id || item.slug || "");
+  const readMore = tr("readMore");
+  return `
+    <div class="event-card" onclick="openEventByIndex(${index})">
+      <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
+      <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
+      <p>${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
+      <p>${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
+      <div class="event-read-more">${safe(readMore)}</div>
+      <div class="event-card-actions">
+        <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
+        <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+      </div>
+    </div>`;
+}
+
+function openEventByIndex(index){
+  const visibleEvents = getVisibleEvents();
+  currentInfoList = visibleEvents.map(data => ({type:"event",data}));
+  currentInfoIndex = index;
+  openInfo(currentInfoList[index]);
+}
+
+function renderEvents(){
+  if(typeof eventsData === "undefined") return;
+  const home = document.getElementById("homeEventsGrid");
+  const all = document.getElementById("allEventsGrid");
+  const visibleEvents = getVisibleEvents();
+
+  if(home){
+    home.innerHTML = visibleEvents
+      .slice(0,3)
+      .map((e,i) => buildEventCard(e, i))
+      .join("");
+  }
+
+  if(all){
+    all.innerHTML = visibleEvents
+      .map((e,i) => buildEventCard(e, i))
+      .join("");
+  }
+
+  translateAutoElements(document);
 }
 
 function buildNewsCard(item, index){
@@ -1410,17 +1473,62 @@ function initDynamicRoleSections(){
   update();
 }
 
-function fileToPayload(file){
+function imageFromFile(file){
   return new Promise((resolve,reject) => {
-    if(!file) return resolve(null);
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+    image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("INVALID_IMAGE")); };
+    image.src = url;
+  });
+}
+
+function canvasToJpeg(canvas,quality){
+  return new Promise((resolve,reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("PHOTO_COMPRESSION_FAILED")),"image/jpeg",quality);
+  });
+}
+
+async function compressRegistrationPhoto(file){
+  if(!file || !/^image\/(jpeg|png|webp)$/i.test(file.type || "")) return file;
+  if(file.size > 20 * 1024 * 1024) throw new Error("PHOTO_TOO_LARGE");
+  const image = await imageFromFile(file);
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const maxSide = 1280;
+  const ratio = Math.min(1,maxSide / Math.max(sourceWidth,sourceHeight));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1,Math.round(sourceWidth * ratio));
+  canvas.height = Math.max(1,Math.round(sourceHeight * ratio));
+  const context = canvas.getContext("2d",{alpha:false});
+  context.fillStyle = "#fff";
+  context.fillRect(0,0,canvas.width,canvas.height);
+  context.drawImage(image,0,0,canvas.width,canvas.height);
+  let quality = .82;
+  let blob = await canvasToJpeg(canvas,quality);
+  while(blob.size > 480 * 1024 && quality > .5){
+    quality -= .07;
+    blob = await canvasToJpeg(canvas,quality);
+  }
+  return new File([blob],String(file.name || "foto").replace(/\.[^.]+$/,"") + ".jpg",{type:"image/jpeg"});
+}
+
+async function fileToPayload(file){
+  if(!file) return null;
+  const originalSize = file.size || 0;
+  const prepared = await compressRegistrationPhoto(file);
+  return new Promise((resolve,reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve({
-      fileName: file.name,
-      mimeType: file.type || "application/octet-stream",
+      fileName: prepared.name,
+      mimeType: prepared.type || "application/octet-stream",
+      size: prepared.size || 0,
+      originalSize: originalSize,
+      compressed: prepared !== file,
       data: String(reader.result).split(",")[1] || ""
     });
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(prepared);
   });
 }
 
@@ -1437,7 +1545,20 @@ function toggleMobileMenu(){
 function closeMobileMenu(){
   document.body.classList.remove("mobile-menu-open");
 }
+function isAccountSurface(){
+  const page=document.body&&document.body.dataset?document.body.dataset.accountPage:"";
+  return page==="login"||page==="account"||page==="reset-password";
+}
+function cleanupAccountBlockingLayers(){
+  if(!isAccountSurface()) return;
+  closeMobileMenu();
+  document.querySelectorAll(".mobile-menu-overlay,.share-sheet-overlay,#accountEmergencyActions,#accountEmergencyActionsStyle").forEach(node=>node.remove());
+}
 function ensureMobileOverlay(){
+  if(isAccountSurface()){
+    document.querySelectorAll(".mobile-menu-overlay").forEach(overlay=>overlay.remove());
+    return;
+  }
   if(document.querySelector(".mobile-menu-overlay")) return;
   const overlay = document.createElement("div");
   overlay.className = "mobile-menu-overlay";
@@ -1445,12 +1566,14 @@ function ensureMobileOverlay(){
   document.body.appendChild(overlay);
 }
 function initMobileMenu(){
+  cleanupAccountBlockingLayers();
   ensureMobileOverlay();
   document.querySelectorAll(".nav-links a").forEach(link => {
     link.addEventListener("click", closeMobileMenu);
   });
 }
 document.addEventListener("DOMContentLoaded", initMobileMenu);
+window.addEventListener("pageshow", cleanupAccountBlockingLayers);
 
 /* ===== EXTRA FORM LABELS ===== */
 Object.assign(translations.it, { sexLabel:"Sesso", guardianDocumentLabel:"Documento Genitore", residenceCityLabel:"Città di Residenza", campDateLabel:"Camp Date" });
@@ -1467,6 +1590,22 @@ function getCampPageLink(item){
   if(!item) return "events.html";
   if(item.page) return item.page;
   return `camp-register.html?event=${encodeURIComponent(item.id || "")}`;
+}
+
+function buildEventCard(item, index){
+  const link = getCampPageLink(item);
+  const readMore = tr("readMore");
+  const eventId = safe(String(item.id || item.slug || index));
+  return `
+    <div class="event-card" onclick="openEventByIndex(${index})">
+      <span>${autoTextHTML(item,"date",localEvent(item,"date"), 0)}</span>
+      <h3>${autoTextHTML(item,"title",localEvent(item,"title"), 48)}</h3>
+      <p>${autoTextHTML(item,"location",localEvent(item,"location"), 42)}</p>
+      <p>${autoTextHTML(item,"excerpt",localEvent(item,"excerpt"), 82)}</p>
+      <div class="event-read-more">${safe(readMore)}</div>
+      <button type="button" class="event-share-button" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getVisibleEvents().find(e => String(e.id || e.slug || '') === '${eventId}') || getVisibleEvents()[${index}]);">Condividi</button>
+      <a class="ticket-button" href="${safe(link)}" onclick="event.stopPropagation();">${safe(tr("registerNow"))}</a>
+    </div>`;
 }
 
 function populateCampEventSelect(){
@@ -1497,7 +1636,6 @@ function extractCityFromEvent(eventItem){
   if(text.includes("firenze") || text.includes("florence")) return "Firenze";
   if(text.includes("venezia") || text.includes("venice")) return "Venezia";
   if(text.includes("bologna")) return "Bologna";
-  if(text.includes("messina")) return "Messina";
   return "";
 }
 
@@ -1722,17 +1860,14 @@ function eventDate(item){ return localEvent(item,"date") || item.date || item.ca
 function eventLocation(item){ return localEvent(item,"location") || item.location || item.campCity || ""; }
 function eventExcerpt(item){ return localEvent(item,"excerpt") || item.excerpt || ""; }
 function eventDescription(item){ return localEvent(item,"description") || item.description || eventExcerpt(item); }
-function eventPageLink(item){
-  if(item && item.page) return item.page;
-  return `event.html?id=${encodeURIComponent((item && (item.id || item.slug)) || "")}`;
-}
+function eventPageLink(item){ return `event.html?id=${encodeURIComponent(item.id || item.slug || "")}`; }
 function eventRegisterLink(item){ return `camp-register.html?event=${encodeURIComponent(item.id || "")}`; }
 function getEventByIdFinal(id){
   if(typeof eventsData === "undefined" || !Array.isArray(eventsData)) return null;
   return eventsData.find(e => String(e.id || e.slug || "") === String(id || "")) || null;
 }
 
-function buildEventCard(item, index){
+buildEventCard = function(item, index){
   const img = safe(eventImage(item));
   const title = eventTitle(item);
   const id = safe(String(item.id || item.slug || index));
@@ -1753,15 +1888,15 @@ function buildEventCard(item, index){
         <button type="button" class="ticket-button event-main-action event-share-action" onclick="event.preventDefault();event.stopPropagation();shareFilitalia('event', getEventByIdFinal('${id}') || getVisibleEvents()[${index}]);">Condividi</button>
       </div>
     </div>`;
-}
+};
 
-function openEventByIndex(index){
+openEventByIndex = function(index){
   const item = getVisibleEvents()[index];
   if(!item) return;
   window.location.href = eventPageLink(item);
-}
+};
 
-function renderEvents(){
+renderEvents = function(){
   const home = document.getElementById("homeEventsGrid");
   const all = document.getElementById("allEventsGrid");
   if(typeof eventsData === "undefined" || !Array.isArray(eventsData)) return;
@@ -1769,7 +1904,7 @@ function renderEvents(){
   if(home){ home.innerHTML = visibleEvents.slice(0,3).map((e,i)=>buildEventCard(e,i)).join(""); }
   if(all){ all.innerHTML = visibleEvents.map((e,i)=>buildEventCard(e,i)).join(""); }
   translateAutoElements(document);
-}
+};
 
 function renderEventDetailPage(){
   const container = document.getElementById("eventDetailContainer");

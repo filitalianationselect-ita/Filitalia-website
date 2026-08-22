@@ -63,4 +63,28 @@
       })
       .join("");
   };
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      if (Array.from(document.scripts).some(function (script) { return script.src && script.src.includes(src.split("?")[0]); })) { resolve(); return; }
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensurePublicContent() {
+    if (window.FilitaliaPublicContentReady) return;
+    try {
+      if (!window.supabase) await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+      if (!window.FILITALIA_CONFIG) await loadScript("supabase-config.js?v=20260822-2");
+      if (!window.FilitaliaPublicContentReady) await loadScript("public-content-bridge-v1.js?v=20260822-2");
+    } catch (error) {
+      console.warn("Dynamic news content unavailable", error);
+    }
+  }
+
+  ensurePublicContent();
 })();

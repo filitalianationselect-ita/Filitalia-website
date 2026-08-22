@@ -1,0 +1,148 @@
+name: Deploy Production Backend
+
+on:
+  push:
+    branches:
+      - agent/admin-panel-demo
+    paths:
+      - .github/production-backend-trigger
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Scrivi DEPLOY PRODUCTION per confermare"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  deploy_production:
+    name: Supabase production guarded
+    if: ${{ github.event_name == 'push' || inputs.confirmation == 'DEPLOY PRODUCTION' }}
+    runs-on: ubuntu-latest
+    environment: filitalia-production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_PRODUCTION_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PRODUCTION_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_REF }}
+      EXPECTED_PROJECT_REF: exwykgaotochaguizxxt
+      SITE_ORIGIN: https://www.filitalianationselect.com
+      GMAIL_CLIENT_ID: ${{ secrets.GMAIL_PRODUCTION_CLIENT_ID }}
+      GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_PRODUCTION_CLIENT_SECRET }}
+      GMAIL_TOKEN_ENCRYPTION_KEY: ${{ secrets.GMAIL_PRODUCTION_TOKEN_ENCRYPTION_KEY }}
+
+    steps:
+      - name: Checkout release branch
+        id: checkout
+        continue-on-error: true
+        uses: actions/checkout@v4
+
+      - name: Validate production-only configuration
+        id: validate
+        if: ${{ steps.checkout.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "SUPABASE_PRODUCTION_ACCESS_TOKEN mancante"; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo "SUPABASE_PRODUCTION_DB_PASSWORD mancante"; exit 1; }
+          test -n "$PROJECT_REF" || { echo "SUPABASE_PRODUCTION_PROJECT_REF mancante"; exit 1; }
+          [[ "$PROJECT_REF" == "$EXPECTED_PROJECT_REF" ]] || { echo "Project ref errato: deploy produzione bloccato"; exit 1; }
+          [[ "$SITE_ORIGIN" == "https://www.filitalianationselect.com" ]] || { echo "Origin produzione non valida"; exit 1; }
+          if [[ -n "$GMAIL_CLIENT_ID" || -n "$GMAIL_CLIENT_SECRET" || -n "$GMAIL_TOKEN_ENCRYPTION_KEY" ]]; then
+            test -n "$GMAIL_CLIENT_ID" || { echo "GMAIL_PRODUCTION_CLIENT_ID mancante"; exit 1; }
+            test -n "$GMAIL_CLIENT_SECRET" || { echo "GMAIL_PRODUCTION_CLIENT_SECRET mancante"; exit 1; }
+            test -n "$GMAIL_TOKEN_ENCRYPTION_KEY" || { echo "GMAIL_PRODUCTION_TOKEN_ENCRYPTION_KEY mancante"; exit 1; }
+            [[ ${#GMAIL_TOKEN_ENCRYPTION_KEY} -ge 40 ]] || { echo "Chiave cifratura Gmail non valida"; exit 1; }
+          fi
+
+      - name: Install Supabase CLI
+        id: cli
+        if: ${{ steps.validate.outcome == 'success' }}
+        continue-on-error: true
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Link production project
+        id: link
+        if: ${{ steps.cli.outcome == 'success' }}
+        continue-on-error: true
+        run: supabase link --project-ref "$PROJECT_REF"
+
+      - name: Dry-run production migrations
+        id: dry_run
+        if: ${{ steps.link.outcome == 'success' }}
+        continue-on-error: true
+        run: supabase db push --dry-run
+
+      - name: Apply production migrations
+        id: db_push
+        if: ${{ steps.dry_run.outcome == 'success' }}
+        continue-on-error: true
+        run: supabase db push
+
+      - name: Configure production core secret
+        id: core_secrets
+        if: ${{ steps.db_push.outcome == 'success' }}
+        continue-on-error: true
+        run: supabase secrets set --project-ref "$PROJECT_REF" ADMIN_SITE_ORIGIN="$SITE_ORIGIN"
+
+      - name: Configure optional Gmail secrets
+        id: gmail_secrets
+        if: ${{ steps.core_secrets.outcome == 'success' && env.GMAIL_CLIENT_ID != '' && env.GMAIL_CLIENT_SECRET != '' && env.GMAIL_TOKEN_ENCRYPTION_KEY != '' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          CALLBACK="https://${PROJECT_REF}.supabase.co/functions/v1/gmail-oauth-callback"
+          supabase secrets set --project-ref "$PROJECT_REF" \
+            GMAIL_CLIENT_ID="$GMAIL_CLIENT_ID" \
+            GMAIL_CLIENT_SECRET="$GMAIL_CLIENT_SECRET" \
+            GMAIL_REDIRECT_URI="$CALLBACK" \
+            GMAIL_TOKEN_ENCRYPTION_KEY="$GMAIL_TOKEN_ENCRYPTION_KEY"
+
+      - name: Deploy production Edge Functions
+        id: functions
+        if: ${{ steps.core_secrets.outcome == 'success' && (steps.gmail_secrets.outcome == 'success' || steps.gmail_secrets.outcome == 'skipped') }}
+        continue-on-error: true
+        run: supabase functions deploy --project-ref "$PROJECT_REF"
+
+      - name: Publish production diagnostic status
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKOUT: ${{ steps.checkout.outcome }}
+          VALIDATE: ${{ steps.validate.outcome }}
+          CLI: ${{ steps.cli.outcome }}
+          LINK: ${{ steps.link.outcome }}
+          DRY_RUN: ${{ steps.dry_run.outcome }}
+          DB_PUSH: ${{ steps.db_push.outcome }}
+          CORE_SECRETS: ${{ steps.core_secrets.outcome }}
+          GMAIL_SECRETS: ${{ steps.gmail_secrets.outcome }}
+          FUNCTIONS: ${{ steps.functions.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          STAGE="success"
+          STATE="success"
+          if [[ "$CHECKOUT" != "success" ]]; then STAGE="checkout"; STATE="failure";
+          elif [[ "$VALIDATE" != "success" ]]; then STAGE="validate"; STATE="failure";
+          elif [[ "$CLI" != "success" ]]; then STAGE="cli"; STATE="failure";
+          elif [[ "$LINK" != "success" ]]; then STAGE="link"; STATE="failure";
+          elif [[ "$DRY_RUN" != "success" ]]; then STAGE="dry-run"; STATE="failure";
+          elif [[ "$DB_PUSH" != "success" ]]; then STAGE="db-push"; STATE="failure";
+          elif [[ "$CORE_SECRETS" != "success" ]]; then STAGE="core-secrets"; STATE="failure";
+          elif [[ "$GMAIL_SECRETS" != "success" && "$GMAIL_SECRETS" != "skipped" ]]; then STAGE="gmail-secrets"; STATE="failure";
+          elif [[ "$FUNCTIONS" != "success" ]]; then STAGE="functions"; STATE="failure";
+          fi
+          CONTEXT="filitalia/production-backend/$STAGE"
+          curl -fsSL -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -d "{\"state\":\"$STATE\",\"context\":\"$CONTEXT\",\"description\":\"Production backend stage: $STAGE\"}"
+          if [[ "$STATE" != "success" ]]; then exit 1; fi

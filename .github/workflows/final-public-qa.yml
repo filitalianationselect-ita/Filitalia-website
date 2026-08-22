@@ -1,0 +1,193 @@
+name: FIL-ITALIA Final Public QA
+
+on:
+  pull_request:
+    paths:
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-fixes-v1.js"
+      - "home-reference-navbar-v1.js"
+      - "public-pages-v1.js"
+      - "gallery-album-guard-v1.js"
+      - "gallery-category-final-v1.js"
+      - "index.html"
+      - "news.html"
+      - "idcamp*.html"
+      - "nation-select-showcase-2026.html"
+      - "nbtc-manila-2026.html"
+      - ".github/workflows/final-public-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "site-final-pass-v1.css"
+      - "site-final-pass-v1.js"
+      - "site-final-fixes-v1.js"
+      - "home-reference-navbar-v1.js"
+      - "public-pages-v1.js"
+      - "gallery-album-guard-v1.js"
+      - "gallery-category-final-v1.js"
+      - "index.html"
+      - "news.html"
+      - "idcamp*.html"
+      - "nation-select-showcase-2026.html"
+      - "nbtc-manila-2026.html"
+      - ".github/workflows/final-public-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Prepare system Chrome
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Verify final public pages
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const fs = require('fs');
+          const root = 'https://deploy-preview-1--filitalia.netlify.app';
+          const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+          (async()=>{
+            const browser = await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page = await browser.newPage({viewport:{width:1280,height:800}});
+
+            let ready = false;
+            for(let attempt=0;attempt<80;attempt++){
+              await page.goto(`${root}/?finalqa=${Date.now()}-${attempt}`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await page.waitForSelector('body.fil-final-site[data-horizontal-ready="true"]',{timeout:2200});
+                const title = await page.locator('.home-hero-title').innerText();
+                if(/TALENTO|TALENT|LUMALAGO/i.test(title)){ready=true;break}
+              }catch(_){ }
+              await sleep(1500);
+            }
+            if(!ready)throw new Error('Final Home did not reach the Deploy Preview');
+            await page.waitForTimeout(1200);
+
+            const home = await page.evaluate(()=>{
+              const box = el => {const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}};
+              const menu=document.querySelector('.mobile-menu-button');
+              const title=document.querySelector('.home-hero-title');
+              const copy=document.querySelector('.home-hero-copy');
+              const nav=document.querySelector('.navbar');
+              return {
+                menuDisplay:getComputedStyle(menu).display,
+                navHeight:box(nav).height,
+                navFont:parseFloat(getComputedStyle(document.querySelector('#navLinks a')).fontSize),
+                navCount:document.querySelectorAll('#navLinks a').length,
+                titleText:title.innerText.trim(),
+                titleOpacity:getComputedStyle(title).opacity,
+                copyBox:box(copy),
+                copyVisibility:getComputedStyle(copy).visibility
+              };
+            });
+            if(home.menuDisplay!=='none')throw new Error(`Desktop hamburger visible: ${home.menuDisplay}`);
+            if(home.navHeight<80)throw new Error(`Navbar too small: ${home.navHeight}px`);
+            if(home.navFont<10)throw new Error(`Navbar text too small: ${home.navFont}px`);
+            if(home.navCount!==9)throw new Error(`Unexpected Home nav count: ${home.navCount}`);
+            if(home.copyBox.width<350||home.copyBox.height<400||home.copyVisibility!=='visible'||home.titleOpacity==='0')throw new Error(`Home copy is blank: ${JSON.stringify(home)}`);
+            await page.screenshot({path:'final-home.jpg',type:'jpeg',quality:76});
+
+            async function checkPublic(path, bodySelector){
+              await page.goto(`${root}/${path}?finalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+              await page.waitForSelector(bodySelector,{timeout:20000});
+              await page.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+              await page.waitForTimeout(1000);
+              const value=await page.evaluate(()=>({
+                hamburger:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+                navCount:document.querySelectorAll('#navLinks a').length,
+                navHeight:document.querySelector('.navbar').getBoundingClientRect().height,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              }));
+              if(value.hamburger!=='none')throw new Error(`${path}: desktop hamburger visible`);
+              if(value.navCount!==9)throw new Error(`${path}: expected 9 nav links, got ${value.navCount}`);
+              if(value.navHeight<80)throw new Error(`${path}: navbar too small`);
+              if(value.overflow>3)throw new Error(`${path}: horizontal overflow ${value.overflow}px`);
+              return value;
+            }
+
+            const archive=await checkPublic('idcamp','body[data-gallery-category="idcamp"]');
+            await page.waitForTimeout(1200);
+            const archiveDates=await page.evaluate(()=>[...document.querySelectorAll('.fil-gallery-album-date')].map(node=>(node.textContent||'').trim()).filter(Boolean));
+            if(!archiveDates.length)throw new Error('ID Camp archive dates are missing');
+            if(archiveDates.some(value=>/\b(July|August|September|October|November|December|January|February|March|April|May|June)\b/i.test(value)))throw new Error(`ID Camp archive dates are not localized: ${JSON.stringify(archiveDates)}`);
+
+            const album=await checkPublic('idcamp-roma-2026','body[data-album-id="idcamp-roma-2026"]');
+            await page.waitForTimeout(1500);
+            const albumState=await page.evaluate(()=>{
+              const images=[...document.querySelectorAll('#albumImagesGrid img')];
+              return {
+                visible:images.filter(img=>!img.hidden&&getComputedStyle(img).display!=='none').length,
+                broken:images.filter(img=>!img.hidden&&img.complete&&img.naturalWidth<1).length,
+                subtitle:(document.getElementById('albumSubtitle')?.textContent||'').trim()
+              };
+            });
+            if(albumState.visible<1||albumState.broken>0)throw new Error(`Album fallback invalid: ${JSON.stringify(albumState)}`);
+            if(!/agosto/i.test(albumState.subtitle))throw new Error(`Roma album date is not localized: ${albumState.subtitle}`);
+            await page.screenshot({path:'final-album.jpg',type:'jpeg',quality:76});
+
+            await page.goto(`${root}/news?finalqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await page.waitForSelector('#allNewsGrid .fpr-news-feature',{timeout:20000});
+            await page.waitForTimeout(1200);
+            const news=await page.evaluate(()=>{
+              const grid=document.getElementById('allNewsGrid');
+              const lead=grid?.querySelector('.fpr-news-feature');
+              const secondary=[...(grid?.querySelectorAll('.fpr-news-card')||[])];
+              const image=lead?.querySelector('img');
+              return {
+                count:(lead?1:0)+secondary.length,
+                leadTitle:(lead?.querySelector('h2')?.textContent||'').trim(),
+                leadHref:lead?.getAttribute('href')||'',
+                imageWidth:image?.naturalWidth||0,
+                layoutWidth:grid?.getBoundingClientRect().width||0,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
+            });
+            if(news.count<3)throw new Error(`News cards missing: ${JSON.stringify(news)}`);
+            if(!news.leadTitle||!news.leadHref.includes('news-item.html?id='))throw new Error(`Lead News invalid: ${JSON.stringify(news)}`);
+            if(news.imageWidth<1||news.layoutWidth<300||news.overflow>3)throw new Error(`News layout/media invalid: ${JSON.stringify(news)}`);
+            await page.screenshot({path:'final-news.jpg',type:'jpeg',quality:76});
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/?finalqa=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
+            const mobileState=await mobile.evaluate(()=>({
+              menu:getComputedStyle(document.querySelector('.mobile-menu-button')).display,
+              overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+            }));
+            if(mobileState.menu==='none')throw new Error('Mobile hamburger is missing');
+            if(mobileState.overflow>3)throw new Error(`Mobile Home overflow: ${mobileState.overflow}px`);
+            await mobile.screenshot({path:'final-mobile.jpg',type:'jpeg',quality:76});
+
+            fs.writeFileSync('final-public-qa.json',JSON.stringify({home,archive,archiveDates,album,albumState,news,mobileState},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-public-qa
+          path: |
+            final-home.jpg
+            final-album.jpg
+            final-news.jpg
+            final-mobile.jpg
+            final-public-qa.json
+          if-no-files-found: warn
+          retention-days: 7

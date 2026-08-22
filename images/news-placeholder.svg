@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">FIL-ITALIA News</title>
+  <desc id="desc">Copertina temporanea FIL-ITALIA per una news senza fotografia.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#031810"/>
+      <stop offset="0.58" stop-color="#075137"/>
+      <stop offset="1" stop-color="#0a2c20"/>
+    </linearGradient>
+    <linearGradient id="stripe" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#18b765"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d92f45"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="80%" cy="15%" r="55%">
+      <stop offset="0" stop-color="#2ee58b" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#2ee58b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#glow)"/>
+  <circle cx="1030" cy="120" r="210" fill="#d92f45" opacity=".12"/>
+  <circle cx="150" cy="700" r="260" fill="#18b765" opacity=".10"/>
+  <rect x="90" y="92" width="1020" height="8" rx="4" fill="url(#stripe)"/>
+  <g transform="translate(90 220)">
+    <text x="0" y="0" fill="#9bf3c3" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="8">FIL-ITALIA NATION SELECT</text>
+    <text x="0" y="115" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="900" letter-spacing="-4">NEWS</text>
+    <text x="0" y="188" fill="#d9eee3" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="600">Aggiornamenti, persone e percorso FIL-ITALIA</text>
+  </g>
+  <g transform="translate(90 650)">
+    <rect width="420" height="72" rx="36" fill="#ffffff" opacity=".09" stroke="#ffffff" stroke-opacity=".16"/>
+    <circle cx="42" cy="36" r="14" fill="#18b765"/>
+    <circle cx="70" cy="36" r="14" fill="#ffffff"/>
+    <circle cx="98" cy="36" r="14" fill="#d92f45"/>
+    <text x="132" y="47" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="800">FIL-ITALIA</text>
+  </g>
+</svg>

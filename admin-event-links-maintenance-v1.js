@@ -1,0 +1,13 @@
+(function(){
+'use strict';
+const d=document,$=id=>d.getElementById(id),links=window.FilitaliaEventLinks,core=window.FilitaliaCore,catalog=window.FilitaliaEventCatalog;if(!links||!catalog)return;
+let current={type:'',id:''},running=false;
+const clean=v=>String(v==null?'':v).trim();
+async function entityExists(type,id){if(!core||!id)return false;const list=type==='staff'?await core.listStaff():type==='player'?await core.listPlayers():type==='news'?await core.listNews():[];return list.some(x=>String(x.id)===String(id))}
+async function cleanupEntity(snapshot,attempt=0){const overlay=$('opsOverlay');if(overlay?.classList.contains('show')){if(attempt<20)setTimeout(()=>cleanupEntity(snapshot,attempt+1),250);return}try{if(!(await entityExists(snapshot.type,snapshot.id))){await links.removeEntity(snapshot.type,snapshot.id);window.FilitaliaEventPropagation?.refresh?.();window.FilitaliaEventLinksFilter?.refresh?.()}}catch(e){console.warn('Pulizia collegamenti scheda',e)}}
+async function pruneAll(){if(running)return[];running=true;try{const events=catalog.events?.()||[],valid={staff:[],player:[],news:[]};if(core){valid.staff=(await core.listStaff()).map(x=>String(x.id));valid.player=(await core.listPlayers()).map(x=>String(x.id));valid.news=(await core.listNews()).map(x=>String(x.id))}const removed=await links.prune(events.map(e=>String(e.id)),valid);if(removed.length){window.showToast?.(removed.length+' collegamenti obsoleti rimossi.');window.FilitaliaEventPropagation?.refresh?.();window.FilitaliaEventLinksFilter?.refresh?.()}return removed}finally{running=false}}
+d.addEventListener('click',event=>{const target=event.target.closest?.('button,a');if(!target)return;if(target.matches('.staff-edit-ops'))current={type:'staff',id:clean(target.dataset.id)};else if(target.matches('.player-edit-ops'))current={type:'player',id:clean(target.dataset.id)};else if(target.matches('.news-edit-ops'))current={type:'news',id:clean(target.dataset.id)};else if(target.matches('#staffAddOps,#playersAddOps,#newsAddOps'))current={type:'',id:''};else if(target.matches('#staffDeleteOps,#playerDeleteOps,#newsDeleteOps')&&current.type&&current.id){const snapshot=Object.assign({},current);setTimeout(()=>cleanupEntity(snapshot),100)}},true);
+window.addEventListener('filitalia:events-updated',event=>{const detail=event.detail||{};if(detail.action==='delete'&&detail.event?.id)links.removeEvent(detail.event.id).then(()=>pruneAll()).catch(e=>console.warn('Pulizia evento',e));else setTimeout(pruneAll,250)});
+window.addEventListener('filitalia:core-updated',()=>setTimeout(pruneAll,350));setTimeout(pruneAll,1200);setInterval(pruneAll,15000);
+window.FilitaliaEventLinksMaintenance=Object.freeze({prune:pruneAll});
+})();
