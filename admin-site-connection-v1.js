@@ -172,8 +172,9 @@
         return;
       }
 
-      const adminClient = window.FilitaliaAuth?.client || window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey);
-      const anonymousClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey, { auth: { persistSession: false, autoRefreshToken: false } });
+      const adminClient = window.FilitaliaAuth?.client || window.FilitaliaSupabase?.getPublicClient?.();
+      const anonymousClient = window.FilitaliaSupabase?.getAnonymousClient?.();
+      if (!adminClient || !anonymousClient) throw new Error("Client Supabase non disponibile.");
 
       const requiredTables = ["admin_events", "admin_news", "admin_players", "admin_staff", "admin_event_links", "event_admin_operations", "admin_user_permissions"];
       const databaseErrors = [];

@@ -399,13 +399,10 @@
   if (Object.values(localPayload).some((x) => x.length))
     setTimeout(() => apply(localPayload), 0);
   async function remote() {
-    if (!cfg.supabaseUrl || !cfg.supabasePublishableKey || !window.supabase)
+    if (!cfg.supabaseUrl || !cfg.supabasePublishableKey || !window.FilitaliaSupabase)
       return null;
-    const client = window.supabase.createClient(
-      cfg.supabaseUrl,
-      cfg.supabasePublishableKey,
-      { auth: { persistSession: false, autoRefreshToken: false } },
-    );
+    const client = window.FilitaliaSupabase.getPublicClient();
+    if (!client) return null;
     const [news, players, staff, events, sponsors] = await Promise.all([
       client
         .from("admin_news")

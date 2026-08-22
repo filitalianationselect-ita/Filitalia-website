@@ -241,9 +241,9 @@ function renderGallery(force){
 }
 async function remoteMedia(){
   const cfg=window.FILITALIA_CONFIG||{};
-  if(!cfg.supabaseUrl||!cfg.supabasePublishableKey||!window.supabase)return;
+  if(!cfg.supabaseUrl||!cfg.supabasePublishableKey||!window.FilitaliaSupabase)return;
   try{
-    const client=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:false,autoRefreshToken:false}});
+    const client=window.FilitaliaSupabase.getPublicClient();if(!client)return;
     const result=await client.from('admin_media').select('id,title,caption,media_type,media_url,thumbnail_url,category,event_id,status,featured,display_order,published_at').eq('status','published').order('featured',{ascending:false}).order('display_order');
     if(result.error)throw result.error;
     galleryRemote=(result.data||[]).map(normalizeMedia);renderGallery(true);

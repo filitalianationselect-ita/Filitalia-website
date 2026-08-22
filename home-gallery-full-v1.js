@@ -220,8 +220,8 @@ function render(){
 }
 
 async function remote(){
-  if(!cfg.supabaseUrl||!cfg.supabasePublishableKey||!window.supabase)return[];
-  const client=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  if(!cfg.supabaseUrl||!cfg.supabasePublishableKey||!window.FilitaliaSupabase)return[];
+  const client=window.FilitaliaSupabase.getPublicClient();if(!client)return[];
   const result=await client.from('admin_media').select('id,title,caption,media_type,media_url,thumbnail_url,category,event_id,status,featured,display_order,published_at').eq('status','published').order('featured',{ascending:false}).order('display_order');
   if(result.error)throw result.error;
   return(result.data||[]).map(normalize);

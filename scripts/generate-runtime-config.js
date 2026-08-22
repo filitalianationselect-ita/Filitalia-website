@@ -49,6 +49,6 @@ const config = {
   demoMode
 };
 
-const output = `/* Generated at Netlify build time. Publishable browser values only. */\nwindow.FILITALIA_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
+const output = `/* Generated at Netlify build time. Publishable browser values only. */\nwindow.FILITALIA_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n(function installFilitaliaSupabaseClientPool() {\n  \"use strict\";\n  let anonymousClient = null;\n\n  function getAnonymousClient() {\n    if (anonymousClient) return anonymousClient;\n    const cfg = window.FILITALIA_CONFIG || {};\n    if (!window.supabase || !cfg.supabaseUrl || !cfg.supabasePublishableKey) return null;\n    anonymousClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey, {\n      auth: {\n        persistSession: false,\n        autoRefreshToken: false,\n        detectSessionInUrl: false,\n        storageKey: \"filitalia-public-anonymous\"\n      }\n    });\n    return anonymousClient;\n  }\n\n  function getPublicClient() {\n    return window.FilitaliaAuth?.client || getAnonymousClient();\n  }\n\n  window.FilitaliaSupabase = Object.freeze({ getAnonymousClient, getPublicClient });\n})();\n`;
 fs.writeFileSync(path.join(process.cwd(), 'supabase-config.js'), output, 'utf8');
 console.log(`[runtime-config] ${config.environment} · site=${siteUrl} · supabase=${supabaseUrl || 'disabled'} · isolated=${usesPreviewDatabase} · production-preview=${usesProductionDatabaseInPreview} · demo=${config.demoMode}`);

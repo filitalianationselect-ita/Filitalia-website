@@ -73,8 +73,9 @@
     if (remoteCache.has(eventId)) return remoteCache.get(eventId);
     try {
       const cfg = window.FILITALIA_CONFIG || {};
-      if (!cfg.supabaseUrl || !cfg.supabasePublishableKey || !window.supabase) return null;
-      const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey, { auth: { persistSession: false, autoRefreshToken: false } });
+      if (!cfg.supabaseUrl || !cfg.supabasePublishableKey || !window.FilitaliaSupabase) return null;
+      const client = window.FilitaliaSupabase.getPublicClient();
+      if (!client) return null;
       const result = await client.from("admin_events").select("pricing").eq("id", eventId).maybeSingle();
       if (result.error) throw result.error;
       const settings = normalize(result.data?.pricing?.registrationFields || result.data?.pricing?.registration_fields);
