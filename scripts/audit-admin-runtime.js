@@ -98,4 +98,12 @@ requireFragments(sponsors, [
   '🤝 Sponsor'
 ], 'admin sponsor navigation');
 
+requireFragments(read('admin-events-v3.js'), [
+  "d.addEventListener('click'",
+  "event.stopImmediatePropagation()",
+  "window.FilitaliaEventsV3=Object.freeze",
+  "openDetails(button.dataset.id)",
+  "removeEvent(button.dataset.id)"
+], 'admin event action delegation');
+
 console.log(`Admin runtime audit passed: ${criticalNames.length} blocking modules, ${enhancerSources.length - criticalNames.length} lazy modules, News/Media/Eventi/Sponsor controls verified.`);
