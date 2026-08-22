@@ -79,8 +79,8 @@
     if (window.FilitaliaPublicContentReady) return;
     try {
       if (!window.supabase) await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
-      if (!window.FILITALIA_CONFIG) await loadScript("supabase-config.js?v=800");
-      if (!window.FilitaliaPublicContentReady) await loadScript("public-content-bridge-v1.js?v=2");
+      if (!window.FILITALIA_CONFIG) await loadScript("supabase-config.js?v=20260822-2");
+      if (!window.FilitaliaPublicContentReady) await loadScript("public-content-bridge-v1.js?v=20260822-2");
     } catch (error) {
       console.warn("Dynamic news content unavailable", error);
     }

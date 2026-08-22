@@ -23,8 +23,8 @@ const newSection = '<section class="gallery-section home-gallery-full-panel" id=
 
 const oldScript = '<script src="public-media-v1.js?v=1"></script>';
 const newScript = [
-  '<script src="public-media-v1.js?v=5"></script>',
-  '<script src="home-gallery-full-v1.js?v=5" data-home-gallery-full-script></script>'
+  '<script src="public-media-v1.js?v=20260822-2"></script>',
+  '<script src="home-gallery-full-v1.js?v=20260822-2" data-home-gallery-full-script></script>'
 ].join('\n');
 
 html = html.replace(oldCss, newCss);
@@ -34,7 +34,7 @@ html = html.replace(oldScript, newScript);
 if (html.includes('View Gallery →') || html.includes('id="homeMediaGrid"')) {
   throw new Error('The old Home gallery cover is still present after patching.');
 }
-if (!html.includes('home-gallery-full-v1.js?v=5') || !html.includes('home-gallery-full-v1.css?v=5')) {
+if (!html.includes('home-gallery-full-v1.js?v=20260822-2') || !html.includes('home-gallery-full-v1.css?v=5')) {
   throw new Error('The full Home gallery assets were not mounted.');
 }
 

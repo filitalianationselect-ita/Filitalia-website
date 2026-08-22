@@ -5,7 +5,7 @@ const cfg=window.FILITALIA_CONFIG||{};
 let dynamicItems=[];
 let activeFilter='all';
 
-function loadHomeGalleryFull(){if(!document.body||!document.body.hasAttribute('data-home-layout')||document.querySelector('script[data-home-gallery-full]'))return;const script=document.createElement('script');script.src='home-gallery-full-v1.js?v=1';script.defer=true;script.dataset.homeGalleryFull='true';document.body.appendChild(script)}
+function loadHomeGalleryFull(){if(!document.body||!document.body.hasAttribute('data-home-layout')||document.querySelector('script[src*="home-gallery-full-v1.js"]'))return;const script=document.createElement('script');script.src='home-gallery-full-v1.js?v=20260822-2';script.defer=true;script.dataset.homeGalleryFull='true';document.body.appendChild(script)}
 function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
 function lang(){try{return localStorage.getItem('language')||document.documentElement.lang||'it'}catch(_){return'it'}}
 function localized(value){if(value&&typeof value==='object')return value[lang()]||value.it||value.en||value.ph||Object.values(value)[0]||'';return String(value||'')}

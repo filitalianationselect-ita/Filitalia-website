@@ -65,7 +65,7 @@ function loadPublicRedesign(){
     const link=document.createElement('link');link.rel='stylesheet';link.href='fil-public-redesign-v1.css?v=1';link.dataset.filitaliaPublicRedesign='true';document.head.appendChild(link);
   }
   if(!document.querySelector('script[src*="fil-public-redesign-v1.js"]')){
-    const script=document.createElement('script');script.src='fil-public-redesign-v1.js?v=1';script.async=false;script.dataset.filitaliaPublicRedesign='true';script.addEventListener('load',loadReviewFixes,{once:true});script.addEventListener('error',loadReviewFixes,{once:true});document.body.appendChild(script);
+    const script=document.createElement('script');script.src='fil-public-redesign-v1.js?v=20260822-2';script.async=false;script.dataset.filitaliaPublicRedesign='true';script.addEventListener('load',loadReviewFixes,{once:true});script.addEventListener('error',loadReviewFixes,{once:true});document.body.appendChild(script);
   }else loadReviewFixes();
 }
 function loadFinalizer(){

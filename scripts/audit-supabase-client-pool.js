@@ -3,6 +3,7 @@ const path = require('path');
 const vm = require('vm');
 
 const root = process.cwd();
+const assetVersion = '20260822-2';
 const allowed = new Set([
   'auth-client.js',
   'supabase-config.js',
@@ -37,6 +38,40 @@ for (const fragment of [
   'storageKey: "filitalia-public-anonymous"'
 ]) {
   if (!config.includes(fragment)) throw new Error(`Shared Supabase pool is missing: ${fragment}`);
+}
+
+const pooledAssets = [
+  'supabase-config.js',
+  'public-content-bridge-v1.js',
+  'players-supabase.js',
+  'public-media-v1.js',
+  'home-gallery-full-v1.js',
+  'fil-public-redesign-v1.js',
+  'public-content-layout-v1.js',
+  'camp-event-fields-v1.js',
+  'player-profile-final-v1.js',
+  'player-profile-settings-v1.js'
+];
+const staleReferences = walk(root)
+  .filter(file => /\.(?:html|js)$/.test(file))
+  .filter(file => !file.includes(`${path.sep}node_modules${path.sep}`))
+  .filter(file => path.relative(root, file) !== path.join('scripts', 'patch-home-gallery.js'))
+  .flatMap(file => {
+    const source = fs.readFileSync(file, 'utf8');
+    return pooledAssets.flatMap(asset => {
+      const matches = [...source.matchAll(new RegExp(`${asset.replace(/\./g, '\\.')}\\?v=([^\"']+)`, 'g'))];
+      return matches
+        .filter(match => match[1] !== assetVersion)
+        .map(match => `${path.relative(root, file)} -> ${asset}?v=${match[1]}`);
+    });
+  });
+if (staleReferences.length) {
+  throw new Error(`Stale pooled asset references: ${staleReferences.join(', ')}`);
+}
+
+const publicMedia = fs.readFileSync(path.join(root, 'public-media-v1.js'), 'utf8');
+if (!publicMedia.includes('script[src*="home-gallery-full-v1.js"]')) {
+  throw new Error('Home gallery loader can still inject a duplicate runtime');
 }
 
 let createCalls = 0;
