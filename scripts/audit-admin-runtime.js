@@ -150,9 +150,20 @@ requireFragments(read('admin-registration-scope-fix-v1.js'), [
   'lastAllRows = Array.isArray(rows) ? rows : []'
 ], 'all-event registration operations');
 
+requireFragments(read('admin-google-real-data-v1.js'), [
+  '"idcamp-messina-2026"',
+  'Le registrazioni si caricano subito da Supabase',
+  'Google Sheets viene controllato solo su richiesta'
+], 'fast registration source and Messina Google checks');
+
+if (/Object\.assign\(\{\}, base, \{ loadEvent: loadEvent \}\)/.test(read('admin-google-real-data-v1.js'))) {
+  throw new Error('Google Sheets still overrides the fast Supabase registration loader');
+}
+
 requireFragments(admin, [
   'admin-registration-sync.js?v=19',
-  'admin-registration-scope-fix-v1.js?v=2'
+  'admin-registration-scope-fix-v1.js?v=2',
+  'admin-google-real-data-v1.js?v=6'
 ], 'registration cache busting');
 
 requireFragments(read('admin-event-field-settings-v1.js'), [
