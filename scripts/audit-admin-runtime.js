@@ -29,6 +29,8 @@ requireFragments(admin, [
   'loadSectionEnhancers',
   'criticalEnhancerNames',
   'sectionEnhancerNames',
+  'link.rel = "preload"',
+  'link.as = "script"',
   'bootstrapPhase = "interactive"',
   'script.async = false',
   'Modulo amministrativo lento'
@@ -73,11 +75,26 @@ for (const obsolete of ['admin-event-finance-v1.js', 'admin-event-finance-ledger
 
 requireFragments(actions, [
   'removeLegacyEventDuplicates',
+  'TARGET_PAGES.has(button.dataset.page)',
+  'event.stopImmediatePropagation()',
+  'seen.has(label)',
   'FilitaliaContentLayout.openMedia',
   'data-page="events"',
   'data-page="news"',
   'data-page="media"'
 ], 'admin content actions');
+
+requireFragments(admin, [
+  'admin-sponsors-v1.js?v=4',
+  'admin-content-actions-unlock-v1.js?v=3',
+  'admin-mobile-tools-v1.js?v=9'
+], 'admin cache busting');
+
+requireFragments(read('admin-mobile-tools-v1.js'), [
+  'const mountedPages = new Set()',
+  'pageId === "sponsorsAdmin"',
+  'mountedPages.has(pageId)'
+], 'mobile navigation deduplication');
 
 requireFragments(layout, [
   'async function openMedia()',
