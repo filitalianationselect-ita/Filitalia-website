@@ -22,7 +22,17 @@
       #events button,
       #news button,
       #media button {
-        pointer-events: auto;
+        pointer-events: auto !important;
+        touch-action: manipulation;
+      }
+      html, body { max-width: 100%; overflow-x: hidden !important; }
+      .page, .page > *, main, .content, .main-content { min-width: 0 !important; max-width: 100%; box-sizing: border-box; }
+      @media (max-width: 900px) {
+        #events .topbar, #news .topbar, #media .topbar { align-items: stretch; }
+        #events .actions, #news .actions, #media .actions { width: 100%; display: grid; grid-template-columns: 1fr; }
+        #events .actions > *, #news .actions > *, #media .actions > * { width: 100%; box-sizing: border-box; }
+        .event-admin-grid, .news-admin-grid, .sponsor-admin-grid { grid-template-columns: minmax(0, 1fr) !important; }
+        .event-admin-card, .news-admin-card, .sponsor-admin-card { min-width: 0 !important; overflow: hidden; }
       }
       #media .fil-media-entry-card {
         display: grid;
@@ -164,9 +174,14 @@
     nav.dataset.contentActionsBound = "1";
     nav.addEventListener("click", function (event) {
       const button = event.target.closest("button[data-page]");
-      if (!button) return;
+      if (!button || !TARGET_PAGES.has(button.dataset.page)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
       openPage(button.dataset.page);
-    });
+      if (typeof window.FilitaliaAdminLoadSection === "function") {
+        window.FilitaliaAdminLoadSection(button.dataset.page).catch(console.error);
+      }
+    }, true);
   }
 
   function openMediaManager() {
@@ -210,10 +225,19 @@
 
   function removeLegacyEventDuplicates() {
     ["eventRequestNewV1", "eventRequestsV1", "eventFinanceModal", "eventRequestModal", "eventRequestsListModal", "eventFinanceV1Style"].forEach(function (id) {
-      const node = d.getElementById(id);
-      if (node) node.remove();
+      d.querySelectorAll("#" + id).forEach(function (node) { node.remove(); });
     });
     d.querySelectorAll(".event-finance-v1").forEach(function (node) { node.remove(); });
+
+    // A legacy module could mount the same request controls twice. Keep only
+    // the first usable control for each action.
+    const seen = new Set();
+    d.querySelectorAll("#events .topbar .actions button").forEach(function (button) {
+      const label = String(button.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+      if (label !== "+ richiedi evento" && label !== "richiedi evento" && label !== "richieste eventi") return;
+      if (seen.has(label)) button.remove();
+      else seen.add(label);
+    });
   }
 
   function mount() {
