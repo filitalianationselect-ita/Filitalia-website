@@ -27,7 +27,7 @@
   let lastSignature = "";
 
   const style = d.createElement("style");
-  style.textContent = ".reg-sync-actions{display:flex;gap:5px;align-items:center;flex-wrap:nowrap}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-photo{border-color:#9ccbb8!important;background:#eef9f4!important;color:#07583b!important}.reg-sync-photo[disabled]{opacity:.6;cursor:wait}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}.person .avatar{position:relative;overflow:hidden}.person .avatar img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}.person .avatar span{position:relative;z-index:0}#registrations #regTable tbody tr{height:auto!important;min-height:0!important}#registrations #regTable tbody td{height:auto!important;padding:8px 10px!important;line-height:1.25!important}#registrations #regTable .person{gap:8px!important;min-height:0!important}#registrations #regTable .person .avatar{width:34px!important;height:34px!important;min-width:34px!important}#registrations #regTable .person b{font-size:13px!important}#registrations #regTable .person .muted{font-size:11px!important;line-height:1.25!important}#registrations #regTable .pill{padding:4px 7px!important;white-space:nowrap}#registrations #regTable .btn.small{min-height:30px!important;padding:6px 8px!important;font-size:11px!important;white-space:nowrap}";
+  style.textContent = ".reg-sync-actions{display:grid;gap:6px;min-width:190px}.reg-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.reg-detail-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.reg-quick{min-width:0!important;padding:6px 5px!important}.reg-quick.is-on{border-color:#0c6c47!important;background:#e5f5ed!important;color:#07583b!important}.reg-quick.is-off{border-color:#e3c8c0!important;background:#fff6f2!important;color:#8d3b28!important}.reg-quick[disabled],.reg-sync-photo[disabled]{opacity:.6;cursor:wait}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-photo{border-color:#9ccbb8!important;background:#eef9f4!important;color:#07583b!important}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}.person .avatar{position:relative;overflow:hidden}.person .avatar img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}.person .avatar span{position:relative;z-index:0}#registrations #regTable tbody tr{height:auto!important;min-height:0!important}#registrations #regTable tbody td{height:auto!important;padding:8px 10px!important;line-height:1.25!important}#registrations #regTable .person{gap:8px!important;min-height:0!important}#registrations #regTable .person .avatar{width:34px!important;height:34px!important;min-width:34px!important}#registrations #regTable .person b{font-size:13px!important}#registrations #regTable .person .muted{font-size:11px!important;line-height:1.25!important}#registrations #regTable .pill{padding:4px 7px!important;white-space:nowrap}#registrations #regTable .btn.small{min-height:30px!important;padding:6px 8px!important;font-size:11px!important;white-space:nowrap}@media(max-width:760px){#registrations .table-wrap{overflow:visible!important}#registrations #regTable{display:block!important;width:100%!important;min-width:0!important}#registrations #regTable thead{display:none!important}#registrations #regTable tbody{display:grid!important;gap:12px!important;width:100%!important}#registrations #regTable tbody tr{position:relative!important;display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important;padding:12px!important;border:1px solid var(--line)!important;border-radius:16px!important;background:#fff!important;box-shadow:var(--shadow)!important}#registrations #regTable tbody td{display:flex!important;align-items:center!important;gap:8px!important;width:auto!important;min-width:0!important;border:0!important;padding:6px!important}#registrations #regTable tbody td:first-child{position:absolute!important;top:10px!important;right:10px!important;padding:0!important;width:auto!important}#registrations #regTable tbody td:nth-child(2),#registrations #regTable tbody td:nth-child(8){grid-column:1/-1!important}#registrations #regTable tbody td:nth-child(n+3):nth-child(-n+7)::before{display:inline-block;min-width:65px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}#registrations #regTable tbody td:nth-child(3)::before{content:'Evento'}#registrations #regTable tbody td:nth-child(4)::before{content:'Categoria'}#registrations #regTable tbody td:nth-child(5)::before{content:'Pagamento'}#registrations #regTable tbody td:nth-child(6)::before{content:'Certificato'}#registrations #regTable tbody td:nth-child(7)::before{content:'Stato'}#registrations .reg-sync-actions{width:100%;min-width:0}.reg-detail-actions .btn{flex:1 1 auto}}";
   d.head.appendChild(style);
 
   function esc(value) {
@@ -83,6 +83,13 @@
   function state(player) { const certificateOk = !certificateRequired(player) || player.certificate; return complete(player) && certificateOk ? "Confermata" : !complete(player) && !certificateOk ? "Incompleta" : "In attesa"; }
   function initials(name) { return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part[0]; }).join("").toUpperCase(); }
 
+  function quickButtons(player) {
+    const free = player.payment === "not_required" || player.payment === "waived";
+    const paid = complete(player);
+    const needsCertificate = certificateRequired(player);
+    return `<div class="reg-quick-actions" aria-label="Controlli rapidi"><button type="button" class="btn small reg-quick reg-quick-payment ${paid ? "is-on" : "is-off"}" data-player="${esc(player.id)}" ${free ? "disabled" : ""} title="${free ? "Pagamento non richiesto" : "Cambia rapidamente lo stato del pagamento"}">${free ? "€ Gratis" : paid ? "✓ Pagato" : "€ Da pagare"}</button><button type="button" class="btn small reg-quick reg-quick-certificate ${player.certificate || !needsCertificate ? "is-on" : "is-off"}" data-player="${esc(player.id)}" ${needsCertificate ? "" : "disabled"} title="${needsCertificate ? "Cambia rapidamente lo stato del certificato" : "Certificato non richiesto per questo evento"}">${needsCertificate ? player.certificate ? "✓ Cert." : "○ Cert." : "— Cert."}</button><button type="button" class="btn small reg-quick reg-quick-present ${player.present ? "is-on" : "is-off"}" data-player="${esc(player.id)}" title="Cambia rapidamente la presenza">${player.present ? "✓ Presente" : "○ Assente"}</button></div>`;
+  }
+
   function historicPhoto(payload) {
     const source = payload && typeof payload === "object" ? payload : {};
     const raw = source["Foto Giocatore"] || source["Foto giocatore"] || source.player_photo || source.photo || "";
@@ -131,12 +138,12 @@
     const documentStatus = docs(player);
     const registrationState = state(player);
     const search = [player.name, player.year, event.city, player.email, player.parent].join(" ").toLowerCase();
-    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar"><span>${esc(initials(player.name))}</span>${player.photo ? '<img src="' + esc(player.photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy" referrerpolicy="no-referrer">' : ''}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions"><button class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button class="btn small secondary reg-sync-photo" data-player="${esc(player.id)}">Foto</button><button class="btn small reg-sync-player-card" data-player="${esc(player.id)}">Player Card</button><button class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></td></tr>`;
+    return `<tr data-id="${esc(player.id)}" data-search="${esc(search)}" data-event="${esc(event.id)}" data-cat="${esc(player.cat)}" data-pay="${esc(payment)}" data-docs="${esc(documentStatus)}"><td><input type="checkbox" class="reg-check table-select"></td><td><div class="person"><div class="avatar"><span>${esc(initials(player.name))}</span>${player.photo ? '<img src="' + esc(player.photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy" referrerpolicy="no-referrer">' : ''}</div><div><b>${esc(player.name)}</b><div class="muted">${esc(player.year || "—")} · ${esc(player.email || "Nessuna email")}</div></div></div></td><td>${esc(event.city || event.name)}</td><td>${esc(player.cat || "—")}</td><td><span class="pill ${payClass(payment)}">${esc(payment)}${player.amount != null ? " · €" + esc(player.amount) : ""}</span></td><td><span class="pill ${documentStatus === "Completi" || documentStatus === "Non richiesto" ? "green" : "red"}">${esc(documentStatus)}</span></td><td><span class="pill ${registrationState === "Confermata" ? "green" : registrationState === "Incompleta" ? "red" : "orange"}">${esc(registrationState)}</span></td><td><div class="reg-sync-actions">${quickButtons(player)}<div class="reg-detail-actions"><button type="button" class="btn small secondary reg-sync-open" data-player="${esc(player.id)}">Apri</button><button type="button" class="btn small secondary reg-sync-photo" data-player="${esc(player.id)}">Foto</button><button type="button" class="btn small reg-sync-player-card" data-player="${esc(player.id)}">Profilo</button><button type="button" class="btn small secondary danger reg-sync-delete" data-player="${esc(player.id)}">Elimina</button></div></div></td></tr>`;
   }
 
   function signature() {
     return JSON.stringify([eventId(), rows.map(function (player) {
-      return [player.id, player.name, player.year, player.cat, player.email, player.parent, player.payment, player.amount, player.certificate, player.shirt, player.updated_at || player.updatedAt || ""];
+      return [player.id, player.name, player.year, player.cat, player.email, player.parent, player.payment, player.amount, player.certificate, player.present, player.shirt, player.updated_at || player.updatedAt || ""];
     })]);
   }
 
@@ -321,6 +328,78 @@
     }
   }
 
+  function notify(message) {
+    if (window.showToast) window.showToast(message);
+    else alert(message);
+  }
+
+  function storeDemoChange(player, changes) {
+    const targetEvent = player.eventId || eventId();
+    const store = demoStore();
+    const list = Array.isArray(store[targetEvent]) ? store[targetEvent] : (targetEvent === eventId() ? demo() : []);
+    const index = list.findIndex(function (item) { return String(item.id) === String(player.id); });
+    if (index >= 0) list[index] = Object.assign({}, list[index], changes);
+    store[targetEvent] = list;
+    localStorage.setItem(KEY, JSON.stringify(store));
+  }
+
+  async function saveQuick(id, kind, button) {
+    const player = rows.find(function (item) { return String(item.id) === String(id); });
+    if (!player || !button || button.disabled) return;
+    const event = player.eventId || eventId();
+    let databaseChanges = {};
+    let localChanges = {};
+    let action = "operation_updated";
+    let success = "Modifica salvata.";
+
+    if (kind === "payment") {
+      const next = complete(player) ? "pending" : "paid";
+      databaseChanges = { payment_status: next };
+      localChanges = { payment: next };
+      action = "payment_status_updated";
+      success = next === "paid" ? "Pagamento segnato come pagato." : "Pagamento segnato come da pagare.";
+    } else if (kind === "certificate") {
+      if (!certificateRequired(player)) return;
+      const next = !player.certificate;
+      databaseChanges = { certificate_status: next ? "approved" : "missing" };
+      localChanges = { certificate: next, certificateStatus: next ? "approved" : "missing" };
+      action = "certificate_status_updated";
+      success = next ? "Certificato segnato come valido." : "Certificato segnato come mancante.";
+    } else if (kind === "present") {
+      const next = !player.present;
+      databaseChanges = { present: next };
+      localChanges = { present: next };
+      action = "presence_updated";
+      success = next ? "Presenza confermata." : "Presenza rimossa.";
+    } else {
+      return;
+    }
+
+    const previousText = button.textContent;
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    button.textContent = "…";
+    try {
+      const realMode = window.FilitaliaAdminLight && window.FilitaliaAdminLight.getMode() === "real";
+      if (realMode) {
+        if (!window.FilitaliaAdminData || !window.FilitaliaAdminData.saveOperation) throw new Error("SAVE_UNAVAILABLE");
+        await window.FilitaliaAdminData.saveOperation(event, player.id, databaseChanges, action);
+      } else {
+        storeDemoChange(player, localChanges);
+      }
+      Object.assign(player, localChanges, { updatedAt: new Date().toISOString() });
+      lastSignature = "";
+      render();
+      notify(success);
+    } catch (error) {
+      console.error(error);
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      button.textContent = previousText;
+      notify("Non sono riuscito a salvare la modifica. Riprova.");
+    }
+  }
+
   function render() {
     const body = $("regTable") && $("regTable").querySelector("tbody");
     if (!body) return;
@@ -338,6 +417,9 @@
     d.querySelectorAll(".reg-sync-photo").forEach(function (button) { button.onclick = function () { choosePlayerPhoto(button.dataset.player, button); }; });
     d.querySelectorAll(".reg-sync-player-card").forEach(function (button) { button.onclick = function () { openPlayerCard(button.dataset.player); }; });
     d.querySelectorAll(".reg-sync-delete").forEach(function (button) { button.onclick = function () { deletePlayer(button.dataset.player); }; });
+    d.querySelectorAll(".reg-quick-payment").forEach(function (button) { button.onclick = function () { saveQuick(button.dataset.player, "payment", button); }; });
+    d.querySelectorAll(".reg-quick-certificate").forEach(function (button) { button.onclick = function () { saveQuick(button.dataset.player, "certificate", button); }; });
+    d.querySelectorAll(".reg-quick-present").forEach(function (button) { button.onclick = function () { saveQuick(button.dataset.player, "present", button); }; });
     bindChecks();
     if ($("regEmpty")) $("regEmpty").style.display = "none";
     restoreScroll(scroll);
