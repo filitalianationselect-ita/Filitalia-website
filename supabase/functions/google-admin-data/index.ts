@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const EVENT_MAP: Record<string, { tab: string; city: string; label: string; token: string }> = {
   "idcamp-roma-2026": { tab: "ROMA", city: "Roma", label: "Talent ID Camp Roma", token: "roma" },
+  "idcamp-messina-2026": { tab: "Messina", city: "Messina", label: "Talent ID Camp Messina", token: "messina" },
   "idcamp-milano-2026": { tab: "MILANO", city: "Milano", label: "Talent ID Camp Milano", token: "milano" },
   "idcamp-firenze-2026": { tab: "FIRENZE", city: "Firenze", label: "Talent ID Camp Firenze", token: "firenze" },
   "idcamp-venezia-2026": { tab: "Venezia", city: "Venezia", label: "Talent ID Camp Venezia", token: "venezia" },
