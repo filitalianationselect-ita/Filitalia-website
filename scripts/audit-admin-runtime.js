@@ -134,6 +134,27 @@ requireFragments(read('admin-mobile-modal-polish-v1.js'), [
   '.reg-drawer'
 ], 'mobile registration layout');
 
+requireFragments(read('admin-registration-sync.js'), [
+  'reg-quick-payment',
+  'reg-quick-certificate',
+  'reg-quick-present',
+  'saveQuick(button.dataset.player, "payment", button)',
+  'saveQuick(button.dataset.player, "certificate", button)',
+  'saveQuick(button.dataset.player, "present", button)',
+  '@media(max-width:760px)',
+  'grid-template-columns:1fr 1fr!important'
+], 'registration quick controls and mobile cards');
+
+requireFragments(read('admin-registration-scope-fix-v1.js'), [
+  'originalLoadEvent(ALL_EVENTS)',
+  'lastAllRows = Array.isArray(rows) ? rows : []'
+], 'all-event registration operations');
+
+requireFragments(admin, [
+  'admin-registration-sync.js?v=19',
+  'admin-registration-scope-fix-v1.js?v=2'
+], 'registration cache busting');
+
 requireFragments(read('admin-event-field-settings-v1.js'), [
   'medicalCertificate',
   'Certificato medico'
