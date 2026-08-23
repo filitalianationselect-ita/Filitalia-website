@@ -247,7 +247,11 @@
     topNavigation.id = "filMobilePrimaryNav";
     topNavigation.className = "fil-mobile-primary-nav";
     if (originalNavigation) {
+      const mountedPages = new Set();
       originalNavigation.querySelectorAll("button[data-page]").forEach(function (originalButton) {
+        const pageId = String(originalButton.dataset.page || "");
+        if (!pageId || pageId === "sponsorsAdmin" || originalButton.matches("[data-sponsor-nav]") || mountedPages.has(pageId)) return;
+        mountedPages.add(pageId);
         const topButton = originalButton.cloneNode(true);
         topButton.removeAttribute("id");
         topButton.addEventListener("click", function () {
