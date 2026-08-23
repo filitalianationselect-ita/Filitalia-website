@@ -58,6 +58,7 @@
   function eventInfo(eventId) {
     const fallback = {
       "idcamp-roma-2026": { city: "Roma", label: "Talent ID Camp Roma" },
+      "idcamp-messina-2026": { city: "Messina", label: "Talent ID Camp Messina" },
       "idcamp-milano-2026": { city: "Milano", label: "Talent ID Camp Milano" },
       "idcamp-firenze-2026": { city: "Firenze", label: "Talent ID Camp Firenze" },
       "idcamp-venezia-2026": { city: "Venezia", label: "Talent ID Camp Venezia" },
@@ -170,7 +171,7 @@
   async function importHistoricInBrowser() {
     const auth = window.FilitaliaAuth;
     if (!auth || !auth.client) throw new Error("SUPABASE_NOT_CONFIGURED");
-    const eventIds = ["idcamp-roma-2026", "idcamp-firenze-2026", "idcamp-venezia-2026", "idcamp-milano-2026", "idcamp-bologna-2026"];
+    const eventIds = ["idcamp-roma-2026", "idcamp-messina-2026", "idcamp-firenze-2026", "idcamp-venezia-2026", "idcamp-milano-2026", "idcamp-bologna-2026"];
     const recordsById = new Map();
     const counts = {};
     for (const eventId of eventIds) {
@@ -196,7 +197,7 @@
     state.error = "";
     emitState();
     try {
-      const eventIds = ["idcamp-roma-2026", "idcamp-firenze-2026", "idcamp-venezia-2026", "idcamp-milano-2026", "idcamp-bologna-2026"];
+      const eventIds = ["idcamp-roma-2026", "idcamp-messina-2026", "idcamp-firenze-2026", "idcamp-venezia-2026", "idcamp-milano-2026", "idcamp-bologna-2026"];
       const recordsById = new Map();
       const counts = {};
       for (const eventId of eventIds) {
@@ -257,10 +258,6 @@
     return base.startGmailConnection();
   }
 
-  if (base) {
-    window.FilitaliaAdminData = Object.freeze(Object.assign({}, base, { loadEvent: loadEvent }));
-  }
-
   window.FilitaliaGoogleAdminData = Object.freeze({
     loadEvent: loadEvent,
     loadInbox: loadInbox,
@@ -297,7 +294,7 @@
     const banner = d.createElement("div");
     banner.id = "grdRegistrationBanner";
     banner.className = "grd-banner";
-    banner.innerHTML = '<div><strong><i class="grd-dot"></i><span id="grdRegistrationTitle" style="display:inline">Dati registrazioni</span></strong><span id="grdRegistrationText">In modalità reale vengono letti dal foglio Google protetto.</span></div><div class="grd-actions"><button id="grdRegistrationPreview" class="btn small secondary" type="button">Controlla storico</button><button id="grdRegistrationImport" class="btn small primary" type="button">Importa storico</button><button id="grdRegistrationConnect" class="btn small secondary" type="button">Collega / ricollega Google</button></div>';
+    banner.innerHTML = '<div><strong><i class="grd-dot ok"></i><span id="grdRegistrationTitle" style="display:inline">Archivio Preview attivo</span></strong><span id="grdRegistrationText">Le registrazioni si caricano subito da Supabase. Google Sheets viene controllato solo su richiesta.</span></div><div class="grd-actions"><button id="grdRegistrationPreview" class="btn small secondary" type="button">Controlla storico</button><button id="grdRegistrationImport" class="btn small primary" type="button">Importa storico</button><button id="grdRegistrationConnect" class="btn small secondary" type="button">Collega / ricollega Google</button></div>';
     const anchor = section.querySelector(".topbar") || section.firstChild;
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(banner, anchor.nextSibling);
     else section.prepend(banner);
@@ -363,8 +360,9 @@
       text.textContent = next.error;
       return;
     }
-    title.textContent = "Dati registrazioni";
-    text.textContent = "In modalità reale vengono letti dal foglio Google protetto.";
+    dot.classList.add("ok");
+    title.textContent = "Archivio Preview attivo";
+    text.textContent = "Le registrazioni si caricano subito da Supabase. Google Sheets viene controllato solo su richiesta.";
   }
 
   function lockReadOnlyRows() {
