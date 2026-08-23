@@ -79,7 +79,11 @@
     const originalLoadEvent = original.loadEvent.bind(original);
     window.FilitaliaAdminData = Object.freeze(Object.assign({}, original, {
       loadEvent: function (eventId) {
-        return String(eventId) === ALL_EVENTS ? loadAllRegistrations() : originalLoadEvent(eventId);
+        if (String(eventId) !== ALL_EVENTS) return originalLoadEvent(eventId);
+        return originalLoadEvent(ALL_EVENTS).then(function (rows) {
+          lastAllRows = Array.isArray(rows) ? rows : [];
+          return lastAllRows;
+        });
       }
     }));
     patchedData = true;
