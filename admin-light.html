@@ -67,10 +67,10 @@
         '<script src="admin-registration-sync.js?v=18"></scr'+'ipt>' +
         '<script src="admin-setup-center-v2.js?v=2"></scr'+'ipt>' +
         '<script src="admin-readable-ui-v2.js?v=8"></scr'+'ipt>' +
-        '<script src="admin-sponsors-v1.js?v=3"></scr'+'ipt>' +
+        '<script src="admin-sponsors-v1.js?v=4"></scr'+'ipt>' +
         '<script src="admin-live-operations-v1.js?v=4"></scr'+'ipt>' +
         '<script src="admin-core-service-v1.js?v=5"></scr'+'ipt>' +
-        '<script src="admin-content-actions-unlock-v1.js?v=2"></scr'+'ipt>' +
+        '<script src="admin-content-actions-unlock-v1.js?v=3"></scr'+'ipt>' +
         '<script src="admin-operations-suite-v1.js?v=3"></scr'+'ipt>' +
         '<script src="admin-player-table-mobile-v1.js?v=1"></scr'+'ipt>' +
         '<script src="admin-staff-edit-mobile-v1.js?v=1"></scr'+'ipt>' +
@@ -89,7 +89,7 @@
         '<script src="admin-deploy-preview-center-v1.js?v=2"></scr'+'ipt>' +
         '<script src="admin-exit-actions-v1.js?v=1"></scr'+'ipt>' +
         '<script src="admin-player-profile-v1.js?v=1"></scr'+'ipt>' +
-        '<script src="admin-mobile-tools-v1.js?v=8"></scr'+'ipt>' +
+        '<script src="admin-mobile-tools-v1.js?v=9"></scr'+'ipt>' +
         '<script src="admin-mobile-export-fix-v1.js?v=1"></scr'+'ipt>' +
         '<script src="admin-mobile-modal-polish-v1.js?v=2"></scr'+'ipt>' +
         '<script src="admin-player-live-v1.js?v=5"></scr'+'ipt>';
@@ -105,6 +105,17 @@
             && !source.includes("registrations-service-v1.js");
         });
       window.FilitaliaAdminEnhancerSources = enhancerSources.slice();
+
+      // Start downloading the administrative modules immediately while keeping
+      // their execution ordered below.  This removes the long pause that used
+      // to make the panel look frozen on slower mobile connections.
+      enhancerSources.forEach(function (source) {
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "script";
+        link.href = new URL(source, window.location.href).href;
+        document.head.appendChild(link);
+      });
 
       const baseUrl = new URL(".", window.location.href).href;
       if (!/<base[\s>]/i.test(html)) {
