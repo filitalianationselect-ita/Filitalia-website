@@ -23,7 +23,7 @@
 
 const fs = require("fs");
 
-const CITY_TABS = new Set(["CAMPS", "Venezia", "Bologna", "FIRENZE", "ROMA", "MILANO"]);
+const CITY_TABS = new Set(["CAMPS", "Messina", "Venezia", "Bologna", "FIRENZE", "ROMA", "MILANO"]);
 
 function clean(value, maxLength) {
   return String(value == null ? "" : value)
@@ -76,6 +76,7 @@ function cityFrom(tab, value) {
 function eventId(city) {
   const c = cityFrom("", city);
   if (c === "Roma") return "idcamp-roma-2026";
+  if (c === "Messina") return "idcamp-messina-2026";
   if (c === "Firenze") return "idcamp-firenze-2026";
   if (c === "Venezia") return "idcamp-venezia-2026";
   if (c === "Milano") return "idcamp-milano-2026";
