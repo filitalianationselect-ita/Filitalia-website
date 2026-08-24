@@ -217,10 +217,27 @@
     if (sheet) sheet.classList.remove("show");
   }
 
-  function openTool(selector) {
-    const launcher = d.querySelector(selector);
+  function openTool(selector, pageId) {
     closeSheet();
-    if (launcher) launcher.click();
+    const launch = function () {
+      const launcher = d.querySelector(selector);
+      if (!launcher) return false;
+      launcher.click();
+      return true;
+    };
+    if (launch()) return;
+
+    const pageButton = d.querySelector('#mobileNav [data-page="' + pageId + '"]');
+    if (pageButton) pageButton.click();
+    if (typeof window.FilitaliaAdminLoadSection === "function") {
+      window.FilitaliaAdminLoadSection(pageId);
+    }
+
+    let attempts = 0;
+    const retry = window.setInterval(function () {
+      attempts += 1;
+      if (launch() || attempts >= 20) window.clearInterval(retry);
+    }, 150);
   }
 
   function mount() {
@@ -228,7 +245,8 @@
     if (!window.matchMedia(MOBILE_QUERY).matches) return false;
 
     const launchers = findLaunchers();
-    if (!launchers.players && !launchers.layout) return false;
+    const originalNavigation = d.getElementById("mobileNav");
+    if (!originalNavigation && !launchers.players && !launchers.layout) return false;
     if (d.getElementById("filMobileToolsDock")) return true;
 
     const dock = d.createElement("div");
@@ -242,7 +260,6 @@
     button.setAttribute("aria-label", "Apri strumenti amministratore");
     button.textContent = "☰  STRUMENTI";
 
-    const originalNavigation = d.getElementById("mobileNav");
     const topNavigation = d.createElement("nav");
     topNavigation.id = "filMobilePrimaryNav";
     topNavigation.className = "fil-mobile-primary-nav";
@@ -310,10 +327,10 @@
       if (event.target === sheet) closeSheet();
     });
     sheet.querySelector('[data-mobile-tool="players"]').addEventListener("click", function () {
-      openTool(".fil-player-admin-launcher");
+      openTool(".fil-player-admin-launcher", "players");
     });
     sheet.querySelector('[data-mobile-tool="layout"]').addEventListener("click", function () {
-      openTool(".fil-layout-launcher");
+      openTool(".fil-layout-launcher", "media");
     });
 
     d.body.insertBefore(dock, d.body.firstChild);

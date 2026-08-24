@@ -192,6 +192,65 @@ async function testCertificateControls(browser) {
   });
 }
 
+async function testAccountMobileNavigation(browser) {
+  await withPage(browser, 'Menu Account mobile compatto', async page => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setContent(`<!doctype html><html><head></head><body data-account-page="account" data-profile-role="super_admin">
+      <nav class="navbar">
+        <a class="logo-area" href="#home"><img class="nav-logo" alt="FIL-ITALIA" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="><span class="logo-text">FIL-ITALIA</span></a>
+        <div id="navLinks" class="nav-links">
+          <a href="#home">Home</a><a href="#players">Giocatori</a><a href="#events">Eventi</a>
+          <a href="#camp">Camp</a><a href="#account" aria-current="page">Account</a><a href="#admin">Amministrazione</a>
+        </div>
+        <div class="language-switch">IT</div>
+      </nav>
+      <main style="height:1200px">Contenuto</main>
+    </body></html>`);
+    await page.addStyleTag({ path: path.join(root, 'account-admin-modern-v1.css') });
+    await page.addScriptTag({ path: path.join(root, 'account-page-shell-v1.js') });
+    await page.waitForSelector('#accountMobileMenuButton');
+
+    assert.equal(await page.locator('#navLinks').evaluate(element => getComputedStyle(element).display), 'none');
+    await page.click('#accountMobileMenuButton');
+    assert.equal(await page.locator('#accountMobileMenuButton').getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.locator('#navLinks').evaluate(element => getComputedStyle(element).display), 'grid');
+    assert.equal(await page.locator('#navLinks a').count(), 6);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+
+    await page.click('#accountMobileMenuOverlay');
+    assert.equal(await page.locator('#accountMobileMenuButton').getAttribute('aria-expanded'), 'false');
+    assert.equal(await page.locator('#navLinks').evaluate(element => getComputedStyle(element).display), 'none');
+  });
+}
+
+async function testAdminMobileNavigation(browser) {
+  await withPage(browser, 'Navigazione Super Admin mobile sempre disponibile', async page => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setContent(`<!doctype html><html><head></head><body>
+      <nav id="mobileNav" class="mobile-bar">
+        <button data-page="dashboard" class="active">Dashboard</button>
+        <button data-page="events">Eventi</button>
+        <button data-page="registrations">Iscrizioni</button>
+        <button data-page="players">Player</button>
+        <button data-page="payments">Pagamenti</button>
+      </nav>
+      <main>Dashboard senza launcher caricati</main>
+    </body></html>`);
+    await page.addScriptTag({ path: path.join(root, 'admin-mobile-tools-v1.js') });
+    await page.waitForSelector('#filMobileToolsDock');
+
+    assert.equal(await page.locator('#mobileNav').evaluate(element => getComputedStyle(element).display), 'none');
+    assert.equal(await page.locator('#filMobilePrimaryNav').evaluate(element => getComputedStyle(element).display), 'flex');
+    assert.equal(await page.locator('#filMobilePrimaryNav button[data-page]').count(), 5);
+    assert.equal(await page.locator('#filMobileToolsButton').isVisible(), true);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+
+    await page.click('#filMobileToolsButton');
+    await page.waitForSelector('#filMobileToolsSheet.show');
+    assert.equal(await page.locator('.fil-mobile-tools-option').count(), 2);
+  });
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -199,6 +258,8 @@ async function testCertificateControls(browser) {
     await testCommunications(browser);
     await testRegistrations(browser);
     await testCertificateControls(browser);
+    await testAccountMobileNavigation(browser);
+    await testAdminMobileNavigation(browser);
     console.log('Admin browser regression: tutti i flussi verificati.');
   } finally {
     await browser.close();
