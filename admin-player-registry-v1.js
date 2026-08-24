@@ -130,6 +130,7 @@
     const close = () => { overlay.classList.remove("show"); overlay.setAttribute("aria-hidden", "true"); d.body.style.overflow = ""; };
     d.getElementById("frpClose").onclick = close;
     d.getElementById("frpCancel").onclick = close;
+    d.getElementById("frpSave").onclick = saveDetail;
     overlay.onclick = (event) => { if (event.target === overlay) close(); };
     return overlay;
   }
@@ -197,7 +198,6 @@
       try { await loadPlayers(this.value || null); refreshTable(); }
       catch (error) { tableBox.innerHTML = `<div class="frp-error">${esc(error.message || error)}</div>`; }
     });
-    d.getElementById("frpSave").onclick = saveDetail;
     refreshTable();
   }
 
