@@ -3,19 +3,10 @@
 
   const d = document;
   const $ = (id) => d.getElementById(id);
-  const DEMO_REG_KEY = "filitalia_admin_light_eventday_v2";
-  const DEMO_STAFF_KEY = "filitalia_admin_staff_v1";
-  const HISTORY_KEY = "filitalia_admin_communications_unified_v1";
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const BATCH_SIZE = 100;
-  const FALLBACK_EVENTS = [
-    { id: "idcamp-roma-2026", name: "Camp Roma", city: "Roma", dateLabel: "5 agosto 2026", time: "15:00 - 20:00", venue: "Stella Azzurra Roma" },
-    { id: "idcamp-firenze-2026", name: "Camp Firenze", city: "Firenze" },
-    { id: "idcamp-venezia-2026", name: "Camp Venezia", city: "Venezia" },
-    { id: "idcamp-milano-2026", name: "Camp Milano", city: "Milano" }
-  ];
 
-  let events = FALLBACK_EVENTS.slice();
+  let events = [];
   let staff = [];
   let eventRows = [];
   let busy = false;
@@ -26,19 +17,6 @@
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
   })[char]);
   const notify = (message) => window.showToast ? window.showToast(message) : alert(message);
-
-  function readJson(key, fallback) {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(key) || "null");
-      return parsed == null ? fallback : parsed;
-    } catch (_) {
-      return fallback;
-    }
-  }
-
-  function writeJson(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
 
   function realMode() {
     return Boolean(
@@ -78,24 +56,25 @@
     try {
       const catalog = window.FilitaliaEventCatalog;
       const values = catalog && catalog.events ? catalog.events() : [];
-      if (Array.isArray(values) && values.length) events = values;
+      events = Array.isArray(values) ? values.slice() : [];
     } catch (error) {
       console.warn("Catalogo eventi non disponibile", error);
+      events = [];
     }
     return events;
   }
 
   async function loadRows(eventId) {
     if (!eventId) return [];
-    if (realMode()) {
-      try { return await window.FilitaliaAdminData.loadEvent(eventId); }
-      catch (error) { console.warn("Registrazioni reali non disponibili", error); }
-    }
-    const store = readJson(DEMO_REG_KEY, {});
-    return Array.isArray(store[eventId]) ? store[eventId] : [];
+    if (!realMode()) return [];
+    return window.FilitaliaAdminData.loadEvent(eventId);
   }
 
   async function loadStaff() {
+    if (!realMode()) {
+      staff = [];
+      return staff;
+    }
     if (window.FilitaliaCore && window.FilitaliaCore.listStaff) {
       try {
         staff = await window.FilitaliaCore.listStaff();
@@ -104,7 +83,7 @@
         console.warn("Staff reale non disponibile", error);
       }
     }
-    staff = readJson(DEMO_STAFF_KEY, []);
+    staff = [];
     return staff;
   }
 
@@ -190,7 +169,7 @@
           <article class="card stat"><span>INVII REGISTRATI</span><strong id="ucStatHistory">0</strong><small>registrati dal sistema</small></article>
         </div>
         <section class="uc-card section-gap"><div class="topbar"><div><h2>Registro BLSD staff</h2><div class="muted">Modifica lo stato e usalo subito come filtro destinatari.</div></div></div><div id="ucBlsdList"></div></section>
-        <section class="uc-card section-gap"><div class="topbar"><div><h2>Storico comunicazioni</h2><div class="muted">Invii ufficiali e simulazioni della preview.</div></div><button id="ucReloadHistory" class="btn secondary">↻ Aggiorna</button></div><div class="table-wrap"><table><thead><tr><th>DATA</th><th>OGGETTO</th><th>DESTINATARI</th><th>STATO</th></tr></thead><tbody id="ucHistoryBody"></tbody></table></div></section>
+        <section class="uc-card section-gap"><div class="topbar"><div><h2>Storico comunicazioni</h2><div class="muted">Solo invii ufficiali registrati dalla Preview.</div></div><button id="ucReloadHistory" class="btn secondary">↻ Aggiorna</button></div><div class="table-wrap"><table><thead><tr><th>DATA</th><th>OGGETTO</th><th>DESTINATARI</th><th>STATO</th></tr></thead><tbody id="ucHistoryBody"></tbody></table></div></section>
       </div>
     `;
   }
@@ -358,13 +337,7 @@
     const event = currentEvent();
     const batches = chunks(uniqueRecipients(list), BATCH_SIZE);
 
-    if (!realMode()) {
-      const rows = readJson(HISTORY_KEY, []);
-      rows.unshift({ date: new Date().toISOString(), subject, recipients: list.length, sent: 0, failed: 0, batches: batches.length, status: test ? "Prova demo" : "Invio demo", event: eventName(event) });
-      writeJson(HISTORY_KEY, rows.slice(0, 100));
-      await renderHistory();
-      return { sent: 0, failed: 0, simulated: list.length, batches: batches.length };
-    }
+    if (!realMode()) throw new Error("Sessione amministratore non collegata ai dati reali della Preview.");
 
     let sent = 0;
     let failed = 0;
@@ -401,7 +374,7 @@
     button.textContent = "Invio prova…";
     try {
       const result = await sendRecipients([{ email, name: clean($("ucTestName").value) || "Test FIL-ITALIA", registration_id: null }], true);
-      notify(result.simulated ? "Prova grafica simulata nella preview." : `Prova inviata: ${result.sent} riuscita/e, ${result.failed} errori.`);
+      notify(`Prova inviata: ${result.sent} riuscita/e, ${result.failed} errori.`);
     } catch (error) {
       notify("Invio prova non riuscito: " + (error.message || error));
     } finally {
@@ -422,11 +395,8 @@
     button.disabled = true;
     try {
       const result = await sendRecipients(recipients, false);
-      if (result.simulated) notify(`Template grafico pronto per ${result.simulated} destinatari. L’invio reale richiede Supabase preview e Gmail collegato.`);
-      else {
-        notify(`Invio completato: ${result.sent} inviata/e, ${result.failed} errori in ${result.batches} grupp${result.batches === 1 ? "o" : "i"}.`);
-        closeModal();
-      }
+      notify(`Invio completato: ${result.sent} inviata/e, ${result.failed} errori in ${result.batches} grupp${result.batches === 1 ? "o" : "i"}.`);
+      closeModal();
     } catch (error) {
       notify("Invio non riuscito: " + (error.message || error));
     } finally {
@@ -434,10 +404,6 @@
       button.disabled = false;
       button.textContent = old || "Invia email ufficiale";
     }
-  }
-
-  function localHistory() {
-    return readJson(HISTORY_KEY, []);
   }
 
   async function remoteHistory() {
@@ -465,10 +431,10 @@
   async function renderHistory() {
     if (!$("ucHistoryBody")) return;
     const remote = await remoteHistory();
-    const rows = remote.length ? remote : localHistory();
+    const rows = remote;
     $("ucStatHistory").textContent = rows.length;
     $("ucHistoryBody").innerHTML = rows.length ? rows.map((row) => `
-      <tr><td>${esc(new Date(row.date || Date.now()).toLocaleString("it-IT"))}</td><td><b>${esc(row.subject || "—")}</b></td><td>${esc(row.recipients || 0)}</td><td><span class="pill ${String(row.status).includes("fail") ? "red" : String(row.status).includes("partial") ? "orange" : "green"}">${esc(row.status || "Demo")}</span></td></tr>
+      <tr><td>${esc(new Date(row.date || Date.now()).toLocaleString("it-IT"))}</td><td><b>${esc(row.subject || "—")}</b></td><td>${esc(row.recipients || 0)}</td><td><span class="pill ${String(row.status).includes("fail") ? "red" : String(row.status).includes("partial") ? "orange" : "green"}">${esc(row.status || "Non disponibile")}</span></td></tr>
     `).join("") : '<tr><td colspan="4" class="muted" style="padding:24px;text-align:center">Nessun invio registrato.</td></tr>';
   }
 
@@ -488,8 +454,8 @@
       row.querySelector("button").onclick = async () => {
         member.certifications = Object.assign({}, member.certifications || {}, { blsd: select.value });
         try {
-          if (window.FilitaliaCore && window.FilitaliaCore.saveStaff) await window.FilitaliaCore.saveStaff(member);
-          else writeJson(DEMO_STAFF_KEY, staff);
+          if (!window.FilitaliaCore || !window.FilitaliaCore.saveStaff) throw new Error("Salvataggio staff reale non disponibile.");
+          await window.FilitaliaCore.saveStaff(member);
           updateStats();
           notify("Stato BLSD aggiornato.");
         } catch (error) {
@@ -529,7 +495,11 @@
     const overlay = ensureModal();
     await loadEvents();
     await loadStaff();
-    $("ucEvent").innerHTML = events.map((event) => `<option value="${esc(event.id)}">${esc(eventName(event))}</option>`).join("");
+    $("ucEvent").innerHTML = events.length
+      ? events.map((event) => `<option value="${esc(event.id)}">${esc(eventName(event))}</option>`).join("")
+      : '<option value="">Nessun evento disponibile</option>';
+    const selectedEventId = clean(window.FilitaliaAdminLight?.getCurrentEvent?.()?.id || $("lightEventSelect")?.value);
+    if (selectedEventId && events.some((event) => String(event.id) === selectedEventId)) $("ucEvent").value = selectedEventId;
     overlay.classList.add("show");
     await refreshAudience();
     applyTemplate("free");
@@ -598,7 +568,8 @@
     const oldButton = event.target.closest && event.target.closest("button,a");
     if (!oldButton || $("ucOverlay")?.contains(oldButton)) return;
     const text = clean(oldButton.textContent).toLowerCase();
-    if (oldButton.id === "commsNew" || text === "nuova comunicazione" || text === "+ nuova comunicazione" || text.includes("avvia comunicazione via mail")) {
+    const workspaceCommunication = oldButton.closest("#event-workspace") && text === "invia comunicazione";
+    if (workspaceCommunication || oldButton.id === "commsNew" || text === "nuova comunicazione" || text === "+ nuova comunicazione" || text.includes("avvia comunicazione via mail")) {
       event.preventDefault();
       event.stopImmediatePropagation();
       openModal();
@@ -606,7 +577,12 @@
   }, true);
 
   d.addEventListener("keydown", (event) => { if (event.key === "Escape") closeModal(); });
-  new MutationObserver(ensureMounted).observe(d.documentElement, { childList: true, subtree: true });
+  const communicationsSection = $("communications");
+  if (communicationsSection) {
+    new MutationObserver(function () {
+      if (!communicationsSection.querySelector('[data-unified-communications="1"]')) ensureMounted();
+    }).observe(communicationsSection, { childList: true });
+  }
 
   let attempts = 0;
   const start = setInterval(async () => {

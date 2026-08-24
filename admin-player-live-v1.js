@@ -24,14 +24,9 @@
   }
 
   function hideLegacyDemoBanner() {
-    d.querySelectorAll("body *").forEach((node) => {
-      if (!(node instanceof HTMLElement)) return;
-      const text = String(node.textContent || "").trim();
-      if (text.length > 260) return;
-      if (text.includes("Demo: funzione visiva pronta") || text.includes("collegamento reale ancora da")) {
-        node.style.setProperty("display", "none", "important");
-      }
-    });
+    const section = d.getElementById("players");
+    if (!section) return;
+    section.querySelectorAll("[data-player-demo],.player-demo-banner").forEach((node) => node.remove());
   }
 
   function normalizeCategory(value) {
@@ -368,6 +363,9 @@
     rendering = true;
     addStyle();
     hideLegacyDemoBanner();
+    if (!section.querySelector("#filPlayerLiveRoot")) {
+      section.innerHTML = `<div id="filPlayerLiveLoading"><div class="fil-player-live-head"><div><span class="eyebrow">DATABASE REALE</span><h1>Player</h1><div class="fil-player-live-sub">Caricamento dei profili reali da Supabase…</div></div></div><div class="fil-player-live-card"><div class="fil-player-live-empty">Attendi un momento.</div></div></div>`;
+    }
     try {
       await loadRows();
       const categories = [...new Set(rows.map((p) => p.category).filter(Boolean))].sort();
@@ -395,8 +393,6 @@
       });
       sectionObserver.observe(section, { childList: true });
     }, 150);
-    const globalObserver = new MutationObserver(hideLegacyDemoBanner);
-    globalObserver.observe(d.body, { childList: true, subtree: true });
   }
 
   window.FilitaliaPlayerLive = Object.freeze({

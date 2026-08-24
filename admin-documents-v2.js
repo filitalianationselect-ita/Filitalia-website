@@ -14,7 +14,7 @@
     .document-card{border:1px solid var(--line);border-radius:14px;padding:12px;background:#f8fbf9;min-width:0}
     .document-card h3{font-size:12px;margin:0 0 4px}.document-file{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:16px}
     .document-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.document-actions .btn{font-size:10px;padding:7px 9px}
-    .document-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.document-meta label{font-size:10px;font-weight:800}.document-meta select,.document-meta input{margin-top:4px;width:100%}
+    .document-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.document-meta-field{display:block;padding:13px;border:1px solid #c4dccf;border-radius:15px;background:linear-gradient(145deg,#fff,#edf7f2);box-shadow:0 7px 18px rgba(8,59,40,.06)}.document-meta-label{display:flex;align-items:center;gap:7px;color:#174d38;font-size:11px;font-weight:900;letter-spacing:.02em}.document-meta-label::before{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#dff2e8;color:#0a6947;font-size:13px}.document-meta-field.status .document-meta-label::before{content:'✓'}.document-meta-field.expiry .document-meta-label::before{content:'▣'}.document-meta select,.document-meta input{box-sizing:border-box;width:100%;min-height:48px;margin-top:9px;padding:11px 13px;border:1px solid #9fc7b4;border-radius:12px;background:#fff;color:#123f2e;font-size:15px;font-weight:800;outline:0;transition:border-color .15s,box-shadow .15s}.document-meta select:focus,.document-meta input:focus{border-color:#087447;box-shadow:0 0 0 4px rgba(8,116,71,.12)}
     .document-status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;background:#fff1d6;color:#8c5b0b}.document-status.ok{background:#dff4e8;color:#166c4b}.document-status.bad{background:#fde5e5;color:#9f3535}
     @media(max-width:820px){.document-manager-grid{grid-template-columns:1fr}.document-meta{grid-template-columns:1fr}}
   `;
@@ -120,10 +120,13 @@
     };
   }
 
-  async function mount() {
+  async function mount(force) {
     if (mounting || !$("edDetail")) return;
     const ctx = context();
     if (!ctx) return;
+    const mountKey = [ctx.eventId, ctx.playerId, ctx.mode].join(":");
+    const existingManager = $("documentManagerV2");
+    if (!force && existingManager && existingManager.dataset.mountKey === mountKey) return;
     mounting = true;
     try {
       addStyle();
@@ -134,7 +137,7 @@
       const baseDocs = d.querySelector("#edDetail .eventday-docs");
       if (baseDocs) baseDocs.style.display = "none";
       const notes = $("edNotes");
-      const html = `<section id="documentManagerV2" class="document-manager" data-player-id="${ctx.playerId}"><div class="document-manager-head"><div><b>Documenti giocatore</b><div class="muted">Foto, certificato medico e ricevuta di pagamento.</div></div><span class="document-status ${statusClass(data.status)}">${statusLabel(data.status)}</span></div><div class="document-manager-grid">${card("photo", "Foto giocatore", data.photo, "docPhotoInput")}${card("certificate", "Certificato medico", data.certificate, "docCertificateInput")}${card("receipt", "Ricevuta pagamento", data.receipt, "docReceiptInput")}</div><div class="document-meta"><label>Stato certificato<select id="docCertificateStatus"><option value="missing">Mancante</option><option value="received">Ricevuto</option><option value="approved">Approvato</option><option value="rejected">Rifiutato</option><option value="expired">Scaduto</option></select></label><label>Scadenza certificato<input id="docCertificateExpiry" type="date"></label></div></section>`;
+      const html = `<section id="documentManagerV2" class="document-manager" data-player-id="${ctx.playerId}" data-mount-key="${mountKey}"><div class="document-manager-head"><div><b>Documenti giocatore</b><div class="muted">Foto, certificato medico e ricevuta di pagamento.</div></div><span class="document-status ${statusClass(data.status)}">${statusLabel(data.status)}</span></div><div class="document-manager-grid">${card("photo", "Foto giocatore", data.photo, "docPhotoInput")}${card("certificate", "Certificato medico", data.certificate, "docCertificateInput")}${card("receipt", "Ricevuta pagamento", data.receipt, "docReceiptInput")}</div><div class="document-meta"><label class="document-meta-field status"><span class="document-meta-label">Stato certificato</span><select id="docCertificateStatus"><option value="missing">Mancante</option><option value="received">Ricevuto</option><option value="approved">Approvato</option><option value="rejected">Rifiutato</option><option value="expired">Scaduto</option></select></label><label class="document-meta-field expiry"><span class="document-meta-label">Scadenza certificato</span><input id="docCertificateExpiry" type="date"></label></div></section>`;
       if (notes) notes.insertAdjacentHTML("beforebegin", html);
       else $("edDetail").insertAdjacentHTML("beforeend", html);
       $("docCertificateStatus").value = data.status || "missing";
@@ -162,7 +165,7 @@
       const input = originalInput(kind);
       if (!input || input.dataset.documentsV2) return;
       input.dataset.documentsV2 = "1";
-      input.addEventListener("change", function () { setTimeout(mount, 500); });
+      input.addEventListener("change", function () { setTimeout(function () { mount(true); }, 500); });
     });
 
     const receiptInput = $("docReceiptInput");
@@ -178,7 +181,7 @@
           writeJson(DEMO_KEY, meta.store);
         }
         notify("Ricevuta registrata.");
-        await mount();
+        await mount(true);
       } catch (error) { notify("Ricevuta non caricata: " + (error.message || error)); }
     };
 
@@ -206,7 +209,7 @@
             await window.FilitaliaAdminDocuments.remove(ctx.eventId, ctx.playerId, kind, path);
             await window.FilitaliaAdminLight.refresh();
           } else if (kind === "receipt") {
-            const meta = demoMeta(ctx); meta.value.receipt = ""; writeJson(DEMO_KEY, meta.store); await mount();
+            const meta = demoMeta(ctx); meta.value.receipt = ""; writeJson(DEMO_KEY, meta.store); await mount(true);
           } else {
             const changes = kind === "photo" ? { photo: "" } : { certificateFile: "", certificate: false, certificateStatus: "missing" };
             updateDemoPlayer(ctx, changes);

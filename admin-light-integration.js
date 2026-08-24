@@ -14,18 +14,7 @@
     { id: "idcamp-milano-2026", label: "Milano · data da confermare", name: "FIL-EURO Talent ID Camp Milano", city: "Milano", date: "" }
   ];
 
-  const SEED = {
-    "idcamp-roma-2026": [
-      { id: "demo-1", name: "Marco Rossi", year: "2011", cat: "U16", shirt: "XL", email: "marco.rossi@email.it", phone: "", parent: "Andrea Rossi", payment: "paid", amount: 50, paymentMethod: "Bonifico", paymentDate: "2026-07-20", paymentReference: "ROMA-001", certificate: true, certificateStatus: "approved", certificateFile: "certificato-marco.pdf", photo: "", present: true, notes: "Buon ball handling.", payload: {} },
-      { id: "demo-2", name: "Luca Bianchi", year: "2013", cat: "U14", shirt: "M", email: "famiglia.bianchi@email.it", phone: "", parent: "Paolo Bianchi", payment: "pending", amount: 50, paymentMethod: "", paymentDate: "", paymentReference: "", certificate: false, certificateStatus: "missing", certificateFile: "", photo: "", present: false, notes: "", payload: {} },
-      { id: "demo-3", name: "David Panopio", year: "2010", cat: "U16", shirt: "L", email: "d.panopio@email.it", phone: "", parent: "Maria Panopio", payment: "paid", amount: 50, paymentMethod: "Carta", paymentDate: "2026-07-22", paymentReference: "ROMA-003", certificate: true, certificateStatus: "received", certificateFile: "certificato-david.pdf", photo: "foto-david.jpg", present: false, notes: "Gruppo avanzato.", payload: {} },
-      { id: "demo-4", name: "Jayson Mendoza", year: "2014", cat: "U12", shirt: "Nessuna", email: "mendoza.family@email.it", phone: "", parent: "Carlo Mendoza", payment: "not_required", amount: 0, paymentMethod: "", paymentDate: "", paymentReference: "", certificate: false, certificateStatus: "missing", certificateFile: "", photo: "", present: false, notes: "U12 gratuito senza maglia.", payload: {} },
-      { id: "demo-5", name: "Nico De Luca", year: "2009", cat: "U18", shirt: "XL", email: "nico.deluca@email.it", phone: "", parent: "Elena De Luca", payment: "pending", amount: 50, paymentMethod: "", paymentDate: "", paymentReference: "", certificate: false, certificateStatus: "missing", certificateFile: "", photo: "", present: false, notes: "Certificato da controllare.", payload: {} }
-    ],
-    "idcamp-firenze-2026": [],
-    "idcamp-venezia-2026": [],
-    "idcamp-milano-2026": []
-  };
+  const SEED = {};
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
   function read(key, fallback) {
@@ -51,7 +40,7 @@
     if (code.includes("DELETE_NOT_AVAILABLE")) return "Aggiorna la Preview: il comando Elimina non è ancora caricato.";
     if (code.includes("FILE_TOO_LARGE")) return "Il file supera 10 MB.";
     if (code.includes("INVALID_FILE_TYPE")) return "Sono accettati PDF, JPG, PNG e WEBP.";
-    return "Operazione non completata. Restiamo in modalità demo.";
+    return "Operazione non completata. I dati reali non sono stati modificati.";
   }
 
   const storedDemo = read(DATA_KEY, {});

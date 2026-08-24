@@ -12,22 +12,15 @@
     { id: "idcamp-firenze-2026", city: "Firenze", label: "Firenze · 20 settembre 2026" },
     { id: "idcamp-milano-2026", city: "Milano", label: "Milano · data da confermare" }
   ];
-  const seed = {
-    "idcamp-roma-2026": [
-      { id: "demo-1", name: "Marco Rossi", year: "2011", cat: "U16", shirt: "XL", email: "marco.rossi@email.it", parent: "Andrea Rossi", payment: "paid", amount: 50, certificate: true, present: true, notes: "Buon ball handling." },
-      { id: "demo-2", name: "Luca Bianchi", year: "2013", cat: "U14", shirt: "M", email: "famiglia.bianchi@email.it", parent: "Paolo Bianchi", payment: "pending", amount: 50, certificate: false, present: false, notes: "" },
-      { id: "demo-3", name: "David Panopio", year: "2010", cat: "U16", shirt: "L", email: "d.panopio@email.it", parent: "Maria Panopio", payment: "paid", amount: 50, certificate: true, present: false, notes: "Gruppo avanzato." },
-      { id: "demo-4", name: "Jayson Mendoza", year: "2014", cat: "U12", shirt: "Nessuna", email: "mendoza.family@email.it", parent: "Carlo Mendoza", payment: "not_required", amount: 0, certificate: false, present: false, notes: "U12 gratuito senza maglia." },
-      { id: "demo-5", name: "Nico De Luca", year: "2009", cat: "U18", shirt: "XL", email: "nico.deluca@email.it", parent: "Elena De Luca", payment: "pending", amount: 50, certificate: false, present: false, notes: "Certificato da controllare." }
-    ]
-  };
+  const seed = {};
 
   let rows = [];
   let busy = false;
   let lastSignature = "";
+  let sortMode = "original";
 
   const style = d.createElement("style");
-  style.textContent = ".reg-sync-actions{display:grid;gap:6px;min-width:190px}.reg-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.reg-detail-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.reg-quick{min-width:0!important;padding:6px 5px!important}.reg-quick.is-on{border-color:#0c6c47!important;background:#e5f5ed!important;color:#07583b!important}.reg-quick.is-off{border-color:#e3c8c0!important;background:#fff6f2!important;color:#8d3b28!important}.reg-quick[disabled],.reg-sync-photo[disabled]{opacity:.6;cursor:wait}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-photo{border-color:#9ccbb8!important;background:#eef9f4!important;color:#07583b!important}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}.person .avatar{position:relative;overflow:hidden}.person .avatar img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}.person .avatar span{position:relative;z-index:0}#registrations #regTable tbody tr{height:auto!important;min-height:0!important}#registrations #regTable tbody td{height:auto!important;padding:8px 10px!important;line-height:1.25!important}#registrations #regTable .person{gap:8px!important;min-height:0!important}#registrations #regTable .person .avatar{width:34px!important;height:34px!important;min-width:34px!important}#registrations #regTable .person b{font-size:13px!important}#registrations #regTable .person .muted{font-size:11px!important;line-height:1.25!important}#registrations #regTable .pill{padding:4px 7px!important;white-space:nowrap}#registrations #regTable .btn.small{min-height:30px!important;padding:6px 8px!important;font-size:11px!important;white-space:nowrap}@media(max-width:760px){#registrations .table-wrap{overflow:visible!important}#registrations #regTable{display:block!important;width:100%!important;min-width:0!important}#registrations #regTable thead{display:none!important}#registrations #regTable tbody{display:grid!important;gap:12px!important;width:100%!important}#registrations #regTable tbody tr{position:relative!important;display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important;padding:12px!important;border:1px solid var(--line)!important;border-radius:16px!important;background:#fff!important;box-shadow:var(--shadow)!important}#registrations #regTable tbody td{display:flex!important;align-items:center!important;gap:8px!important;width:auto!important;min-width:0!important;border:0!important;padding:6px!important}#registrations #regTable tbody td:first-child{position:absolute!important;top:10px!important;right:10px!important;padding:0!important;width:auto!important}#registrations #regTable tbody td:nth-child(2),#registrations #regTable tbody td:nth-child(8){grid-column:1/-1!important}#registrations #regTable tbody td:nth-child(n+3):nth-child(-n+7)::before{display:inline-block;min-width:65px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}#registrations #regTable tbody td:nth-child(3)::before{content:'Evento'}#registrations #regTable tbody td:nth-child(4)::before{content:'Categoria'}#registrations #regTable tbody td:nth-child(5)::before{content:'Pagamento'}#registrations #regTable tbody td:nth-child(6)::before{content:'Certificato'}#registrations #regTable tbody td:nth-child(7)::before{content:'Stato'}#registrations .reg-sync-actions{width:100%;min-width:0}.reg-detail-actions .btn{flex:1 1 auto}}";
+  style.textContent = ".reg-sync-actions{display:grid;gap:6px;min-width:190px}.reg-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.reg-detail-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.reg-quick{min-width:0!important;padding:6px 5px!important}.reg-quick.is-on{border-color:#0c6c47!important;background:#e5f5ed!important;color:#07583b!important}.reg-quick.is-off{border-color:#e3c8c0!important;background:#fff6f2!important;color:#8d3b28!important}.reg-quick[disabled],.reg-sync-photo[disabled]{opacity:.6;cursor:wait}.reg-sync-player-card{border-color:#0c6c47!important;background:#0c6c47!important;color:#fff!important}.reg-sync-photo{border-color:#9ccbb8!important;background:#eef9f4!important;color:#07583b!important}.reg-sync-delete{border-color:#e7c1c1!important;background:#fff5f5!important;color:#9f2b2b!important}.person .avatar{position:relative;overflow:hidden}.person .avatar img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}.person .avatar span{position:relative;z-index:0}#regSort{border-color:#9fc9b6!important;background-color:#f4fbf7!important;color:#0a5238!important;font-weight:800!important}#registrations #regTable tbody tr{height:auto!important;min-height:0!important}#registrations #regTable tbody td{height:auto!important;padding:8px 10px!important;line-height:1.25!important}#registrations #regTable .person{gap:8px!important;min-height:0!important}#registrations #regTable .person .avatar{width:34px!important;height:34px!important;min-width:34px!important}#registrations #regTable .person b{font-size:13px!important}#registrations #regTable .person .muted{font-size:11px!important;line-height:1.25!important}#registrations #regTable .pill{padding:4px 7px!important;white-space:nowrap}#registrations #regTable .btn.small{min-height:30px!important;padding:6px 8px!important;font-size:11px!important;white-space:nowrap}@media(max-width:760px){#registrations .table-wrap{overflow:visible!important}#registrations #regTable{display:block!important;width:100%!important;min-width:0!important}#registrations #regTable thead{display:none!important}#registrations #regTable tbody{display:grid!important;gap:12px!important;width:100%!important}#registrations #regTable tbody tr{position:relative!important;display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important;padding:12px!important;border:1px solid var(--line)!important;border-radius:16px!important;background:#fff!important;box-shadow:var(--shadow)!important}#registrations #regTable tbody td{display:flex!important;align-items:center!important;gap:8px!important;width:auto!important;min-width:0!important;border:0!important;padding:6px!important}#registrations #regTable tbody td:first-child{position:absolute!important;top:10px!important;right:10px!important;padding:0!important;width:auto!important}#registrations #regTable tbody td:nth-child(2),#registrations #regTable tbody td:nth-child(8){grid-column:1/-1!important}#registrations #regTable tbody td:nth-child(n+3):nth-child(-n+7)::before{display:inline-block;min-width:65px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}#registrations #regTable tbody td:nth-child(3)::before{content:'Evento'}#registrations #regTable tbody td:nth-child(4)::before{content:'Categoria'}#registrations #regTable tbody td:nth-child(5)::before{content:'Pagamento'}#registrations #regTable tbody td:nth-child(6)::before{content:'Certificato'}#registrations #regTable tbody td:nth-child(7)::before{content:'Stato'}#registrations .reg-sync-actions{width:100%;min-width:0}.reg-detail-actions .btn{flex:1 1 auto}}";
   d.head.appendChild(style);
 
   function esc(value) {
@@ -82,6 +75,16 @@
   function docs(player) { return !certificateRequired(player) ? "Non richiesto" : player.certificate ? "Completi" : "Certificato mancante"; }
   function state(player) { const certificateOk = !certificateRequired(player) || player.certificate; return complete(player) && certificateOk ? "Confermata" : !complete(player) && !certificateOk ? "Incompleta" : "In attesa"; }
   function initials(name) { return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part[0]; }).join("").toUpperCase(); }
+
+  function sortedRows() {
+    const values = rows.slice();
+    const collator = new Intl.Collator("it", { sensitivity: "base", numeric: true });
+    if (sortMode === "name-asc") values.sort(function (a, b) { return collator.compare(a.name || "", b.name || ""); });
+    if (sortMode === "name-desc") values.sort(function (a, b) { return collator.compare(b.name || "", a.name || ""); });
+    if (sortMode === "year-asc") values.sort(function (a, b) { return (Number(a.year) || 9999) - (Number(b.year) || 9999) || collator.compare(a.name || "", b.name || ""); });
+    if (sortMode === "year-desc") values.sort(function (a, b) { return (Number(b.year) || 0) - (Number(a.year) || 0) || collator.compare(a.name || "", b.name || ""); });
+    return values;
+  }
 
   function quickButtons(player) {
     const free = player.payment === "not_required" || player.payment === "waived";
@@ -142,7 +145,7 @@
   }
 
   function signature() {
-    return JSON.stringify([eventId(), rows.map(function (player) {
+    return JSON.stringify([eventId(), sortMode, rows.map(function (player) {
       return [player.id, player.name, player.year, player.cat, player.email, player.parent, player.payment, player.amount, player.certificate, player.present, player.shirt, player.updated_at || player.updatedAt || ""];
     })]);
   }
@@ -409,7 +412,7 @@
       return;
     }
     const scroll = scrollState();
-    body.innerHTML = rows.length ? rows.map(row).join("") : `<tr><td colspan="8" class="muted" style="padding:25px;text-align:center">Nessuna registrazione per ${esc(eventInfo().city || eventInfo().name)}.</td></tr>`;
+    body.innerHTML = rows.length ? sortedRows().map(row).join("") : `<tr><td colspan="8" class="muted" style="padding:25px;text-align:center">Nessuna registrazione per ${esc(eventInfo().city || eventInfo().name)}.</td></tr>`;
     body.dataset.registrationSignature = nextSignature;
     lastSignature = nextSignature;
     stats();
@@ -422,6 +425,7 @@
     d.querySelectorAll(".reg-quick-present").forEach(function (button) { button.onclick = function () { saveQuick(button.dataset.player, "present", button); }; });
     bindChecks();
     if ($("regEmpty")) $("regEmpty").style.display = "none";
+    if ($("regSearch")) $("regSearch").dispatchEvent(new Event("input", { bubbles: true }));
     restoreScroll(scroll);
     setTimeout(function () { restoreScroll(scroll); }, 0);
   }
@@ -429,13 +433,18 @@
   async function load() {
     if (busy || !$("regTable")) return;
     busy = true;
+    let realMode = false;
     try {
-      const realMode = window.FilitaliaAdminLight
+      realMode = window.FilitaliaAdminLight
         && window.FilitaliaAdminLight.getMode() === "real";
       rows = realMode && window.FilitaliaAdminData
         ? await window.FilitaliaAdminData.loadEvent(eventId())
         : demo();
-    } catch (error) { console.error(error); rows = demo(); }
+    } catch (error) {
+      console.error(error);
+      rows = realMode ? [] : demo();
+      if (realMode) notify("Registrazioni reali non caricate. Riprova o aggiorna la pagina.");
+    }
     render();
     busy = false;
   }
@@ -451,6 +460,24 @@
 
   function controls() {
     renderEventControls();
+    const toolbar = $("regSearch") && $("regSearch").closest(".toolbar");
+    if (toolbar && !$("regSort")) {
+      const select = d.createElement("select");
+      select.id = "regSort";
+      select.className = "select";
+      select.setAttribute("aria-label", "Ordina registrazioni");
+      select.innerHTML = '<option value="original">Ordine di registrazione</option><option value="name-asc">Nome: A–Z</option><option value="name-desc">Nome: Z–A</option><option value="year-asc">Anno: più grandi prima</option><option value="year-desc">Anno: più giovani prima</option>';
+      toolbar.appendChild(select);
+    }
+    if ($("regSort") && !$("regSort").dataset.bound) {
+      $("regSort").dataset.bound = "1";
+      $("regSort").value = sortMode;
+      $("regSort").addEventListener("change", function () {
+        sortMode = $("regSort").value || "original";
+        lastSignature = "";
+        render();
+      });
+    }
     if ($("regEvent")) $("regEvent").addEventListener("change", async function () {
       if (window.FilitaliaAdminLight && window.FilitaliaAdminLight.setEvent) await window.FilitaliaAdminLight.setEvent($("regEvent").value);
       await load();

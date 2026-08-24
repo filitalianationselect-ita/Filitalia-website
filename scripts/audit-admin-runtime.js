@@ -78,10 +78,10 @@ for (const [pageId, required] of Object.entries({
   news: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
   media: ['admin-content-layout-v1.js'],
   payments: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
-  players: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
+  players: ['admin-core-service-v1.js', 'admin-player-live-v1.js'],
   staff: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
   users: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
-  emails: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js']
+  emails: ['admin-core-service-v1.js', 'admin-communications-v1.js']
 })) {
   const names = sectionNames(pageId);
   for (const requiredName of required) {
@@ -164,6 +164,10 @@ requireFragments(read('admin-registration-sync.js'), [
   'saveQuick(button.dataset.player, "payment", button)',
   'saveQuick(button.dataset.player, "certificate", button)',
   'saveQuick(button.dataset.player, "present", button)',
+  'function sortedRows()',
+  'select.id = "regSort"',
+  'Nome: A–Z',
+  'Anno: più grandi prima',
   '@media(max-width:760px)',
   'grid-template-columns:1fr 1fr!important'
 ], 'registration quick controls and mobile cards');
@@ -184,7 +188,7 @@ if (/Object\.assign\(\{\}, base, \{ loadEvent: loadEvent \}\)/.test(read('admin-
 }
 
 requireFragments(admin, [
-  'admin-registration-sync.js?v=19',
+  'admin-registration-sync.js?v=20',
   'admin-registration-scope-fix-v1.js?v=2',
   'admin-google-real-data-v1.js?v=6'
 ], 'registration cache busting');
