@@ -170,13 +170,14 @@ async function testEventArchive(browser) {
     page.on('dialog', dialog => dialog.accept());
     await page.addScriptTag({ path: path.join(root, 'admin-event-catalog-v3.js') });
     await page.addScriptTag({ path: path.join(root, 'admin-events-v3.js') });
-    await page.waitForSelector('.event-visibility-v3');
-    assert.equal(await page.locator('.event-admin-card').count(), 1);
-    await page.click('.event-visibility-v3');
+    const targetCard = page.locator('[data-event-id="event-real"]');
+    await targetCard.waitFor();
+    assert.equal(await targetCard.count(), 1);
+    await targetCard.locator('.event-visibility-v3').click();
     await page.waitForFunction(() => window.__visibilityCalls.length === 1);
     assert.deepEqual(await page.evaluate(() => window.__visibilityCalls[0]), { name: 'admin_set_event_visibility', args: { target_event_id: 'event-real', visible: false } });
-    assert.equal(await page.locator('.event-admin-card').count(), 1, 'La card evento è stata cancellata invece di essere archiviata');
-    assert.match(await page.locator('.event-admin-card').innerText(), /NASCOSTO|Mostra sul sito/);
+    assert.equal(await targetCard.count(), 1, 'La card evento è stata cancellata invece di essere archiviata');
+    assert.match(await targetCard.innerText(), /NASCOSTO|Mostra sul sito/);
   });
 }
 
