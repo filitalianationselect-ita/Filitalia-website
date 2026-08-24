@@ -450,7 +450,11 @@
       eventsAuthoritative: !events.error,
       sponsors: sponsors.data || [],
     };
-    if (Object.values(payload).some((x) => x.length)) apply(payload);
+    if (
+      payload.eventsAuthoritative ||
+      Object.values(payload).some((value) => Array.isArray(value) && value.length)
+    )
+      apply(payload);
     return payload;
   }
   window.FilitaliaPublicContentReady = new Promise((resolve) => {
