@@ -104,6 +104,8 @@ jobs:
           npm install --no-save --silent playwright >/tmp/playwright-npm.log 2>&1
           npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
           echo "Chromium installed."
+      - name: Test interactive Admin regressions
+        run: node scripts/browser-admin-regression.js
       - name: Generate isolated local Preview configuration
         env:
           CONTEXT: deploy-preview
