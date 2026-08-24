@@ -339,10 +339,12 @@
       }
     } catch (_) {}
     try {
-      if (
-        put("events", payload.events, eventMap) &&
-        typeof eventsData !== "undefined"
-      ) {
+      if (payload.eventsAuthoritative && Array.isArray(payload.events) && typeof eventsData !== "undefined") {
+        overlay.events.clear();
+        payload.events.map(eventMap).forEach((item, index) => overlay.events.set(key("events", item, index), item));
+        replaceArray(eventsData, Array.from(overlay.events.values()).sort((a, b) => String(a.sortDate || "2099-12-31").localeCompare(String(b.sortDate || "2099-12-31"))));
+        changed = true;
+      } else if (put("events", payload.events, eventMap) && typeof eventsData !== "undefined") {
         replaceArray(eventsData, merge("events"));
         changed = true;
       }
@@ -390,7 +392,7 @@
       (x) => x.status === "active",
     ),
     events: local("filitalia_admin_events_v3").filter(
-      (x) => x.status === "published",
+      (x) => x.status === "published" && x.publicVisible !== false && x.public_visible !== false,
     ),
     sponsors: local("filitalia_admin_sponsors_v1").filter(
       (x) => x.status === "active",
@@ -423,6 +425,7 @@
         .from("admin_events")
         .select("*")
         .eq("status", "published")
+        .eq("public_visible", true)
         .order("event_date", { ascending: true }),
       client
         .from("admin_sponsors")
@@ -443,7 +446,8 @@
       news: news.data || [],
       players: players.data || [],
       staff: staff.data || [],
-      events: events.data || [],
+      events: events.error ? null : (events.data || []),
+      eventsAuthoritative: !events.error,
       sponsors: sponsors.data || [],
     };
     if (Object.values(payload).some((x) => x.length)) apply(payload);

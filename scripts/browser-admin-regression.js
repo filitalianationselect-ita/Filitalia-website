@@ -18,57 +18,46 @@ async function withPage(browser, name, callback) {
 }
 
 async function testPlayers(browser) {
-  await withPage(browser, 'Player reali e pulsanti', async page => {
+  await withPage(browser, 'Archivio permanente giocatori e contatti', async page => {
     await page.setContent(`<!doctype html><html><head></head><body>
       <section id="players"><h1>Giocatori</h1><p>David Panopio</p><p>Dwayne Vivero</p><button>Scheda</button></section>
     </body></html>`);
     await page.evaluate(() => {
       const realRows = [
-        { id: 'real-one', name: 'Player Reale Uno', birth_year: 2011, category: 'Under 17', position: 'PG', club: 'Club Uno', city: 'Roma', status: 'active', profile_status: 'complete', evaluations: {} },
-        { id: 'real-two', name: 'Player Reale Due', birth_year: 2009, category: 'Under 19', position: 'SG', club: 'Club Due', city: 'Messina', status: 'draft', profile_status: 'review', evaluations: {} }
+        { player_id: '11111111-1111-4111-8111-111111111111', full_name: 'Player Reale Uno', birth_date: '2011-04-03', birth_year: 2011, residence_city: 'Roma', email: 'uno@example.com', phone: '+390001111', current_club: 'Club Uno', player_status: 'active', registration_count: 2, event_count: 2, last_event_date: '2026-08-05' },
+        { player_id: '22222222-2222-4222-8222-222222222222', full_name: 'Player Reale Due', birth_date: '2009-02-01', birth_year: 2009, residence_city: 'Messina', email: 'due@example.com', phone: '', current_club: 'Club Due', player_status: 'active', registration_count: 1, event_count: 1, last_event_date: '2026-09-06' }
       ];
-      const playersQuery = {
-        select() { return this; },
-        order() { return Promise.resolve({ data: realRows, error: null }); },
-        upsert() { return Promise.resolve({ data: null, error: null }); }
-      };
+      window.__registryCalls = [];
       window.FilitaliaAuth = {
         configured: true,
         client: {
-          from(table) {
-            if (table !== 'admin_players') throw new Error(`Tabella inattesa: ${table}`);
-            return playersQuery;
-          },
-          storage: { from() { return { upload: async () => ({ error: null }), getPublicUrl: () => ({ data: { publicUrl: 'https://example.invalid/player.jpg' } }) }; } }
+          async rpc(name, args) {
+            window.__registryCalls.push({ name, args });
+            if (name === 'admin_list_registry_players') return { data: realRows, error: null };
+            if (name === 'admin_list_registry_events') return { data: [{ event_id: '33333333-3333-4333-8333-333333333333', name: 'Roma Talent ID', city: 'Roma' }], error: null };
+            if (name === 'admin_get_registry_player') return { data: { player: { id: args.target_player_id, first_name: 'Player', last_name: 'Reale Uno', birth_date: '2011-04-03', residence_city: 'Roma', email: 'uno@example.com', phone: '+390001111', current_club: 'Club Uno', status: 'active' }, registrations: [{ event_name: 'Roma Talent ID', event_city: 'Roma', event_date: '2026-08-05', registration_status: 'confirmed', payment_status: 'paid' }] }, error: null };
+            if (name === 'admin_update_registry_player') return { data: args.patch, error: null };
+            throw new Error(`RPC inattesa: ${name}`);
+          }
         },
         getOwnProfile: async () => ({ role: 'super_admin', status: 'active' })
       };
       window.showToast = message => { window.__toasts = (window.__toasts || []).concat(String(message)); };
     });
-    await page.addScriptTag({ path: path.join(root, 'admin-player-live-v1.js') });
-    await page.waitForSelector('#filPlayerLiveRoot');
-    assert.equal(await page.locator('.fil-player-live-table tbody tr').count(), 2);
+    await page.addScriptTag({ path: path.join(root, 'admin-player-registry-v1.js') });
+    await page.waitForSelector('#filRegistryPlayersRoot');
+    assert.equal(await page.locator('.frp-table tbody tr').count(), 2);
     const text = await page.locator('#players').innerText();
     assert.match(text, /Player Reale Uno/);
     assert.doesNotMatch(text, /David Panopio|Dwayne Vivero|Manuel Cruz/);
+    assert.equal(await page.locator('a[href^="mailto:"]').count(), 2);
 
-    await page.click('#filPlayerLiveAdd');
-    await page.waitForSelector('#filPlayerLiveOverlay.show');
-    assert.equal(await page.locator('#filPlayerLiveTitle').innerText(), 'Nuovo Player');
-    await page.click('#filPlayerLiveClose');
-    await page.click('.fil-player-live-edit');
-    await page.waitForSelector('#filPlayerLiveOverlay.show');
-    assert.equal(await page.locator('#filPlayerLiveTitle').innerText(), 'Modifica Player');
-    await page.click('#filPlayerLiveClose');
-
-    await page.evaluate(() => {
-      const fragment = document.createDocumentFragment();
-      for (let index = 0; index < 1000; index += 1) fragment.appendChild(document.createElement('i'));
-      document.body.appendChild(fragment);
-    });
-    await page.waitForTimeout(120);
-    assert.equal(await page.locator('#filPlayerLiveRoot').count(), 1);
-    assert.equal(await page.locator('.fil-player-live-table tbody tr').count(), 2);
+    await page.click('[data-player-detail]');
+    await page.waitForSelector('#frpOverlay.show');
+    assert.match(await page.locator('.frp-history').innerText(), /Roma Talent ID/);
+    await page.fill('#frpPhone', '+390009999');
+    await page.click('#frpSave');
+    await page.waitForFunction(() => window.__registryCalls.some(call => call.name === 'admin_update_registry_player'));
   });
 }
 
@@ -151,6 +140,71 @@ async function testRegistrations(browser) {
     await page.waitForFunction(() => window.__operationCalls.length === 2);
     await page.click('[data-player="z"].reg-quick-present');
     await page.waitForFunction(() => window.__operationCalls.length === 3);
+  });
+}
+
+async function testEventArchive(browser) {
+  await withPage(browser, 'Evento nascosto senza cancellare giocatori', async page => {
+    await page.route('http://filitalia.test/**', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head></head><body><section id="events"></section></body></html>' }));
+    await page.goto('http://filitalia.test/admin');
+    await page.evaluate(() => {
+      const event = { id: 'event-real', name: 'Evento reale', type: 'Camp', city: 'Roma', date: '2026-08-05', venue: 'Palazzetto', status: 'published', publicVisible: true, categories: ['U16'], pricing: { basePrice: 50, categoryPrices: { U16: 50 }, shirtPrice: 20, promoCodes: [] } };
+      localStorage.setItem('filitalia_admin_events_v3', JSON.stringify([event]));
+      window.__visibilityCalls = [];
+      const query = {
+        select() { return this; },
+        order() { return Promise.resolve({ data: [Object.assign({}, event, { event_type: event.type, event_date: event.date, public_visible: true })], error: null }); },
+        upsert() { return Promise.resolve({ data: null, error: null }); }
+      };
+      window.FilitaliaAuth = {
+        client: {
+          from(table) { if (table !== 'admin_events') throw new Error(`Tabella inattesa: ${table}`); return query; },
+          async rpc(name, args) { window.__visibilityCalls.push({ name, args }); return { data: Object.assign({}, event, { public_visible: args.visible }), error: null }; }
+        },
+        getSession: async () => ({ user: { id: 'admin' } }),
+        getOwnProfile: async () => ({ role: 'super_admin', status: 'active' })
+      };
+      window.showToast = message => { window.__toasts = (window.__toasts || []).concat(String(message)); };
+      window.FilitaliaAdminLight = { refreshEvents: async () => true };
+    });
+    page.on('dialog', dialog => dialog.accept());
+    await page.addScriptTag({ path: path.join(root, 'admin-event-catalog-v3.js') });
+    await page.addScriptTag({ path: path.join(root, 'admin-events-v3.js') });
+    await page.waitForSelector('.event-visibility-v3');
+    assert.equal(await page.locator('.event-admin-card').count(), 1);
+    await page.click('.event-visibility-v3');
+    await page.waitForFunction(() => window.__visibilityCalls.length === 1);
+    assert.deepEqual(await page.evaluate(() => window.__visibilityCalls[0]), { name: 'admin_set_event_visibility', args: { target_event_id: 'event-real', visible: false } });
+    assert.equal(await page.locator('.event-admin-card').count(), 1, 'La card evento è stata cancellata invece di essere archiviata');
+    assert.match(await page.locator('.event-admin-card').innerText(), /NASCOSTO|Mostra sul sito/);
+  });
+}
+
+async function testHiddenEventIsRemovedFromPublicSite(browser) {
+  await withPage(browser, 'Evento nascosto escluso anche dai dati statici pubblici', async page => {
+    await page.setContent('<!doctype html><html><head></head><body><div id="allEventsGrid"></div></body></html>');
+    await page.evaluate(() => {
+      window.eventsData = [{ id: 'event-hidden', title: { it: 'Evento passato' }, sortDate: '2026-01-01', status: 'published' }];
+      window.FILITALIA_CONFIG = { supabaseUrl: 'https://preview.invalid', supabasePublishableKey: 'preview-key' };
+      window.supabase = {};
+      window.FilitaliaSupabase = {
+        getPublicClient() {
+          return {
+            from(table) {
+              const result = { data: [], error: null };
+              return {
+                select() { return this; }, eq() { return this; }, order() { return this; },
+                then(resolve) { resolve(result); }
+              };
+            }
+          };
+        }
+      };
+    });
+    await page.addScriptTag({ path: path.join(root, 'public-content-bridge-v1.js') });
+    await page.waitForFunction(() => window.FilitaliaPublicContentReady);
+    await page.evaluate(() => window.FilitaliaPublicContentReady);
+    assert.equal(await page.evaluate(() => window.eventsData.length), 0, 'L’evento nascosto è rimasto visibile tramite events-data.js');
   });
 }
 
@@ -257,6 +311,8 @@ async function testAdminMobileNavigation(browser) {
     await testPlayers(browser);
     await testCommunications(browser);
     await testRegistrations(browser);
+    await testEventArchive(browser);
+    await testHiddenEventIsRemovedFromPublicSite(browser);
     await testCertificateControls(browser);
     await testAccountMobileNavigation(browser);
     await testAdminMobileNavigation(browser);

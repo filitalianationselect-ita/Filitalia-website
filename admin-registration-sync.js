@@ -109,6 +109,7 @@
     return {
       id: String(row && row.id),
       playerId: String(row && row.player_id || ""),
+      canonicalPlayerId: String(row && row.canonical_player_id || ""),
       eventId: String(row && row.camp_event_id || ""),
       eventName: String(row && row.event_name || ""),
       eventCity: String(row && row.event_city || ""),

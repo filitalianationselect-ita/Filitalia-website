@@ -66,6 +66,7 @@
     const certificateStatus = clean(op.certificate_status, 40) || "missing";
     return {
       id: String(row.id),
+      canonicalPlayerId: String(row.canonical_player_id || ""),
       eventId: clean(row.camp_event_id, 160),
       name: clean(row.participant_name, 200) || "Partecipante senza nome",
       email: clean(row.participant_email, 254),
@@ -97,7 +98,7 @@
     const safeEventId = clean(eventId, 160);
     let registrationsQuery = client()
       .from("registrations")
-      .select("id,submission_id,account_id,player_id,camp_event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,guardian_name,birth_date,shirt_size,privacy_consent,media_consent,registration_status,payment_status,payment_amount,notes,admin_notes,original_data,created_at,updated_at");
+      .select("id,submission_id,account_id,player_id,canonical_player_id,camp_event_id,event_name,event_city,event_date,participant_name,participant_email,participant_phone,guardian_name,birth_date,shirt_size,privacy_consent,media_consent,registration_status,payment_status,payment_amount,notes,admin_notes,original_data,created_at,updated_at");
     if (safeEventId && safeEventId !== "__all__") registrationsQuery = registrationsQuery.eq("camp_event_id", safeEventId);
     const registrationsResult = await registrationsQuery.order("created_at", { ascending: true });
     let registrationRows;

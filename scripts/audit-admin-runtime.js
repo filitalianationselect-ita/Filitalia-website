@@ -78,7 +78,7 @@ for (const [pageId, required] of Object.entries({
   news: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
   media: ['admin-content-layout-v1.js'],
   payments: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
-  players: ['admin-core-service-v1.js', 'admin-player-live-v1.js'],
+  players: ['admin-core-service-v1.js', 'admin-player-registry-v1.js'],
   staff: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
   users: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
   emails: ['admin-core-service-v1.js', 'admin-communications-v1.js']
@@ -145,8 +145,16 @@ requireFragments(read('admin-events-v3.js'), [
   "event.stopImmediatePropagation()",
   "window.FilitaliaEventsV3=Object.freeze",
   "openDetails(button.dataset.id)",
-  "removeEvent(button.dataset.id)"
+  "setEventVisibility(button.dataset.id)",
+  "Registrazioni e giocatori resteranno salvati"
 ], 'admin event action delegation');
+
+requireFragments(read('admin-player-registry-v1.js'), [
+  'admin_list_registry_players',
+  'admin_get_registry_player',
+  'admin_update_registry_player',
+  'Archivio permanente dei giocatori iscritti'
+], 'permanent player registry');
 
 requireFragments(read('admin-light-integration-loader-v2.js'), [
   "if (!source.includes('id=\"edDelete\"'))"

@@ -148,7 +148,7 @@
   async function bootstrapPaymentModules() {
     try {
       if (!window.FilitaliaAdminData || !window.FilitaliaAuth) return false;
-      await loadScriptOnce("admin-event-catalog-v3.js?v=7", function () {
+      await loadScriptOnce("admin-event-catalog-v3.js?v=8", function () {
         return Boolean(window.FilitaliaEventCatalog && typeof window.FilitaliaEventCatalog.events === "function");
       });
       await loadScriptOnce("admin-payment-accounting-v2.js?v=2", function () {
