@@ -54,19 +54,40 @@ if (duplicates.length) {
 const criticalBlock = admin.match(/const criticalEnhancerNames = \[([\s\S]*?)\n      \];/);
 if (!criticalBlock) throw new Error('Critical admin enhancer list not found');
 const criticalNames = [...criticalBlock[1].matchAll(/"([^"]+\.js)"/g)].map(match => match[1]);
-if (criticalNames.length > 15) {
+if (criticalNames.length > 4) {
   throw new Error(`Too many blocking admin modules: ${criticalNames.length}`);
 }
 for (const required of [
-  'admin-core-service-v1.js',
-  'admin-events-v3.js',
-  'admin-operations-suite-v1.js',
-  'admin-content-layout-v1.js',
-  'admin-content-actions-unlock-v1.js'
+  'admin-light-data-service.js',
+  'admin-sponsors-v1.js',
+  'admin-content-actions-unlock-v1.js',
+  'admin-exit-actions-v1.js'
 ]) {
   if (!criticalNames.includes(required)) throw new Error(`Essential admin module is not loaded at bootstrap: ${required}`);
 }
 
+function sectionNames(pageId) {
+  const match = admin.match(new RegExp(`\\n        ${pageId}: \\[([\\s\\S]*?)\\n        \\]`, 'm'));
+  if (!match) throw new Error(`Admin section enhancer list missing for ${pageId}`);
+  return [...match[1].matchAll(/"([^"]+\.js)"/g)].map(entry => entry[1]);
+}
+
+for (const [pageId, required] of Object.entries({
+  events: ['admin-event-catalog-v3.js', 'admin-events-v3.js'],
+  registrations: ['admin-light-data-service.js', 'admin-registration-sync.js'],
+  news: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
+  media: ['admin-content-layout-v1.js'],
+  payments: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
+  players: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
+  staff: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
+  users: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js'],
+  emails: ['admin-core-service-v1.js', 'admin-operations-suite-v1.js']
+})) {
+  const names = sectionNames(pageId);
+  for (const requiredName of required) {
+    if (!names.includes(requiredName)) throw new Error(`${pageId} cannot load its required module: ${requiredName}`);
+  }
+}
 for (const obsolete of ['admin-event-finance-v1.js', 'admin-event-finance-ledger-v2.js']) {
   if (fs.existsSync(obsolete) || admin.includes(obsolete)) {
     throw new Error(`Obsolete duplicate controls module is still present: ${obsolete}`);
@@ -79,6 +100,8 @@ requireFragments(actions, [
   'event.stopImmediatePropagation()',
   'seen.has(label)',
   'FilitaliaContentLayout.openMedia',
+  'resetSponsorView',
+  'FilitaliaAdminLoadSection("media")',
   'data-page="events"',
   'data-page="news"',
   'data-page="media"'

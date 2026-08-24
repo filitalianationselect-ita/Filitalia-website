@@ -152,7 +152,10 @@
     const next=controls.querySelector('[data-fil-player-next]');
     const count=controls.querySelector('[data-fil-player-count]');
 
-    function cards(){return Array.from(grid.querySelectorAll(':scope > .player-card'));}
+    function cards(){
+      const track=grid.querySelector(':scope > .fil-player-carousel-inner');
+      return Array.from((track||grid).querySelectorAll(':scope > .player-card'));
+    }
     function step(){const first=cards()[0];return first?first.getBoundingClientRect().width+18:Math.max(260,grid.clientWidth*.78);}
     function update(){
       const all=cards();

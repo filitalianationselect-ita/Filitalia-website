@@ -148,19 +148,8 @@
 
       const loadedEnhancers = new Map();
       const criticalEnhancerNames = [
-        "admin-scroll-stability-v1.js",
-        "admin-access-freedom-v1.js",
         "admin-light-data-service.js",
-        "admin-event-catalog-v3.js",
-        "admin-event-field-settings-v1.js",
-        "admin-medical-certificate-visibility-v1.js",
-        "admin-event-links-v1.js",
-        "admin-core-service-v1.js",
-        "admin-operations-suite-v1.js",
-        "admin-content-layout-v1.js",
         "admin-sponsors-v1.js",
-        "admin-events-v3.js",
-        "admin-readable-ui-v2.js",
         "admin-content-actions-unlock-v1.js",
         "admin-exit-actions-v1.js"
       ];
@@ -173,9 +162,12 @@
           "admin-deploy-preview-center-v1.js"
         ],
         events: [
+          "admin-event-catalog-v3.js",
+          "admin-events-v3.js",
           "admin-promo-limits-v1.js",
           "admin-event-field-settings-v1.js",
           "admin-medical-certificate-visibility-v1.js",
+          "admin-event-links-v1.js",
           "admin-event-type-options-v1.js",
           "admin-registration-flex-v3.js",
           "admin-event-links-ui-v1.js",
@@ -184,8 +176,13 @@
           "admin-event-links-maintenance-v1.js"
         ],
         registrations: [
+          "admin-scroll-stability-v1.js",
+          "admin-access-freedom-v1.js",
+          "admin-light-data-service.js",
+          "admin-event-catalog-v3.js",
           "admin-event-field-settings-v1.js",
           "admin-medical-certificate-visibility-v1.js",
+          "admin-event-links-v1.js",
           "admin-registrations-v2.js",
           "admin-google-real-data-v1.js",
           "admin-promo-limits-v1.js",
@@ -199,37 +196,57 @@
           "admin-registration-scope-fix-v1.js"
         ],
         payments: [
+          "admin-access-freedom-v1.js",
+          "admin-core-service-v1.js",
+          "admin-operations-suite-v1.js",
           "admin-light-integration-loader-v2.js",
           "admin-registration-flex-v3.js",
           "admin-live-operations-v1.js"
         ],
         players: [
+          "admin-access-freedom-v1.js",
+          "admin-core-service-v1.js",
+          "admin-operations-suite-v1.js",
           "admin-player-table-mobile-v1.js",
           "admin-alt-player-editor-v1.js",
           "admin-player-profile-v1.js",
           "admin-player-live-v1.js"
         ],
         staff: [
+          "admin-access-freedom-v1.js",
+          "admin-core-service-v1.js",
+          "admin-operations-suite-v1.js",
           "admin-staff-edit-mobile-v1.js",
           "admin-alt-staff-editor-v1.js"
         ],
         emails: [
+          "admin-core-service-v1.js",
+          "admin-operations-suite-v1.js",
           "admin-email-page-alias-v1.js",
           "admin-communications-v1.js"
         ],
         news: [
+          "admin-core-service-v1.js",
+          "admin-operations-suite-v1.js",
           "admin-event-links-ui-v1.js",
           "admin-event-propagation-v1.js",
           "admin-event-links-filter-v1.js"
         ],
         media: [
+          "admin-content-layout-v1.js",
           "admin-content-layout-mobile-v2.js",
           "admin-event-links-ui-v1.js",
           "admin-event-propagation-v1.js",
           "admin-event-links-filter-v1.js"
         ],
-        users: ["admin-setup-center-v2.js"],
+        users: [
+          "admin-access-freedom-v1.js",
+          "admin-core-service-v1.js",
+          "admin-operations-suite-v1.js",
+          "admin-setup-center-v2.js"
+        ],
         settings: [
+          "admin-access-freedom-v1.js",
           "admin-setup-center-v2.js",
           "admin-project-audit-v1.js",
           "admin-site-connection-v1.js",
@@ -268,7 +285,7 @@
             console.warn("Modulo amministrativo lento, caricamento saltato:", source);
             script.remove();
             finish(false);
-          }, 8000);
+          }, 2500);
           script.onload = function () { finish(true); };
           script.onerror = function () {
             console.warn("Modulo amministrativo secondario non disponibile:", source);

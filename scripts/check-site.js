@@ -50,4 +50,10 @@ if (errors.length) {
   process.exit(1);
 }
 
+const homeContent = fs.readFileSync("home-content-v2.js", "utf8");
+if (!homeContent.includes(".fil-player-carousel-inner") || !homeContent.includes("(track||grid).querySelectorAll(':scope > .player-card')")) {
+  console.log("❌ Il contatore giocatori Home non supporta il carousel interno.");
+  process.exit(1);
+}
+
 console.log(`✅ Controllo completato! ${htmlFiles.length} pagine HTML controllate.`);

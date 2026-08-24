@@ -156,8 +156,22 @@
     });
   }
 
+  function resetSponsorView() {
+    const sponsorPage = d.getElementById("sponsorsAdmin");
+    if (!sponsorPage || !sponsorPage.classList.contains("active")) return;
+    sponsorPage.classList.remove("active");
+    sponsorPage.style.display = "none";
+    d.querySelectorAll("[data-sponsor-nav]").forEach(function (button) {
+      button.classList.remove("active");
+    });
+    d.querySelectorAll("section[id]").forEach(function (section) {
+      if (section.id !== "sponsorsAdmin") section.style.removeProperty("display");
+    });
+  }
+
   function openPage(pageId) {
     if (!pageId || !d.getElementById(pageId)) return false;
+    resetSponsorView();
     d.querySelectorAll(".page").forEach(function (page) {
       page.classList.toggle("active", page.id === pageId);
     });
@@ -165,6 +179,7 @@
       button.classList.toggle("active", button.dataset.page === pageId);
     });
     if (pageId === "media") renderMediaPage();
+    if (pageId === "events") removeLegacyEventDuplicates();
     window.scrollTo({ top: 0, behavior: "smooth" });
     return true;
   }
@@ -191,7 +206,22 @@
     }
     const launcher = d.getElementById("filLayoutLauncher");
     if (!launcher) {
-      if (typeof window.showToast === "function") window.showToast("Gestione Media in caricamento. Riprova tra un istante.");
+      const loadingKey = "filitaliaMediaManagerLoading";
+      if (!d.documentElement.dataset[loadingKey] && typeof window.FilitaliaAdminLoadSection === "function") {
+        d.documentElement.dataset[loadingKey] = "1";
+        window.FilitaliaAdminLoadSection("media")
+          .then(function () {
+            delete d.documentElement.dataset[loadingKey];
+            if (d.getElementById("filLayoutLauncher")) openMediaManager();
+            else if (typeof window.showToast === "function") window.showToast("La gestione Media non si è caricata. Riprova tra un istante.");
+          })
+          .catch(function (error) {
+            delete d.documentElement.dataset[loadingKey];
+            console.error(error);
+            if (typeof window.showToast === "function") window.showToast("Non riesco a caricare la gestione Media.");
+          });
+      }
+      if (typeof window.showToast === "function") window.showToast("Gestione Media in caricamento…");
       return;
     }
 
