@@ -60,7 +60,7 @@ jobs:
             await page.screenshot({path:'home-placement.jpg',type:'jpeg',quality:80,fullPage:false});
 
             await page.goto(`${root}/?homeeventqa=events-${Date.now()}#events`,{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForSelector('#homeEventsGrid .fhe-stage',{timeout:30000});
+            await page.waitForSelector('#homeEventsGrid .fhe-mini time',{timeout:30000});
             await page.waitForTimeout(1500);
             const events=await page.evaluate(()=>{
               const time=document.querySelector('#homeEventsGrid .fhe-mini time');
