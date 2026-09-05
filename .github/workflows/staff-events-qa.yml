@@ -87,7 +87,7 @@ jobs:
             await page.screenshot({path:'events-final.jpg',type:'jpeg',quality:76,fullPage:true});
 
             const mobile=await browser.newPage({viewport:{width:390,height:844}});
-            await mobile.goto(`${root}/staff?staffevents=mobile-${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.goto(`${root}/staff?staffevents=mobile-${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
             await mobile.waitForSelector('.navbar.fil-final-navbar',{timeout:20000});
             const mobileMenu=await mobile.locator('.mobile-menu-button').evaluate(el=>getComputedStyle(el).display);
             if(mobileMenu==='none')throw new Error('Staff mobile hamburger missing');
