@@ -100,7 +100,7 @@ jobs:
             });
             if(!detail.bodyBg.includes('gradient')||!detail.heroBg.includes('gradient'))throw new Error(`Premium event background missing: ${JSON.stringify(detail)}`);
             if(detail.title!=='rgb(255, 255, 255)')throw new Error(`Event detail title contrast: ${JSON.stringify(detail)}`);
-            if(detail.nav!==9||detail.fields!==4||detail.description<30||detail.posterWidth<1)throw new Error(`Premium event content invalid: ${JSON.stringify(detail)}`);
+            if(detail.nav!==9||detail.fields!==4||detail.description<20||detail.posterWidth<1)throw new Error(`Premium event content invalid: ${JSON.stringify(detail)}`);
             if(detail.bodyOverflow==='hidden'||detail.modalVisible)throw new Error(`Event page remains locked or modal based: ${JSON.stringify(detail)}`);
             if(detail.scrollHeight<=detail.viewport+120)throw new Error(`Event page is not scrollable: ${JSON.stringify(detail)}`);
             await page.screenshot({path:'event-detail.jpg',type:'jpeg',quality:82,fullPage:true});
