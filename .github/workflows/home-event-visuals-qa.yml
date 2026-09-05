@@ -59,16 +59,26 @@ jobs:
             if(home.actions.x>=home.visual.x)throw new Error(`Home actions left column failed: ${JSON.stringify(home)}`);
             await page.screenshot({path:'home-placement.jpg',type:'jpeg',quality:80,fullPage:false});
 
-            await page.goto(`${root}/?homeeventqa=events-${Date.now()}#events`,{waitUntil:'domcontentloaded',timeout:120000});
-            await page.waitForSelector('#homeEventsGrid .fhe-mini time',{timeout:30000});
-            await page.waitForTimeout(1500);
-            const events=await page.evaluate(()=>{
-              const time=document.querySelector('#homeEventsGrid .fhe-mini time');
-              const mini=document.querySelector('#homeEventsGrid .fhe-mini');
-              const panel=document.querySelector('#events');
-              const s=el=>getComputedStyle(el);
-              return{count:document.querySelectorAll('#homeEventsGrid .fhe-mini').length,timeColor:s(time).color,timeBg:s(time).backgroundColor,miniBg:s(mini).backgroundImage,panelBg:s(panel).backgroundImage};
-            });
+            async function readHomeEvents(){
+              for(let i=0;i<8;i++){
+                await page.goto(`${root}/?homeeventqa=events-${Date.now()}-${i}#events`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{
+                  await page.waitForSelector('#homeEventsGrid .fhe-mini time',{timeout:10000});
+                  const snapshot=await page.evaluate(()=>{
+                    const time=document.querySelector('#homeEventsGrid .fhe-mini time');
+                    const mini=document.querySelector('#homeEventsGrid .fhe-mini');
+                    const panel=document.querySelector('#events');
+                    if(!time||!mini||!panel)return null;
+                    const s=el=>getComputedStyle(el);
+                    return{count:document.querySelectorAll('#homeEventsGrid .fhe-mini').length,timeColor:s(time).color,timeBg:s(time).backgroundColor,miniBg:s(mini).backgroundImage,panelBg:s(panel).backgroundImage};
+                  });
+                  if(snapshot)return snapshot;
+                }catch(_){}
+                await sleep(600);
+              }
+              throw new Error('Home event cards did not stay loaded');
+            }
+            const events=await readHomeEvents();
             if(events.count<1)throw new Error('Home event cards missing');
             if(events.timeBg==='rgba(0, 0, 0, 0)'||events.timeBg==='transparent')throw new Error(`Event date badge missing: ${JSON.stringify(events)}`);
             if(!events.miniBg.includes('gradient'))throw new Error(`Event card background not unified: ${JSON.stringify(events)}`);
