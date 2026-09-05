@@ -106,6 +106,15 @@
     try { await window.FilitaliaRegistrations.markSheetCopy(id, status, detail || {}); }
     catch (_) {}
   }
+  async function sendToSheet(payload) {
+    if (!endpointReady()) throw new Error("GOOGLE_ENDPOINT_NOT_CONFIGURED");
+    await fetch(endpoint(), {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+  }
   async function copyToSheet(payload, registration) {
     if (!endpointReady()) {
       await markSheet(registration.id, "skipped", { reason: "GOOGLE_ENDPOINT_NOT_CONFIGURED" });
@@ -119,10 +128,30 @@
     });
     delete sheetPayload.accountAccessToken;
     try {
-      await fetch(endpoint(), { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(sheetPayload) });
+      await sendToSheet(sheetPayload);
       await markSheet(registration.id, "sent", { sentAt: new Date().toISOString(), source: "camp-register.html", batchId: payload.registrationBatchId });
     } catch (error) {
       await markSheet(registration.id, "failed", { message: String(error?.message || error), batchId: payload.registrationBatchId });
+    }
+  }
+  async function saveRegistration(payload) {
+    if (!window.FilitaliaRegistrations?.createCampRegistration) {
+      await sendToSheet(payload);
+      return null;
+    }
+    try {
+      const registration = await window.FilitaliaRegistrations.createCampRegistration(payload);
+      await copyToSheet(payload, registration);
+      await syncPhoto(registration);
+      return registration;
+    } catch (error) {
+      // Google Apps Script is the proven production path and also sends the
+      // participant confirmation plus the internal registration notice. Keep
+      // it available while a Supabase migration or service is temporarily
+      // unavailable so a valid registration is never blocked by the new layer.
+      console.warn("FIL-ITALIA Supabase registration unavailable; using Google fallback", error);
+      await sendToSheet(payload);
+      return null;
     }
   }
   async function syncPhoto(registration) {
@@ -136,8 +165,8 @@
   async function submit(form) {
     if (form.dataset.filitaliaSubmitting === "true") return;
     if (!form.checkValidity()) { form.reportValidity(); return; }
-    if (!window.FilitaliaRegistrations?.createCampRegistration) {
-      show(form, "Registrazione non salvata in Supabase. Riprova o contatta FIL-ITALIA.", "error");
+    if (!window.FilitaliaRegistrations?.createCampRegistration && !endpointReady()) {
+      show(form, "Servizio di registrazione non disponibile. Riprova o contatta FIL-ITALIA.", "error");
       return;
     }
     form.dataset.filitaliaSubmitting = "true";
@@ -155,9 +184,7 @@
         const payload = payloads[index];
         show(form, "Salvataggio giocatore " + (index + 1) + " di " + payloads.length + "...", "sending");
         try {
-          const registration = await window.FilitaliaRegistrations.createCampRegistration(payload);
-          await copyToSheet(payload, registration);
-          await syncPhoto(registration);
+          await saveRegistration(payload);
         } catch (error) {
           const detail = String(error?.code || error?.message || "").toLowerCase();
           if (detail !== "23505" && !detail.includes("duplicate")) failed.push({ payload, error });
