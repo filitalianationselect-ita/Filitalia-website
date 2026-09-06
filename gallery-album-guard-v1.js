@@ -1,5 +1,6 @@
 (function () {
   "use strict";
+  const PUBLIC_MEDIA_VISIBLE = false;
 
   function currentLanguage() {
     try {
@@ -50,6 +51,10 @@
 
   function renderSafeAlbumPage() {
     const grid = document.getElementById("albumImagesGrid");
+    if (grid && !PUBLIC_MEDIA_VISIBLE) {
+      grid.innerHTML = '<div class="empty-gallery-card"><h3>MEDIA IN PREPARAZIONE</h3><p>Le foto verranno pubblicate quando saranno pronte.</p></div>';
+      return;
+    }
     const data = albumData();
     if (!grid || !data.length) return;
 
