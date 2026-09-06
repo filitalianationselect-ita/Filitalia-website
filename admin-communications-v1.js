@@ -5,11 +5,44 @@
   const $ = (id) => d.getElementById(id);
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const BATCH_SIZE = 100;
+  const AUTOMATIC_DEFAULTS = Object.freeze({
+    registration_confirmation: {
+      template_key: "registration_confirmation",
+      name: "Conferma registrazione",
+      audience: "participant",
+      enabled: true,
+      subject: "Conferma registrazione Camp FIL-ITALIA / FIL-ITALIA Camp Registration Confirmation",
+      body_it: "Ciao {nome},\n\ngrazie per aver registrato {giocatore} a {evento}.\n✅ La registrazione è stata ricevuta correttamente.\n\nPrima di effettuare il pagamento, verifica che città, data di nascita e taglia siano corrette. In caso di errore, rispondi direttamente a questa email.\n\nDopo il pagamento, rispondi allegando la ricevuta. La partecipazione sarà definitivamente confermata dopo la verifica.",
+      body_en: "Hello {nome},\n\nthank you for registering {giocatore} for {evento}.\n✅ Your registration has been received successfully.\n\nBefore making the payment, please check that the city, date of birth and T-shirt size are correct. If anything is incorrect, reply directly to this email.\n\nAfter completing the payment, reply and attach the receipt. Participation will be officially confirmed after the receipt has been verified.",
+      cta_label_it: "Controlla il camp della tua città",
+      cta_label_en: "Check your camp page",
+      cta_url: "https://www.filitalianationselect.com",
+      include_event_details: true
+    },
+    internal_registration_notice: {
+      template_key: "internal_registration_notice",
+      name: "Avviso nuova registrazione",
+      audience: "internal",
+      enabled: true,
+      subject: "Nuova registrazione Camp | {giocatore} - {citta}",
+      body_it: "È arrivata una nuova registrazione.\n\nGiocatore: {giocatore}\nCamp: {evento}\nCittà: {citta}\nData: {data}\nGenitore: {genitore}\nEmail: {email}\nTelefono: {telefono}\nAnno di nascita: {anno}\nTaglia: {taglia}",
+      body_en: "",
+      cta_label_it: "Apri il Super Admin",
+      cta_label_en: "",
+      cta_url: "https://www.filitalianationselect.com/admin-light.html",
+      include_event_details: true
+    }
+  });
 
   let events = [];
   let staff = [];
   let eventRows = [];
   let busy = false;
+  let automaticBusy = false;
+  let automaticProfile = null;
+  let automaticBackendReady = false;
+  let automaticKey = "registration_confirmation";
+  let automaticTemplates = new Map(Object.keys(AUTOMATIC_DEFAULTS).map((key) => [key, Object.assign({}, AUTOMATIC_DEFAULTS[key])]));
   let mountTimer = null;
 
   const clean = (value) => String(value == null ? "" : value).trim();
@@ -43,7 +76,14 @@
       date: event && event.date || "",
       dateLabel: event && event.dateLabel || "",
       time,
-      venue: event && event.venue || ""
+      venue: event && event.venue || "",
+      playerName: event && (event.playerName || event.giocatore) || "",
+      guardianName: event && (event.guardianName || event.genitore) || "",
+      email: event && event.email || "",
+      phone: event && (event.phone || event.telefono) || "",
+      birthYear: event && (event.birthYear || event.anno) || "",
+      shirtSize: event && (event.shirtSize || event.taglia) || "",
+      fee: event && (event.fee || event.quota) || ""
     };
   }
 
@@ -119,13 +159,20 @@
     const info = eventPayload(event);
     const values = {
       nome: recipientName || "partecipante",
+      giocatore: info.playerName || recipientName || "partecipante",
+      genitore: info.guardianName || recipientName || "",
+      email: info.email,
+      telefono: info.phone,
+      anno: info.birthYear,
+      taglia: info.shirtSize,
+      quota: info.fee,
       evento: info.name,
       citta: info.city,
       data: info.dateLabel || info.date,
       orario: info.time,
       luogo: info.venue
     };
-    return String(text || "").replace(/\{(nome|evento|citta|data|orario|luogo)\}/g, (_, key) => values[key] || "");
+    return String(text || "").replace(/\{(nome|giocatore|genitore|email|telefono|anno|taglia|quota|evento|citta|data|orario|luogo)\}/g, (_, key) => values[key] || "");
   }
 
   function addStyle() {
@@ -144,9 +191,15 @@
       .uc-hidden{display:none!important}.uc-summary{margin-top:15px;padding:14px;border:1px solid #c7ded2;border-radius:14px;background:#eaf5ef}.uc-summary strong{font-size:19px}
       .uc-brand{display:flex;align-items:center;gap:14px;margin-top:14px;padding:14px 16px;border-radius:15px;background:#073a28;color:#fff;border:1px solid #1b7957}.uc-brand img{width:58px;height:58px;object-fit:contain}.uc-brand span{display:block;margin-top:4px;font-size:13px;line-height:1.45;color:#cce6da}
       .uc-templates{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.uc-template{border:1px solid #c9ddd2;border-radius:999px;background:#fff;padding:9px 12px;font-weight:800;cursor:pointer}.uc-template:hover{background:#176b4b;color:#fff}
+      .uc-auto-card{position:relative;overflow:hidden}.uc-auto-card:before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:linear-gradient(#087443,#d5b756,#c93434)}
+      .uc-auto-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.uc-auto-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#e7f4ed;color:#0b613e;font-size:11px;font-weight:900;letter-spacing:.6px;text-transform:uppercase}.uc-auto-badge.warn{background:#fff3d9;color:#845b00}.uc-auto-badge.locked{background:#f1f2f4;color:#5b6470}
+      .uc-auto-layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:20px;margin-top:18px}.uc-auto-nav{display:flex;flex-direction:column;gap:9px}.uc-auto-tab{width:100%;padding:14px;text-align:left;border:1px solid #cbded4;border-radius:14px;background:#f6faf8;color:#23493a;cursor:pointer}.uc-auto-tab strong,.uc-auto-tab span{display:block}.uc-auto-tab strong{font-size:14px}.uc-auto-tab span{margin-top:4px;font-size:12px;color:#718179}.uc-auto-tab.active{background:#0d6948;border-color:#0d6948;color:#fff;box-shadow:0 10px 22px rgba(9,91,60,.18)}.uc-auto-tab.active span{color:#cfe9dc}
+      .uc-auto-editor{min-width:0;padding:18px;border:1px solid #d1e1d8;border-radius:17px;background:#f8fbf9}.uc-auto-switch-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border-radius:13px;background:#edf6f1}.uc-auto-switch{display:flex;align-items:center;gap:9px;font-weight:900;color:#23493a}.uc-auto-switch input{width:20px;height:20px;accent-color:#0d704c}.uc-auto-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:14px}.uc-auto-fields .full{grid-column:1/-1}.uc-auto-fields label{display:block;font-size:12px;font-weight:900;color:#315747}.uc-auto-fields input,.uc-auto-fields textarea{width:100%;margin-top:7px;font-size:15px!important}.uc-auto-fields textarea{min-height:210px;resize:vertical;line-height:1.55}.uc-auto-vars{margin-top:12px;padding:12px 14px;border-radius:12px;background:#eaf4ef;color:#456357;font-size:12px;line-height:1.65}.uc-auto-vars code{display:inline-block;margin:2px 3px;padding:2px 6px;border-radius:6px;background:#fff;color:#0c6847;font-size:12px}
+      .uc-auto-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:15px}.uc-auto-status{margin-top:12px;padding:11px 13px;border-radius:12px;background:#eff5f2;color:#527064;font-size:13px}.uc-auto-status.success{background:#e5f6ec;color:#08653d}.uc-auto-status.error{background:#fff0ee;color:#9b2f23}.uc-auto-status.warn{background:#fff6df;color:#765000}.uc-auto-preview{display:none;margin-top:16px;border:1px solid #bdd8c9;border-radius:17px;overflow:hidden;background:#e8f0eb}.uc-auto-preview.show{display:block}.uc-auto-preview iframe{display:block;width:100%;height:650px;border:0;background:#e8f0eb}.uc-auto-preview-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;background:#f3f8f5;border-bottom:1px solid #cfe0d7}
       .uc-preview{display:none;margin-top:14px;border:1px solid #bdd8c9;border-radius:17px;overflow:hidden;background:#e8f0eb}.uc-preview.show{display:block}.uc-preview-bar{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:#f3f8f5;border-bottom:1px solid #cfe0d7}.uc-preview iframe{display:block;width:100%;height:610px;border:0;background:#e8f0eb}
       .uc-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;padding:18px 24px;border-top:1px solid #d5e5dc;background:#fff}.uc-actions .btn{font-size:15px!important;padding:12px 17px!important}
-      @media(max-width:780px){.uc-hero{align-items:flex-start;flex-direction:column}.uc-hero .btn{width:100%}.uc-grid{grid-template-columns:1fr}.uc-grid .full{grid-column:auto}.uc-actions .btn{flex:1}.uc-blsd-row{grid-template-columns:1fr}}
+      @media(max-width:780px){.uc-hero{align-items:flex-start;flex-direction:column}.uc-hero .btn{width:100%}.uc-grid{grid-template-columns:1fr}.uc-grid .full{grid-column:auto}.uc-actions .btn{flex:1}.uc-blsd-row{grid-template-columns:1fr}.uc-auto-layout{grid-template-columns:1fr}.uc-auto-nav{display:grid;grid-template-columns:1fr 1fr}.uc-auto-fields{grid-template-columns:1fr}.uc-auto-fields .full{grid-column:auto}.uc-auto-actions .btn{flex:1}.uc-auto-preview iframe{height:560px}}
+      @media(max-width:520px){.uc-auto-nav{grid-template-columns:1fr}.uc-auto-switch-row{align-items:flex-start;flex-direction:column}.uc-auto-actions .btn{flex:1 1 100%}}
     `;
     d.head.appendChild(style);
   }
@@ -161,6 +214,49 @@
         <section class="uc-hero section-gap">
           <div><span class="eyebrow" style="color:#a9d8c1">NUOVA EMAIL</span><h2>Invia una comunicazione ufficiale</h2><p>Camp completo, giocatore singolo, categoria, staff BLSD oppure indirizzo manuale. Il destinatario riceverà sempre il template grafico FIL-ITALIA.</p></div>
           <button id="ucNewMain" class="btn primary">＋ Nuova comunicazione</button>
+        </section>
+        <section id="ucAutoSection" class="uc-card uc-auto-card section-gap">
+          <div class="topbar">
+            <div>
+              <div class="uc-auto-title"><h2>Risposte automatiche</h2><span id="ucAutoAccessBadge" class="uc-auto-badge">Solo Super Admin</span></div>
+              <div class="muted">Modifica le email inviate dopo una registrazione. Anteprima e prova usano lo stesso layout con logo della mail reale.</div>
+            </div>
+          </div>
+          <div class="uc-auto-layout">
+            <div class="uc-auto-nav" role="tablist" aria-label="Modelli automatici">
+              <button type="button" class="uc-auto-tab active" data-uc-auto-key="registration_confirmation" role="tab"><strong>Conferma al partecipante</strong><span>Modello per la risposta dopo l’iscrizione</span></button>
+              <button type="button" class="uc-auto-tab" data-uc-auto-key="internal_registration_notice" role="tab"><strong>Avviso allo staff</strong><span>Segnala la nuova registrazione</span></button>
+            </div>
+            <div class="uc-auto-editor">
+              <div class="uc-auto-switch-row">
+                <div><strong id="ucAutoName">Conferma registrazione</strong><div id="ucAutoAudience" class="muted">Destinatario: partecipante / genitore</div></div>
+                <label class="uc-auto-switch"><input id="ucAutoEnabled" type="checkbox" checked> Invio automatico attivo</label>
+              </div>
+              <div class="uc-auto-fields">
+                <label class="full">OGGETTO<input id="ucAutoSubject" maxlength="300" autocomplete="off"></label>
+                <label>TESTO ITALIANO<textarea id="ucAutoBodyIt" maxlength="20000"></textarea></label>
+                <label>TESTO INGLESE<textarea id="ucAutoBodyEn" maxlength="20000"></textarea></label>
+                <label>TESTO PULSANTE ITALIANO<input id="ucAutoCtaIt" maxlength="160" autocomplete="off"></label>
+                <label>TESTO PULSANTE INGLESE<input id="ucAutoCtaEn" maxlength="160" autocomplete="off"></label>
+                <label class="full">LINK DEL PULSANTE<input id="ucAutoCtaUrl" type="url" maxlength="1000" inputmode="url" placeholder="https://www.filitalianationselect.com"></label>
+                <label class="full uc-auto-switch"><input id="ucAutoDetails" type="checkbox" checked> Mostra nella mail il riepilogo con camp, data, luogo e città</label>
+                <label>EMAIL PER LA PROVA<input id="ucAutoTestEmail" type="email" autocomplete="email" placeholder="La tua email"></label>
+                <label>NOME NELLA PROVA<input id="ucAutoTestName" value="Mario Rossi" autocomplete="off"></label>
+              </div>
+              <div class="uc-auto-vars"><strong>Campi automatici:</strong> <code>{nome}</code><code>{giocatore}</code><code>{genitore}</code><code>{email}</code><code>{telefono}</code><code>{evento}</code><code>{citta}</code><code>{data}</code><code>{orario}</code><code>{luogo}</code><code>{anno}</code><code>{taglia}</code><code>{quota}</code></div>
+              <div id="ucAutoStatus" class="uc-auto-status">Caricamento dei modelli salvati…</div>
+              <div class="uc-auto-actions">
+                <button id="ucAutoReset" type="button" class="btn secondary">Ripristina testo base</button>
+                <button id="ucAutoPreviewButton" type="button" class="btn secondary">Anteprima email</button>
+                <button id="ucAutoSendTest" type="button" class="btn secondary">Invia una prova</button>
+                <button id="ucAutoSave" type="button" class="btn primary">Salva risposta automatica</button>
+              </div>
+              <div id="ucAutoPreview" class="uc-auto-preview">
+                <div class="uc-auto-preview-bar"><strong>Anteprima identica al destinatario</strong><button id="ucAutoPreviewClose" type="button" class="btn small secondary">Nascondi</button></div>
+                <iframe id="ucAutoPreviewFrame" title="Anteprima risposta automatica FIL-ITALIA"></iframe>
+              </div>
+            </div>
+          </div>
         </section>
         <div class="grid4 section-gap">
           <article class="card stat"><span>ISCRITTI CON EMAIL</span><strong id="ucStatEvent">0</strong><small>nell’evento selezionato</small></article>
@@ -310,15 +406,259 @@
     $("ucBody").value = value[1];
   }
 
-  function previewHtml(subject, body, event, recipientName) {
+  function previewHtml(subject, body, event, recipientName, options) {
     const info = eventPayload(event);
+    const design = options && typeof options === "object" ? options : {};
     const safeSubject = esc(replaceTokens(subject, recipientName, event));
     const safeBody = esc(replaceTokens(body, recipientName, event)).replace(/\r?\n/g, "<br>");
     const details = [
       ["EVENTO", info.name], ["DATA", info.dateLabel || info.date], ["ORARIO", info.time], ["LUOGO", info.venue], ["CITTÀ", info.city]
     ].filter((item) => clean(item[1]));
     const siteUrl = clean(window.FILITALIA_CONFIG && window.FILITALIA_CONFIG.siteUrl) || location.origin;
-    return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#e8f0eb;font-family:Arial,Helvetica,sans-serif;color:#17372b"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 8px;background:#e8f0eb"><tr><td align="center"><table role="presentation" width="620" cellpadding="0" cellspacing="0" style="width:100%;max-width:620px;background:#fff;border-radius:22px;overflow:hidden"><tr><td align="center" style="padding:30px 25px;background:linear-gradient(135deg,#052f21,#16805a)"><img src="${esc(siteUrl)}/images/logo.png" width="108" alt="FIL-ITALIA" style="display:block;height:auto;margin:0 auto 14px"><div style="font-size:11px;font-weight:800;letter-spacing:2px;color:#bfe3d1">FIL-ITALIA NATION SELECT</div><h1 style="margin:10px 0 0;font-size:26px;line-height:1.2;color:#fff">${safeSubject}</h1></td></tr><tr><td style="padding:32px"><div style="font-size:16px;line-height:1.7;color:#28493b">${safeBody}</div>${details.length ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#eef7f2;border:1px solid #c9dfd3;border-radius:14px">${details.map(([label, value]) => `<tr><td style="padding:11px 14px;font-size:11px;font-weight:800;color:#4d6c5d;width:95px">${esc(label)}</td><td style="padding:11px 14px;font-size:14px;font-weight:700;color:#133d2d">${esc(value)}</td></tr>`).join("")}</table>` : ""}<div style="text-align:center;margin-top:24px"><span style="display:inline-block;padding:13px 22px;border-radius:11px;background:#167451;color:#fff;font-size:14px;font-weight:800">Visita il sito FIL-ITALIA</span></div></td></tr><tr><td align="center" style="padding:21px;background:#f2f7f4;border-top:1px solid #dce9e2"><strong style="font-size:13px;color:#174a36">FIL-ITALIA Nation Select</strong><div style="margin-top:7px;font-size:12px;color:#70847a">Comunicazione inviata dal sistema ufficiale FIL-ITALIA.</div></td></tr></table></td></tr></table></body></html>`;
+    const requestedUrl = clean(design.ctaUrl);
+    const ctaUrl = /^https:\/\//i.test(requestedUrl) ? requestedUrl : siteUrl;
+    const ctaLabel = clean(design.ctaLabel) || "Visita il sito FIL-ITALIA";
+    const detailsHtml = design.includeEventDetails === false || !details.length ? "" : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#eef7f2;border:1px solid #c9dfd3;border-radius:14px">${details.map(([label, value]) => `<tr><td style="padding:11px 14px;font-size:11px;font-weight:800;color:#4d6c5d;width:95px">${esc(label)}</td><td style="padding:11px 14px;font-size:14px;font-weight:700;color:#133d2d">${esc(value)}</td></tr>`).join("")}</table>`;
+    const ctaHtml = ctaLabel && ctaUrl ? `<div style="text-align:center;margin-top:24px"><a href="${esc(ctaUrl)}" target="_blank" style="display:inline-block;padding:13px 22px;border-radius:11px;background:#167451;color:#fff;text-decoration:none;font-size:14px;font-weight:800">${esc(ctaLabel)}</a></div>` : "";
+    return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#e8f0eb;font-family:Arial,Helvetica,sans-serif;color:#17372b"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 8px;background:#e8f0eb"><tr><td align="center"><table role="presentation" width="620" cellpadding="0" cellspacing="0" style="width:100%;max-width:620px;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 16px 45px rgba(16,63,43,.16)"><tr><td align="center" style="padding:30px 25px;background:#073a28;background-image:linear-gradient(135deg,#052f21,#16805a)"><img src="${esc(siteUrl)}/images/logo.png" width="108" alt="FIL-ITALIA Nation Select" style="display:block;width:108px;max-width:45%;height:auto;margin:0 auto 14px;border:0"><div style="font-size:11px;font-weight:800;letter-spacing:2px;color:#bfe3d1">FIL-ITALIA NATION SELECT</div><h1 style="margin:10px 0 0;font-size:26px;line-height:1.2;color:#fff">${safeSubject}</h1></td></tr><tr><td style="padding:32px"><div style="font-size:16px;line-height:1.7;color:#28493b">${safeBody}</div>${detailsHtml}${ctaHtml}</td></tr><tr><td align="center" style="padding:21px;background:#f2f7f4;border-top:1px solid #dce9e2"><strong style="font-size:13px;color:#174a36">FIL-ITALIA Nation Select</strong><div style="margin-top:7px;font-size:12px;color:#70847a">Comunicazione inviata dal sistema ufficiale FIL-ITALIA.</div><div style="margin-top:9px;font-size:12px"><a href="${esc(siteUrl)}" style="color:#176b4b;text-decoration:none">filitalianationselect.com</a></div></td></tr></table></td></tr></table></body></html>`;
+  }
+
+  function automaticTemplate(key) {
+    const safeKey = key && AUTOMATIC_DEFAULTS[key] ? key : "registration_confirmation";
+    return Object.assign({}, AUTOMATIC_DEFAULTS[safeKey], automaticTemplates.get(safeKey) || {});
+  }
+
+  function automaticBody(template) {
+    const italian = String(template && template.body_it || "").trim();
+    const english = String(template && template.body_en || "").trim();
+    return english ? `${italian}\n\n────────────────────\nEnglish\n\n${english}` : italian;
+  }
+
+  function automaticCtaLabel(template) {
+    return [clean(template && template.cta_label_it), clean(template && template.cta_label_en)].filter(Boolean).join(" / ");
+  }
+
+  function automaticMockEvent() {
+    const selected = eventPayload(currentEvent());
+    return Object.assign({}, selected, {
+      id: selected.id || "camp-venezia-2026",
+      name: selected.name && selected.name !== "Evento FIL-ITALIA" ? selected.name : "Talent ID Camp Venezia",
+      city: selected.city || "Venezia",
+      date: selected.date || "2026-09-13",
+      dateLabel: selected.dateLabel || "13 settembre 2026",
+      time: selected.time || "09:00 - 13:00",
+      venue: selected.venue || "Centro Sportivo FIL-ITALIA",
+      playerName: "Mario Rossi",
+      guardianName: "Anna Rossi",
+      email: "anna.rossi@example.com",
+      phone: "+39 333 123 4567",
+      birthYear: "2012",
+      shirtSize: "M",
+      fee: "€50"
+    });
+  }
+
+  function automaticIsSuperAdmin() {
+    const role = automaticProfile && (automaticProfile.actual_role || automaticProfile.role);
+    return role === "super_admin" && automaticProfile.status === "active";
+  }
+
+  function automaticStatus(message, tone) {
+    const node = $("ucAutoStatus");
+    if (!node) return;
+    node.className = "uc-auto-status" + (tone ? " " + tone : "");
+    node.textContent = message;
+  }
+
+  function readAutomaticEditor() {
+    const current = automaticTemplate(automaticKey);
+    return Object.assign({}, current, {
+      enabled: Boolean($("ucAutoEnabled") && $("ucAutoEnabled").checked),
+      subject: $("ucAutoSubject") ? $("ucAutoSubject").value : current.subject,
+      body_it: $("ucAutoBodyIt") ? $("ucAutoBodyIt").value : current.body_it,
+      body_en: $("ucAutoBodyEn") ? $("ucAutoBodyEn").value : current.body_en,
+      cta_label_it: $("ucAutoCtaIt") ? $("ucAutoCtaIt").value : current.cta_label_it,
+      cta_label_en: $("ucAutoCtaEn") ? $("ucAutoCtaEn").value : current.cta_label_en,
+      cta_url: $("ucAutoCtaUrl") ? $("ucAutoCtaUrl").value : current.cta_url,
+      include_event_details: Boolean($("ucAutoDetails") && $("ucAutoDetails").checked)
+    });
+  }
+
+  function renderAutomaticEditor() {
+    if (!$("ucAutoSubject")) return;
+    const template = automaticTemplate(automaticKey);
+    $("ucAutoName").textContent = template.name;
+    $("ucAutoAudience").textContent = template.audience === "internal"
+      ? "Destinatario: staff FIL-ITALIA"
+      : "Destinatario: partecipante / genitore";
+    $("ucAutoEnabled").checked = template.enabled !== false;
+    $("ucAutoSubject").value = template.subject || "";
+    $("ucAutoBodyIt").value = template.body_it || "";
+    $("ucAutoBodyEn").value = template.body_en || "";
+    $("ucAutoCtaIt").value = template.cta_label_it || "";
+    $("ucAutoCtaEn").value = template.cta_label_en || "";
+    $("ucAutoCtaUrl").value = template.cta_url || "";
+    $("ucAutoDetails").checked = template.include_event_details !== false;
+
+    d.querySelectorAll("[data-uc-auto-key]").forEach((button) => {
+      const active = button.dataset.ucAutoKey === automaticKey;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+
+    const real = realMode();
+    const canEdit = !real || automaticIsSuperAdmin();
+    ["ucAutoEnabled", "ucAutoSubject", "ucAutoBodyIt", "ucAutoBodyEn", "ucAutoCtaIt", "ucAutoCtaEn", "ucAutoCtaUrl", "ucAutoDetails"].forEach((id) => {
+      if ($(id)) $(id).disabled = !canEdit;
+    });
+    $("ucAutoReset").disabled = !canEdit;
+    $("ucAutoSave").disabled = !automaticBackendReady || !automaticIsSuperAdmin();
+
+    const badge = $("ucAutoAccessBadge");
+    if (badge) {
+      badge.className = "uc-auto-badge";
+      if (automaticIsSuperAdmin()) badge.textContent = automaticBackendReady ? "Super Admin · collegato" : "Super Admin · in attesa";
+      else if (real) {
+        badge.textContent = "Sola lettura";
+        badge.classList.add("locked");
+      } else {
+        badge.textContent = "Anteprima locale";
+        badge.classList.add("warn");
+      }
+    }
+    if (automaticProfile && $("ucAutoTestEmail") && !$("ucAutoTestEmail").value) {
+      $("ucAutoTestEmail").value = clean(automaticProfile.email);
+    }
+  }
+
+  async function loadAutomaticTemplates() {
+    automaticTemplates = new Map(Object.keys(AUTOMATIC_DEFAULTS).map((key) => [key, Object.assign({}, AUTOMATIC_DEFAULTS[key])]));
+    automaticProfile = null;
+    automaticBackendReady = false;
+    if (!realMode()) {
+      renderAutomaticEditor();
+      automaticStatus("Anteprima disponibile. Accedi alla modalità reale come Super Admin per salvare i modelli.", "warn");
+      return;
+    }
+    try {
+      const admin = await window.FilitaliaAdminData.requireAdmin();
+      automaticProfile = admin.profile;
+      const rows = await window.FilitaliaAdminData.listAutomaticEmailTemplates();
+      (rows || []).forEach((row) => {
+        if (row && AUTOMATIC_DEFAULTS[row.template_key]) {
+          automaticTemplates.set(row.template_key, Object.assign({}, AUTOMATIC_DEFAULTS[row.template_key], row));
+        }
+      });
+      automaticBackendReady = true;
+      renderAutomaticEditor();
+      automaticStatus(automaticIsSuperAdmin()
+        ? "Modelli caricati. Modifica il testo, controlla l’anteprima e invia una prova prima della pubblicazione."
+        : "Puoi vedere e provare i modelli. Solo il Super Admin può modificarli.", automaticIsSuperAdmin() ? "success" : "");
+    } catch (error) {
+      const message = String(error && error.message || error || "");
+      renderAutomaticEditor();
+      automaticStatus(message.includes("automatic_email_templates") || message.toLowerCase().includes("schema cache")
+        ? "L’editor è pronto, ma l’aggiornamento del database non è ancora installato su questo ambiente."
+        : "Modelli non caricati: " + message, "error");
+    }
+  }
+
+  function showAutomaticPreview() {
+    const template = readAutomaticEditor();
+    automaticTemplates.set(automaticKey, template);
+    const name = clean($("ucAutoTestName") && $("ucAutoTestName").value) || "Mario Rossi";
+    const event = automaticMockEvent();
+    event.playerName = name;
+    $("ucAutoPreviewFrame").srcdoc = previewHtml(template.subject, automaticBody(template), event, name, {
+      ctaLabel: automaticCtaLabel(template),
+      ctaUrl: template.cta_url,
+      includeEventDetails: template.include_event_details
+    });
+    $("ucAutoPreview").classList.add("show");
+    $("ucAutoPreview").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  async function saveAutomaticTemplate() {
+    if (automaticBusy || !automaticIsSuperAdmin()) return;
+    const template = readAutomaticEditor();
+    if (!clean(template.subject) || !clean(template.body_it)) return automaticStatus("Oggetto e testo italiano sono obbligatori.", "error");
+    if (clean(template.cta_url) && !/^https:\/\//i.test(clean(template.cta_url))) return automaticStatus("Il link del pulsante deve iniziare con https://", "error");
+    automaticBusy = true;
+    const button = $("ucAutoSave");
+    const old = button.textContent;
+    button.disabled = true;
+    button.textContent = "Salvataggio…";
+    try {
+      const saved = await window.FilitaliaAdminData.saveAutomaticEmailTemplate(template);
+      automaticTemplates.set(automaticKey, Object.assign({}, template, saved));
+      renderAutomaticEditor();
+      automaticStatus("Modello salvato. L’anteprima e la prova usano subito questo testo.", "success");
+      notify("Risposta automatica salvata.");
+    } catch (error) {
+      automaticStatus("Salvataggio non riuscito: " + (error.message || error), "error");
+    } finally {
+      automaticBusy = false;
+      button.disabled = !automaticBackendReady || !automaticIsSuperAdmin();
+      button.textContent = old;
+    }
+  }
+
+  async function sendAutomaticTest() {
+    if (automaticBusy) return;
+    const email = clean($("ucAutoTestEmail") && $("ucAutoTestEmail").value).toLowerCase();
+    if (!EMAIL_RE.test(email)) return automaticStatus("Inserisci un indirizzo email valido per la prova.", "error");
+    if (!realMode()) return automaticStatus("Accedi ai dati reali prima di inviare una prova.", "error");
+    const template = readAutomaticEditor();
+    const name = clean($("ucAutoTestName") && $("ucAutoTestName").value) || "Mario Rossi";
+    const event = automaticMockEvent();
+    event.playerName = name;
+    automaticBusy = true;
+    const button = $("ucAutoSendTest");
+    const old = button.textContent;
+    button.disabled = true;
+    button.textContent = "Invio prova…";
+    try {
+      const result = await window.FilitaliaAdminData.sendEmail({
+        event_id: event.id || null,
+        event,
+        subject: template.subject,
+        body_template: automaticBody(template),
+        cta_label: automaticCtaLabel(template),
+        cta_url: template.cta_url,
+        include_event_details: template.include_event_details,
+        audience: { mode: "automatic_template_test", template_key: automaticKey, test: true, branded_html: true },
+        recipients: [{ email, name, registration_id: null }]
+      });
+      automaticStatus(`Prova inviata a ${email}: ${Number(result.sent || 0)} riuscita/e, ${Number(result.failed || 0)} errori.`, Number(result.failed || 0) ? "warn" : "success");
+      notify("Email di prova inviata.");
+    } catch (error) {
+      automaticStatus("Invio prova non riuscito: " + (error.message || error), "error");
+    } finally {
+      automaticBusy = false;
+      button.disabled = false;
+      button.textContent = old;
+    }
+  }
+
+  function bindAutomaticEditor() {
+    d.querySelectorAll("[data-uc-auto-key]").forEach((button) => {
+      button.onclick = () => {
+        automaticTemplates.set(automaticKey, readAutomaticEditor());
+        automaticKey = button.dataset.ucAutoKey;
+        renderAutomaticEditor();
+        $("ucAutoPreview").classList.remove("show");
+      };
+    });
+    $("ucAutoReset").onclick = () => {
+      if (!confirm("Ripristinare il testo base di questo modello? Dovrai poi premere Salva.")) return;
+      automaticTemplates.set(automaticKey, Object.assign({}, AUTOMATIC_DEFAULTS[automaticKey]));
+      renderAutomaticEditor();
+      automaticStatus("Testo base ripristinato nell’editor. Premi Salva per renderlo ufficiale.", "warn");
+    };
+    $("ucAutoPreviewButton").onclick = showAutomaticPreview;
+    $("ucAutoPreviewClose").onclick = () => $("ucAutoPreview").classList.remove("show");
+    $("ucAutoSendTest").onclick = sendAutomaticTest;
+    $("ucAutoSave").onclick = saveAutomaticTemplate;
   }
 
   async function showPreview() {
@@ -535,6 +875,8 @@
     await loadEvents();
     await loadStaff();
     eventRows = await loadRows(events[0] && events[0].id);
+    bindAutomaticEditor();
+    await loadAutomaticTemplates();
     renderBlsd();
     updateStats();
     await renderHistory();

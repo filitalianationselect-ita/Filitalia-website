@@ -389,6 +389,60 @@
     return result.data || {};
   }
 
+  async function listAutomaticEmailTemplates() {
+    await requireAdmin();
+    const result = await client()
+      .from("automatic_email_templates")
+      .select("template_key,name,audience,enabled,subject,body_it,body_en,cta_label_it,cta_label_en,cta_url,include_event_details,updated_at")
+      .order("template_key", { ascending: true });
+    if (result.error) throw result.error;
+    return result.data || [];
+  }
+
+  async function saveAutomaticEmailTemplate(payload) {
+    const admin = await requireAdmin();
+    const role = admin.profile && (admin.profile.actual_role || admin.profile.role);
+    if (role !== "super_admin") throw new Error("SUPER_ADMIN_REQUIRED");
+
+    const templateKey = clean(payload && payload.template_key, 80);
+    const name = clean(payload && payload.name, 120);
+    const audience = clean(payload && payload.audience, 30);
+    const subject = clean(payload && payload.subject, 300);
+    const bodyIt = clean(payload && payload.body_it, 20000);
+    const bodyEn = clean(payload && payload.body_en, 20000);
+    const ctaUrl = clean(payload && payload.cta_url, 1000);
+    if (!/^[a-z][a-z0-9_]{2,79}$/.test(templateKey)) throw new Error("INVALID_TEMPLATE_KEY");
+    if (!name || !["participant", "internal"].includes(audience) || !subject || !bodyIt) throw new Error("EMAIL_TEMPLATE_REQUIRED_FIELDS");
+    if (ctaUrl && !/^https:\/\//i.test(ctaUrl)) throw new Error("EMAIL_TEMPLATE_HTTPS_CTA_REQUIRED");
+
+    const record = {
+      template_key: templateKey,
+      name,
+      audience,
+      enabled: Boolean(payload && payload.enabled),
+      subject,
+      body_it: bodyIt,
+      body_en: bodyEn,
+      cta_label_it: clean(payload && payload.cta_label_it, 160),
+      cta_label_en: clean(payload && payload.cta_label_en, 160),
+      cta_url: ctaUrl,
+      include_event_details: payload && payload.include_event_details !== false,
+      updated_by: admin.profile.id
+    };
+    const result = await client()
+      .from("automatic_email_templates")
+      .upsert(record, { onConflict: "template_key" })
+      .select("template_key,name,audience,enabled,subject,body_it,body_en,cta_label_it,cta_label_en,cta_url,include_event_details,updated_at")
+      .single();
+    if (result.error) throw result.error;
+    await addAudit(null, null, "automatic_email_template_updated", {
+      template_key: templateKey,
+      enabled: record.enabled,
+      include_event_details: record.include_event_details
+    });
+    return result.data;
+  }
+
   function exportCsv(rows, filename) {
     const columns = [
       ["Nome", "name"], ["Email", "email"], ["Telefono", "phone"], ["Anno", "year"],
@@ -425,6 +479,8 @@
     getGmailConnection,
     startGmailConnection,
     sendEmail,
+    listAutomaticEmailTemplates,
+    saveAutomaticEmailTemplate,
     exportCsv
   });
 })();
