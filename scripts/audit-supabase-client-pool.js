@@ -3,7 +3,7 @@ const path = require('path');
 const vm = require('vm');
 
 const root = process.cwd();
-const assetVersion = '20260822-2';
+const assetVersions = new Set(['20260822-2', '20260906-1']);
 const allowed = new Set([
   'auth-client.js',
   'supabase-config.js',
@@ -61,7 +61,7 @@ const staleReferences = walk(root)
     return pooledAssets.flatMap(asset => {
       const matches = [...source.matchAll(new RegExp(`${asset.replace(/\./g, '\\.')}\\?v=([^\"']+)`, 'g'))];
       return matches
-        .filter(match => match[1] !== assetVersion)
+        .filter(match => !assetVersions.has(match[1]))
         .map(match => `${path.relative(root, file)} -> ${asset}?v=${match[1]}`);
     });
   });
