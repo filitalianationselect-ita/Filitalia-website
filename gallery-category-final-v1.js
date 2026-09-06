@@ -1,6 +1,7 @@
 (function(){
 'use strict';
 let timer=0;
+const PUBLIC_MEDIA_VISIBLE=false;
 function language(){try{return String(localStorage.getItem('language')||document.documentElement.lang||'it').toLowerCase()}catch(_){return'it'}}
 function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(char){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]})}
 function monthLabel(value){
@@ -43,6 +44,7 @@ function enforceLayout(container){
 function render(){
   const container=document.getElementById('galleryAlbumsGrid');
   if(!container||typeof galleryData==='undefined'||!Array.isArray(galleryData))return;
+  if(!PUBLIC_MEDIA_VISIBLE){container.className='fil-month-archive';container.innerHTML='<div class="fil-gallery-empty"><h3>MEDIA IN PREPARAZIONE</h3><p>Gli album saranno pubblicati quando saranno pronti.</p></div>';enforceLayout(container);return}
   const category=document.body.dataset.galleryCategory;
   const albums=galleryData.filter(function(album){return album.category===category}).slice().sort(function(a,b){return String(a.sortDate||'9999-12-31').localeCompare(String(b.sortDate||'9999-12-31'))});
   container.className='fil-month-archive';
