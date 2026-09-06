@@ -1,4 +1,9 @@
 @import url("site-global-polish-v3.css?v=1");
+/* The language control must remain available on every public viewport. */
+@media(max-width:900px){
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions .language-switch{display:flex!important;align-items:center!important;gap:3px!important}
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions .language-switch button{display:grid!important;place-items:center!important;width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;font-size:9px!important}
+}
 /* Highest-priority collision shield for the public navbar */
 @media(min-width:901px){
   html body.fil-final-site .navbar.fil-final-navbar .mobile-menu-button,
