@@ -18,8 +18,8 @@
       !loaded &&
       typeof playersData !== "undefined" &&
       Array.isArray(playersData) &&
-      window.supabase &&
-      typeof window.supabase.createClient === "function" &&
+      window.FilitaliaSupabase &&
+      typeof window.FilitaliaSupabase.getPublicClient === "function" &&
       cfg.supabaseUrl &&
       cfg.supabasePublishableKey
     );
@@ -43,18 +43,8 @@
     if (!canLoad()) return;
     loaded = true;
 
-    const cfg = window.FILITALIA_CONFIG;
-    const client = window.supabase.createClient(
-      cfg.supabaseUrl,
-      cfg.supabasePublishableKey,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false
-        }
-      }
-    );
+    const client = window.FilitaliaSupabase.getPublicClient();
+    if (!client) return;
 
     try {
       const result = await client

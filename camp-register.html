@@ -3,125 +3,158 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="FIL-ITALIA Nation Select Basketball Program in Italy. Camps, tournaments, player development and international opportunities.">
+<meta name="description" content="Registrazione ai camp FIL-ITALIA Nation Select. Scegli l'evento e completa i dati del partecipante.">
 <meta property="og:image" content="images/logo.png">
-<meta property="og:title" content="FIL-ITALIA Nation Select">
-<meta property="og:description" content="Camps, tournaments and player development for Fil-Italian basketball athletes.">
-<title>FIL-ITALIA Camp Registration</title>
+<meta property="og:title" content="FIL-ITALIA Camp Registration">
+<meta property="og:description" content="Registrati ai camp e agli eventi FIL-ITALIA Nation Select.">
+<title>FIL-ITALIA | Registrazione Camp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=800">
 <link rel="stylesheet" href="profile-camp-fix.css?v=800">
 <link rel="stylesheet" href="form-required-fields.css?v=800">
+<link rel="stylesheet" href="public-pages-v1.css?v=2">
+<link rel="stylesheet" href="public-pages-v2.css?v=1">
+<link rel="stylesheet" href="public-concept2-final-v1.css?v=1">
+<link rel="stylesheet" href="site-final-pass-v1.css?v=4">
+<link rel="stylesheet" href="site-final-priority-v2.css?v=2">
+<link rel="stylesheet" href="camp-register-redesign-v2.css?v=3">
 <link rel="icon" type="image/png" href="images/logo.png">
 <link rel="apple-touch-icon" href="images/logo.png">
 </head>
-<body>
+<body class="fil-public-body fil-page-camp-register">
 <div class="background-logo"></div>
 <nav class="navbar">
-  <a href="index.html" class="logo-area">
-    <img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo">
-    <div class="logo-text">FIL-ITALIA</div>
-  </a>
-  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
+  <a href="index.html" class="logo-area"><img src="images/logo.png" class="nav-logo" alt="FIL-ITALIA Logo"><div class="logo-text">FIL-ITALIA</div></a>
+  <button class="mobile-menu-button" type="button" onclick="toggleMobileMenu()" aria-label="Apri menu">☰</button>
   <div class="nav-links" id="navLinks">
     <a href="index.html" data-key="navHome">Home</a>
-    <a href="players.html" data-key="navPlayers">Players</a>
-    <a href="gallery.html" data-key="navGallery">Gallery</a>
+    <a href="index.html#about">Chi siamo</a>
+    <a href="players.html" data-key="navPlayers">Giocatori</a>
+    <a href="gallery.html" data-key="navGallery">Media</a>
     <a href="staff.html" data-key="navStaff">Staff</a>
     <a href="news.html" data-key="navNews">News</a>
-    <a href="events.html" data-key="navEvents">Events</a>
-    <a href="account.html" data-filitalia-account-link="true">Account</a><a href="camp-register.html" data-key="navCamp">Camp</a>
-    <a href="index.html#contact" data-key="navContact">Contact</a>
+    <a href="events.html" data-key="navEvents">Eventi</a>
+    <a href="camp-register.html" data-key="navCamp">Camp</a>
+    <a href="index.html#contact-modal" data-key="navContact">Contatti</a>
   </div>
-  <div class="language-switch">
-    <button onclick="setLanguage('it')">IT</button>
-    <button onclick="setLanguage('en')">EN</button>
-    <button onclick="setLanguage('ph')">PH</button>
-  </div>
+  <div class="language-switch"><button onclick="setLanguage('it')">IT</button><button onclick="setLanguage('en')">EN</button><button onclick="setLanguage('ph')">PH</button></div>
 </nav>
 
-<section class="players-page registration-page">
-  <h1 data-key="campPageTitle">REGISTRAZIONE CAMP</h1>
-  <div class="players-button-row"><a href="events.html" class="players-list-link" data-key="backEvents">← Torna agli Eventi</a></div>
-  <p class="page-subtitle" data-key="campSiteSubtitle">Iscriviti a un camp FIL-ITALIA direttamente dal sito. I dati verranno inviati alla scheda CAMPS.</p>
+<main class="camp-registration-main">
+  <header class="camp-registration-hero">
+    <div class="camp-registration-copy">
+      <div class="camp-registration-brand"><img src="images/logo.png" alt=""><span>FIL-ITALIA NATION SELECT</span></div>
+      <h1 data-key="campPageTitle">REGISTRAZIONE CAMP</h1>
+      <p>Seleziona l'evento, inserisci i dati del partecipante e completa l'iscrizione in pochi minuti. Le informazioni saranno collegate al camp scelto e alla relativa lista partecipanti.</p>
+      <a class="camp-registration-back" href="events.html" data-key="backEvents">← Torna agli Eventi</a>
+    </div>
+    <aside class="camp-registration-summary" aria-label="Cosa serve per registrarsi">
+      <small>PRIMA DI INIZIARE</small>
+      <h2>Prepara queste informazioni</h2>
+      <ul>
+        <li><b>01</b><span>Camp scelto e dati anagrafici del giocatore.</span></li>
+        <li><b>02</b><span>Dati del genitore o tutore quando il partecipante è minorenne.</span></li>
+        <li><b>03</b><span>Taglia della maglia e una foto recente del giocatore.</span></li>
+      </ul>
+    </aside>
+  </header>
 
-  <p id="campProfileNotice" class="form-profile-notice info" hidden></p>
-
-  <form class="site-registration-form" id="campForm" data-form-type="camp_registration">
-    <input type="hidden" name="formType" value="camp_registration">
-    <input type="hidden" name="sourcePage" value="camp-register.html">
-
-    <div class="form-section-card">
-      <h2 data-key="campEventInfoTitle">Evento</h2>
-      <div class="form-grid">
-        <label><span data-key="eventLabel">Camp Name</span>
-          <select name="Camp Name" id="campEventSelect" required>
-            <option value="" data-key="selectEventOption">Seleziona evento</option>
-          </select>
-        </label>
-        <label><span data-key="campCityLabel">Camp City</span><input name="Camp City" id="campEventCity" readonly maxlength="250"></label>
-        <label><span data-key="campDateLabel">Camp Date</span><input name="Camp Date" id="campEventDate" readonly maxlength="250"></label>
+  <div class="camp-registration-workspace">
+    <section class="camp-form-shell" aria-labelledby="campFormHeading">
+      <div class="camp-form-intro">
+        <div><small>MODULO UFFICIALE</small><h2 id="campFormHeading">Completa l'iscrizione</h2></div>
+        <p>I campi contrassegnati come obbligatori devono essere compilati prima dell'invio.</p>
       </div>
-    </div>
 
-    <div class="form-section-card guardian-section">
-      <h2 data-key="guardianDataTitle">Dati genitore/tutore</h2>
-      <p class="form-note" data-key="guardianDataNote">Compilare se il partecipante è minorenne.</p>
-      <div class="form-grid">
-        <label><span data-key="guardianFirstNameLabel">Nome Genitore</span><input name="Nome Genitore" maxlength="250"></label>
-        <label><span data-key="guardianLastNameLabel">Cognome Genitore</span><input name="Cognome Genitore" maxlength="250"></label>
-        <label><span data-key="guardianEmailLabel">Email Genitore</span><input type="email" name="Email Genitore" maxlength="254"></label>
-        <label><span data-key="guardianPhoneLabel">Telefono Genitore</span><input name="Telefono Genitore" maxlength="250"></label>
-        <label><span data-key="guardianDocumentLabel">Documento Genitore</span><input name="Documento Genitore" placeholder="Carta d'identità / Passaporto" maxlength="250"></label>
-      </div>
-    </div>
+      <p id="campProfileNotice" class="form-profile-notice info" hidden></p>
 
-    <div class="form-section-card">
-      <h2 data-key="athleteInfoTitle">Dati giocatore</h2>
-      <div class="form-grid">
-        <label><span data-key="playerFirstNameLabel">Nome Giocatore</span><input name="Nome" required maxlength="250"></label>
-        <label><span data-key="playerLastNameLabel">Cognome Giocatore</span><input name="Cognome" required maxlength="250"></label>
-        <label><span data-key="sexLabel">Sesso</span>
-          <select name="Sesso">
-            <option value="">-</option>
-            <option value="Maschio">Maschio</option>
-            <option value="Femmina">Femmina</option>
-          </select>
-        </label>
-        <label><span data-key="birthDateLabel">Data Nascita</span><input type="date" name="Data Nascita" required></label>
-        <label><span data-key="residenceCityLabel">Città di Residenza</span><input name="Città di Residenza" maxlength="250"></label>
-        <label><span data-key="playerEmailLabel">Email Giocatore</span><input type="email" name="Email Giocatore" placeholder="solo se maggiorenne / if adult" maxlength="254"></label>
-        <label><span data-key="playerPhoneLabel">Telefono Giocatore</span><input name="Telefono Giocatore" placeholder="solo se maggiorenne / if adult" maxlength="250"></label>
-        <label><span data-key="shirtSizeLabel">Taglia Maglia</span><select name="Taglia Maglia" required><option value="">Seleziona taglia</option><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option></select></label>
-        <label id="campPhotoField"><span data-key="playerPhotoLabel">Foto Giocatore</span><input id="campPlayerPhoto" type="file" name="Foto Giocatore" accept="image/jpeg,image/png,image/webp" required><small>Non serve se accedi con un profilo Player attivo che ha già una foto salvata.</small></label>
-      </div>
-    </div>
+      <form class="site-registration-form" id="campForm" data-form-type="camp_registration">
+        <input type="hidden" name="formType" value="camp_registration">
+        <input type="hidden" name="sourcePage" value="camp-register.html">
 
-    <div class="form-section-card">
-      <h2 data-key="privacyTitle">Privacy e consensi</h2>
-      <label class="check-row"><input type="checkbox" name="Privacy Consent" value="yes" required><span data-key="privacyConsentLabel">Accetto il trattamento dei dati secondo la Privacy Policy.</span></label>
-      <label class="check-row"><input type="checkbox" name="Media Consent" value="yes"><span data-key="mediaConsentLabel">Autorizzo l’utilizzo di foto/video per comunicazioni ufficiali FIL-ITALIA.</span></label>
-      <button type="submit" class="submit-registration-button" data-key="submitCampButton">ISCRIVITI AL CAMP</button>
-      <p class="form-status" id="campFormStatus"></p>
-    </div>
-  </form>
-</section>
+        <div class="form-section-card" data-step="01">
+          <h2 data-key="campEventInfoTitle">Evento</h2>
+          <div class="form-grid">
+            <label><span data-key="eventLabel">Camp</span>
+              <select name="Camp Name" id="campEventSelect" required><option value="" data-key="selectEventOption">Seleziona evento</option></select>
+            </label>
+            <label><span data-key="campCityLabel">Città</span><input name="Camp City" id="campEventCity" readonly maxlength="250"></label>
+            <label><span data-key="campDateLabel">Data</span><input name="Camp Date" id="campEventDate" readonly maxlength="250"></label>
+          </div>
+        </div>
 
-<footer>
-<img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo">
-<p data-key="footerText">© 2026 FIL-ITALIA Basketball</p>
-<div class="footer-links"><a href="privacy.html">Privacy Policy</a></div>
-</footer>
-<script src="events-data.js?v=800"></script>
+        <div class="form-section-card guardian-section" data-step="02">
+          <h2 data-key="guardianDataTitle">Dati genitore/tutore</h2>
+          <p class="form-note" data-key="guardianDataNote">Compilare se il partecipante è minorenne.</p>
+          <div class="form-grid">
+            <label><span data-key="guardianFirstNameLabel">Nome Genitore</span><input name="Nome Genitore" maxlength="250" autocomplete="given-name"></label>
+            <label><span data-key="guardianLastNameLabel">Cognome Genitore</span><input name="Cognome Genitore" maxlength="250" autocomplete="family-name"></label>
+            <label><span data-key="guardianEmailLabel">Email Genitore</span><input type="email" name="Email Genitore" maxlength="254" autocomplete="email"></label>
+            <label><span data-key="guardianPhoneLabel">Telefono Genitore</span><input name="Telefono Genitore" maxlength="250" autocomplete="tel"></label>
+            <label><span data-key="guardianDocumentLabel">Documento Genitore</span><input name="Documento Genitore" placeholder="Carta d'identità / Passaporto" maxlength="250"></label>
+          </div>
+        </div>
+
+        <div id="campPlayersContainer" class="camp-players-container">
+        <div class="form-section-card camp-player-entry" data-step="03" data-player-index="1">
+          <div class="camp-player-heading">
+            <h2><span data-key="athleteInfoTitle">Dati giocatore</span> <span class="camp-player-number">1</span></h2>
+            <button type="button" class="camp-remove-player" hidden>Rimuovi</button>
+          </div>
+          <div class="form-grid camp-player-fields">
+            <label><span data-key="playerFirstNameLabel">Nome Giocatore</span><input name="Nome" required maxlength="250" autocomplete="given-name"></label>
+            <label><span data-key="playerLastNameLabel">Cognome Giocatore</span><input name="Cognome" required maxlength="250" autocomplete="family-name"></label>
+            <label><span data-key="sexLabel">Sesso</span><select name="Sesso"><option value="">Seleziona</option><option value="Maschio">Maschio</option><option value="Femmina">Femmina</option></select></label>
+            <label><span data-key="birthDateLabel">Data Nascita</span><input type="date" name="Data Nascita" required></label>
+            <label><span data-key="residenceCityLabel">Città di Residenza</span><input name="Città di Residenza" maxlength="250" autocomplete="address-level2"></label>
+            <label><span data-key="playerEmailLabel">Email Giocatore</span><input type="email" name="Email Giocatore" placeholder="Solo se maggiorenne" maxlength="254" autocomplete="email"></label>
+            <label><span data-key="playerPhoneLabel">Telefono Giocatore</span><input name="Telefono Giocatore" placeholder="Solo se maggiorenne" maxlength="250" autocomplete="tel"></label>
+            <label><span data-key="shirtSizeLabel">Taglia Maglia</span><select name="Taglia Maglia" required><option value="">Seleziona taglia</option><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option></select></label>
+            <label id="campPhotoField"><span data-key="playerPhotoLabel">Foto Giocatore</span><input id="campPlayerPhoto" type="file" name="Foto Giocatore" accept="image/jpeg,image/png,image/webp" required><small>Non serve quando accedi con un profilo Player attivo che possiede già una foto salvata.</small></label>
+          </div>
+        </div>
+        </div>
+
+        <div class="camp-multi-actions">
+          <button type="button" id="campAddPlayer" class="camp-add-player">＋ AGGIUNGI UN ALTRO GIOCATORE</button>
+          <p>Il camp, i dati del genitore e i consensi restano gli stessi. Ogni giocatore avrà la propria registrazione e la propria foto.</p>
+        </div>
+
+        <div class="form-section-card" data-step="04">
+          <h2 data-key="privacyTitle">Privacy e consensi</h2>
+          <label class="check-row"><input type="checkbox" name="Privacy Consent" value="yes" required><span data-key="privacyConsentLabel">Accetto il trattamento dei dati secondo la Privacy Policy.</span></label>
+          <label class="check-row"><input type="checkbox" name="Media Consent" value="yes"><span data-key="mediaConsentLabel">Autorizzo l'utilizzo di foto e video per le comunicazioni ufficiali FIL-ITALIA.</span></label>
+          <button type="submit" class="submit-registration-button" data-key="submitCampButton">INVIA LE ISCRIZIONI</button>
+          <p class="form-status" id="campFormStatus"></p>
+        </div>
+      </form>
+    </section>
+
+    <aside class="camp-registration-aside">
+      <section class="camp-aside-card dark"><small>PROFILO PLAYER</small><h3>Registrazione più veloce</h3><p>Con un profilo Player attivo alcuni dati possono essere compilati automaticamente e non devi caricare nuovamente la foto.</p><a href="login.html">Accedi al profilo →</a></section>
+      <section class="camp-aside-card"><small>ASSISTENZA</small><h3>Hai un dubbio?</h3><p>Contattaci prima dell'invio per domande su categorie, maglie, documenti o partecipazione.</p><a href="index.html#contact-modal">Contatta FIL-ITALIA →</a></section>
+      <section class="camp-aside-card"><small>PRIVACY</small><h3>Dati protetti</h3><p>I dati vengono utilizzati esclusivamente per gestire l'iscrizione e le attività collegate al programma.</p><a href="privacy.html">Leggi la Privacy Policy →</a></section>
+    </aside>
+  </div>
+</main>
+
+<footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p data-key="footerText">© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
+<script src="events-data.js?v=907"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js?v=800"></script>
+<script src="supabase-config.js?v=20260822-2"></script>
+<script src="public-content-bridge-v1.js?v=20260822-2"></script>
 <script src="auth-client.js?v=800"></script>
+<script src="registrations-service-v1.js?v=1"></script>
 <script src="camp-profile.js?v=800"></script>
-<script src="script.js?v=909"></script>
+<script src="script.js?v=803"></script>
 <script src="filitalia-i18n.js?v=800"></script>
+<script src="camp-event-selection-fix-v1.js?v=1"></script>
+<script src="camp-event-fields-v1.js?v=20260822-2"></script>
 <script src="filitalia-antispam.js?v=800"></script>
-<script src="form-required-fields.js?v=800"></script>
+<script src="camp-registration-submit-v1.js?v=3"></script>
+<script src="form-required-fields.js?v=800"></script>\n<script src="camp-u12-pricing-fix-v1.js?v=2"></script>
+<script src="site-final-pass-v1.js?v=4"></script>
 </body>
 </html>

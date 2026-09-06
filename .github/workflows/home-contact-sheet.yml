@@ -1,0 +1,44 @@
+name: FIL-ITALIA Compact Home Contact Sheet
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - ".github/workflows/home-contact-sheet.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  compact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/admin-panel-demo
+      - name: Build compact contact sheet
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 <<'PY'
+          from PIL import Image, ImageOps, ImageDraw
+          names=['top','players','gallery','staff','news','events']
+          labels=['HOME','PLAYERS','MEDIA','STAFF','NEWS','EVENTI']
+          canvas=Image.new('RGB',(640,660),'white')
+          draw=ImageDraw.Draw(canvas)
+          for index,(name,label) in enumerate(zip(names,labels)):
+              image=Image.open(f'visual-review/panel-{name}.jpg').convert('RGB')
+              image=ImageOps.fit(image,(300,180),method=Image.Resampling.LANCZOS)
+              x=10+(index%2)*320
+              y=10+(index//2)*215
+              draw.text((x,y),label,fill='black')
+              canvas.paste(image,(x,y+22))
+          canvas.save('/tmp/compact-home.jpg',quality=30,optimize=True)
+          PY
+          rm -f visual-review/compact-contact-part-*
+          base64 -w 0 /tmp/compact-home.jpg > /tmp/compact-home.b64
+          split -b 5000 -d -a 2 /tmp/compact-home.b64 visual-review/compact-contact-part-
+          git config user.name "filitalia-visual-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add visual-review
+          git commit -m "test: save compact horizontal contact sheet"
+          git push origin HEAD:agent/admin-panel-demo

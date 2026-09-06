@@ -1,0 +1,175 @@
+/* FIL-ITALIA Players + Media, unified with the final public system */
+body.fil-page-players,
+body.fil-page-gallery{
+  min-height:100vh!important;
+  color:#fff!important;
+  background:
+    radial-gradient(circle at 88% 10%,rgba(223,53,80,.18),transparent 27%),
+    radial-gradient(circle at 8% 82%,rgba(32,201,114,.16),transparent 30%),
+    linear-gradient(135deg,#020b08 0%,#06291d 58%,#071711 100%)!important;
+}
+body.fil-page-players::before,
+body.fil-page-gallery::before,
+body.fil-page-players .background-logo,
+body.fil-page-gallery .background-logo{display:none!important}
+
+body.fil-page-players .players-page,
+body.fil-page-gallery .players-page{
+  width:min(1220px,calc(100% - 42px))!important;
+  min-height:calc(100vh - var(--fil-final-nav,86px))!important;
+  margin:0 auto!important;
+  padding:58px 0 90px!important;
+  position:relative!important;
+  text-align:left!important;
+  background:transparent!important;
+}
+body.fil-page-players .players-page>h1,
+body.fil-page-gallery .players-page>h1{
+  max-width:900px!important;
+  margin:0 0 18px!important;
+  color:#fff!important;
+  font-size:clamp(3.2rem,7vw,6.5rem)!important;
+  line-height:.86!important;
+  letter-spacing:-.06em!important;
+  text-transform:uppercase!important;
+}
+body.fil-page-players .players-page>.page-subtitle,
+body.fil-page-gallery .players-page>.page-subtitle{
+  max-width:760px!important;
+  margin:0 0 34px!important;
+  padding:0!important;
+  color:#bed9cb!important;
+  background:transparent!important;
+  font-size:1rem!important;
+  font-weight:600!important;
+  line-height:1.6!important;
+}
+body.fil-page-players .fil-page-brand,
+body.fil-page-gallery .fil-page-brand{
+  margin-bottom:28px!important;
+  border-color:rgba(255,255,255,.13)!important;
+  background:rgba(255,255,255,.06)!important;
+}
+body.fil-page-players .fil-page-brand span,
+body.fil-page-gallery .fil-page-brand span{color:#8ff1bc!important}
+body.fil-page-players .players-list-link,
+body.fil-page-gallery .players-list-link{
+  min-height:46px!important;
+  padding:0 18px!important;
+  border:1px solid rgba(255,255,255,.2)!important;
+  border-radius:999px!important;
+  color:#fff!important;
+  background:#07864a!important;
+  box-shadow:none!important;
+}
+
+/* PLAYERS */
+body.fil-page-players .fil-player-page-tools{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(190px,.5fr))!important;
+  gap:12px!important;
+  margin:30px 0 22px!important;
+}
+body.fil-page-players .fil-player-page-tools input,
+body.fil-page-players .fil-player-page-tools select{
+  min-height:48px!important;
+  padding:0 15px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:12px!important;
+  color:#effff7!important;
+  background:rgba(255,255,255,.08)!important;
+  font:inherit!important;
+  font-weight:700!important;
+  outline:none!important;
+}
+body.fil-page-players .fil-player-page-tools input::placeholder{color:#9bc7b1!important}
+body.fil-page-players .fil-player-page-tools select option{color:#10261c!important;background:#fff!important}
+body.fil-page-players .fil-player-page-spotlight{
+  min-height:500px!important;
+  margin:0 0 24px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:30px!important;
+  background:linear-gradient(135deg,#b5233d 0%,#6f1628 44%,#073825 100%)!important;
+  box-shadow:0 32px 82px rgba(0,0,0,.32)!important;
+}
+body.fil-page-players .fil-player-spotlight-copy{padding:46px!important}
+body.fil-page-players .fil-player-spotlight-copy h2{color:#fff!important;font-size:clamp(2.7rem,5vw,5.2rem)!important}
+body.fil-page-players .fil-player-spotlight-copy p{color:#d8e9e0!important}
+body.fil-page-players .fil-player-card-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:20px!important;
+}
+body.fil-page-players .fil-roster-card{
+  min-height:410px!important;
+  height:410px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:26px!important;
+  background:#0a3628!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.27)!important;
+}
+body.fil-page-players .fil-roster-card::after{background:linear-gradient(0deg,rgba(1,17,11,.97),rgba(1,17,11,.08) 72%)!important}
+body.fil-page-players .fil-roster-card-copy{left:24px!important;right:24px!important;bottom:23px!important}
+body.fil-page-players .fil-roster-card-copy small{color:#88efba!important}
+body.fil-page-players .fil-roster-card-copy strong{font-size:1.42rem!important}
+
+/* MEDIA */
+body.fil-page-gallery .fil-media-filters{margin:30px 0 22px!important}
+body.fil-page-gallery .fil-media-filter{
+  min-height:44px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  color:#c7ded2!important;
+  background:rgba(255,255,255,.06)!important;
+}
+body.fil-page-gallery .fil-media-filter.is-active{color:#06271b!important;background:#8df2bd!important;border-color:#8df2bd!important}
+body.fil-page-gallery .fil-media-grid,
+body.fil-page-gallery #galleryCategoryGrid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:20px!important;
+}
+body.fil-page-gallery .fil-media-card,
+body.fil-page-gallery #galleryCategoryGrid>*{
+  grid-column:auto!important;
+  min-height:390px!important;
+  height:390px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:26px!important;
+  background:#0a3628!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.27)!important;
+}
+body.fil-page-gallery .fil-media-card:nth-child(n){grid-column:auto!important;min-height:390px!important}
+body.fil-page-gallery .fil-media-card::after{background:linear-gradient(0deg,rgba(1,17,11,.97),rgba(1,17,11,.08) 72%)!important}
+body.fil-page-gallery .fil-media-copy{left:24px!important;right:24px!important;bottom:23px!important}
+body.fil-page-gallery .fil-media-copy small{color:#88efba!important}
+body.fil-page-gallery .fil-media-copy strong{font-size:1.42rem!important}
+
+body.fil-page-players footer,
+body.fil-page-gallery footer{background:#020a07!important;color:#fff!important}
+
+@media(max-width:900px){
+  body.fil-page-players .fil-player-page-tools{grid-template-columns:1fr!important}
+  body.fil-page-players .fil-player-page-spotlight{grid-template-columns:1fr!important;min-height:0!important}
+  body.fil-page-players .fil-player-spotlight-media{order:-1!important;min-height:390px!important}
+  body.fil-page-players .fil-player-spotlight-copy{padding:32px!important}
+  body.fil-page-players .fil-player-card-grid,
+  body.fil-page-gallery .fil-media-grid,
+  body.fil-page-gallery #galleryCategoryGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:620px){
+  body.fil-page-players .players-page,
+  body.fil-page-gallery .players-page{width:calc(100% - 24px)!important;padding-top:36px!important}
+  body.fil-page-players .players-button-row,
+  body.fil-page-gallery .players-button-row{position:static!important;margin:0 0 22px!important}
+  body.fil-page-players .fil-player-card-grid,
+  body.fil-page-gallery .fil-media-grid,
+  body.fil-page-gallery #galleryCategoryGrid{grid-template-columns:1fr!important}
+  body.fil-page-players .fil-roster-card,
+  body.fil-page-gallery .fil-media-card,
+  body.fil-page-gallery #galleryCategoryGrid>*{height:auto!important;min-height:390px!important}
+  body.fil-page-players .fil-player-page-spotlight{border-radius:24px!important}
+  body.fil-page-players .fil-player-spotlight-media{min-height:330px!important}
+  body.fil-page-players .fil-player-spotlight-copy{padding:25px!important}
+}

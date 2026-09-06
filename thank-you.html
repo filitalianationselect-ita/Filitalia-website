@@ -44,5 +44,19 @@
 
 <footer><img src="images/logo.png" class="footer-logo" alt="FIL-ITALIA Logo"><p>© 2026 FIL-ITALIA Basketball</p><div class="footer-links"><a href="privacy.html">Privacy Policy</a></div></footer>
 <script src="events-data.js?v=4"></script>
-<script src="script.js?v=801"></script>
+<script src="script.js?v=802"></script>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  var count=Math.max(1,Number(new URLSearchParams(location.search).get("players")||1));
+  if(count<2)return;
+  var language=localStorage.getItem("language")||document.documentElement.lang||"it";
+  var messages={
+    it:"Abbiamo ricevuto correttamente tutte le "+count+" iscrizioni dei giocatori.",
+    en:"We successfully received all "+count+" player registrations.",
+    ph:"Matagumpay naming natanggap ang lahat ng "+count+" player registrations."
+  };
+  var subtitle=document.querySelector("[data-key='thankYouSubtitle']");
+  if(subtitle)subtitle.textContent=messages[language]||messages.it;
+});
+</script>
 </body></html>

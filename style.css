@@ -2453,9 +2453,8 @@ body.mobile-menu-open .nav-links{
 }
 .event-cover{
   width:100%;
-  height:auto;
-  aspect-ratio:1 / 1;
-  object-fit:contain;
+  height:150px;
+  object-fit:cover;
   object-position:center;
   display:block;
   background:#f5f5f5;
@@ -2650,9 +2649,7 @@ body.mobile-menu-open .nav-links{
   border-radius:24px !important;
 }
 .event-card.event-card-news-style .event-cover{
-  height:auto !important;
-  aspect-ratio:1 / 1;
-  object-fit:contain;
+  height:118px !important;
 }
 .event-card.event-card-news-style .event-card-content{
   padding:14px 14px 6px !important;

@@ -1,0 +1,56 @@
+name: FIL-ITALIA Home Gallery Index Fix
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/home-gallery-index-cache-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Replace old Media cover with full gallery mount
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          text = text.replace(
+              '<link rel="stylesheet" href="public-media-v1.css?v=1">',
+              '<link rel="stylesheet" href="public-media-v1.css?v=4">\n<link rel="stylesheet" href="home-gallery-full-v1.css?v=4" data-home-gallery-full-style>'
+          )
+
+          old = '''<section class="gallery-section" id="gallery">
+  <h2 data-key="galleryTitle">MEDIA GALLERY</h2>
+  <p class="section-subtitle" data-key="gallerySubtitle">Moments from camps, tournaments, training sessions and community events.</p>
+  <div class="players-button-row"><a href="gallery.html" class="players-list-link" data-key="viewGallery">View Gallery →</a></div>
+  <div class="gallery-grid" id="homeMediaGrid"></div>
+</section>'''
+          new = '<section class="gallery-section home-gallery-full-panel" id="gallery" aria-label="Galleria Media FIL-ITALIA"></section>'
+          if old not in text:
+              raise SystemExit('Old Home gallery cover block not found')
+          text = text.replace(old, new, 1)
+
+          text = text.replace(
+              '<script src="public-media-v1.js?v=1"></script>',
+              '<script src="public-media-v1.js?v=4"></script>\n<script src="home-gallery-full-v1.js?v=4" data-home-gallery-full-script></script>'
+          )
+
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit index cache fix
+        run: |
+          git config user.name "FIL-ITALIA Preview Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "remove old Home gallery cover"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}

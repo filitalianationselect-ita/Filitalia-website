@@ -1,0 +1,4 @@
+body[data-horizontal-ready="true"] #gallery.home-gallery-full-panel::before{content:none!important;display:none!important}
+body[data-horizontal-ready="true"] #gallery.home-gallery-full-panel{scrollbar-gutter:stable both-edges!important}
+#gallery .home-gallery-full-shell{max-width:calc(100% - 8px)!important}
+@media(max-width:700px){body[data-horizontal-ready="true"] #gallery.home-gallery-full-panel{scrollbar-gutter:auto!important}#gallery .home-gallery-full-shell{max-width:100%!important}}

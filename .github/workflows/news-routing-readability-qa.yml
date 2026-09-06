@@ -1,0 +1,96 @@
+name: FIL-ITALIA News Routing Readability QA
+
+on:
+  pull_request:
+    paths:
+      - "news.html"
+      - "news-item.html"
+      - "news-data.js"
+      - "news-routing-fix-v2.js"
+      - "news-detail-v2.js"
+      - "news-readability-v2.css"
+      - ".github/workflows/news-routing-readability-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "news.html"
+      - "news-item.html"
+      - "news-data.js"
+      - "news-routing-fix-v2.js"
+      - "news-detail-v2.js"
+      - "news-readability-v2.css"
+      - ".github/workflows/news-routing-readability-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Prepare system Chrome
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+      - name: Verify unique readable news articles
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:1180,height:860}});
+            for(let i=0;i<45;i++){
+              await page.goto(`${root}/news.html?nqa=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await page.waitForSelector('#allNewsGrid a[href*="news-item.html?id="]',{timeout:2500});
+                const count=await page.locator('#allNewsGrid a[href*="news-item.html?id="]').count();
+                if(count>=3)break;
+              }catch(_){ }
+              await sleep(1200);
+            }
+            await page.waitForTimeout(2200);
+            const list=await page.evaluate(()=>{
+              const links=[...document.querySelectorAll('#allNewsGrid a[href*="news-item.html?id="]')];
+              return links.map(a=>({href:a.href,title:(a.querySelector('h2')||a.querySelector('strong'))?.textContent.trim()||'',opacity:getComputedStyle(a).opacity}));
+            });
+            if(list.length<3)throw new Error(`Not enough news links: ${list.length}`);
+            const unique=[...new Set(list.map(x=>x.href))];
+            if(unique.length<3)throw new Error(`News links are not unique: ${JSON.stringify(list.slice(0,5))}`);
+            if(list.some(x=>Number(x.opacity)<.99))throw new Error(`Faded news card detected: ${JSON.stringify(list.slice(0,5))}`);
+
+            const checked=[];
+            for(const href of unique.slice(0,3)){
+              await page.goto(href,{waitUntil:'domcontentloaded',timeout:120000});
+              await page.waitForSelector('.news-detail-card .news-detail-content',{timeout:20000});
+              await page.waitForTimeout(400);
+              const article=await page.evaluate(()=>{
+                const title=document.querySelector('.news-detail-header h1');
+                const content=document.querySelector('.news-detail-content');
+                const card=document.querySelector('.news-detail-card');
+                return {
+                  title:title?.textContent.trim()||'',
+                  text:content?.textContent.trim()||'',
+                  titleColor:title?getComputedStyle(title).color:'',
+                  textColor:content?getComputedStyle(content).color:'',
+                  cardBackground:card?getComputedStyle(card).backgroundColor:'',
+                  opacity:content?getComputedStyle(content).opacity:'0'
+                };
+              });
+              if(!article.title||article.text.length<70)throw new Error(`Article content missing for ${href}: ${JSON.stringify(article)}`);
+              if(Number(article.opacity)<.99)throw new Error(`Article faded for ${href}: ${JSON.stringify(article)}`);
+              checked.push({href,...article});
+            }
+            if(new Set(checked.map(x=>x.title)).size<3)throw new Error(`Different links opened the same article: ${JSON.stringify(checked)}`);
+            await browser.close();
+            console.log(JSON.stringify({list:list.slice(0,5),checked},null,2));
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE

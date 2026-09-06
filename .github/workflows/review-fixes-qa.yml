@@ -1,0 +1,117 @@
+name: FIL-ITALIA Review Fixes QA
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "review-fixes-v1.css"
+      - "review-fixes-v1.js"
+      - "home-reference-navbar-polish-v2.css"
+      - "home-reference-navbar-v1.js"
+      - "news.html"
+      - "contact.html"
+      - ".github/workflows/review-fixes-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify Home News and Contact fixes
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:900}});
+
+            async function openReady(path,selector){
+              for(let i=0;i<70;i++){
+                await page.goto(`${root}/${path}${path.includes('?')?'&':'?'}reviewqa=${Date.now()}-${i}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{
+                  await page.waitForSelector(selector,{state:'visible',timeout:1800});
+                  return;
+                }catch(_){await sleep(1200)}
+              }
+              throw new Error(`${path} did not reach the latest Deploy Preview`);
+            }
+
+            await openReady('?panel=home#top','body[data-horizontal-ready="true"] .home-hero-shell');
+            await page.waitForTimeout(900);
+            const home=await page.evaluate(()=>{
+              const visual=document.querySelector('.home-hero-visual');
+              const rail=document.querySelector('.home-event-rail');
+              const actions=document.querySelector('.home-hero-actions');
+              const note=document.querySelector('.home-hero-note');
+              const player=document.querySelector('.home-player-frame');
+              const r=el=>el?el.getBoundingClientRect():null;
+              return{
+                railParent:rail?.parentElement?.className||'',
+                visual:r(visual),rail:r(rail),actions:r(actions),note:r(note),player:r(player),
+                actionCount:actions?.children.length||0,
+                reviewReady:document.body.classList.contains('fil-review-fixes-ready')
+              };
+            });
+            if(!home.reviewReady)throw new Error('Home review stabilizer missing');
+            if(!home.railParent.includes('home-hero-visual'))throw new Error(`Events rail parent: ${home.railParent}`);
+            if(!home.rail||!home.player||home.rail.top<home.player.bottom-3)throw new Error(`Events rail is not below player: ${JSON.stringify(home)}`);
+            if(home.actionCount!==3)throw new Error(`Home actions count ${home.actionCount}`);
+            if(!home.actions||!home.note||home.actions.top<home.note.bottom)throw new Error('Home actions are not below the note');
+            await page.screenshot({path:'review-home.jpg',type:'jpeg',quality:80});
+
+            await openReady('news.html','.fpr-news-card-grid .fpr-news-card');
+            await page.waitForTimeout(900);
+            const news=await page.evaluate(()=>{
+              const page=document.querySelector('.players-page.fpr-news-page');
+              const grid=document.querySelector('.fpr-news-card-grid');
+              const cards=[...document.querySelectorAll('.fpr-news-card-grid .fpr-news-card')];
+              const r=el=>el?el.getBoundingClientRect():null;
+              return{page:r(page),grid:r(grid),columns:getComputedStyle(grid).gridTemplateColumns,cardWidths:cards.slice(0,4).map(c=>Math.round(c.getBoundingClientRect().width))};
+            });
+            if(!news.page||news.page.width<1250)throw new Error(`News page width ${news.page?.width}`);
+            if(news.cardWidths.some(width=>width<250))throw new Error(`News cards too narrow ${news.cardWidths.join(',')}`);
+            await page.screenshot({path:'review-news.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            await openReady('contact.html','.fpr-contact-hero-media img');
+            await page.waitForTimeout(600);
+            const contact=await page.evaluate(()=>{
+              const media=document.querySelector('.fpr-contact-hero-media');
+              const image=document.querySelector('.fpr-contact-hero-media img');
+              return{media:media?.getBoundingClientRect().toJSON(),imageSrc:image?.getAttribute('src')||'',targetText:document.querySelector('.fpr-contact-hero')?.textContent.includes('⌖')||false};
+            });
+            if(!contact.media||contact.media.width<420||contact.media.height<240)throw new Error(`Contact media ${JSON.stringify(contact.media)}`);
+            if(!contact.imageSrc.includes('media2.jpg'))throw new Error(`Unexpected Contact image ${contact.imageSrc}`);
+            if(contact.targetText)throw new Error('Target symbol is still visible');
+            await page.screenshot({path:'review-contact.jpg',type:'jpeg',quality:80,fullPage:true});
+
+            fs.writeFileSync('review-fixes-qa.json',JSON.stringify({home,news,contact},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-fixes-qa
+          path: |
+            review-home.jpg
+            review-news.jpg
+            review-contact.jpg
+            review-fixes-qa.json
+          if-no-files-found: warn
+          retention-days: 7

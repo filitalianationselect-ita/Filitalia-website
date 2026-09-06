@@ -524,12 +524,37 @@
 
   async function getOwnRegistrations() {
     const result = await requireClient()
+      .from("registrations")
+      .select("id,camp_event_id,event_name,event_city,event_date,registration_status,payment_status,shirt_size,created_at")
+      .order("created_at", { ascending: false });
+
+    if (!result.error) {
+      return (result.data || []).map(function (row) {
+        return {
+          id: row.id,
+          event_id: row.camp_event_id,
+          event_name: row.event_name,
+          event_city: row.event_city,
+          event_date: row.event_date,
+          status: row.registration_status,
+          payment_status: row.payment_status,
+          shirt_size: row.shirt_size,
+          created_at: row.created_at
+        };
+      });
+    }
+
+    if (!String(result.error && result.error.message || "").toLowerCase().includes("registrations")) {
+      throw result.error;
+    }
+
+    const legacy = await requireClient()
       .from("camp_registrations")
       .select("id,event_id,event_name,event_city,event_date,status,payment_status,created_at")
       .order("created_at", { ascending: false });
 
-    if (result.error) throw result.error;
-    return result.data || [];
+    if (legacy.error) throw legacy.error;
+    return legacy.data || [];
   }
 
   function onAuthStateChange(callback) {

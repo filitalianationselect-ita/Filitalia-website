@@ -1,0 +1,90 @@
+name: FIL-ITALIA Alias Auth Quality
+
+on:
+  pull_request:
+    paths:
+      - "login.html"
+      - "reset-password.html"
+      - "login-identifier-v1.js"
+      - "login-form-polish-v1.js"
+      - "reset-password-polish-v1.js"
+      - "supabase/config.toml"
+      - "supabase/functions/sign-in-alias/**"
+      - "supabase/migrations/20260728211500_login_aliases.sql"
+      - ".github/workflows/alias-auth-quality.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "login.html"
+      - "reset-password.html"
+      - "login-identifier-v1.js"
+      - "login-form-polish-v1.js"
+      - "reset-password-polish-v1.js"
+      - "supabase/config.toml"
+      - "supabase/functions/sign-in-alias/**"
+      - "supabase/migrations/20260728211500_login_aliases.sql"
+      - ".github/workflows/alias-auth-quality.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  alias-auth:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      PGPASSWORD: postgres
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check browser scripts
+        run: |
+          node --check login-identifier-v1.js
+          node --check login-form-polish-v1.js
+          node --check reset-password-polish-v1.js
+      - name: Verify alias function contract
+        run: |
+          grep -F '[functions.sign-in-alias]' supabase/config.toml
+          grep -F 'verify_jwt = false' supabase/config.toml
+          grep -F 'login_alias_rate_limits' supabase/functions/sign-in-alias/index.ts
+          grep -F 'signInWithPassword' supabase/functions/sign-in-alias/index.ts
+          grep -F 'minimumDelay' supabase/functions/sign-in-alias/index.ts
+          grep -F 'INVALID_LOGIN' supabase/functions/sign-in-alias/index.ts
+      - name: Prepare Auth schema
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          create extension if not exists pgcrypto;
+          create schema if not exists auth;
+          create table if not exists auth.users (id uuid primary key default gen_random_uuid(), email text);
+          SQL
+      - name: Apply alias migration twice
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260728211500_login_aliases.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260728211500_login_aliases.sql
+      - name: Verify private alias objects
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          select to_regclass('public.login_aliases'), to_regclass('public.login_alias_rate_limits');
+          do $$
+          begin
+            if not (select relrowsecurity from pg_class where oid='public.login_aliases'::regclass) then
+              raise exception 'RLS missing on login_aliases';
+            end if;
+            if not (select relrowsecurity from pg_class where oid='public.login_alias_rate_limits'::regclass) then
+              raise exception 'RLS missing on login_alias_rate_limits';
+            end if;
+          end $$;
+          SQL

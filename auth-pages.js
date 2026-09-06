@@ -172,8 +172,23 @@
     return keys[status] ? tx(keys[status]) : (status || tx("rolePending"));
   }
 
+  function accountRole(profile) {
+    return String((profile && (profile.actual_role || profile.role)) || "").toLowerCase();
+  }
+
+  function isAdminRole(profile) {
+    const role = accountRole(profile);
+    return role === "admin" || role === "super_admin";
+  }
+
+  function isActiveAdmin(profile) {
+    return isAdminRole(profile) && profile && profile.status === "active";
+  }
+
   function renderProfile(profile) {
     lastProfile = profile;
+    document.body.dataset.accountRole = accountRole(profile) || String(profile.role || "pending").toLowerCase();
+    document.body.dataset.accountStatus = String(profile.status || "pending").toLowerCase();
     byId("accountName").textContent = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "FIL-ITALIA " + tx("account");
     byId("accountEmail").textContent = profile.email || "";
     byId("accountRole").textContent = roleLabel(profile.role);
@@ -194,8 +209,16 @@
 
     document.querySelectorAll("[data-role-section]").forEach(function (section) {
       const roles = section.getAttribute("data-role-section").split(",").map(function (value) { return value.trim(); });
-      section.hidden = !roles.includes(profile.role) || profile.status !== "active";
+      const role = accountRole(profile) || profile.role;
+      section.hidden = !roles.includes(role) || profile.status !== "active";
     });
+
+    const adminAction = byId("accountAdminAction");
+    if (adminAction) {
+      adminAction.hidden = !isActiveAdmin(profile);
+      adminAction.href = "admin-light.html?ntl-drawer-state=hidden";
+      adminAction.textContent = accountRole(profile) === "super_admin" ? "Apri pannello Super Admin" : "Apri pannello Admin";
+    }
   }
 
   function booleanSelectValue(value) {
@@ -410,6 +433,7 @@
     if (!list) return;
     try {
       const registrations = await auth.getOwnRegistrations();
+      list.dataset.registrationCount = String(registrations.length);
       list.replaceChildren();
       if (!registrations.length) {
         const empty = document.createElement("p");
@@ -421,16 +445,19 @@
       registrations.forEach(function (registration) {
         const card = document.createElement("article");
         card.className = "registration-mini-card";
+        card.dataset.registrationId = registration.id || "";
         const title = document.createElement("strong");
         title.textContent = registration.event_name || registration.event_id || "Camp FIL-ITALIA";
         const detail = document.createElement("span");
         detail.textContent = [registration.event_city, registration.event_date].filter(Boolean).join(" · ");
         const status = document.createElement("small");
-        status.textContent = tx("status") + ": " + (registration.status || tx("received")) + " · " + tx("payment") + ": " + (registration.payment_status || tx("toVerify"));
+        const shirt = registration.shirt_size ? " · Taglia: " + registration.shirt_size : "";
+        status.textContent = tx("status") + ": " + (registration.status || tx("received")) + " · " + tx("payment") + ": " + (registration.payment_status || tx("toVerify")) + shirt;
         card.append(title, detail, status);
         list.appendChild(card);
       });
     } catch (error) {
+      list.dataset.registrationCount = "0";
       const empty = document.createElement("p");
       empty.className = "account-muted";
       empty.textContent = tx("registrationsUnavailable");
@@ -549,7 +576,7 @@
     const reason = byId("deletionReason");
     if (!button) return;
 
-    if (profile && profile.role === "admin") {
+    if (isAdminRole(profile)) {
       button.disabled = true;
       button.textContent = "ACCOUNT ADMIN PROTETTO";
       return;
@@ -583,23 +610,51 @@
     if (!configGuard()) return;
 
     let profile;
+    let session;
     try {
-      const session = await auth.getSession();
-      if (!session) {
+      session = await auth.getSession();
+      if (!session || !session.user) {
         window.location.replace("login.html");
         return;
       }
-      profile = await auth.getOwnProfile();
-      if (!profile) throw new Error("PROFILE_NOT_FOUND");
-      renderProfile(profile);
-      initDeletionRequest(profile);
-      auth.syncOwnProfileToSheet().catch(function (error) {
-        console.warn("Google Sheet profile sync unavailable", error);
-      });
     } catch (error) {
       setStatus("profileStatus", auth.friendlyError(error), "error");
       return;
     }
+
+    try {
+      profile = await auth.getOwnProfile();
+    } catch (error) {
+      console.warn("FIL-ITALIA profile load unavailable; using safe session fallback", error);
+    }
+
+    if (!profile) {
+      const user = session.user;
+      const metadata = user.user_metadata || {};
+      const requestedRole = ["player", "parent", "coach", "coordinator", "staff"].includes(String(metadata.requested_role || ""))
+        ? String(metadata.requested_role)
+        : "player";
+      profile = {
+        id: user.id,
+        email: user.email || "",
+        first_name: metadata.first_name || "",
+        last_name: metadata.last_name || "",
+        phone: "",
+        city: "",
+        language: metadata.language || "it",
+        requested_role: requestedRole,
+        role: requestedRole,
+        status: "pending",
+        avatar_path: null
+      };
+      setStatus("profileStatus", "Account aperto. Il profilo è ancora in sincronizzazione.", "warning");
+    }
+
+    renderProfile(profile);
+    initDeletionRequest(profile);
+    auth.syncOwnProfileToSheet().catch(function (error) {
+      console.warn("Google Sheet profile sync unavailable", error);
+    });
 
     const logout = byId("logoutButton");
     if (logout) {
@@ -703,7 +758,13 @@
       });
     }
 
-    if (profile.role === "admin" && profile.status === "active") {
+    const hasEmbeddedAdmin = Boolean(
+      byId("adminDashboardSection")
+      || byId("adminAccountsSection")
+      || byId("adminDeletionSection")
+    );
+
+    if (isActiveAdmin(profile) && hasEmbeddedAdmin) {
       const dashboardSection = byId("adminDashboardSection");
       const adminSection = byId("adminAccountsSection");
       const adminDeletionSection = byId("adminDeletionSection");
@@ -758,7 +819,7 @@
     const page = document.body && document.body.getAttribute("data-account-page");
     if (page === "account") {
       loadRegistrations();
-      if (lastProfile && lastProfile.role === "admin" && lastProfile.status === "active") loadAdminDashboard();
+      if (isActiveAdmin(lastProfile)) loadAdminDashboard();
     }
   });
 

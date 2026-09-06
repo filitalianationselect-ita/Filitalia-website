@@ -1,0 +1,53 @@
+/* Final Gallery override: neutralizes legacy three-column rules around the new media shell. */
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  grid-template-columns:none!important;
+  gap:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root>.fpr-gallery-shell{
+  display:block!important;
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-hero,
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-feature,
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-library,
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-grid,
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-media-card,
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-media-compact{
+  grid-column:auto!important;
+  width:auto!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:0!important;
+}
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-hero{min-height:330px!important}
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-feature>button{min-height:430px!important;height:auto!important}
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-media-card{min-height:0!important;height:auto!important;border-radius:18px!important;background:rgba(255,255,255,.045)!important}
+body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-media-compact{min-height:112px!important;height:auto!important;border-radius:15px!important;background:rgba(255,255,255,.045)!important}
+body.fil-page-gallery #filMediaFilters{display:none!important}
+@media(max-width:760px){
+  body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-hero{min-height:420px!important}
+  body.fil-page-gallery #galleryCategoryGrid.fpr-gallery-root .fpr-gallery-feature>button{min-height:500px!important}
+}

@@ -1,0 +1,165 @@
+name: FIL-ITALIA About Events Modern QA
+
+on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "events.html"
+      - "event.html"
+      - "events-data.js"
+      - "home-about-slider-v1.css"
+      - "home-about-slider-v1.js"
+      - "home-homehub-v1.js"
+      - "event-modal-modern-v1.js"
+      - "event-detail-premium-v2.js"
+      - ".github/workflows/about-events-modern-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "index.html"
+      - "events.html"
+      - "event.html"
+      - "events-data.js"
+      - "home-about-slider-v1.css"
+      - "home-about-slider-v1.js"
+      - "home-homehub-v1.js"
+      - "event-modal-modern-v1.js"
+      - "event-detail-premium-v2.js"
+      - ".github/workflows/about-events-modern-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Prepare system Chrome
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Verify About and event detail routing
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const {chromium}=require('playwright-core');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const expectedVersion='about-clean-v3';
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          fs.mkdirSync('artifacts',{recursive:true});
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:1360,height:960},deviceScaleFactor:1});
+            await page.emulateMedia({reducedMotion:'no-preference'});
+
+            let currentDeploy=false;
+            for(let i=0;i<90;i++){
+              await page.goto(`${root}/index.html?aboutQa=${Date.now()}-${i}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+              try{
+                await page.waitForSelector(`#about[data-fil-about-showcase-version="${expectedVersion}"] .fil-about-slider-tab`,{timeout:1800});
+                currentDeploy=true;
+                break;
+              }catch(_){await sleep(1000)}
+            }
+            if(!currentDeploy)throw new Error(`Current About deploy ${expectedVersion} did not become available`);
+            await page.waitForTimeout(1000);
+
+            const about=await page.evaluate(()=>{
+              const root=document.querySelector('#about');
+              const tabs=[...(root?.querySelectorAll('.fil-about-slider-tab')||[])];
+              const cards=[...(root?.querySelectorAll('.fil-about-slider-track>.about-card')||[])];
+              return {
+                version:root?.dataset.filAboutShowcaseVersion||'',
+                tabs:tabs.length,
+                cards:cards.length,
+                arrows:root?.querySelectorAll('.fil-about-slider-arrow').length||0,
+                visibleCards:cards.filter(card=>!card.hidden&&getComputedStyle(card).display!=='none').length,
+                labels:tabs.map(tab=>(tab.querySelector('.fil-about-slider-tab-label')?.textContent||'').trim()),
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+              };
+            });
+            const labels=['Identità nazionale','Sviluppo giocatori','Visione internazionale'];
+            if(about.version!==expectedVersion||about.tabs!==3||about.cards!==3||about.arrows!==2||about.visibleCards!==1)throw new Error(`About structure invalid: ${JSON.stringify(about)}`);
+            if(JSON.stringify(about.labels)!==JSON.stringify(labels)||about.overflow>3)throw new Error(`About labels/overflow invalid: ${JSON.stringify(about)}`);
+            await page.locator('#about').screenshot({path:'artifacts/about-desktop.png'});
+
+            await page.locator('#about .fil-about-slider-tab').nth(1).click();
+            await page.waitForTimeout(350);
+            const selected=await page.evaluate(()=>({
+              tab:[...document.querySelectorAll('#about .fil-about-slider-tab')].findIndex(tab=>tab.getAttribute('aria-selected')==='true'),
+              heading:(document.querySelector('#about .about-card[aria-hidden="false"] h3')?.textContent||'').trim()
+            }));
+            if(selected.tab!==1||selected.heading!=='Sviluppo giocatori')throw new Error(`About slide navigation invalid: ${JSON.stringify(selected)}`);
+
+            await page.setViewportSize({width:390,height:844});
+            await page.goto(`${root}/index.html?aboutMobile=${Date.now()}#about`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector(`#about[data-fil-about-showcase-version="${expectedVersion}"] .fil-about-slider-tab`,{timeout:20000});
+            await page.waitForTimeout(800);
+            const mobile=await page.evaluate(()=>{
+              const slider=document.querySelector('#about .fil-about-slider')?.getBoundingClientRect();
+              return {
+                width:slider?.width||0,
+                viewport:innerWidth,
+                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+                visible:[...document.querySelectorAll('#about .fil-about-slider-track>.about-card')].filter(card=>!card.hidden&&getComputedStyle(card).display!=='none').length
+              };
+            });
+            if(mobile.width>mobile.viewport+2||mobile.overflow>3||mobile.visible!==1)throw new Error(`About mobile invalid: ${JSON.stringify(mobile)}`);
+            await page.locator('#about').screenshot({path:'artifacts/about-mobile.png'});
+
+            await page.setViewportSize({width:1360,height:900});
+            await page.goto(`${root}/events.html?eventQa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#allEventsGrid a',{timeout:20000});
+            await page.waitForTimeout(1000);
+            const first=page.locator('#allEventsGrid a').first();
+            await Promise.all([
+              page.waitForURL(url=>!url.pathname.endsWith('/events.html'),{timeout:15000}),
+              first.click()
+            ]);
+            await page.waitForLoadState('domcontentloaded');
+            await page.waitForTimeout(900);
+
+            const event=await page.evaluate(()=>{
+              const premium=document.querySelector('#eventDetailContainer .event-premium-shell');
+              const heading=(document.querySelector('#eventDetailContainer h1, main h1, section h1, h1, h2')?.textContent||'').trim();
+              const register=document.querySelector('#eventDetailContainer a[href*="camp-register"], a[href*="camp-register"], a[href*="register"]');
+              const image=document.querySelector('#eventDetailContainer img, main img, section img');
+              return {
+                path:location.pathname,
+                search:location.search,
+                heading,
+                bodyText:(document.body.innerText||'').replace(/\s+/g,' ').trim().length,
+                register:register?.getAttribute('href')||'',
+                imageWidth:image?.naturalWidth||0,
+                premium:Boolean(premium),
+                meta:premium?premium.querySelectorAll('.event-detail-fields>div').length:0,
+                modalOpen:Boolean(document.querySelector('#infoModal.is-open, #infoModal.fil-event-modal-modern.is-open'))
+              };
+            });
+            if(/\/events\.html$/i.test(event.path)||!event.heading||event.bodyText<150||event.modalOpen)throw new Error(`Event did not navigate to a detail page: ${JSON.stringify(event)}`);
+            if(event.premium&&(event.meta!==4||!event.register.includes('camp-register')))throw new Error(`Premium event detail incomplete: ${JSON.stringify(event)}`);
+            await page.screenshot({path:'artifacts/event-detail.png',fullPage:true});
+
+            await browser.close();
+            console.log(JSON.stringify({about,selected,mobile,event},null,2));
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: about-events-preview-screenshots
+          path: artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 7

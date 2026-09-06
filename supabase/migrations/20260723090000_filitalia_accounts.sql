@@ -453,7 +453,7 @@ revoke all on public.coach_player_assignments from anon, authenticated;
 grant select on public.coach_player_assignments to authenticated;
 
 revoke all on public.camp_registrations from anon, authenticated;
-grant select, insert on public.camp_registrations to authenticated;
+grant select, insert, update, delete on public.camp_registrations to authenticated;
 
 revoke all on public.audit_logs from anon, authenticated;
 grant select on public.audit_logs to authenticated;

@@ -1,5 +1,15 @@
 const fs = require("fs");
-const { createCanvas, loadImage } = require("canvas");
+let createCanvas;
+let loadImage;
+
+try{
+  ({ createCanvas, loadImage } = require("canvas"));
+}catch{
+  // The generated images are a local editorial convenience and are ignored by Git.
+  // Do not make a site deploy fail when the optional native Canvas package is absent.
+  console.log("⚠️ Immagini social non generate: dipendenza Canvas non disponibile.");
+  process.exit(0);
+}
 
 function ensureDir(dir){
   if(!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive:true });

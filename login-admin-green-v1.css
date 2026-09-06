@@ -1,0 +1,81 @@
+:root{
+  --login-nav:#093d2b;
+  --login-nav-2:#18734f;
+  --login-bg:#eef6f2;
+  --login-card:#ffffff;
+  --login-ink:#173d2e;
+  --login-muted:#60766c;
+  --login-line:#c9ddd2;
+  --login-blue:#126847;
+  --login-blue-dark:#093d2b;
+  --login-blue-soft:#e8f4ed;
+  --login-green:#17784a;
+}
+
+body[data-account-page="login"] .navbar{
+  border-bottom-color:rgba(201,221,210,.92);
+  background:rgba(255,255,255,.95);
+  box-shadow:0 8px 24px rgba(9,61,43,.07);
+}
+
+body[data-account-page="login"] .account-main{
+  background:
+    radial-gradient(circle at 12% 8%,rgba(18,104,71,.12),transparent 28%),
+    linear-gradient(180deg,#f8fcfa 0%,var(--login-bg) 42%,#e7f1ec 100%);
+}
+
+body[data-account-page="login"] .login-workspace-hero{
+  border-color:#17573e;
+  background:
+    radial-gradient(circle at 88% 20%,rgba(133,203,167,.24),transparent 28%),
+    linear-gradient(135deg,var(--login-nav) 0%,var(--login-nav-2) 66%,#1c7a55 100%);
+  box-shadow:0 18px 42px rgba(9,61,43,.21);
+}
+
+body[data-account-page="login"] .login-kicker,
+body[data-account-page="login"] .login-side-card .login-panel-eyebrow{
+  color:#a9d7c1;
+}
+
+body[data-account-page="login"] .login-workspace-hero p{
+  color:#d1e7dc;
+}
+
+body[data-account-page="login"] .login-hero-button-primary{
+  border-color:#9ed8bd;
+  color:#093d2b;
+  background:#9ed8bd;
+  box-shadow:0 9px 20px rgba(4,38,26,.22);
+}
+
+body[data-account-page="login"] .login-form-card::before{
+  background:linear-gradient(90deg,var(--login-blue-dark),var(--login-blue),#69b28e);
+}
+
+body[data-account-page="login"] .login-side-card{
+  border-color:#17573e;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(133,203,167,.20),transparent 28%),
+    linear-gradient(180deg,var(--login-nav-2),var(--login-nav));
+  box-shadow:0 12px 28px rgba(9,61,43,.18);
+}
+
+body[data-account-page="login"] .login-access-note::before{
+  background:#9ed8bd;
+  color:#093d2b;
+}
+
+body[data-account-page="login"] .login-submit-button,
+body[data-account-page="login"] .account-button,
+body[data-account-page="login"] .account-tab.active{
+  background:linear-gradient(135deg,var(--login-blue-dark),var(--login-blue));
+  border-color:var(--login-blue);
+  box-shadow:0 9px 20px rgba(18,104,71,.20);
+}
+
+body[data-account-page="login"] .login-input-shell:focus-within,
+body[data-account-page="login"] .account-form input:focus,
+body[data-account-page="login"] .account-form select:focus{
+  border-color:#3a966e;
+  box-shadow:0 0 0 4px rgba(24,115,79,.12);
+}

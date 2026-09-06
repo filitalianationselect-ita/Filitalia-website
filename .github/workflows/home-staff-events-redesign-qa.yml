@@ -1,0 +1,138 @@
+name: FIL-ITALIA Home Staff Events Redesign QA
+
+on:
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "site-final-pass-v1.js"
+      - "home-staff-events-finalizer-v1.js"
+      - "home-reference-navbar-v1.js"
+      - ".github/workflows/home-staff-events-redesign-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium
+        run: |
+          npm install --no-save --silent playwright
+          npx playwright install --with-deps chromium
+      - name: Verify exact Home Staff and Events panels
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const root='https://deploy-preview-1--filitalia.netlify.app';
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1440,height:900}});
+
+            async function ready(hash,selector){
+              for(let i=0;i<75;i++){
+                await page.goto(`${root}/?home-redesign-final=${Date.now()}-${i}${hash}`,{waitUntil:'domcontentloaded',timeout:120000});
+                try{
+                  await page.waitForSelector(selector,{state:'attached',timeout:1800});
+                  await page.waitForSelector('.navbar.fil-final-navbar',{state:'visible',timeout:1800});
+                  await page.evaluate(id=>{
+                    const panel=document.getElementById(id);
+                    const stage=document.querySelector('.home-horizontal-stage');
+                    if(stage&&panel)stage.scrollTo({left:panel.offsetLeft,behavior:'auto'});
+                    if(panel)panel.scrollTop=0;
+                  },hash.slice(1));
+                  await page.waitForTimeout(350);
+                  if(await page.locator(selector).isVisible())return;
+                }catch(_){ }
+                await sleep(1200);
+              }
+              throw new Error(`${hash} did not reach the final Deploy Preview`);
+            }
+
+            await ready('#staff','#homeStaffGrid .fhs-stage');
+            await page.waitForTimeout(900);
+            const staffBefore=await page.evaluate(()=>{
+              const panel=document.getElementById('staff');
+              const card=document.querySelector('#homeStaffGrid .fhs-card');
+              const name=document.querySelector('#homeStaffGrid [data-fhs-name]');
+              const count=document.querySelector('#homeStaffGrid [data-fhs-count]');
+              const tabs=document.querySelectorAll('#homeStaffGrid .fhs-tab');
+              const old=document.querySelectorAll('#homeStaffGrid > .staff-card').length;
+              const box=card?.getBoundingClientRect();
+              const panelBox=panel?.getBoundingClientRect();
+              return {count:count?.textContent?.trim()||'',name:name?.textContent?.trim()||'',tabs:tabs.length,old,cardWidth:box?.width||0,cardHeight:box?.height||0,panelX:panelBox?.x||0,panelWidth:panelBox?.width||0,overflow:panel?panel.scrollWidth-panel.clientWidth:999};
+            });
+            if(!staffBefore.name)throw new Error('Home Staff name missing');
+            if(staffBefore.tabs<2)throw new Error(`Home Staff tabs ${staffBefore.tabs}`);
+            if(staffBefore.old!==0)throw new Error(`Legacy Staff cards visible ${staffBefore.old}`);
+            if(staffBefore.cardWidth<240||staffBefore.cardHeight<300)throw new Error(`Home Staff card ${staffBefore.cardWidth}x${staffBefore.cardHeight}`);
+            if(Math.abs(staffBefore.panelX)>3||staffBefore.panelWidth<1300)throw new Error(`Staff panel not in viewport ${JSON.stringify(staffBefore)}`);
+            if(staffBefore.overflow>4)throw new Error(`Home Staff overflow ${staffBefore.overflow}`);
+            await page.locator('#staff').screenshot({path:'home-staff-redesign.jpg',type:'jpeg',quality:80});
+            await page.waitForTimeout(7900);
+            const staffAfter=(await page.locator('#homeStaffGrid [data-fhs-count]').textContent()||'').trim();
+            if(staffAfter===staffBefore.count)throw new Error(`Home Staff did not auto-rotate from ${staffBefore.count}`);
+
+            await ready('#events','#homeEventsGrid .fhe-stage');
+            await page.waitForTimeout(4300);
+            await page.evaluate(()=>{
+              const panel=document.getElementById('events');
+              const stage=document.querySelector('.home-horizontal-stage');
+              if(stage&&panel)stage.scrollTo({left:panel.offsetLeft,behavior:'auto'});
+              if(panel)panel.scrollTop=0;
+            });
+            await page.waitForTimeout(400);
+            const events=await page.evaluate(()=>{
+              const panel=document.getElementById('events');
+              const feature=document.querySelector('#homeEventsGrid .fhe-feature');
+              const minis=document.querySelectorAll('#homeEventsGrid .fhe-mini');
+              const legacy=document.querySelectorAll('#homeEventsGrid > .fil-event-card-v2,#homeEventsGrid > .event-card').length;
+              const title=document.querySelector('#homeEventsGrid .fhe-feature h3');
+              const box=feature?.getBoundingClientRect();
+              const panelBox=panel?.getBoundingClientRect();
+              const hiddenHeading=panel?getComputedStyle(panel.querySelector(':scope > h2')).display:'';
+              return {feature:!!feature,title:title?.textContent?.trim()||'',minis:minis.length,legacy,width:box?.width||0,height:box?.height||0,panelX:panelBox?.x||0,panelWidth:panelBox?.width||0,hiddenHeading,overflow:panel?panel.scrollWidth-panel.clientWidth:999};
+            });
+            if(!events.feature||!events.title)throw new Error('Home Events featured card missing');
+            if(events.minis<1)throw new Error(`Home Events mini cards ${events.minis}`);
+            if(events.legacy!==0)throw new Error(`Legacy Event cards visible ${events.legacy}`);
+            if(events.hiddenHeading!=='none')throw new Error(`Legacy Event heading visible ${events.hiddenHeading}`);
+            if(events.width<420||events.height<350)throw new Error(`Home Events feature ${events.width}x${events.height}`);
+            if(Math.abs(events.panelX)>3||events.panelWidth<1300)throw new Error(`Events panel not in viewport ${JSON.stringify(events)}`);
+            if(events.overflow>4)throw new Error(`Home Events overflow ${events.overflow}`);
+            await page.locator('#events').screenshot({path:'home-events-redesign.jpg',type:'jpeg',quality:80});
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(`${root}/?home-redesign-mobile=${Date.now()}#staff`,{waitUntil:'networkidle',timeout:120000});
+            await mobile.waitForSelector('#homeStaffGrid .fhs-stage',{state:'attached',timeout:20000});
+            await mobile.evaluate(()=>{const p=document.getElementById('staff'),s=document.querySelector('.home-horizontal-stage');if(s&&p)s.scrollTo({left:p.offsetLeft,behavior:'auto'})});
+            await mobile.waitForTimeout(350);
+            const mobileState=await mobile.evaluate(()=>({overflow:document.getElementById('staff').scrollWidth-document.getElementById('staff').clientWidth,card:document.querySelector('#homeStaffGrid .fhs-card')?.getBoundingClientRect().width||0}));
+            if(mobileState.overflow>4)throw new Error(`Mobile Staff overflow ${mobileState.overflow}`);
+            if(mobileState.card<250)throw new Error(`Mobile Staff card width ${mobileState.card}`);
+            await mobile.locator('#staff').screenshot({path:'home-staff-mobile-redesign.jpg',type:'jpeg',quality:78});
+
+            fs.writeFileSync('home-staff-events-redesign-qa.json',JSON.stringify({staffBefore,staffAfter,events,mobileState},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-staff-events-redesign-qa
+          path: |
+            home-staff-redesign.jpg
+            home-events-redesign.jpg
+            home-staff-mobile-redesign.jpg
+            home-staff-events-redesign-qa.json
+          if-no-files-found: warn
+          retention-days: 7

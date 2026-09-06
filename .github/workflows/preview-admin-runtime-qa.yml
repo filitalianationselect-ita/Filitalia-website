@@ -1,0 +1,122 @@
+name: FIL-ITALIA Preview Admin Runtime QA
+
+on:
+  pull_request:
+    paths:
+      - "scripts/generate-runtime-config.js"
+      - "scripts/audit-preview-isolation.js"
+      - "supabase-config.js"
+      - "auth-client.js"
+      - "login.html"
+      - "admin-light.html"
+      - "event-request.html"
+      - ".github/workflows/preview-admin-runtime-qa.yml"
+  push:
+    branches: ["agent/admin-panel-demo"]
+    paths:
+      - "scripts/generate-runtime-config.js"
+      - "scripts/audit-preview-isolation.js"
+      - "supabase-config.js"
+      - "auth-client.js"
+      - "login.html"
+      - "admin-light.html"
+      - "event-request.html"
+      - ".github/workflows/preview-admin-runtime-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Prepare system Chrome
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Verify real Deploy Preview Admin runtime
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const fs = require('fs');
+          const root = 'https://deploy-preview-1--filitalia.netlify.app';
+          const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+          (async()=>{
+            const browser = await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page = await browser.newPage({viewport:{width:1280,height:800}});
+
+            let runtime = null;
+            for(let attempt=0;attempt<80;attempt++){
+              await page.goto(`${root}/login.html?previewadminqa=${Date.now()}-${attempt}`,{waitUntil:'domcontentloaded',timeout:120000});
+              await page.waitForTimeout(500);
+              runtime = await page.evaluate(()=>{
+                const cfg=window.FILITALIA_CONFIG||{};
+                return {
+                  isPreview:Boolean(cfg.isPreview),
+                  usesPreviewDatabase:Boolean(cfg.usesPreviewDatabase),
+                  usesProductionDatabaseInPreview:Boolean(cfg.usesProductionDatabaseInPreview),
+                  demoMode:Boolean(cfg.demoMode),
+                  supabaseUrl:String(cfg.supabaseUrl||''),
+                  authConfigured:Boolean(window.FilitaliaAuth&&window.FilitaliaAuth.configured)
+                };
+              });
+              if(runtime.isPreview&&runtime.usesPreviewDatabase&&!runtime.demoMode&&runtime.supabaseUrl.includes('cfqqovqkjrsarwmopyvl')&&runtime.authConfigured)break;
+              await sleep(1500);
+            }
+
+            if(!runtime||!runtime.isPreview)throw new Error(`Preview runtime missing: ${JSON.stringify(runtime)}`);
+            if(!runtime.usesPreviewDatabase||runtime.demoMode)throw new Error(`Preview Supabase not active: ${JSON.stringify(runtime)}`);
+            if(runtime.usesProductionDatabaseInPreview||runtime.supabaseUrl.includes('exwykgaotochaguizxxt'))throw new Error(`Production Supabase leaked into Preview: ${JSON.stringify(runtime)}`);
+            if(!runtime.supabaseUrl.includes('cfqqovqkjrsarwmopyvl'))throw new Error(`Wrong Preview project: ${runtime.supabaseUrl}`);
+            if(!runtime.authConfigured)throw new Error('FilitaliaAuth is not configured on Deploy Preview');
+            await page.screenshot({path:'preview-login.jpg',type:'jpeg',quality:76});
+
+            await page.goto(`${root}/admin-light.html?previewadminqa=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForTimeout(1600);
+            const adminGate=await page.evaluate(()=>({
+              href:location.href,
+              text:(document.body&&document.body.innerText||'').replace(/\s+/g,' ').trim().slice(0,500),
+              configured:Boolean(window.FilitaliaAuth&&window.FilitaliaAuth.configured)
+            }));
+            if(!adminGate.configured)throw new Error(`Admin lost Preview auth configuration: ${JSON.stringify(adminGate)}`);
+            if(!/login\.html|Accedi|accesso|amministratore/i.test(adminGate.href+' '+adminGate.text))throw new Error(`Admin access gate is unclear: ${JSON.stringify(adminGate)}`);
+
+            await page.goto(`${root}/event-request.html?previewadminqa=${Date.now()}`,{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(800);
+            const requestPage=await page.evaluate(()=>({
+              text:(document.body&&document.body.innerText||'').replace(/\s+/g,' ').trim(),
+              hasForm:Boolean(document.querySelector('form')),
+              configured:Boolean(window.FilitaliaAuth&&window.FilitaliaAuth.configured),
+              overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+            }));
+            if(!/Richiesta evento|Nuova richiesta/i.test(requestPage.text))throw new Error(`Event Request page did not open: ${JSON.stringify(requestPage)}`);
+            if(!requestPage.configured)throw new Error('Event Request page is not connected to Preview Supabase');
+            if(requestPage.overflow>3)throw new Error(`Event Request horizontal overflow: ${requestPage.overflow}px`);
+            await page.screenshot({path:'preview-event-request.jpg',type:'jpeg',quality:76,fullPage:true});
+
+            fs.writeFileSync('preview-admin-runtime.json',JSON.stringify({runtime,adminGate,requestPage},null,2));
+            await browser.close();
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+
+      - name: Upload runtime proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-admin-runtime
+          path: |
+            preview-login.jpg
+            preview-event-request.jpg
+            preview-admin-runtime.json
+          if-no-files-found: warn
+          retention-days: 7
