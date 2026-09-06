@@ -5,6 +5,7 @@ const STORAGE_KEY='filitalia_admin_media_v1';
 const cfg=window.FILITALIA_CONFIG||{};
 let dynamicItems=[];
 let activeFilter='all';
+const PUBLIC_MEDIA_VISIBLE=false;
 
 const COPY={
   it:{kicker:'FIL-ITALIA MEDIA',title:'GALLERIA MEDIA',intro:'Tutti i camp, gli allenamenti, i tornei e i momenti ufficiali FIL-ITALIA, direttamente nella Home.',all:'TUTTO',album:'ALBUM',image:'FOTO',video:'VIDEO',highlights:'HIGHLIGHTS',contents:'CONTENUTI',open:'APRI',empty:'Nessun contenuto disponibile in questa categoria.',featured:'IN EVIDENZA'},
@@ -202,6 +203,7 @@ function filterButton(id,label){return'<button type="button" data-home-gallery-f
 function render(){
   const section=document.getElementById('gallery');
   if(!section||!document.body.hasAttribute('data-home-layout'))return;
+  if(!PUBLIC_MEDIA_VISIBLE){section.classList.add('home-gallery-full-panel');section.innerHTML='<div class="home-gallery-full-shell"><header class="home-gallery-full-head"><div><small>FIL-ITALIA MEDIA</small><h2>MEDIA IN PREPARAZIONE</h2><p>Foto e contenuti verranno pubblicati quando saranno pronti.</p></div></header></div>';return}
   const items=combined();
   const shown=visibleItems(items);
   const copy=text();
