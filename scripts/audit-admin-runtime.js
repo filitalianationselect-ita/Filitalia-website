@@ -109,7 +109,7 @@ requireFragments(actions, [
 
 requireFragments(admin, [
   'admin-sponsors-v1.js?v=4',
-  'admin-content-actions-unlock-v1.js?v=4',
+  'admin-content-actions-unlock-v1.js?v=5',
   'admin-mobile-tools-v1.js?v=10'
 ], 'admin cache busting');
 
