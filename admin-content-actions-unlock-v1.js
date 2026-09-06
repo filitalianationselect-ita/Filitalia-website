@@ -2,7 +2,7 @@
   "use strict";
 
   const d = document;
-  const TARGET_PAGES = new Set(["events", "news", "media"]);
+  const TARGET_PAGES = new Set(["events", "emails", "news", "media"]);
 
   function ensureStyle() {
     if (d.getElementById("filContentActionsUnlockStyle")) return;
@@ -124,8 +124,23 @@
   function prepareNavigation(nav, mobile) {
     if (!nav) return;
 
+    let communicationsButton = nav.querySelector('[data-page="emails"], [data-page="communications"]');
     let newsButton = nav.querySelector('[data-page="news"]');
     let mediaButton = nav.querySelector('[data-page="media"]');
+
+    if (communicationsButton) {
+      communicationsButton.dataset.page = "emails";
+      communicationsButton.textContent = "📧 Comunicazioni";
+    } else {
+      const paymentsButton = nav.querySelector('[data-page="payments"]');
+      const moreButton = nav.querySelector('[data-page="more"]');
+      communicationsButton = makeNavButton("📧 Comunicazioni", "emails");
+      nav.insertBefore(communicationsButton, mobile ? nav.firstChild : paymentsButton ? paymentsButton.nextSibling : moreButton || null);
+    }
+
+    if (mobile && nav.firstElementChild !== communicationsButton) {
+      nav.insertBefore(communicationsButton, nav.firstChild);
+    }
 
     if (!newsButton && mediaButton) {
       newsButton = mediaButton;
@@ -146,7 +161,7 @@
       nav.insertBefore(mediaButton, anchor || newsButton.nextSibling);
     }
 
-    [nav.querySelector('[data-page="events"]'), newsButton, mediaButton].forEach(function (button) {
+    [nav.querySelector('[data-page="events"]'), communicationsButton, newsButton, mediaButton].forEach(function (button) {
       if (!button) return;
       button.disabled = false;
       button.removeAttribute("disabled");
