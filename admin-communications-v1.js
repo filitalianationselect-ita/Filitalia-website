@@ -867,7 +867,7 @@
   }
 
   async function mount(force) {
-    const section = $("communications");
+    const section = $("emails");
     if (!section) return false;
     if (!force && section.querySelector('[data-unified-communications="1"]')) return true;
     addStyle();
@@ -896,13 +896,13 @@
   function ensureMounted() {
     clearTimeout(mountTimer);
     mountTimer = setTimeout(() => {
-      const section = $("communications");
+      const section = $("emails");
       if (section && !section.querySelector('[data-unified-communications="1"]')) mount(true);
     }, 60);
   }
 
   d.addEventListener("click", (event) => {
-    const navigation = event.target.closest && event.target.closest('[data-section="communications"],[data-page="communications"],a[href="#communications"]');
+    const navigation = event.target.closest && event.target.closest('[data-section="communications"],[data-page="communications"],[data-page="emails"],a[href="#communications"],a[href="#emails"]');
     if (navigation) {
       setTimeout(ensureMounted, 80);
       setTimeout(ensureMounted, 400);
@@ -919,7 +919,7 @@
   }, true);
 
   d.addEventListener("keydown", (event) => { if (event.key === "Escape") closeModal(); });
-  const communicationsSection = $("communications");
+  const communicationsSection = $("emails");
   if (communicationsSection) {
     new MutationObserver(function () {
       if (!communicationsSection.querySelector('[data-unified-communications="1"]')) ensureMounted();
