@@ -2,7 +2,7 @@
   "use strict";
 
   const d = document;
-  const TARGET_PAGES = new Set(["events", "emails", "news", "media"]);
+  const TARGET_PAGES = new Set(["events", "registrations", "emails", "news", "media"]);
 
   function ensureStyle() {
     if (d.getElementById("filContentActionsUnlockStyle")) return;
@@ -125,6 +125,7 @@
     if (!nav) return;
 
     let communicationsButton = nav.querySelector('[data-page="emails"], [data-page="communications"]');
+    let registrationsButton = nav.querySelector('[data-page="registrations"]');
     let newsButton = nav.querySelector('[data-page="news"]');
     let mediaButton = nav.querySelector('[data-page="media"]');
 
@@ -140,6 +141,13 @@
 
     if (mobile && nav.firstElementChild !== communicationsButton) {
       nav.insertBefore(communicationsButton, nav.firstChild);
+    }
+
+    if (!registrationsButton) {
+      registrationsButton = makeNavButton("Registrazioni", "registrations");
+    }
+    if (mobile) {
+      nav.insertBefore(registrationsButton, communicationsButton.nextSibling);
     }
 
     if (!newsButton && mediaButton) {
@@ -161,7 +169,7 @@
       nav.insertBefore(mediaButton, anchor || newsButton.nextSibling);
     }
 
-    [nav.querySelector('[data-page="events"]'), communicationsButton, newsButton, mediaButton].forEach(function (button) {
+    [nav.querySelector('[data-page="events"]'), registrationsButton, communicationsButton, newsButton, mediaButton].forEach(function (button) {
       if (!button) return;
       button.disabled = false;
       button.removeAttribute("disabled");
