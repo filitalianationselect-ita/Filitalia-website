@@ -9,6 +9,7 @@ let homeNewsBusy=false;
 let galleryBusy=false;
 let galleryFilter='all';
 let galleryRemote=[];
+const PUBLIC_MEDIA_VISIBLE=false;
 
 function lang(){
   try{
@@ -214,6 +215,7 @@ function renderGallery(force){
   const grid=document.getElementById('galleryCategoryGrid');
   if(!grid||!document.body.classList.contains('fil-page-gallery'))return;
   const page=document.querySelector('.players-page');if(!page)return;
+  if(!PUBLIC_MEDIA_VISIBLE){page.classList.add('fpr-gallery-page');page.querySelector(':scope>.fil-page-brand')?.remove();page.querySelector(':scope>h1')?.setAttribute('hidden','');page.querySelector(':scope>.page-subtitle')?.setAttribute('hidden','');page.querySelector(':scope>.players-button-row')?.setAttribute('hidden','');grid.className='fpr-gallery-root';grid.innerHTML='<div class="fpr-gallery-shell"><header class="fpr-gallery-hero"><div><small>FIL-ITALIA MEDIA</small><h1>MEDIA IN PREPARAZIONE</h1><p>Stiamo selezionando i contenuti ufficiali. Foto, video e album verranno pubblicati quando saranno pronti.</p><a href="index.html">← TORNA ALLA HOME</a></div></header></div>';return}
   const items=mediaItems();
   const signature=JSON.stringify(items.map(item=>[item.id,item.title,item.mediaType,item.mediaUrl,item.thumbnailUrl,item.status]));
   if(!force&&grid.dataset.fprGallerySignature===signature&&grid.querySelector('.fpr-gallery-shell'))return;
