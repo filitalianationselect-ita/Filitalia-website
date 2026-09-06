@@ -1,6 +1,8 @@
 @import url("site-global-polish-v3.css?v=1");
 /* The language control must remain available on every public viewport. */
 @media(max-width:900px){
+  html body.fil-final-site .navbar.fil-final-navbar .fil-mobile-language-toggle{order:3!important;display:grid!important;place-items:center!important;width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid #b9d1c4!important;border-radius:50%!important;background:#fff!important;color:#173c2d!important;font-size:10px!important;font-weight:900!important}
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions{order:4!important}
   html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions .language-switch{display:flex!important;align-items:center!important;gap:3px!important}
   html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions .language-switch button{display:grid!important;place-items:center!important;width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;font-size:9px!important}
 }
