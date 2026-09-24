@@ -122,6 +122,47 @@
         html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + baseUrl + '">');
       }
 
+
+      // Remove the entire static dashboard before it can be painted, even if
+      // authorization or a secondary module subsequently fails.
+      const dashboardDocument = new DOMParser().parseFromString(html, "text/html");
+      const dashboard = dashboardDocument.getElementById("dashboard");
+      if (dashboard) {
+        dashboard.innerHTML = '<div class="topbar"><div><span class="eyebrow">FIL-ITALIA CONTROL ROOM</span><h1>Dashboard</h1><p class="muted" id="realDashboardStatus" role="status">Caricamento registrazioni…</p></div></div>' +
+          '<div class="card"><h2>Ultime registrazioni</h2><div class="table-wrap"><table><thead><tr><th>ATLETA</th><th>EVENTO</th><th>STATO ISCRIZIONE</th></tr></thead><tbody id="realDashboardRows"></tbody></table></div></div>' +
+          '<div class="card section-gap"><h2>Pagamenti</h2><p class="muted">Riepilogo non disponibile. Consulta la sezione Pagamenti per verificare le singole operazioni.</p></div>';
+        html = "<!doctype html>" + dashboardDocument.documentElement.outerHTML;
+      }
+
+      function renderRealDashboard(rows, error) {
+        const doc = frame.contentDocument;
+        const status = doc.getElementById("realDashboardStatus");
+        const body = doc.getElementById("realDashboardRows");
+        if (!status || !body) return;
+        body.replaceChildren();
+        if (error) {
+          status.textContent = "Registrazioni non disponibili. Ricarica la pagina per riprovare.";
+          return;
+        }
+        const records = Array.isArray(rows) ? rows : [];
+        status.textContent = records.length ? records.length + " registrazioni caricate dal database." : "Nessuna registrazione presente nel database.";
+        const labels = { received: "Ricevuta", confirmed: "Confermata", pending: "In attesa", cancelled: "Annullata", rejected: "Rifiutata", approved: "Approvata" };
+        records.slice().sort(function (a, b) {
+          return (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0);
+        }).slice(0, 10).forEach(function (row) {
+          const tr = doc.createElement("tr");
+          const state = row.registration_status || row.status || "";
+          [row.participant_name || "Nome non disponibile",
+           row.event_name || row.event_city || row.camp_event_id || row.event_id || "Evento non specificato",
+           labels[state] || state || "Da verificare"].forEach(function (value) {
+            const td = doc.createElement("td");
+            td.textContent = String(value);
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        });
+      }
+
       document.body.style.cssText = "margin:0;padding:0;overflow:hidden;background:#eef4f0";
       document.body.innerHTML = '<iframe id="adminLightFrame" title="Pannello amministratore FIL-ITALIA" style="display:block;width:100%;height:100vh;border:0"></iframe>';
       const frame = document.getElementById("adminLightFrame");
@@ -363,6 +404,7 @@
         frame.dataset.adminAuthorized = "true";
         const realRegistrations = await frame.contentWindow.FilitaliaRegistrations.listForEvent("");
         frame.contentWindow.FilitaliaRealRegistrations = realRegistrations;
+        renderRealDashboard(realRegistrations);
         frame.dataset.realRegistrationCount = String(realRegistrations.length);
         frame.dataset.realRegistrationEvents = realRegistrations
           .map(function (row) { return String(row.camp_event_id || row.event_city || "senza-evento"); })
@@ -395,6 +437,7 @@
         const originalAdminData = frame.contentWindow.FilitaliaAdminData;
         frame.contentWindow.FilitaliaAdminData = originalAdminData;
       } catch (adminError) {
+        renderRealDashboard([], adminError);
         frame.dataset.adminAuthorized = "false";
         frame.dataset.adminError = String(adminError && adminError.message || adminError).slice(0, 120);
       }
