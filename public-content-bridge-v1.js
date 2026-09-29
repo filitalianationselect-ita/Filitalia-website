@@ -442,12 +442,21 @@
       sponsors.error,
     ].filter(Boolean);
     if (errors.length === 5) throw errors[0];
+    const remoteEvents = events.error ? null : (events.data || []);
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const hasCurrentRemoteEvents = Array.isArray(remoteEvents) && remoteEvents.some((event) => {
+      const date = String(event.event_date || event.date || "").trim();
+      return !date || date >= todayIso;
+    });
     const payload = {
       news: news.data || [],
       players: players.data || [],
       staff: staff.data || [],
-      events: events.error ? null : (events.data || []),
-      eventsAuthoritative: !events.error,
+      events: remoteEvents,
+      // Use Supabase as the authoritative public event source only when it has
+      // at least one current/TBC event. If it contains only past events, keep
+      // the static catalogue as a safe fallback instead of blanking the page.
+      eventsAuthoritative: !events.error && hasCurrentRemoteEvents,
       sponsors: sponsors.data || [],
     };
     if (
