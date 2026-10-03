@@ -39,7 +39,8 @@
       .frp-card{padding:17px;border:1px solid #c9ddd2;border-radius:19px;background:#fff;box-shadow:0 10px 28px rgba(9,55,38,.07)}.frp-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(170px,.45fr) minmax(170px,.45fr);gap:9px;margin-bottom:14px}.frp-toolbar input,.frp-toolbar select{width:100%;min-height:46px;padding:10px 13px;border:1px solid #bed5c9;border-radius:12px;background:#fff;color:#153f2f;font:inherit}
       .frp-table{overflow:auto;border:1px solid #d1e1d8;border-radius:16px}.frp-table table{width:100%;min-width:980px;border-collapse:collapse}.frp-table th{padding:12px;background:#edf6f1;color:#315747;font-size:10px;text-align:left}.frp-table td{padding:13px;border-top:1px solid #e1ece6;vertical-align:middle}.frp-name{font-weight:900;color:#174934}.frp-muted{color:#60766c;font-size:11px}.frp-contact{display:flex;gap:6px;flex-wrap:wrap}.frp-contact a,.frp-detail{display:inline-flex;min-height:38px;align-items:center;justify-content:center;padding:8px 10px;border:1px solid #bfd5c9;border-radius:10px;background:#fff;color:#0c6242;font-size:11px;font-weight:900;text-decoration:none}.frp-detail{border:0;background:#0c6c47;color:#fff;cursor:pointer}.frp-empty,.frp-error{padding:28px;border-radius:15px;text-align:center}.frp-empty{background:#f3f9f6;color:#315747}.frp-error{border:1px solid #e8bcbc;background:#fff1f1;color:#8d2d2d}
       .frp-overlay{position:fixed;z-index:3600;inset:0;display:none;align-items:flex-start;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom));background:rgba(3,28,19,.74);overflow:hidden}.frp-overlay.show{display:flex}.frp-modal{display:flex;flex-direction:column;width:min(900px,100%);max-height:calc(100dvh - 20px);margin:auto;overflow:hidden;border-radius:20px;background:#f5faf7;box-shadow:0 32px 90px rgba(0,0,0,.38)}.frp-modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:18px 20px;background:linear-gradient(135deg,#073923,#126d49);color:#fff}.frp-modal-head h2{margin:0 0 4px!important;color:#fff!important}.frp-close{min-height:42px;padding:9px 12px;border:0;border-radius:10px;background:#fff;color:#174934;font-weight:900}.frp-body{min-height:0;overflow-y:auto;padding:17px}.frp-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.frp-form label{color:#315747;font-size:11px;font-weight:900}.frp-form input,.frp-form select{width:100%;min-height:46px;margin-top:6px;padding:10px 12px;border:1px solid #b9d1c4;border-radius:11px;background:#fff;color:#173f30;font:inherit}.frp-history{grid-column:1/-1;margin-top:5px;padding-top:15px;border-top:1px solid #cddfd5}.frp-history h3{margin:0 0 10px}.frp-event{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-top:1px solid #e0ebe5}.frp-event:first-of-type{border-top:0}.frp-event strong{display:block}.frp-event small{color:#61776d}.frp-foot{display:flex;justify-content:flex-end;gap:9px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #bfd5c9;background:#edf6f1}.frp-foot button{min-height:46px;padding:10px 16px;border-radius:11px;font-weight:900}.frp-cancel{border:1px solid #bfd5c9;background:#fff;color:#174934}.frp-save{border:0;background:#0c6c47;color:#fff}
-      @media(max-width:760px){#players .frp-head{padding:18px;flex-direction:column}.frp-toolbar{grid-template-columns:1fr}.frp-table{overflow:visible;border:0}.frp-table table,.frp-table tbody{display:block;min-width:0}.frp-table thead{display:none}.frp-table tr{display:block;margin-bottom:11px;padding:14px;border:1px solid #c9ddd2;border-radius:15px;background:#fff}.frp-table td{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:6px 0;border:0}.frp-table td:before{content:attr(data-label);color:#60766c;font-size:9px;font-weight:900}.frp-table td:last-child{display:block;padding-top:10px}.frp-detail{width:100%}.frp-form{grid-template-columns:1fr}.frp-history{grid-column:auto}.frp-event{grid-template-columns:1fr}.frp-modal{max-height:100dvh;border-radius:16px}.frp-overlay{padding:0}.frp-contact{justify-content:flex-start}}
+      .frp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.frp-player-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #c9ddd2;border-radius:18px;background:#fff;box-shadow:0 9px 25px rgba(9,55,38,.07)}.frp-photo{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,#dfeee6,#f4f9f6)}.frp-photo img{width:100%;height:100%;display:block;object-fit:cover}.frp-photo-placeholder{width:100%;height:100%;display:grid;place-items:center;font-size:42px;font-weight:900;color:#7b9689}.frp-player-content{display:flex;flex:1;flex-direction:column;padding:14px}.frp-player-name{margin:0;color:#174934;font-size:17px;line-height:1.18}.frp-player-meta{margin:5px 0 0;color:#60766c;font-size:11px;line-height:1.45}.frp-chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.frp-chip{display:inline-flex;align-items:center;min-height:27px;padding:5px 8px;border-radius:999px;background:#edf6f1;color:#255440;font-size:10px;font-weight:900}.frp-chip.pending{background:#fff4d9;color:#765b18}.frp-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:auto;padding-top:10px;border-top:1px solid #e3ece7}.frp-card-bottom small{color:#60766c}.frp-profile-hero{grid-column:1/-1;display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px;align-items:center;margin-bottom:6px;padding:14px;border:1px solid #c9ddd2;border-radius:16px;background:#fff}.frp-profile-photo{width:170px;aspect-ratio:4/3;overflow:hidden;border-radius:14px;background:#e4f0e9}.frp-profile-photo img{width:100%;height:100%;object-fit:cover}.frp-profile-photo .frp-photo-placeholder{font-size:34px}.frp-profile-summary h3{margin:0 0 6px;color:#174934}.frp-profile-summary p{margin:0;color:#60766c;font-size:12px;line-height:1.5}.frp-profile-hint{grid-column:1/-1;margin:0;padding:10px 12px;border-radius:11px;background:#eef7f2;color:#3a6351;font-size:11px}
+      @media(max-width:760px){#players .frp-head{padding:18px;flex-direction:column}.frp-toolbar{grid-template-columns:1fr}.frp-table{overflow:visible;border:0}.frp-table table,.frp-table tbody{display:block;min-width:0}.frp-table thead{display:none}.frp-table tr{display:block;margin-bottom:11px;padding:14px;border:1px solid #c9ddd2;border-radius:15px;background:#fff}.frp-table td{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:6px 0;border:0}.frp-table td:before{content:attr(data-label);color:#60766c;font-size:9px;font-weight:900}.frp-table td:last-child{display:block;padding-top:10px}.frp-detail{width:100%}.frp-form{grid-template-columns:1fr}.frp-profile-hero{grid-template-columns:96px minmax(0,1fr)}.frp-profile-photo{width:96px}.frp-history{grid-column:auto}.frp-event{grid-template-columns:1fr}.frp-modal{max-height:100dvh;border-radius:16px}.frp-overlay{padding:0}.frp-contact{justify-content:flex-start}}
     `;
     d.head.appendChild(style);
   }
@@ -197,23 +198,68 @@
     return "";
   }
 
+  function photoBlock(player) {
+    const photo = safePhoto(player.photoUrl);
+    if (photo) return '<img src="' + esc(photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy">';
+    return '<div class="frp-photo-placeholder" aria-label="Foto non disponibile">' + esc(initials(player.name)) + '</div>';
+  }
+
   function table(list) {
     if (!list.length) return '<div class="frp-empty"><b>Nessun giocatore trovato.</b></div>';
-    return `<div class="frp-table"><table><thead><tr><th>GIOCATORE</th><th>ANNO</th><th>CITTÀ</th><th>EVENTI</th><th>ULTIMO EVENTO</th><th>CONTATTI</th><th></th></tr></thead><tbody>${list.map((player) => {
-      const mail = safeMail(player.email), phone = safePhone(player.phone);
-      return `<tr data-id="${esc(player.id)}"><td data-label="GIOCATORE"><div class="frp-name">${esc(player.name)}</div><div class="frp-muted">${esc(player.club || player.position || "—")}</div></td><td data-label="ANNO">${esc(player.year || "—")}</td><td data-label="CITTÀ">${esc(player.city || "—")}</td><td data-label="EVENTI">${esc(player.events)}</td><td data-label="ULTIMO">${esc(player.lastEventDate || "—")}</td><td data-label="CONTATTI"><div class="frp-contact">${mail ? `<a href="${esc(mail)}">Email</a>` : ""}${phone ? `<a href="${esc(phone)}">Telefono</a>` : ""}${!mail && !phone ? '<span class="frp-muted">Mancanti</span>' : ""}</div></td><td data-label="AZIONE"><button class="frp-detail" type="button" data-player-detail="${esc(player.id)}">APRI SCHEDA</button></td></tr>`;
-    }).join("")}</tbody></table></div>`;
+    return '<div class="frp-grid">' + list.map((player) => {
+      const role = player.position || "Ruolo da aggiungere";
+      const height = player.heightCm ? player.heightCm + " cm" : "Altezza da aggiungere";
+      const yearCategory = [player.year || "", player.category || ""].filter(Boolean).join(" · ") || "Anno/categoria da verificare";
+      return '<article class="frp-player-card" data-id="' + esc(player.id) + '">' +
+        '<div class="frp-photo" data-player-photo="' + esc(player.id) + '">' + photoBlock(player) + '</div>' +
+        '<div class="frp-player-content">' +
+          '<h3 class="frp-player-name">' + esc(player.name || "Giocatore") + '</h3>' +
+          '<p class="frp-player-meta">' + esc(yearCategory) + (player.city ? " · " + esc(player.city) : "") + '</p>' +
+          '<div class="frp-chips">' +
+            '<span class="frp-chip' + (player.position ? "" : " pending") + '">' + esc(role) + '</span>' +
+            '<span class="frp-chip' + (player.heightCm ? "" : " pending") + '">' + esc(height) + '</span>' +
+          '</div>' +
+          (player.club ? '<p class="frp-player-meta"><b>Squadra:</b> ' + esc(player.club) + '</p>' : '') +
+          '<div class="frp-card-bottom"><small>' + esc(player.events) + ' eventi</small><button class="frp-detail" type="button" data-player-detail="' + esc(player.id) + '">APRI PROFILO</button></div>' +
+        '</div>' +
+      '</article>';
+    }).join("") + '</div>';
+  }
+
+  async function hydrateCardPhoto(player) {
+    if (!player || player.photoUrl) return;
+    const host = d.querySelector('[data-player-photo="' + CSS.escape(String(player.id)) + '"]');
+    if (!host) return;
+    try {
+      const result = await client().rpc("admin_get_registry_player", { target_player_id: player.id });
+      if (result.error) return;
+      const detail = result.data || {};
+      const registrations = Array.isArray(detail.registrations) ? detail.registrations : [];
+      const photo = await resolvePhoto(detail.player || {}, registrations, findMeta(player));
+      if (!photo) return;
+      player.photoUrl = photo;
+      if (host.isConnected) host.innerHTML = photoBlock(player);
+    } catch (_) {}
+  }
+
+  async function hydrateVisiblePhotos(list) {
+    const targets = (list || []).filter((player) => !player.photoUrl);
+    for (let index = 0; index < targets.length; index += 4) {
+      await Promise.all(targets.slice(index, index + 4).map(hydrateCardPhoto));
+    }
   }
 
   function filteredRows() {
     const search = String(d.getElementById("frpSearch")?.value || "").toLowerCase();
     const sort = String(d.getElementById("frpSort")?.value || "name-asc");
-    let list = rows.filter((player) => !search || [player.name, player.email, player.phone, player.city, player.club, player.position, player.year].join(" ").toLowerCase().includes(search));
+    let list = rows.filter((player) => !search || [player.name, player.email, player.phone, player.city, player.club, player.position, player.category, player.year, player.heightCm].join(" ").toLowerCase().includes(search));
     const collator = new Intl.Collator("it", { sensitivity: "base", numeric: true });
     list = list.slice().sort((a, b) => {
       if (sort === "name-desc") return collator.compare(b.name, a.name);
       if (sort === "year-asc") return (Number(a.year) || 9999) - (Number(b.year) || 9999) || collator.compare(a.name, b.name);
       if (sort === "year-desc") return (Number(b.year) || 0) - (Number(a.year) || 0) || collator.compare(a.name, b.name);
+      if (sort === "height-desc") return (Number(b.heightCm) || 0) - (Number(a.heightCm) || 0) || collator.compare(a.name, b.name);
+      if (sort === "height-asc") return (Number(a.heightCm) || 9999) - (Number(b.heightCm) || 9999) || collator.compare(a.name, b.name);
       if (sort === "recent") return String(b.lastEventDate || "").localeCompare(String(a.lastEventDate || "")) || collator.compare(a.name, b.name);
       return collator.compare(a.name, b.name);
     });
@@ -228,6 +274,7 @@
     const count = d.getElementById("frpVisibleCount");
     if (count) count.textContent = list.length + " giocatori";
     box.querySelectorAll("[data-player-detail]").forEach((button) => button.onclick = () => openDetail(button.dataset.playerDetail));
+    hydrateVisiblePhotos(list).catch(() => {});
   }
 
   function ensureModal() {
