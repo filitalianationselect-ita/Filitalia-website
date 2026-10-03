@@ -21,8 +21,8 @@
       })
     : null;
 
-  const allowedRequestedRoles = new Set(["player", "parent", "coach", "coordinator", "staff"]);
-  const allowedAdminRoles = new Set(["player", "parent", "coach", "coordinator", "staff", "admin"]);
+  const allowedRequestedRoles = new Set(["player", "parent", "coach", "coordinator", "staff", "volunteer"]);
+  const allowedAdminRoles = new Set(["player", "parent", "coach", "coordinator", "staff", "volunteer", "admin"]);
   const allowedStatuses = new Set(["pending", "active", "suspended", "rejected"]);
 
   function cleanText(value, maxLength) {
@@ -259,6 +259,14 @@
 
     if (result.error) throw result.error;
     return result.data;
+  }
+
+  async function ensureOwnCanonicalPlayer() {
+    const user = await getUser();
+    if (!user) throw new Error("NOT_AUTHENTICATED");
+    const result = await requireClient().rpc("ensure_self_player");
+    if (result.error) throw result.error;
+    return result.data || null;
   }
 
   async function uploadOwnPlayerPhoto(file) {
@@ -577,6 +585,8 @@
     if (code === "PHOTO_REQUIRED") return t("errorPhotoRequired");
     if (code === "INVALID_PHOTO_TYPE") return t("errorPhotoType");
     if (code === "PHOTO_TOO_LARGE") return t("errorPhotoSize");
+    if (code === "PLAYER_ACCOUNT_NOT_ACTIVE") return "Il profilo giocatore sarà collegato automaticamente dopo l’approvazione dell’account.";
+    if (["PLAYER_IDENTITY_EMAIL_CONFLICT_CONTACT_ADMIN","PLAYER_IDENTITY_AMBIGUOUS_CONTACT_ADMIN","PLAYER_ALREADY_LINKED_TO_DIFFERENT_ACCOUNT","PLAYER_PROFILE_IDENTITY_CONFLICT"].includes(code)) return "Account creato correttamente, ma il collegamento alla scheda giocatore deve essere verificato dall’amministratore.";
     if (code === "SHEET_SYNC_NOT_CONFIGURED") return t("errorSheetConfig");
     if (code === "DELETE_REQUEST_EXISTS") return "Hai già inviato una richiesta di eliminazione.";
     if (code === "CANNOT_DELETE_ADMIN") return "L’account amministratore principale non può essere eliminato.";
@@ -610,6 +620,7 @@
     updateOwnProfile,
     getOwnPlayerProfile,
     upsertOwnPlayerProfile,
+    ensureOwnCanonicalPlayer,
     uploadOwnPlayerPhoto,
     getSignedProfilePhotoUrl,
     getCampProfileData,
