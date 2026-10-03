@@ -4,6 +4,7 @@
   const d = document;
   let rows = [];
   let events = [];
+  let profileMeta = [];
   let currentId = "";
   let rendering = false;
 
@@ -51,10 +52,14 @@
       year: Number(row.birth_year) || "",
       sex: String(row.sex || ""),
       city: String(row.residence_city || ""),
+      category: String(row.category || row.player_category || ""),
       position: String(row.position || ""),
+      heightCm: Number(row.height_cm || row.height || 0) || null,
       club: String(row.current_club || ""),
       email: String(row.email || ""),
       phone: String(row.phone || ""),
+      photoUrl: String(row.photo_url || row.image_url || row.card_image_url || row.primary_photo_url || ""),
+      photoPath: String(row.photo_storage_path || row.storage_path || row.primary_photo_path || ""),
       status: String(row.player_status || "active"),
       registrations: Number(row.registration_count) || 0,
       events: Number(row.event_count) || 0,
@@ -62,21 +67,62 @@
     };
   }
 
+  function profileKey(value) {
+    return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  function findMeta(player) {
+    if (!player) return null;
+    const direct = profileMeta.find((item) => String(item.id || "") === String(player.id || ""));
+    if (direct) return direct;
+    const key = profileKey(player.name);
+    return profileMeta.find((item) => profileKey(item.name) === key && (!player.year || !item.year || String(item.year) === String(player.year))) || null;
+  }
+
+  function mergeMetaIntoRows() {
+    rows = rows.map((player) => {
+      const meta = findMeta(player);
+      if (!meta) return player;
+      return Object.assign({}, player, {
+        category: player.category || meta.category || "",
+        position: player.position || meta.position || "",
+        heightCm: player.heightCm || Number(meta.heightCm || meta.height_cm || 0) || null,
+        club: player.club || meta.club || "",
+        city: player.city || meta.city || "",
+        photoUrl: player.photoUrl || meta.imageUrl || meta.cardImageUrl || meta.image_url || meta.card_image_url || ""
+      });
+    });
+  }
+
+  async function loadProfileMeta() {
+    if (!window.FilitaliaCore || typeof window.FilitaliaCore.listPlayers !== "function") return [];
+    try {
+      const list = await window.FilitaliaCore.listPlayers();
+      return Array.isArray(list) ? list : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
   async function loadPlayers(eventFilter) {
     const playersResult = await client().rpc("admin_list_registry_players", { search_term: null, birth_year_filter: null, sex_filter: null, status_filter: null, event_filter: eventFilter || null });
     if (playersResult.error) throw playersResult.error;
     rows = (playersResult.data || []).map(normalize);
+    mergeMetaIntoRows();
   }
 
   async function load() {
     await requireAdmin();
-    const [playersResult, eventsResult] = await Promise.all([
+    const [playersResult, eventsResult, profileRows] = await Promise.all([
       client().rpc("admin_list_registry_players", { search_term: null, birth_year_filter: null, sex_filter: null, status_filter: null, event_filter: null }),
-      client().rpc("admin_list_registry_events")
+      client().rpc("admin_list_registry_events"),
+      loadProfileMeta()
     ]);
     if (playersResult.error) throw playersResult.error;
     if (eventsResult.error) throw eventsResult.error;
+    profileMeta = profileRows;
     rows = (playersResult.data || []).map(normalize);
+    mergeMetaIntoRows();
     events = (eventsResult.data || []);
   }
 
@@ -87,6 +133,68 @@
   function safePhone(value) {
     const phone = String(value || "").replace(/[^+\d]/g, "");
     return phone.length >= 6 ? "tel:" + phone : "";
+  }
+
+  function safePhoto(value) {
+    const photo = String(value || "").trim();
+    if (!photo) return "";
+    if (/^(https?:|blob:|data:image\/)/i.test(photo)) return photo;
+    if (/^[a-z0-9_./-]+$/i.test(photo)) return photo;
+    return "";
+  }
+
+  function initials(name) {
+    return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("") || "?";
+  }
+
+  function directPhotoCandidate(source) {
+    if (!source || typeof source !== "object") return "";
+    const keys = ["photo_url", "image_url", "card_image_url", "primary_photo_url", "public_url", "preview_url"];
+    for (const key of keys) {
+      const value = safePhoto(source[key]);
+      if (value) return value;
+    }
+    return "";
+  }
+
+  function storageCandidates(player, registrations) {
+    const list = [];
+    const add = (value) => {
+      let path = String(value || "").trim();
+      if (!path || /^https?:/i.test(path)) return;
+      path = path.replace(/^profile-media\//, "").replace(/^\/+/, "");
+      if (path && !list.includes(path)) list.push(path);
+    };
+    [player].concat(registrations || []).forEach((source) => {
+      if (!source || typeof source !== "object") return;
+      ["photo_storage_path", "storage_path", "primary_photo_path", "registration_photo_path"].forEach((key) => add(source[key]));
+      if (source.original_data && typeof source.original_data === "object") {
+        const photo = source.original_data["Foto Giocatore"];
+        if (photo && typeof photo === "object") add(photo.storage_path || photo.path);
+      }
+      const registrationId = String(source.id || source.registration_id || "").trim();
+      const submissionId = String(source.submission_id || "").trim();
+      if (registrationId && submissionId) {
+        ["jpg", "png", "webp"].forEach((ext) => add("registrations/" + registrationId + "/" + submissionId + "." + ext));
+      }
+    });
+    return list;
+  }
+
+  async function resolvePhoto(player, registrations, meta) {
+    const direct = [directPhotoCandidate(player), directPhotoCandidate(meta)]
+      .concat((registrations || []).slice().reverse().map(directPhotoCandidate))
+      .find(Boolean);
+    if (direct) return direct;
+    const bucket = client() && client().storage && client().storage.from("profile-media");
+    if (!bucket) return "";
+    for (const path of storageCandidates(player, registrations)) {
+      try {
+        const signed = await bucket.createSignedUrl(path, 3600);
+        if (!signed.error && signed.data && signed.data.signedUrl) return signed.data.signedUrl;
+      } catch (_) {}
+    }
+    return "";
   }
 
   function table(list) {
