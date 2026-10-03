@@ -144,15 +144,26 @@
     return "";
   }
 
+  function browserPhotoUrl(value) {
+    const photo = safePhoto(value);
+    if (!photo) return "";
+    const driveMatch = photo.match(/^https:\/\/drive\.google\.com\/file\/d\/([^/]+)/i)
+      || photo.match(/[?&]id=([^&]+)/i);
+    if (driveMatch && driveMatch[1]) {
+      return "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(driveMatch[1]);
+    }
+    return photo;
+  }
+
   function initials(name) {
     return String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("") || "?";
   }
 
   function directPhotoCandidate(source) {
     if (!source || typeof source !== "object") return "";
-    const keys = ["photo_url", "image_url", "card_image_url", "primary_photo_url", "public_url", "preview_url"];
+    const keys = ["photo_url", "image_url", "card_image_url", "primary_photo_url", "public_url", "preview_url", "photo_path"];
     for (const key of keys) {
-      const value = safePhoto(source[key]);
+      const value = browserPhotoUrl(source[key]);
       if (value) return value;
     }
     return "";
@@ -168,7 +179,7 @@
     };
     [player].concat(registrations || []).forEach((source) => {
       if (!source || typeof source !== "object") return;
-      ["photo_storage_path", "storage_path", "primary_photo_path", "registration_photo_path"].forEach((key) => add(source[key]));
+      ["photo_storage_path", "storage_path", "primary_photo_path", "registration_photo_path", "photo_path"].forEach((key) => add(source[key]));
       if (source.original_data && typeof source.original_data === "object") {
         const photo = source.original_data["Foto Giocatore"];
         if (photo && typeof photo === "object") add(photo.storage_path || photo.path);
@@ -199,7 +210,7 @@
   }
 
   function photoBlock(player) {
-    const photo = safePhoto(player.photoUrl);
+    const photo = browserPhotoUrl(player.photoUrl);
     if (photo) return '<img src="' + esc(photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy">';
     return '<div class="frp-photo-placeholder" aria-label="Foto non disponibile">' + esc(initials(player.name)) + '</div>';
   }
@@ -227,15 +238,19 @@
   }
 
   async function hydrateCardPhoto(player) {
-    if (!player || player.photoUrl) return;
+    if (!player) return;
     const host = d.querySelector('[data-player-photo="' + CSS.escape(String(player.id)) + '"]');
     if (!host) return;
     try {
       const result = await client().rpc("admin_get_registry_player", { target_player_id: player.id });
       if (result.error) return;
       const detail = result.data || {};
+      const canonical = detail.player || {};
       const registrations = Array.isArray(detail.registrations) ? detail.registrations : [];
-      const photo = await resolvePhoto(detail.player || {}, registrations, findMeta(player));
+      const photo = player.photoUrl || await resolvePhoto(canonical, registrations, findMeta(player));
+      player.heightCm = player.heightCm || Number(canonical.height_cm || 0) || null;
+      player.position = player.position || String(canonical.position || "");
+      player.club = player.club || String(canonical.current_club || "");
       if (!photo) return;
       player.photoUrl = photo;
       if (host.isConnected) host.innerHTML = photoBlock(player);
@@ -243,7 +258,7 @@
   }
 
   async function hydrateVisiblePhotos(list) {
-    const targets = (list || []).filter((player) => !player.photoUrl);
+    const targets = (list || []).filter((player) => !player.photoUrl || !player.heightCm);
     for (let index = 0; index < targets.length; index += 4) {
       await Promise.all(targets.slice(index, index + 4).map(hydrateCardPhoto));
     }
@@ -350,6 +365,8 @@
       const heightText = d.getElementById("frpHeight").value.trim();
       const heightCm = heightText ? Number(heightText) : null;
       const photoUrl = safePhoto(d.getElementById("frpPhotoUrl").value);
+      patch.height_cm = heightCm;
+      if (photoUrl) patch.photo_path = photoUrl;
       if (!patch.first_name || !patch.last_name || !patch.birth_date) throw new Error("Nome, cognome e data di nascita sono obbligatori.");
       if (heightCm && (heightCm < 120 || heightCm > 250)) throw new Error("Controlla l’altezza: inserisci un valore in centimetri.");
 
