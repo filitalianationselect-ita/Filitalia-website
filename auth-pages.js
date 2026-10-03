@@ -36,6 +36,21 @@
     });
   }
 
+  function updateSignupRoleHelp(form) {
+    const node = byId("signupRoleHelp");
+    if (!node || !form || !form.requestedRole) return;
+    const role = String(form.requestedRole.value || "");
+    const copy = {
+      player: "Account personale del giocatore. Usa nome, cognome ed email del giocatore. Se era già registrato a un Talent ID, usa gli stessi dati anagrafici.",
+      parent: "Account personale del genitore/tutore. Usa i tuoi dati, non quelli del figlio. I giocatori verranno collegati al tuo account senza creare doppioni.",
+      coach: "Account personale Coach. L’accesso alle funzioni staff richiede approvazione.",
+      coordinator: "Account personale Coordinatore. L’accesso alle funzioni staff richiede approvazione.",
+      staff: "Account personale Staff. L’accesso alle funzioni staff richiede approvazione.",
+      volunteer: "Account personale Volontario. L’accesso alle funzioni assegnate richiede approvazione."
+    };
+    node.textContent = copy[role] || "Se il giocatore non ha una propria email, crea un account Genitore/Tutore. Il giocatore manterrà comunque una scheda personale separata.";
+  }
+
   function configGuard() {
     const warning = byId("accountConfigWarning");
     if (!auth || !auth.configured) {
@@ -90,6 +105,10 @@
 
     const signupForm = byId("signupForm");
     if (signupForm) {
+      if (signupForm.requestedRole) {
+        signupForm.requestedRole.addEventListener("change", function () { updateSignupRoleHelp(signupForm); });
+        updateSignupRoleHelp(signupForm);
+      }
       signupForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         if (signupForm.password.value !== signupForm.passwordConfirm.value) {
@@ -98,6 +117,11 @@
         }
         if (!signupForm.privacy.checked) {
           setStatus("signupStatus", tx("privacyRequired"), "error");
+          return;
+        }
+        const requestedRole = String(signupForm.requestedRole && signupForm.requestedRole.value || "");
+        if (!requestedRole) {
+          setStatus("signupStatus", "Scegli se stai creando un account Giocatore, Genitore/Tutore oppure Staff.", "error");
           return;
         }
 
@@ -109,7 +133,7 @@
             lastName: signupForm.lastName.value,
             email: signupForm.email.value,
             password: signupForm.password.value,
-            requestedRole: signupForm.requestedRole.value,
+            requestedRole: requestedRole,
             language: localStorage.getItem("language") || "it"
           });
           if (result.error) throw result.error;
@@ -176,6 +200,17 @@
     return String((profile && (profile.actual_role || profile.role)) || "").toLowerCase();
   }
 
+  async function ensurePlayerRegistryLink(profile, playerProfile) {
+    if (!profile || profile.status !== "active" || accountRole(profile) !== "player") return { skipped: true };
+    if (!playerProfile || !playerProfile.birth_date || !auth.ensureOwnCanonicalPlayer) return { skipped: true };
+    try {
+      return { player: await auth.ensureOwnCanonicalPlayer() };
+    } catch (error) {
+      console.warn("FIL-ITALIA canonical player link needs review", error);
+      return { error: error };
+    }
+  }
+
   function isAdminRole(profile) {
     const role = accountRole(profile);
     return role === "admin" || role === "super_admin";
@@ -194,6 +229,19 @@
     byId("accountRole").textContent = roleLabel(profile.role);
     byId("accountStatusBadge").textContent = statusLabel(profile.status);
     byId("accountStatusBadge").className = "account-badge status-" + (profile.status || "pending");
+
+    const identityHint = byId("accountIdentityHint");
+    if (identityHint) {
+      const requested = String(profile.requested_role || "").toLowerCase();
+      const effective = accountRole(profile);
+      if (effective === "player" || (effective === "pending" && requested === "player")) {
+        identityHint.textContent = "Questo account appartiene al giocatore. Nome e cognome devono essere quelli del giocatore già registrato a FIL-ITALIA.";
+      } else if (effective === "parent" || (effective === "pending" && requested === "parent")) {
+        identityHint.textContent = "Questo account appartiene al genitore/tutore. Inserisci qui i dati dell’adulto, non quelli del figlio.";
+      } else {
+        identityHint.textContent = "Questo account è personale: inserisci i dati della persona che effettua l’accesso.";
+      }
+    }
 
     const form = byId("profileForm");
     if (form) {
@@ -631,7 +679,7 @@
     if (!profile) {
       const user = session.user;
       const metadata = user.user_metadata || {};
-      const requestedRole = ["player", "parent", "coach", "coordinator", "staff"].includes(String(metadata.requested_role || ""))
+      const requestedRole = ["player", "parent", "coach", "coordinator", "staff", "volunteer"].includes(String(metadata.requested_role || ""))
         ? String(metadata.requested_role)
         : "player";
       profile = {
@@ -698,7 +746,11 @@
 
     const playerProfileForm = byId("playerProfileForm");
     try {
-      await loadPlayerProfileEditor(profile);
+      const loadedPlayerProfile = await loadPlayerProfileEditor(profile);
+      const linkResult = await ensurePlayerRegistryLink(profile, loadedPlayerProfile);
+      if (linkResult.error) {
+        setStatus("playerProfileStatus", auth.friendlyError(linkResult.error), "warning");
+      }
     } catch (error) {
       setStatus("playerProfileStatus", auth.friendlyError(error), "error");
     }
@@ -726,7 +778,7 @@
           if (file) {
             await auth.uploadOwnPlayerPhoto(file);
           }
-          await auth.upsertOwnPlayerProfile({
+          const savedPlayerProfile = await auth.upsertOwnPlayerProfile({
             birthDate: playerProfileForm.birthDate.value,
             sex: playerProfileForm.sex.value,
             residenceCity: playerProfileForm.residenceCity.value,
@@ -740,15 +792,23 @@
             highlightsUrl: playerProfileForm.highlightsUrl.value
           });
           profile = await auth.getOwnProfile();
+          const linkResult = await ensurePlayerRegistryLink(profile, savedPlayerProfile);
           if (photoInput) photoInput.value = "";
           await loadPlayerProfileEditor(profile);
           try {
             await auth.syncOwnProfileToSheet();
-            setStatus("playerProfileStatus", tx("playerSynced"), "success");
+            if (linkResult.error) {
+              setStatus("playerProfileStatus", "Profilo salvato. " + auth.friendlyError(linkResult.error), "warning");
+            } else if (linkResult.player) {
+              setStatus("playerProfileStatus", "Player Profile salvato e collegato alla tua scheda FIL-ITALIA.", "success");
+            } else {
+              setStatus("playerProfileStatus", tx("playerSynced"), "success");
+            }
           } catch (syncError) {
             console.warn("Google Sheet player profile sync failed", syncError);
             const syncMessage = String(syncError && syncError.message || tx("syncFailed"));
-            setStatus("playerProfileStatus", tx("playerSavedSheet", { message: syncMessage }), "warning");
+            const linkNote = linkResult && linkResult.error ? " " + auth.friendlyError(linkResult.error) : "";
+            setStatus("playerProfileStatus", tx("playerSavedSheet", { message: syncMessage }) + linkNote, "warning");
           }
         } catch (error) {
           setStatus("playerProfileStatus", auth.friendlyError(error), "error");
