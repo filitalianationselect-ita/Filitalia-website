@@ -304,19 +304,32 @@
     overlay.setAttribute("aria-hidden", "false");
     d.body.style.overflow = "hidden";
     const result = await client().rpc("admin_get_registry_player", { target_player_id: id });
-    if (result.error) { body.innerHTML = `<div class="frp-error">${esc(result.error.message)}</div>`; return; }
+    if (result.error) { body.innerHTML = '<div class="frp-error">' + esc(result.error.message) + '</div>'; return; }
     const detail = result.data || {}, player = detail.player || {}, registrations = Array.isArray(detail.registrations) ? detail.registrations : [];
-    d.getElementById("frpTitle").textContent = [player.first_name, player.last_name].filter(Boolean).join(" ") || "Scheda giocatore";
-    body.innerHTML = `<div class="frp-form">
-      <label>Nome<input id="frpFirst" value="${esc(player.first_name)}"></label><label>Cognome<input id="frpLast" value="${esc(player.last_name)}"></label>
-      <label>Data di nascita<input id="frpBirth" type="date" value="${esc(player.birth_date)}"></label><label>Città<input id="frpCity" value="${esc(player.residence_city)}"></label>
-      <label>Email<input id="frpEmail" type="email" value="${esc(player.email)}"></label><label>Telefono<input id="frpPhone" type="tel" value="${esc(player.phone)}"></label>
-      <label>Ruolo<input id="frpPosition" value="${esc(player.position)}"></label><label>Squadra<input id="frpClub" value="${esc(player.current_club)}"></label>
-      <label>Stato<select id="frpStatus"><option value="active">Attivo</option><option value="archived">Archiviato</option></select></label>
-      <section class="frp-history"><h3>Storico eventi (${registrations.length})</h3>${eventHistory(registrations)}</section>
-    </div>`;
+    const row = rows.find((item) => item.id === id) || {};
+    const meta = findMeta(row) || {};
+    const fullName = [player.first_name, player.last_name].filter(Boolean).join(" ") || row.name || "Scheda giocatore";
+    const heightCm = Number(meta.heightCm || meta.height_cm || player.height_cm || row.heightCm || 0) || "";
+    const category = meta.category || player.category || row.category || "";
+    const persistentPhoto = safePhoto(meta.imageUrl || meta.cardImageUrl || meta.image_url || meta.card_image_url || row.photoUrl || "");
+    const resolvedPhoto = await resolvePhoto(player, registrations, meta);
+    d.getElementById("frpTitle").textContent = fullName;
+    body.innerHTML = '<div class="frp-form">' +
+      '<section class="frp-profile-hero">' +
+        '<div class="frp-profile-photo">' + (resolvedPhoto ? '<img src="' + esc(resolvedPhoto) + '" alt="Foto di ' + esc(fullName) + '">' : '<div class="frp-photo-placeholder">' + esc(initials(fullName)) + '</div>') + '</div>' +
+        '<div class="frp-profile-summary"><h3>' + esc(fullName) + '</h3><p>' + esc([row.year || (player.birth_date || "").slice(0, 4), category, player.position || row.position, heightCm ? heightCm + " cm" : ""].filter(Boolean).join(" · ") || "Profilo da completare") + '</p><p>' + esc([player.residence_city || row.city, player.current_club || row.club].filter(Boolean).join(" · ")) + '</p></div>' +
+      '</section>' +
+      '<p class="frp-profile-hint">La foto della registrazione viene collegata automaticamente quando disponibile. Ruolo, altezza e foto profilo possono essere completati anche in un secondo momento.</p>' +
+      '<label>Nome<input id="frpFirst" value="' + esc(player.first_name) + '"></label><label>Cognome<input id="frpLast" value="' + esc(player.last_name) + '"></label>' +
+      '<label>Data di nascita<input id="frpBirth" type="date" value="' + esc(player.birth_date) + '"></label><label>Città<input id="frpCity" value="' + esc(player.residence_city || row.city) + '"></label>' +
+      '<label>Email<input id="frpEmail" type="email" value="' + esc(player.email) + '"></label><label>Telefono<input id="frpPhone" type="tel" value="' + esc(player.phone) + '"></label>' +
+      '<label>Categoria<input id="frpCategory" value="' + esc(category) + '" placeholder="Es. Under 16"></label><label>Ruolo<input id="frpPosition" value="' + esc(player.position || row.position) + '" placeholder="Es. PG / SG"></label>' +
+      '<label>Altezza (cm)<input id="frpHeight" type="number" min="120" max="250" step="1" value="' + esc(heightCm) + '" placeholder="Es. 184"></label><label>Squadra<input id="frpClub" value="' + esc(player.current_club || row.club) + '"></label>' +
+      '<label class="frp-history">Foto profilo (URL, opzionale)<input id="frpPhotoUrl" value="' + esc(persistentPhoto) + '" placeholder="La foto della registrazione viene usata automaticamente"></label>' +
+      '<label>Stato<select id="frpStatus"><option value="active">Attivo</option><option value="archived">Archiviato</option></select></label>' +
+      '<section class="frp-history"><h3>Storico eventi (' + registrations.length + ')</h3>' + eventHistory(registrations) + '</section>' +
+    '</div>';
     d.getElementById("frpStatus").value = player.status === "archived" ? "archived" : "active";
-    const row = rows.find((item) => item.id === id);
     if (row) row.__eventIds = registrations.map((registration) => String(registration.event_id));
   }
 
@@ -333,10 +346,43 @@
         position: d.getElementById("frpPosition").value.trim(), current_club: d.getElementById("frpClub").value.trim(),
         status: d.getElementById("frpStatus").value
       };
+      const category = d.getElementById("frpCategory").value.trim();
+      const heightText = d.getElementById("frpHeight").value.trim();
+      const heightCm = heightText ? Number(heightText) : null;
+      const photoUrl = safePhoto(d.getElementById("frpPhotoUrl").value);
       if (!patch.first_name || !patch.last_name || !patch.birth_date) throw new Error("Nome, cognome e data di nascita sono obbligatori.");
+      if (heightCm && (heightCm < 120 || heightCm > 250)) throw new Error("Controlla l’altezza: inserisci un valore in centimetri.");
+
       const result = await client().rpc("admin_update_registry_player", { target_player_id: currentId, patch });
       if (result.error) throw result.error;
-      notify("Dati giocatore salvati nell’archivio permanente.");
+
+      let profileError = null;
+      if (window.FilitaliaCore && typeof window.FilitaliaCore.savePlayer === "function") {
+        try {
+          const row = rows.find((item) => item.id === currentId) || {};
+          const existing = findMeta(row) || {};
+          const year = String(patch.birth_date || "").slice(0, 4);
+          await window.FilitaliaCore.savePlayer(Object.assign({}, existing, {
+            id: existing.id || currentId,
+            name: [patch.first_name, patch.last_name].filter(Boolean).join(" "),
+            year: year || existing.year || row.year || "",
+            category: category || existing.category || row.category || "",
+            position: patch.position,
+            heightCm: heightCm,
+            club: patch.current_club,
+            city: patch.residence_city,
+            imageUrl: photoUrl || existing.imageUrl || existing.image_url || "",
+            cardImageUrl: photoUrl || existing.cardImageUrl || existing.card_image_url || existing.imageUrl || existing.image_url || "",
+            status: existing.status || "active",
+            profileStatus: existing.profileStatus || existing.profile_status || "incomplete"
+          }));
+        } catch (error) {
+          profileError = error;
+        }
+      }
+
+      if (profileError) notify("Dati base salvati. Ruolo/altezza/foto profilo non completati: " + (profileError.message || profileError));
+      else notify("Player Profile salvato: anagrafica, ruolo e altezza aggiornati.");
       d.getElementById("frpOverlay").classList.remove("show");
       d.body.style.overflow = "";
       await render();
@@ -365,7 +411,7 @@
     section.innerHTML = '<div class="frp-empty">Caricamento archivio giocatori…</div>';
     try {
       await load();
-      section.innerHTML = `<div id="filRegistryPlayersRoot"><header class="frp-head"><div><span class="eyebrow">ARCHIVIO ISCRITTI</span><h1>Database giocatori</h1><div class="frp-sub">I contatti restano salvati anche se un evento viene nascosto o archiviato. Solo gli amministratori autorizzati possono consultarli.</div></div><span id="frpVisibleCount" class="frp-count">${rows.length} giocatori</span></header><div class="frp-card"><div class="frp-toolbar"><input id="frpSearch" type="search" placeholder="Cerca nome, email, telefono, città o squadra"><select id="frpEvent"><option value="">Tutti gli eventi</option>${events.map((event) => `<option value="${esc(event.event_id)}">${esc([event.city, event.name].filter(Boolean).join(" · "))}</option>`).join("")}</select><select id="frpSort"><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option><option value="year-asc">Anno: più grandi prima</option><option value="year-desc">Anno: più giovani prima</option><option value="recent">Evento più recente</option></select></div><div id="frpTable"></div></div></div>`;
+      section.innerHTML = `<div id="filRegistryPlayersRoot"><header class="frp-head"><div><span class="eyebrow">ARCHIVIO ISCRITTI</span><h1>Player Profiles</h1><div class="frp-sub">Foto, nome e cognome in primo piano. Ogni scheda mantiene lo storico delle registrazioni e può essere completata con categoria, ruolo e altezza.</div></div><span id="frpVisibleCount" class="frp-count">${rows.length} giocatori</span></header><div class="frp-card"><div class="frp-toolbar"><input id="frpSearch" type="search" placeholder="Cerca nome, ruolo, altezza, città o squadra"><select id="frpEvent"><option value="">Tutti gli eventi</option>${events.map((event) => `<option value="${esc(event.event_id)}">${esc([event.city, event.name].filter(Boolean).join(" · "))}</option>`).join("")}</select><select id="frpSort"><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option><option value="year-asc">Anno: più grandi prima</option><option value="year-desc">Anno: più giovani prima</option><option value="height-desc">Altezza: più alti prima</option><option value="height-asc">Altezza: più bassi prima</option><option value="recent">Evento più recente</option></select></div><div id="frpTable"></div></div></div>`;
       bind();
     } catch (error) {
       section.innerHTML = `<div class="frp-error"><b>Archivio giocatori non disponibile.</b><div>${esc(error.message || error)}</div></div>`;
