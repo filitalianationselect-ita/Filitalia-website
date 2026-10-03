@@ -150,7 +150,7 @@
     const driveMatch = photo.match(/^https:\/\/drive\.google\.com\/file\/d\/([^/]+)/i)
       || photo.match(/[?&]id=([^&]+)/i);
     if (driveMatch && driveMatch[1]) {
-      return "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(driveMatch[1]);
+      return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(driveMatch[1]) + "&sz=w1200";
     }
     return photo;
   }
@@ -211,7 +211,7 @@
 
   function photoBlock(player) {
     const photo = browserPhotoUrl(player.photoUrl);
-    if (photo) return '<img src="' + esc(photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy">';
+    if (photo) return '<img src="' + esc(photo) + '" alt="Foto di ' + esc(player.name) + '" loading="lazy" referrerpolicy="no-referrer">';
     return '<div class="frp-photo-placeholder" aria-label="Foto non disponibile">' + esc(initials(player.name)) + '</div>';
   }
 
@@ -331,7 +331,7 @@
     d.getElementById("frpTitle").textContent = fullName;
     body.innerHTML = '<div class="frp-form">' +
       '<section class="frp-profile-hero">' +
-        '<div class="frp-profile-photo">' + (resolvedPhoto ? '<img src="' + esc(resolvedPhoto) + '" alt="Foto di ' + esc(fullName) + '">' : '<div class="frp-photo-placeholder">' + esc(initials(fullName)) + '</div>') + '</div>' +
+        '<div class="frp-profile-photo">' + (resolvedPhoto ? '<img src="' + esc(resolvedPhoto) + '" alt="Foto di ' + esc(fullName) + '" referrerpolicy="no-referrer">' : '<div class="frp-photo-placeholder">' + esc(initials(fullName)) + '</div>') + '</div>' +
         '<div class="frp-profile-summary"><h3>' + esc(fullName) + '</h3><p>' + esc([row.year || (player.birth_date || "").slice(0, 4), category, player.position || row.position, heightCm ? heightCm + " cm" : ""].filter(Boolean).join(" · ") || "Profilo da completare") + '</p><p>' + esc([player.residence_city || row.city, player.current_club || row.club].filter(Boolean).join(" · ")) + '</p></div>' +
       '</section>' +
       '<p class="frp-profile-hint">La foto della registrazione viene collegata automaticamente quando disponibile. Ruolo, altezza e foto profilo possono essere completati anche in un secondo momento.</p>' +
