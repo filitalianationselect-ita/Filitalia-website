@@ -39,7 +39,7 @@
       .frp-card{padding:17px;border:1px solid #c9ddd2;border-radius:19px;background:#fff;box-shadow:0 10px 28px rgba(9,55,38,.07)}.frp-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(170px,.45fr) minmax(170px,.45fr);gap:9px;margin-bottom:14px}.frp-toolbar input,.frp-toolbar select{width:100%;min-height:46px;padding:10px 13px;border:1px solid #bed5c9;border-radius:12px;background:#fff;color:#153f2f;font:inherit}
       .frp-table{overflow:auto;border:1px solid #d1e1d8;border-radius:16px}.frp-table table{width:100%;min-width:980px;border-collapse:collapse}.frp-table th{padding:12px;background:#edf6f1;color:#315747;font-size:10px;text-align:left}.frp-table td{padding:13px;border-top:1px solid #e1ece6;vertical-align:middle}.frp-name{font-weight:900;color:#174934}.frp-muted{color:#60766c;font-size:11px}.frp-contact{display:flex;gap:6px;flex-wrap:wrap}.frp-contact a,.frp-detail{display:inline-flex;min-height:38px;align-items:center;justify-content:center;padding:8px 10px;border:1px solid #bfd5c9;border-radius:10px;background:#fff;color:#0c6242;font-size:11px;font-weight:900;text-decoration:none}.frp-detail{border:0;background:#0c6c47;color:#fff;cursor:pointer}.frp-empty,.frp-error{padding:28px;border-radius:15px;text-align:center}.frp-empty{background:#f3f9f6;color:#315747}.frp-error{border:1px solid #e8bcbc;background:#fff1f1;color:#8d2d2d}
       .frp-overlay{position:fixed;z-index:3600;inset:0;display:none;align-items:flex-start;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom));background:rgba(3,28,19,.74);overflow:hidden}.frp-overlay.show{display:flex}.frp-modal{display:flex;flex-direction:column;width:min(900px,100%);max-height:calc(100dvh - 20px);margin:auto;overflow:hidden;border-radius:20px;background:#f5faf7;box-shadow:0 32px 90px rgba(0,0,0,.38)}.frp-modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:18px 20px;background:linear-gradient(135deg,#073923,#126d49);color:#fff}.frp-modal-head h2{margin:0 0 4px!important;color:#fff!important}.frp-close{min-height:42px;padding:9px 12px;border:0;border-radius:10px;background:#fff;color:#174934;font-weight:900}.frp-body{min-height:0;overflow-y:auto;padding:17px}.frp-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.frp-form label{color:#315747;font-size:11px;font-weight:900}.frp-form input,.frp-form select{width:100%;min-height:46px;margin-top:6px;padding:10px 12px;border:1px solid #b9d1c4;border-radius:11px;background:#fff;color:#173f30;font:inherit}.frp-history{grid-column:1/-1;margin-top:5px;padding-top:15px;border-top:1px solid #cddfd5}.frp-history h3{margin:0 0 10px}.frp-event{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-top:1px solid #e0ebe5}.frp-event:first-of-type{border-top:0}.frp-event strong{display:block}.frp-event small{color:#61776d}.frp-foot{display:flex;justify-content:flex-end;gap:9px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #bfd5c9;background:#edf6f1}.frp-foot button{min-height:46px;padding:10px 16px;border-radius:11px;font-weight:900}.frp-cancel{border:1px solid #bfd5c9;background:#fff;color:#174934}.frp-save{border:0;background:#0c6c47;color:#fff}
-      .frp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.frp-player-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #c9ddd2;border-radius:18px;background:#fff;box-shadow:0 9px 25px rgba(9,55,38,.07)}.frp-photo{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,#dfeee6,#f4f9f6)}.frp-photo img{width:100%;height:100%;display:block;object-fit:cover}.frp-photo-placeholder{width:100%;height:100%;display:grid;place-items:center;font-size:42px;font-weight:900;color:#7b9689}.frp-player-content{display:flex;flex:1;flex-direction:column;padding:14px}.frp-player-name{margin:0;color:#174934;font-size:17px;line-height:1.18}.frp-player-meta{margin:5px 0 0;color:#60766c;font-size:11px;line-height:1.45}.frp-chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.frp-chip{display:inline-flex;align-items:center;min-height:27px;padding:5px 8px;border-radius:999px;background:#edf6f1;color:#255440;font-size:10px;font-weight:900}.frp-chip.pending{background:#fff4d9;color:#765b18}.frp-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:auto;padding-top:10px;border-top:1px solid #e3ece7}.frp-card-bottom small{color:#60766c}.frp-profile-hero{grid-column:1/-1;display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px;align-items:center;margin-bottom:6px;padding:14px;border:1px solid #c9ddd2;border-radius:16px;background:#fff}.frp-profile-photo{width:170px;aspect-ratio:4/3;overflow:hidden;border-radius:14px;background:#e4f0e9}.frp-profile-photo img{width:100%;height:100%;object-fit:cover}.frp-profile-photo .frp-photo-placeholder{font-size:34px}.frp-profile-summary h3{margin:0 0 6px;color:#174934}.frp-profile-summary p{margin:0;color:#60766c;font-size:12px;line-height:1.5}.frp-profile-hint{grid-column:1/-1;margin:0;padding:10px 12px;border-radius:11px;background:#eef7f2;color:#3a6351;font-size:11px}.frp-invite-test{grid-column:1/-1;margin:0;padding:14px;border:1px dashed #d8a929;border-radius:14px;background:#fff9e8}.frp-invite-test h3{margin:0 0 8px;color:#674d0d;font-size:15px}.frp-invite-test p{margin:4px 0;color:#5d594f;font-size:12px;line-height:1.45}.frp-invite-test strong{color:#203f32}.frp-invite-test button{margin-top:10px;min-height:42px;padding:9px 13px;border:0;border-radius:10px;background:#b07a00;color:#fff;font-weight:900;cursor:pointer}.frp-invite-preview{display:none;margin-top:10px;padding:11px;border-radius:10px;background:#fff;border:1px solid #ecd58e}.frp-invite-preview.show{display:block}
+      .frp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.frp-player-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #c9ddd2;border-radius:18px;background:#fff;box-shadow:0 9px 25px rgba(9,55,38,.07)}.frp-photo{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,#dfeee6,#f4f9f6)}.frp-photo img{width:100%;height:100%;display:block;object-fit:cover}.frp-photo-placeholder{width:100%;height:100%;display:grid;place-items:center;font-size:42px;font-weight:900;color:#7b9689}.frp-player-content{display:flex;flex:1;flex-direction:column;padding:14px}.frp-player-name{margin:0;color:#174934;font-size:17px;line-height:1.18}.frp-player-meta{margin:5px 0 0;color:#60766c;font-size:11px;line-height:1.45}.frp-chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.frp-chip{display:inline-flex;align-items:center;min-height:27px;padding:5px 8px;border-radius:999px;background:#edf6f1;color:#255440;font-size:10px;font-weight:900}.frp-chip.pending{background:#fff4d9;color:#765b18}.frp-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:auto;padding-top:10px;border-top:1px solid #e3ece7}.frp-card-bottom small{color:#60766c}.frp-profile-hero{grid-column:1/-1;display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px;align-items:center;margin-bottom:6px;padding:14px;border:1px solid #c9ddd2;border-radius:16px;background:#fff}.frp-profile-photo{width:170px;aspect-ratio:4/3;overflow:hidden;border-radius:14px;background:#e4f0e9}.frp-profile-photo img{width:100%;height:100%;object-fit:cover}.frp-profile-photo .frp-photo-placeholder{font-size:34px}.frp-profile-summary h3{margin:0 0 6px;color:#174934}.frp-profile-summary p{margin:0;color:#60766c;font-size:12px;line-height:1.5}.frp-profile-hint{grid-column:1/-1;margin:0;padding:10px 12px;border-radius:11px;background:#eef7f2;color:#3a6351;font-size:11px}.frp-invite-test{grid-column:1/-1;margin:0;padding:14px;border:1px solid #cfe0d6;border-radius:14px;background:#f7fbf9}.frp-invite-test h3{margin:0 0 8px;color:#174934;font-size:15px}.frp-invite-test p{margin:4px 0;color:#52695f;font-size:12px;line-height:1.45}.frp-invite-test strong{color:#203f32}
       @media(max-width:760px){#players .frp-head{padding:18px;flex-direction:column}.frp-toolbar{grid-template-columns:1fr}.frp-table{overflow:visible;border:0}.frp-table table,.frp-table tbody{display:block;min-width:0}.frp-table thead{display:none}.frp-table tr{display:block;margin-bottom:11px;padding:14px;border:1px solid #c9ddd2;border-radius:15px;background:#fff}.frp-table td{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:6px 0;border:0}.frp-table td:before{content:attr(data-label);color:#60766c;font-size:9px;font-weight:900}.frp-table td:last-child{display:block;padding-top:10px}.frp-detail{width:100%}.frp-form{grid-template-columns:1fr}.frp-profile-hero{grid-template-columns:96px minmax(0,1fr)}.frp-profile-photo{width:96px}.frp-history{grid-column:auto}.frp-event{grid-template-columns:1fr}.frp-modal{max-height:100dvh;border-radius:16px}.frp-overlay{padding:0}.frp-contact{justify-content:flex-start}}
     `;
     d.head.appendChild(style);
@@ -310,48 +310,57 @@
     return registrations.map((registration) => `<article class="frp-event"><div><strong>${esc(registration.event_name || "Evento FIL-ITALIA")}</strong><small>${esc([registration.event_city, registration.event_date || registration.event_date_label].filter(Boolean).join(" · "))}</small></div><small>${esc(registration.registration_status || "registrato")} · ${esc(registration.payment_status || "pagamento da verificare")}</small></article>`).join("");
   }
 
-  function inviteTestState(detail, player, registrations, fullName) {
+  function accountState(detail, player, registrations) {
     const links = Array.isArray(detail.account_links) ? detail.account_links : [];
     const self = links.find((link) => String(link.relationship || "") === "self");
     const parent = links.find((link) => ["parent", "guardian"].includes(String(link.relationship || "")));
     const latestGuardian = (registrations || []).map((registration) => registration && registration.guardian_snapshot || {}).find((guardian) => guardian && guardian.email);
-    const recipientEmail = String((latestGuardian && latestGuardian.email) || player.email || "").trim().toLowerCase();
-    const recipientName = String((latestGuardian && [latestGuardian.first_name, latestGuardian.last_name].filter(Boolean).join(" ")) || "").trim();
-    let status = "Nessun account";
-    if (self) status = "Player account collegato" + (self.status ? " · " + self.status : "");
-    else if (parent) status = "Genitore collegato" + (parent.status ? " · " + parent.status : "");
-    const isAldrickTest = profileKey(fullName) === "aldrick garcia";
-    return { isAldrickTest, status, recipientEmail, recipientName, hasAccount: Boolean(self || parent) };
-  }
-
-  function inviteTestBlock(state, fullName) {
-    if (!state || !state.isAldrickTest) return "";
-    const contact = state.recipientEmail
-      ? '<p><strong>Contatto test:</strong> ' + esc(state.recipientName ? state.recipientName + " · " + state.recipientEmail : state.recipientEmail) + '</p>'
-      : '<p><strong>Contatto test:</strong> nessuna email disponibile</p>';
-    return '<section class="frp-invite-test">' +
-      '<h3>TEST INVITO PROFILO</h3>' +
-      '<p><strong>Stato:</strong> ' + esc(state.status) + '</p>' +
-      contact +
-      '<p>Questa è solo una simulazione: non crea account e non invia email.</p>' +
-      '<button id="frpInviteTestButton" type="button"' + (!state.recipientEmail || state.hasAccount ? ' disabled' : '') + '>PROVA INVITO PROFILO</button>' +
-      '<div id="frpInvitePreview" class="frp-invite-preview"></div>' +
-    '</section>';
-  }
-
-  function bindInviteTest(state, fullName) {
-    const button = d.getElementById("frpInviteTestButton");
-    const preview = d.getElementById("frpInvitePreview");
-    if (!button || !preview || !state) return;
-    button.onclick = () => {
-      preview.innerHTML =
-        '<strong>ANTEPRIMA SOLO TEST</strong>' +
-        '<p>Destinatario: ' + esc(state.recipientEmail) + '</p>' +
-        '<p>Giocatore: ' + esc(fullName) + '</p>' +
-        '<p>Azione futura: collegare un account al Player Profile esistente e permettere di completare foto, ruolo, altezza e squadra.</p>' +
-        '<p><strong>Nessuna email è stata inviata.</strong></p>';
-      preview.classList.add("show");
+    const contactEmail = String((latestGuardian && latestGuardian.email) || player.email || "").trim().toLowerCase();
+    const contactName = String((latestGuardian && [latestGuardian.first_name, latestGuardian.last_name].filter(Boolean).join(" ")) || "").trim();
+    if (self) {
+      return {
+        kind: "player",
+        label: "Player account collegato",
+        status: String(self.status || ""),
+        contactEmail: String(self.email || contactEmail || ""),
+        contactName: String(self.name || "")
+      };
+    }
+    if (parent) {
+      return {
+        kind: "parent",
+        label: "Genitore collegato",
+        status: String(parent.status || ""),
+        contactEmail: String(parent.email || contactEmail || ""),
+        contactName: String(parent.name || contactName || "")
+      };
+    }
+    return {
+      kind: "none",
+      label: "Nessun account",
+      status: "",
+      contactEmail,
+      contactName
     };
+  }
+
+  function accountStatusBlock(state, resolvedPhoto, player, row, heightCm) {
+    if (!state) return "";
+    const missing = [];
+    if (!resolvedPhoto) missing.push("foto");
+    if (!String(player.position || row.position || "").trim()) missing.push("ruolo");
+    if (!heightCm) missing.push("altezza");
+    const completeness = missing.length ? "Da completare: " + missing.join(", ") : "Profilo essenziale completo";
+    const contact = state.contactEmail
+      ? '<p><strong>Contatto:</strong> ' + esc(state.contactName ? state.contactName + " · " + state.contactEmail : state.contactEmail) + '</p>'
+      : '<p><strong>Contatto:</strong> nessuna email disponibile</p>';
+    return '<section class="frp-invite-test">' +
+      '<h3>STATO ACCOUNT E PROFILO</h3>' +
+      '<p><strong>Account:</strong> ' + esc(state.label + (state.status ? " · " + state.status : "")) + '</p>' +
+      contact +
+      '<p><strong>Profilo:</strong> ' + esc(completeness) + '</p>' +
+      (state.kind === "none" ? '<p>Nessun invito viene inviato automaticamente. Il collegamento account verrà gestito manualmente quando attiveremo il flusso.</p>' : '') +
+    '</section>';
   }
 
   async function openDetail(id) {
@@ -372,7 +381,7 @@
     const category = meta.category || player.category || row.category || "";
     const persistentPhoto = safePhoto(meta.imageUrl || meta.cardImageUrl || meta.image_url || meta.card_image_url || row.photoUrl || "");
     const resolvedPhoto = await resolvePhoto(player, registrations, meta);
-    const inviteTest = inviteTestState(detail, player, registrations, fullName);
+    const accountInfo = accountState(detail, player, registrations);
     d.getElementById("frpTitle").textContent = fullName;
     body.innerHTML = '<div class="frp-form">' +
       '<section class="frp-profile-hero">' +
@@ -380,7 +389,7 @@
         '<div class="frp-profile-summary"><h3>' + esc(fullName) + '</h3><p>' + esc([row.year || (player.birth_date || "").slice(0, 4), category, player.position || row.position, heightCm ? heightCm + " cm" : ""].filter(Boolean).join(" · ") || "Profilo da completare") + '</p><p>' + esc([player.residence_city || row.city, player.current_club || row.club].filter(Boolean).join(" · ")) + '</p></div>' +
       '</section>' +
       '<p class="frp-profile-hint">La foto della registrazione viene collegata automaticamente quando disponibile. Ruolo, altezza e foto profilo possono essere completati anche in un secondo momento.</p>' +
-      inviteTestBlock(inviteTest, fullName) +
+      accountStatusBlock(accountInfo, resolvedPhoto, player, row, heightCm) +
       '<label>Nome<input id="frpFirst" value="' + esc(player.first_name) + '"></label><label>Cognome<input id="frpLast" value="' + esc(player.last_name) + '"></label>' +
       '<label>Data di nascita<input id="frpBirth" type="date" value="' + esc(player.birth_date) + '"></label><label>Città<input id="frpCity" value="' + esc(player.residence_city || row.city) + '"></label>' +
       '<label>Email<input id="frpEmail" type="email" value="' + esc(player.email) + '"></label><label>Telefono<input id="frpPhone" type="tel" value="' + esc(player.phone) + '"></label>' +
@@ -391,7 +400,6 @@
       '<section class="frp-history"><h3>Storico eventi (' + registrations.length + ')</h3>' + eventHistory(registrations) + '</section>' +
     '</div>';
     d.getElementById("frpStatus").value = player.status === "archived" ? "archived" : "active";
-    bindInviteTest(inviteTest, fullName);
     if (row) row.__eventIds = registrations.map((registration) => String(registration.event_id));
   }
 
