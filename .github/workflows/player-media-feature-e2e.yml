@@ -36,6 +36,34 @@ jobs:
           supabase start
           supabase status -o env > /tmp/supabase.env
 
+      - name: Inspect effective Auth and profile triggers
+        run: |
+          set -euo pipefail
+          set -a
+          source /tmp/supabase.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          \echo '=== AUTH.USERS CUSTOM TRIGGERS ==='
+          select tgname, pg_get_triggerdef(oid)
+          from pg_trigger
+          where tgrelid='auth.users'::regclass
+            and not tgisinternal
+          order by tgname;
+
+          \echo '=== PROFILES CUSTOM TRIGGERS ==='
+          select tgname, pg_get_triggerdef(oid)
+          from pg_trigger
+          where tgrelid='public.profiles'::regclass
+            and not tgisinternal
+          order by tgname;
+
+          \echo '=== FILITALIA HANDLE NEW USER ==='
+          select pg_get_functiondef('public.filitalia_handle_new_user()'::regprocedure);
+
+          \echo '=== PROFILE PRIVILEGE PROTECTION ==='
+          select pg_get_functiondef('public.protect_profile_privilege_changes()'::regprocedure);
+          SQL
+
       - name: Seed Player, Admin and public profile link
         run: |
           set -euo pipefail
