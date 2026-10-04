@@ -457,6 +457,19 @@ jobs:
           }, null, 2));
           NODE
 
+      - name: Dump local Auth and Postgres diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          echo "===== LOCAL SUPABASE CONTAINERS ====="
+          docker ps --format 'table {{.Names}}\t{{.Status}}' || true
+          echo "===== AUTH LOG ====="
+          AUTH_ID="$(docker ps -q --filter 'name=supabase_auth' | head -n1)"
+          if [ -n "$AUTH_ID" ]; then docker logs --tail 250 "$AUTH_ID" 2>&1 || true; fi
+          echo "===== POSTGRES LOG ====="
+          DB_ID="$(docker ps -q --filter 'name=supabase_db' | head -n1)"
+          if [ -n "$DB_ID" ]; then docker logs --tail 250 "$DB_ID" 2>&1 || true; fi
+
       - name: Stop disposable Supabase
         if: always()
         run: supabase stop --no-backup
