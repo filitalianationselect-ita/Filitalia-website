@@ -11,6 +11,7 @@ on:
       - player-profile-final-v1.js
       - player-profile-final-v1.css
       - player.html
+      - supabase/**
       - .github/workflows/player-media-feature-e2e.yml
   workflow_dispatch:
 
