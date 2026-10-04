@@ -1,0 +1,44 @@
+name: Generate Auth Trigger Cleanup Migration
+
+on:
+  push:
+    branches:
+      - feature/player-photo-video-submissions
+    paths:
+      - .github/workflows/generate-auth-trigger-cleanup.yml
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.119.0
+      - name: Generate migration
+        run: |
+          set -euo pipefail
+          supabase migration new remove_legacy_auth_profile_trigger
+          file="$(ls -1t supabase/migrations/*_remove_legacy_auth_profile_trigger.sql | head -n1)"
+          cat > "$file" <<'SQL'
+          begin;
+
+          -- FIL-ITALIA now uses filitalia_auth_user_created as the single
+          -- Auth -> profiles synchronization trigger. The older trigger creates
+          -- a second competing profile path and can break fresh signups.
+          drop trigger if exists on_auth_user_created on auth.users;
+
+          commit;
+          SQL
+          printf '%s\n' "$file" > /tmp/migration-path.txt
+          cat "$file"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auth-trigger-cleanup-migration
+          path: |
+            /tmp/migration-path.txt
+            supabase/migrations/*_remove_legacy_auth_profile_trigger.sql
+          retention-days: 1
