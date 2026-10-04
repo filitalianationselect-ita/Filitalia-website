@@ -75,3 +75,9 @@ end;
 $$;
 
 revoke all on function public.protect_profile_privilege_changes() from public;
+
+
+-- The trusted backend reads and approves account profiles through PostgREST.
+-- RLS bypass does not replace SQL table privileges, so grant only what the
+-- account-management backend requires.
+grant select, update on public.profiles to service_role;
