@@ -181,7 +181,7 @@ jobs:
               headers: userHeaders(playerToken)
             });
             assert(r.res.ok && Array.isArray(r.data) && r.data.length === 1, 'Own profile visible through RLS');
-            assert(r.data[0].requested_role === 'player' && r.data[0].role === 'pending' && r.data[0].status === 'pending', 'New Player starts pending');
+            assert(r.data[0].requested_role === 'player' && r.data[0].role === 'user' && r.data[0].status === 'pending', 'New Player starts as pending user with requested Player role');
 
             r = await request('/rest/v1/rpc/ensure_self_player', {
               method: 'POST',
