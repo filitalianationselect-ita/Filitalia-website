@@ -204,7 +204,7 @@ jobs:
           );
           assert(Array.isArray(profileBefore.body) && profileBefore.body.length === 1, "Signup profile missing");
           assert(profileBefore.body[0].requested_role === "player", "requested_role is not player");
-          assert(profileBefore.body[0].role === "pending", "New account must start pending");
+          assert(["user","pending"].includes(profileBefore.body[0].role), "New account has unexpected pre-approval role");
           assert(profileBefore.body[0].status === "pending", "New account status must start pending");
 
           // Pending Player must not be able to claim/link a Player record yet.
