@@ -1,0 +1,109 @@
+name: Player Profile Manual QA
+
+on:
+  push:
+    branches:
+      - feature/player-photo-video-submissions
+    paths:
+      - .github/workflows/player-profile-manual-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install browser driver
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+      - name: Test desktop and mobile
+        env:
+          PREVIEW_URL: https://deploy-preview-16--filitalia.netlify.app/player-profile-demo.html
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const fs = require('fs');
+          const fail = msg => { throw new Error(msg); };
+          (async () => {
+            const browser = await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page = await browser.newPage({viewport:{width:1440,height:1000}});
+            const forbidden=[];
+            page.on('request', r=>{ if(/supabase\.co|\/\.netlify\/functions\/|\/functions\/v1\//i.test(r.url())) forbidden.push(r.url()); });
+            await page.goto(process.env.PREVIEW_URL+'?qa='+Date.now(),{waitUntil:'networkidle',timeout:120000});
+            if(!(await page.locator('#addPhotoBtn').count())) fail('Demo page not available');
+
+            await page.click('#editBtn');
+            if(!(await page.locator('#editPanel').evaluate(el=>el.classList.contains('open')))) fail('Modifica profilo non apre');
+            await page.click('#editBtn');
+            if(await page.locator('#editPanel').evaluate(el=>el.classList.contains('open'))) fail('Modifica profilo non chiude');
+
+            const initialPublic=await page.locator('#publicMedia .mediaCard').count();
+            await page.click('#addPhotoBtn');
+            await page.locator('#demoPhotoInput').setInputFiles({name:'test-player.jpg',mimeType:'image/jpeg',buffer:Buffer.from([0xff,0xd8,0xff,0xd9])});
+            await page.click('#sendPhotoBtn');
+            const photo=page.locator('#approvalQueue .queueItem[data-type="photo"]');
+            if(await photo.count()!==1) fail('Foto non entra in coda');
+            await photo.locator('.approve').click();
+            if(await page.locator('#publicMedia .mediaCard').count()!==initialPublic+1) fail('Foto approvata non diventa visibile');
+
+            await page.click('#addVideoBtn');
+            await page.fill('#demoVideoLink','https://www.youtube.com/watch?v=test123');
+            await page.click('#sendVideoBtn');
+            const video=page.locator('#approvalQueue .queueItem[data-type="video"][data-url]');
+            if(await video.count()!==1) fail('Video link non entra in coda');
+            await video.locator('.approve').click();
+            if(await page.locator('#publicMedia a[href="https://www.youtube.com/watch?v=test123"]').count()!==1) fail('Video approvato non diventa visibile');
+
+            await page.click('#addVideoBtn');
+            await page.fill('#demoVideoLink','https://www.instagram.com/reel/test/');
+            await page.click('#sendVideoBtn');
+            const reject=page.locator('#approvalQueue .queueItem[data-url="https://www.instagram.com/reel/test/"]');
+            if(await reject.count()!==1) fail('Instagram non entra in coda');
+            const beforeReject=await page.locator('#publicMedia .mediaCard').count();
+            await reject.locator('.reject').click();
+            if(await page.locator('#publicMedia .mediaCard').count()!==beforeReject) fail('Contenuto rifiutato diventa pubblico');
+
+            const desktopOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+            if(desktopOverflow>3) fail('Overflow desktop '+desktopOverflow);
+            if(forbidden.length) fail('La demo ha contattato backend: '+forbidden.join(','));
+            await page.screenshot({path:'desktop.png',fullPage:true});
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844}});
+            await mobile.goto(process.env.PREVIEW_URL+'?mobile='+Date.now(),{waitUntil:'networkidle',timeout:120000});
+            const state=await mobile.evaluate(()=>({
+              overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+              edit:getComputedStyle(document.querySelector('#editBtn')).display,
+              photo:getComputedStyle(document.querySelector('#addPhotoBtn')).display,
+              video:getComputedStyle(document.querySelector('#addVideoBtn')).display
+            }));
+            if(state.overflow>3) fail('Overflow mobile '+state.overflow);
+            if(state.edit==='none'||state.photo==='none'||state.video==='none') fail('Azioni principali non visibili su mobile');
+            await mobile.click('#addPhotoBtn');
+            if(!(await mobile.locator('#photoForm').evaluate(el=>el.classList.contains('open')))) fail('Aggiungi foto non apre su mobile');
+            await mobile.click('#addVideoBtn');
+            if(!(await mobile.locator('#videoForm').evaluate(el=>el.classList.contains('open')))) fail('Aggiungi video non apre su mobile');
+            await mobile.screenshot({path:'mobile.png',fullPage:true});
+            fs.writeFileSync('result.json',JSON.stringify({result:'PASS',desktopOverflow,mobile:state,forbidden},null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: player-profile-manual-qa
+          path: |
+            desktop.png
+            mobile.png
+            result.json
+          retention-days: 7
