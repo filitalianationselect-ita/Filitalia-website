@@ -1,0 +1,183 @@
+name: Player Profile Demo QA
+
+on:
+  push:
+    branches:
+      - preview/player-profile-demo
+    paths:
+      - player-profile-demo.html
+      - .github/workflows/player-profile-demo-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install browser driver
+        run: |
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Run desktop and mobile profile tests
+        env:
+          PREVIEW_URL: https://deploy-preview-14--filitalia.netlify.app/player-profile-demo.html
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const fs = require('fs');
+
+          const sleep = ms => new Promise(r => setTimeout(r, ms));
+          const fail = msg => { throw new Error(msg); };
+
+          (async () => {
+            const browser = await chromium.launch({
+              headless: true,
+              executablePath: process.env.CHROME_PATH,
+              args: ['--no-sandbox']
+            });
+
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            const forbiddenRequests = [];
+            page.on('request', request => {
+              const url = request.url();
+              if (/supabase\.co|\/\.netlify\/functions\/|\/functions\/v1\//i.test(url)) {
+                forbiddenRequests.push(url);
+              }
+            });
+
+            let ready = false;
+            for (let attempt = 0; attempt < 80; attempt++) {
+              await page.goto(process.env.PREVIEW_URL + '?qa=' + Date.now() + '-' + attempt, {
+                waitUntil: 'domcontentloaded',
+                timeout: 120000
+              });
+              if (await page.locator('#addPhotoBtn').count()) {
+                const instagram = await page.locator('a[href="https://www.instagram.com/username"]').count();
+                if (instagram) {
+                  ready = true;
+                  break;
+                }
+              }
+              await sleep(1500);
+            }
+            if (!ready) fail('Latest Player Profile demo did not reach Netlify preview');
+
+            await page.waitForTimeout(500);
+
+            const base = await page.evaluate(() => ({
+              title: document.querySelector('.head h1')?.textContent?.trim(),
+              name: document.querySelector('.nameRow h2')?.textContent?.trim(),
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+              demoText: document.querySelector('.demoTag')?.textContent?.trim(),
+              supabaseScripts: [...document.scripts].filter(s => /supabase/i.test(s.src || '')).length
+            }));
+            if (base.title !== 'Il mio profilo') fail('Profile title missing');
+            if (base.name !== 'Aldrick Garcia') fail('Demo player missing');
+            if (base.overflow > 3) fail('Desktop horizontal overflow: ' + base.overflow);
+            if (!/NESSUN DATO VIENE SALVATO/i.test(base.demoText || '')) fail('Demo safety label missing');
+            if (base.supabaseScripts !== 0) fail('Demo unexpectedly loads Supabase');
+
+            const instagramHref = await page.locator('a[href="https://www.instagram.com/username"]').first().getAttribute('href');
+            if (instagramHref !== 'https://www.instagram.com/username') fail('Instagram URL invalid');
+
+            await page.click('#editBtn');
+            if (!(await page.locator('#editPanel').evaluate(el => el.classList.contains('open')))) fail('Edit panel did not open');
+            await page.click('#editBtn');
+            if (await page.locator('#editPanel').evaluate(el => el.classList.contains('open'))) fail('Edit panel did not close');
+
+            const initialPublic = await page.locator('#publicMedia .mediaCard').count();
+
+            await page.click('#addPhotoBtn');
+            await page.locator('#demoPhotoInput').setInputFiles({
+              name: 'player-test.jpg',
+              mimeType: 'image/jpeg',
+              buffer: Buffer.from([0xff,0xd8,0xff,0xd9])
+            });
+            await page.click('#sendPhotoBtn');
+            const photoQueue = page.locator('#approvalQueue .queueItem[data-type="photo"]');
+            if (await photoQueue.count() !== 1) fail('Photo was not added to approval queue');
+            await photoQueue.locator('.approve').click();
+            if (await page.locator('#publicMedia .mediaCard').count() !== initialPublic + 1) fail('Approved photo did not become visible');
+
+            await page.click('#addVideoBtn');
+            await page.fill('#demoVideoLink', 'https://www.youtube.com/watch?v=test123');
+            await page.click('#sendVideoBtn');
+            const videoQueue = page.locator('#approvalQueue .queueItem[data-type="video"][data-url]');
+            if (await videoQueue.count() !== 1) fail('Video link was not added to approval queue');
+            await videoQueue.locator('.approve').click();
+            const approvedVideo = page.locator('#publicMedia a[href="https://www.youtube.com/watch?v=test123"]');
+            if (await approvedVideo.count() !== 1) fail('Approved video URL was not preserved');
+
+            await page.click('#addVideoBtn');
+            await page.selectOption('#videoMode', 'file');
+            const linkDisplay = await page.locator('#videoLinkLabel').evaluate(el => getComputedStyle(el).display);
+            const fileDisplay = await page.locator('#videoFileLabel').evaluate(el => getComputedStyle(el).display);
+            if (linkDisplay !== 'none' || fileDisplay === 'none') fail('Video file/link switch is broken');
+            await page.locator('#demoVideoFile').setInputFiles({
+              name: 'player-test.mp4',
+              mimeType: 'video/mp4',
+              buffer: Buffer.from([0,0,0,24,102,116,121,112])
+            });
+            await page.click('#sendVideoBtn');
+            const fileQueue = page.locator('#approvalQueue .queueItem[data-type="video"]').filter({hasText:'player-test.mp4'});
+            if (await fileQueue.count() !== 1) fail('Video file was not added to approval queue');
+            const publicBeforeReject = await page.locator('#publicMedia .mediaCard').count();
+            await fileQueue.locator('.reject').click();
+            if (await page.locator('#publicMedia .mediaCard').count() !== publicBeforeReject) fail('Rejected video became public');
+
+            if (forbiddenRequests.length) fail('Demo made forbidden backend requests: ' + forbiddenRequests.join(', '));
+
+            await page.screenshot({ path: 'player-profile-desktop.png', fullPage: true });
+
+            const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            await mobile.goto(process.env.PREVIEW_URL + '?mobileqa=' + Date.now(), { waitUntil: 'networkidle', timeout: 120000 });
+            const mobileState = await mobile.evaluate(() => ({
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+              sideDisplay: getComputedStyle(document.querySelector('.side')).display,
+              editVisible: !!document.querySelector('#editBtn') && getComputedStyle(document.querySelector('#editBtn')).display !== 'none',
+              photoVisible: !!document.querySelector('#addPhotoBtn') && getComputedStyle(document.querySelector('#addPhotoBtn')).display !== 'none',
+              videoVisible: !!document.querySelector('#addVideoBtn') && getComputedStyle(document.querySelector('#addVideoBtn')).display !== 'none'
+            }));
+            if (mobileState.overflow > 3) fail('Mobile horizontal overflow: ' + mobileState.overflow);
+            if (mobileState.sideDisplay !== 'none') fail('Desktop sidebar visible on mobile');
+            if (!mobileState.editVisible || !mobileState.photoVisible || !mobileState.videoVisible) fail('Core mobile actions are not visible');
+
+            await mobile.screenshot({ path: 'player-profile-mobile.png', fullPage: true });
+
+            fs.writeFileSync('player-profile-qa.json', JSON.stringify({
+              desktop: base,
+              instagramHref,
+              forbiddenRequests,
+              mobile: mobileState,
+              result: 'PASS'
+            }, null, 2));
+
+            await browser.close();
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: player-profile-demo-qa
+          path: |
+            player-profile-desktop.png
+            player-profile-mobile.png
+            player-profile-qa.json
+          if-no-files-found: warn
+          retention-days: 7
