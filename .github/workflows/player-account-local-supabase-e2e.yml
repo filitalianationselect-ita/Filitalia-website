@@ -40,6 +40,27 @@ jobs:
           supabase status -o env > /tmp/supabase-local.env
           sed -E 's/=.*/=***hidden***/' /tmp/supabase-local.env
 
+      - name: Apply local-only RLS trial fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source /tmp/supabase-local.env
+          set +a
+          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          alter policy "Admins manage player settings"
+            on public.player_public_profile_settings
+            to authenticated
+            using (public.is_active_admin())
+            with check (public.is_active_admin());
+
+          alter policy "Admins manage player media"
+            on public.player_profile_media
+            to authenticated
+            using (public.is_active_admin())
+            with check (public.is_active_admin());
+          SQL
+
       - name: Test account, canonical player, history, RLS, media and storage
         shell: bash
         run: |
