@@ -1,0 +1,167 @@
+name: Player Admin Buttons E2E
+
+on:
+  push:
+    branches:
+      - feature/player-photo-video-submissions
+    paths:
+      - .github/workflows/player-admin-buttons-e2e.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  admin-buttons:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.119.0
+
+      - name: Start isolated Supabase
+        run: |
+          set -euo pipefail
+          supabase start
+          supabase status -o env > /tmp/supabase.env
+
+      - name: Seed Admin, Player and pending media
+        run: |
+          set -euo pipefail
+          set -a
+          source /tmp/supabase.env
+          set +a
+          API_URL="$API_URL" ANON_KEY="$ANON_KEY" SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" node <<'NODE'
+          const fs=require('fs');
+          const API=process.env.API_URL,ANON=process.env.ANON_KEY,SERVICE=process.env.SERVICE_ROLE_KEY;
+          const password='Admin-Buttons-E2E-2026!';
+          async function req(path,options={}){const r=await fetch(API+path,options);const text=await r.text();let data;try{data=text?JSON.parse(text):null}catch(_){data=text}if(!r.ok)throw new Error(path+' '+r.status+' '+text);return data}
+          const service={apikey:SERVICE,Authorization:'Bearer '+SERVICE,'Content-Type':'application/json'};
+          async function create(email,meta){return req('/auth/v1/admin/users',{method:'POST',headers:service,body:JSON.stringify({email,password,email_confirm:true,user_metadata:meta})})}
+          (async()=>{
+            const admin=await create('buttons.admin@filitalia.test',{first_name:'Buttons',last_name:'Admin',requested_role:'staff',language:'it'});
+            const player=await create('buttons.player@filitalia.test',{first_name:'Buttons',last_name:'Player',requested_role:'player',language:'it'});
+            await req('/rest/v1/profiles?id=eq.'+admin.id,{method:'PATCH',headers:{...service,Prefer:'return=representation'},body:JSON.stringify({role:'admin',status:'active'})});
+            await req('/rest/v1/profiles?id=eq.'+player.id,{method:'PATCH',headers:{...service,Prefer:'return=representation'},body:JSON.stringify({role:'player',status:'active'})});
+            const media=await req('/rest/v1/player_profile_media',{method:'POST',headers:{...service,Prefer:'return=representation'},body:JSON.stringify([
+              {user_id:player.id,public_url:'https://www.youtube.com/watch?v=approve-me',caption:'APPROVE ME',status:'pending',display_order:101},
+              {user_id:player.id,public_url:'https://www.instagram.com/reel/reject-me/',caption:'REJECT ME',status:'pending',display_order:102}
+            ])});
+            fs.writeFileSync('/tmp/admin-buttons-seed.json',JSON.stringify({adminId:admin.id,playerId:player.id,password,approveId:media[0].id,rejectId:media[1].id},null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+
+      - name: Point site to local Supabase
+        run: |
+          set -euo pipefail
+          set -a
+          source /tmp/supabase.env
+          set +a
+          API_URL="$API_URL" ANON_KEY="$ANON_KEY" node <<'NODE'
+          const fs=require('fs');
+          let s=fs.readFileSync('supabase-config.js','utf8');
+          s=s.replace(/"supabaseUrl":\s*"[^"]*"/,'"supabaseUrl": '+JSON.stringify(process.env.API_URL))
+             .replace(/"supabasePublishableKey":\s*"[^"]*"/,'"supabasePublishableKey": '+JSON.stringify(process.env.ANON_KEY))
+             .replace(/"siteUrl":\s*"[^"]*"/,'"siteUrl": "http://127.0.0.1:4173"')
+             .replace(/"environment":\s*"[^"]*"/,'"environment": "admin-buttons-e2e"');
+          fs.writeFileSync('supabase-config.js',s);
+          NODE
+
+      - name: Browser click all Admin media buttons
+        run: |
+          set -euo pipefail
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          python3 -m http.server 4173 >/tmp/admin-buttons-http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/login.html >/dev/null && break; sleep 1; done
+          set -a
+          source /tmp/supabase.env
+          set +a
+          CHROME_PATH="$CHROME_PATH" API_URL="$API_URL" SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" node <<'NODE'
+          const {chromium}=require('playwright-core');
+          const fs=require('fs');
+          const seed=JSON.parse(fs.readFileSync('/tmp/admin-buttons-seed.json','utf8'));
+          const API=process.env.API_URL,SERVICE=process.env.SERVICE_ROLE_KEY;
+          const service={apikey:SERVICE,Authorization:'Bearer '+SERVICE,'Content-Type':'application/json'};
+          async function api(path){const r=await fetch(API+path,{headers:service});const text=await r.text();let data;try{data=text?JSON.parse(text):null}catch(_){data=text}if(!r.ok)throw new Error(path+' '+r.status+' '+text);return data}
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto('http://127.0.0.1:4173/login.html?adminbuttons=1',{waitUntil:'networkidle',timeout:120000});
+            await page.waitForFunction(()=>window.FilitaliaAuth&&window.FilitaliaAuth.configured);
+            const login=await page.evaluate(async p=>{const r=await window.FilitaliaAuth.signIn('buttons.admin@filitalia.test',p);return Boolean(r?.data?.session)},seed.password);
+            if(!login)throw new Error('Admin login failed');
+
+            await page.goto('http://127.0.0.1:4173/admin-light.html?ntl-drawer-state=hidden&adminbuttons=1',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForSelector('#adminLightFrame',{timeout:30000});
+            const frame=page.frameLocator('#adminLightFrame');
+            await frame.locator('.fil-player-admin-launcher').waitFor({state:'visible',timeout:30000});
+            await frame.locator('.fil-player-admin-launcher').click();
+            await frame.locator('#filPlayerAdminOverlay.show').waitFor({state:'visible',timeout:15000});
+
+            await frame.locator('button[data-tab="media"]').click();
+            await frame.locator('.fil-player-media-review article').first().waitFor({state:'visible',timeout:15000});
+
+            const approveCard=frame.locator('.fil-player-media-review article').filter({hasText:'APPROVE ME'});
+            const rejectCard=frame.locator('.fil-player-media-review article').filter({hasText:'REJECT ME'});
+            if(await approveCard.count()!==1)throw new Error('Approve card missing');
+            if(await rejectCard.count()!==1)throw new Error('Reject card missing');
+
+            await approveCard.getByRole('button',{name:'APPROVA'}).click();
+            await page.waitForTimeout(700);
+            let rows=await api('/rest/v1/player_profile_media?id=in.('+seed.approveId+','+seed.rejectId+')&select=id,status');
+            const approved=rows.find(x=>x.id===seed.approveId);
+            if(!approved||approved.status!=='approved')throw new Error('APPROVA button did not persist approved state '+JSON.stringify(rows));
+
+            const rejectCardAfter=frame.locator('.fil-player-media-review article').filter({hasText:'REJECT ME'});
+            await rejectCardAfter.getByRole('button',{name:'RIFIUTA'}).click();
+            await page.waitForTimeout(700);
+            rows=await api('/rest/v1/player_profile_media?id=in.('+seed.approveId+','+seed.rejectId+')&select=id,status');
+            const rejected=rows.find(x=>x.id===seed.rejectId);
+            if(!rejected||rejected.status!=='rejected')throw new Error('RIFIUTA button did not persist rejected state '+JSON.stringify(rows));
+
+            const remaining=await frame.locator('.fil-player-media-review article').count();
+            if(remaining!==0)throw new Error('Queue should be empty after approve/reject, found '+remaining);
+
+            await frame.locator('button[data-tab="profile"]').click();
+            await frame.locator('#filPlayerProfileForm').waitFor({state:'visible',timeout:10000});
+            const bio=frame.locator('#filPlayerProfileForm textarea[name="bio"]');
+            await bio.fill('Bio test pulsante salva');
+            await frame.locator('#filPlayerProfileForm button[type="submit"]').click();
+            await page.waitForTimeout(700);
+
+            await frame.locator('.fil-player-admin-close').click();
+            const visible=await frame.locator('#filPlayerAdminOverlay').evaluate(el=>getComputedStyle(el).display!=='none');
+            if(visible)throw new Error('CHIUDI did not close Admin Player panel');
+
+            await page.screenshot({path:'/tmp/admin-player-buttons.png',fullPage:true});
+            fs.writeFileSync('/tmp/admin-player-buttons-result.json',JSON.stringify({result:'PASS',approved:approved.status,rejected:rejected.status,queueRemaining:remaining,pageErrors:errors},null,2));
+            await browser.close();
+          })().catch(e=>{fs.writeFileSync('/tmp/admin-player-buttons-result.json',JSON.stringify({result:'FAIL',error:String(e.stack||e)},null,2));console.error(e);process.exit(1)});
+          NODE
+
+      - name: Print result
+        if: always()
+        run: cat /tmp/admin-player-buttons-result.json || true
+
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-player-buttons-e2e
+          path: |
+            /tmp/admin-player-buttons-result.json
+            /tmp/admin-player-buttons.png
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup || true
