@@ -12,7 +12,7 @@ declare
   actor_id uuid := auth.uid();
   actor_role text;
   actor_status text;
-  request_role text := coalesce(current_setting('request.jwt.claim.role', true), '');
+  request_role text := coalesce(auth.jwt() ->> 'role', '');
   remaining_active_super_admins integer;
 begin
   -- This trigger protects role/status changes only. Supabase Auth synchronizes
