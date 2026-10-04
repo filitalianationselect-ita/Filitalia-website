@@ -1,0 +1,462 @@
+name: Player Account Local Supabase QA
+
+on:
+  push:
+    branches:
+      - preview/player-profile-demo
+    paths:
+      - ".github/workflows/player-account-local-supabase-qa.yml"
+      - "auth-client.js"
+      - "supabase/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Verify CLI and start disposable local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase start --help >/tmp/supabase-start-help.txt
+          supabase start
+          supabase status -o env >/tmp/supabase-local.env
+
+      - name: Test Player, history, Storage, RLS and Parent linking
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source /tmp/supabase-local.env
+          set +a
+
+          node <<'NODE'
+          const assert = (condition, message) => {
+            if (!condition) throw new Error(message);
+          };
+
+          const base = process.env.API_URL || "http://127.0.0.1:54321";
+          const anon = process.env.ANON_KEY;
+          const service = process.env.SERVICE_ROLE_KEY;
+          assert(anon, "Missing local ANON_KEY");
+          assert(service, "Missing local SERVICE_ROLE_KEY");
+
+          const jsonHeaders = (key, bearer = key) => ({
+            apikey: key,
+            Authorization: "Bearer " + bearer,
+            "Content-Type": "application/json"
+          });
+
+          async function request(path, options = {}, expected = [200,201,204]) {
+            const response = await fetch(base + path, options);
+            const text = await response.text();
+            let body = null;
+            if (text) {
+              try { body = JSON.parse(text); } catch (_) { body = text; }
+            }
+            if (!expected.includes(response.status)) {
+              throw new Error(
+                (options.method || "GET") + " " + path + " -> " + response.status + " " +
+                (typeof body === "string" ? body : JSON.stringify(body))
+              );
+            }
+            return { status: response.status, body, headers: response.headers };
+          }
+
+          async function signup(email, password, requestedRole, firstName, lastName) {
+            const result = await request("/auth/v1/signup", {
+              method: "POST",
+              headers: jsonHeaders(anon),
+              body: JSON.stringify({
+                email,
+                password,
+                data: {
+                  first_name: firstName,
+                  last_name: lastName,
+                  requested_role: requestedRole,
+                  language: "it"
+                }
+              })
+            });
+            assert(result.body && result.body.user, "Signup did not return user");
+            assert(result.body.access_token, "Local signup did not return an access token");
+            return {
+              user: result.body.user,
+              token: result.body.access_token
+            };
+          }
+
+          async function signIn(email, password) {
+            const result = await request("/auth/v1/token?grant_type=password", {
+              method: "POST",
+              headers: jsonHeaders(anon),
+              body: JSON.stringify({ email, password })
+            });
+            assert(result.body && result.body.access_token, "Sign in failed for " + email);
+            return result.body.access_token;
+          }
+
+          async function serviceInsert(table, payload) {
+            const r = await request("/rest/v1/" + table, {
+              method: "POST",
+              headers: {
+                ...jsonHeaders(service),
+                Prefer: "return=representation"
+              },
+              body: JSON.stringify(payload)
+            });
+            return Array.isArray(r.body) ? r.body[0] : r.body;
+          }
+
+          async function servicePatch(table, filter, payload) {
+            const r = await request("/rest/v1/" + table + "?" + filter, {
+              method: "PATCH",
+              headers: {
+                ...jsonHeaders(service),
+                Prefer: "return=representation"
+              },
+              body: JSON.stringify(payload)
+            });
+            return r.body;
+          }
+
+          async function authedRpc(token, fn, payload = {}) {
+            const r = await request("/rest/v1/rpc/" + fn, {
+              method: "POST",
+              headers: jsonHeaders(anon, token),
+              body: JSON.stringify(payload)
+            });
+            return r.body;
+          }
+
+          const testPassword = "QaPlayer!2026Strong";
+          const playerEmail = "qa.player.filitalia@example.test";
+          const parentEmail = "qa.parent.filitalia@example.test";
+          const adminEmail = "qa.admin.filitalia@example.test";
+
+          // 1. Historical player and historical Talent ID exist before the account.
+          const historical = await serviceInsert("players", {
+            identity_key: "person:qa:athlete:2011-05-06",
+            first_name: "QA",
+            last_name: "Athlete",
+            birth_date: "2011-05-06",
+            residence_city: "Bologna",
+            email: playerEmail,
+            position: "PG",
+            current_club: "QA Basket",
+            height_cm: 170,
+            source: "legacy_import"
+          });
+          assert(historical && historical.id, "Historical player seed failed");
+
+          const other = await serviceInsert("players", {
+            identity_key: "person:other:private:2010-01-01",
+            first_name: "Other",
+            last_name: "Private",
+            birth_date: "2010-01-01",
+            source: "registry"
+          });
+          assert(other && other.id, "Other player seed failed");
+
+          const event = await serviceInsert("program_events", {
+            external_event_id: "qa-talent-id-2026",
+            name: "QA Talent ID Roma",
+            city: "Roma",
+            event_date: "2026-03-15",
+            event_type: "camp",
+            status: "completed"
+          });
+          assert(event && event.id, "Event seed failed");
+
+          await serviceInsert("player_event_registrations", {
+            player_id: historical.id,
+            event_id: event.id,
+            source: "legacy_import",
+            registration_status: "confirmed",
+            attendance_status: "present",
+            payment_status: "paid",
+            privacy_consent: true,
+            media_consent: true
+          });
+
+          // 2. Actual Auth signup creates exactly one pending personal profile.
+          const signupPlayer = await signup(playerEmail, testPassword, "player", "QA", "Athlete");
+          const playerId = signupPlayer.user.id;
+          let playerToken = signupPlayer.token;
+
+          const profileBefore = await request(
+            "/rest/v1/profiles?id=eq." + encodeURIComponent(playerId) +
+            "&select=id,email,first_name,last_name,requested_role,role,status",
+            { headers: jsonHeaders(service) }
+          );
+          assert(Array.isArray(profileBefore.body) && profileBefore.body.length === 1, "Signup profile missing");
+          assert(profileBefore.body[0].requested_role === "player", "requested_role is not player");
+          assert(profileBefore.body[0].role === "pending", "New account must start pending");
+          assert(profileBefore.body[0].status === "pending", "New account status must start pending");
+
+          // Pending Player must not be able to claim/link a Player record yet.
+          const pendingLink = await fetch(base + "/rest/v1/rpc/ensure_self_player", {
+            method: "POST",
+            headers: jsonHeaders(anon, playerToken),
+            body: "{}"
+          });
+          assert(pendingLink.status >= 400, "Pending Player unexpectedly linked a canonical player");
+
+          // 3. Admin/service approval, then own Player Profile data.
+          await servicePatch("profiles", "id=eq." + encodeURIComponent(playerId), {
+            role: "player",
+            status: "active"
+          });
+
+          playerToken = await signIn(playerEmail, testPassword);
+
+          const playerProfileInsert = await request("/rest/v1/player_profiles", {
+            method: "POST",
+            headers: {
+              ...jsonHeaders(anon, playerToken),
+              Prefer: "return=representation"
+            },
+            body: JSON.stringify({
+              user_id: playerId,
+              birth_date: "2011-05-06",
+              sex: "Maschio",
+              residence_city: "Bologna",
+              position: "PG / SG",
+              current_club: "QA Basket",
+              height_cm: 171,
+              weight_kg: 61.5,
+              italian_passport: true,
+              filipino_passport: true,
+              instagram: "@qa_athlete",
+              highlights_url: "https://www.youtube.com/watch?v=qa-test"
+            })
+          });
+          assert(Array.isArray(playerProfileInsert.body) && playerProfileInsert.body.length === 1, "Own player profile insert failed");
+
+          // 4. Canonical link must ADOPT the historical player, not create a duplicate.
+          const ensuredRaw = await authedRpc(playerToken, "ensure_self_player");
+          const ensured = Array.isArray(ensuredRaw) ? ensuredRaw[0] : ensuredRaw;
+          assert(ensured && ensured.id === historical.id, "Historical player was not adopted by Player account");
+
+          const allMatches = await request(
+            "/rest/v1/players?first_name=eq.QA&last_name=eq.Athlete&birth_date=eq.2011-05-06&select=id,identity_key,legacy_profile_id,source",
+            { headers: jsonHeaders(service) }
+          );
+          assert(Array.isArray(allMatches.body) && allMatches.body.length === 1, "Duplicate canonical player created");
+          assert(allMatches.body[0].legacy_profile_id === playerId, "Canonical player not linked to Auth account");
+          assert(allMatches.body[0].identity_key === "profile:" + playerId, "Canonical identity was not upgraded to profile identity");
+
+          const myPlayers = await authedRpc(playerToken, "list_my_players");
+          assert(Array.isArray(myPlayers) && myPlayers.length === 1, "Player account does not list exactly one self profile");
+          assert(myPlayers[0].player_id === historical.id && myPlayers[0].relationship === "self", "Self relationship is wrong");
+
+          // 5. Historical Talent ID follows the Player account.
+          const history = await authedRpc(playerToken, "list_my_registry_registrations");
+          assert(Array.isArray(history) && history.length === 1, "Historical Talent ID was not recovered");
+          assert(history[0].event_name === "QA Talent ID Roma", "Wrong historical event linked");
+          assert(history[0].attendance_status === "present", "Historical attendance missing");
+
+          // 6. Player can update allowed canonical profile fields through the linked-player RPC.
+          const updatedRaw = await authedRpc(playerToken, "update_my_linked_player", {
+            target_player_id: historical.id,
+            patch: {
+              instagram: "@qa_athlete_updated",
+              highlights_url: "https://www.youtube.com/watch?v=qa-approved",
+              position: "PG",
+              height_cm: "172"
+            }
+          });
+          const updated = Array.isArray(updatedRaw) ? updatedRaw[0] : updatedRaw;
+          assert(updated.instagram === "@qa_athlete_updated", "Instagram update failed");
+          assert(updated.highlights_url.includes("qa-approved"), "Highlights update failed");
+          assert(Number(updated.height_cm) === 172, "Height update failed");
+
+          // 7. RLS: Player sees only linked player, and cannot directly mutate players.
+          const visiblePlayers = await request("/rest/v1/players?select=id,first_name,last_name", {
+            headers: jsonHeaders(anon, playerToken)
+          });
+          assert(Array.isArray(visiblePlayers.body) && visiblePlayers.body.length === 1, "RLS exposed another player's private record");
+          assert(visiblePlayers.body[0].id === historical.id, "RLS returned wrong player");
+
+          const forbiddenUpdate = await fetch(
+            base + "/rest/v1/players?id=eq." + encodeURIComponent(historical.id),
+            {
+              method: "PATCH",
+              headers: {
+                ...jsonHeaders(anon, playerToken),
+                Prefer: "return=representation"
+              },
+              body: JSON.stringify({ first_name: "HACKED" })
+            }
+          );
+          assert(forbiddenUpdate.status >= 400, "Player directly mutated protected players table");
+
+          // 8. Storage: own profile photo upload + replacement works, cross-account path fails.
+          const png = Buffer.from(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6nB8AAAAASUVORK5CYII=",
+            "base64"
+          );
+          const ownPath = playerId + "/player-photo.png";
+          await request("/storage/v1/object/profile-media/" + ownPath, {
+            method: "POST",
+            headers: {
+              apikey: anon,
+              Authorization: "Bearer " + playerToken,
+              "Content-Type": "image/png"
+            },
+            body: png
+          });
+
+          await request("/storage/v1/object/profile-media/" + ownPath, {
+            method: "POST",
+            headers: {
+              apikey: anon,
+              Authorization: "Bearer " + playerToken,
+              "Content-Type": "image/png",
+              "x-upsert": "true"
+            },
+            body: png
+          });
+
+          const wrongPath = crypto.randomUUID() + "/not-yours.png";
+          const wrongUpload = await fetch(base + "/storage/v1/object/profile-media/" + wrongPath, {
+            method: "POST",
+            headers: {
+              apikey: anon,
+              Authorization: "Bearer " + playerToken,
+              "Content-Type": "image/png"
+            },
+            body: png
+          });
+          assert(wrongUpload.status >= 400, "Storage policy allowed upload into another account path");
+
+          const avatarUpdate = await request(
+            "/rest/v1/profiles?id=eq." + encodeURIComponent(playerId),
+            {
+              method: "PATCH",
+              headers: {
+                ...jsonHeaders(anon, playerToken),
+                Prefer: "return=representation"
+              },
+              body: JSON.stringify({ avatar_path: ownPath })
+            }
+          );
+          assert(Array.isArray(avatarUpdate.body) && avatarUpdate.body[0].avatar_path === ownPath, "avatar_path update failed");
+
+          const signed = await request("/storage/v1/object/sign/profile-media/" + ownPath, {
+            method: "POST",
+            headers: jsonHeaders(anon, playerToken),
+            body: JSON.stringify({ expiresIn: 60 })
+          });
+          assert(signed.body && (signed.body.signedURL || signed.body.signedUrl), "Signed photo URL failed");
+
+          // 9. Parent account can manage a separate child, but cannot auto-claim an existing Player.
+          const signupParent = await signup(parentEmail, testPassword, "parent", "QA", "Parent");
+          const parentId = signupParent.user.id;
+          await servicePatch("profiles", "id=eq." + encodeURIComponent(parentId), {
+            role: "parent",
+            status: "active"
+          });
+          const parentToken = await signIn(parentEmail, testPassword);
+
+          const childRaw = await authedRpc(parentToken, "parent_create_player", {
+            player_data: {
+              first_name: "QA",
+              last_name: "Child",
+              birth_date: "2014-09-10",
+              residence_city: "Modena",
+              position: "SG",
+              instagram: "@qa_child"
+            }
+          });
+          const child = Array.isArray(childRaw) ? childRaw[0] : childRaw;
+          assert(child && child.id, "Parent could not create a new separate child profile");
+
+          const duplicateClaim = await fetch(base + "/rest/v1/rpc/parent_create_player", {
+            method: "POST",
+            headers: jsonHeaders(anon, parentToken),
+            body: JSON.stringify({
+              player_data: {
+                first_name: "QA",
+                last_name: "Athlete",
+                birth_date: "2011-05-06",
+                email: playerEmail
+              }
+            })
+          });
+          const duplicateClaimText = await duplicateClaim.text();
+          assert(duplicateClaim.status >= 400, "Parent auto-claimed an existing Player without admin verification");
+          assert(/PLAYER_ALREADY_EXISTS_CONTACT_ADMIN|already exists/i.test(duplicateClaimText), "Wrong duplicate/claim protection response");
+
+          // 10. Admin verifies and links Parent to the existing child/player.
+          const signupAdmin = await signup(adminEmail, testPassword, "staff", "QA", "Admin");
+          const adminId = signupAdmin.user.id;
+          await servicePatch("profiles", "id=eq." + encodeURIComponent(adminId), {
+            role: "admin",
+            status: "active"
+          });
+          const adminToken = await signIn(adminEmail, testPassword);
+
+          const linkResult = await authedRpc(adminToken, "admin_link_account_player_by_email", {
+            target_email: parentEmail,
+            target_player_id: historical.id,
+            target_relationship: "parent"
+          });
+          const linkObj = Array.isArray(linkResult) ? linkResult[0] : linkResult;
+          assert(linkObj && linkObj.ok === true, "Admin Parent link failed");
+
+          const parentPlayers = await authedRpc(parentToken, "list_my_players");
+          assert(Array.isArray(parentPlayers) && parentPlayers.some(p => p.player_id === historical.id && p.relationship === "parent"),
+            "Verified Parent does not see linked Player");
+
+          // 11. Final invariant: one historical Player record, one self account, Parent relationship added separately.
+          const finalPlayers = await request(
+            "/rest/v1/players?first_name=eq.QA&last_name=eq.Athlete&birth_date=eq.2011-05-06&select=id,identity_key,legacy_profile_id",
+            { headers: jsonHeaders(service) }
+          );
+          assert(finalPlayers.body.length === 1, "Final duplicate check failed");
+
+          const links = await request(
+            "/rest/v1/player_account_links?player_id=eq." + encodeURIComponent(historical.id) +
+            "&select=account_id,relationship,is_primary",
+            { headers: jsonHeaders(service) }
+          );
+          assert(links.body.some(l => l.account_id === playerId && l.relationship === "self"), "Self link missing");
+          assert(links.body.some(l => l.account_id === parentId && l.relationship === "parent"), "Parent link missing");
+
+          console.log(JSON.stringify({
+            result: "PASS",
+            tests: {
+              signup_profile_pending: true,
+              pending_cannot_link: true,
+              player_profile_save: true,
+              historical_player_adopted_without_duplicate: true,
+              talent_id_history_recovered: true,
+              instagram_highlights_update: true,
+              player_rls_isolation: true,
+              storage_upload_and_upsert: true,
+              storage_cross_account_denied: true,
+              signed_photo_url: true,
+              parent_separate_child: true,
+              parent_existing_player_claim_blocked: true,
+              admin_verified_parent_link: true
+            }
+          }, null, 2));
+          NODE
+
+      - name: Stop disposable Supabase
+        if: always()
+        run: supabase stop --no-backup
