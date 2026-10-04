@@ -49,7 +49,7 @@
           <div><strong>Squadra da aggiungere</strong><span>Squadra attuale</span></div>
         </div>
         <div class="links">
-          <div class="link"><span>Instagram</span><strong>@username</strong></div>
+          <a class="link" href="https://www.instagram.com/username" target="_blank" rel="noopener"><span>Instagram</span><strong>@username</strong></a>
           <div class="link"><span>Highlights</span><strong>Vedi video</strong></div>
         </div>
         <div class="completion">
@@ -69,7 +69,7 @@
         <div><span>Nome</span><strong>Aldrick</strong></div><div><span>Cognome</span><strong>Garcia</strong></div><div><span>Anno</span><strong>2012</strong></div><div><span>Categoria</span><strong>U14</strong></div><div><span>Ruolo</span><strong>PG / SG</strong></div><div><span>Altezza</span><strong>168 cm</strong></div><div><span>Città</span><strong>Roma</strong></div>
       </div></article>
       <article class="card"><h3>🔗 Profilo e link</h3><div class="rows">
-        <div><span>Instagram</span><strong>@username</strong></div><div><span>Highlights</span><strong>Vedi video</strong></div><div><span>Stato</span><strong>Quasi completo</strong></div>
+        <div><span>Instagram</span><strong><a href="https://www.instagram.com/username" target="_blank" rel="noopener">@username</a></strong></div><div><span>Highlights</span><strong>Vedi video</strong></div><div><span>Stato</span><strong>Quasi completo</strong></div>
       </div></article>
     </section>
     <section class="mediaDemo">
@@ -127,12 +127,13 @@ document.getElementById('videoMode').onchange=function(){
   document.getElementById('videoLinkLabel').style.display=isLink?'block':'none';
   document.getElementById('videoFileLabel').style.display=isLink?'none':'block';
 };
-function addToQueue(type,title){
+function addToQueue(type,title,url){
   const queue=document.getElementById('approvalQueue');
   const item=document.createElement('div');
   item.className='queueItem';
   item.dataset.type=type;
   item.dataset.title=title;
+  if(url)item.dataset.url=url;
   item.innerHTML='<div><strong>'+(type==='photo'?'📸 ':'🎥 ')+title+'</strong><small>Inviato dal giocatore · '+(type==='photo'?'Foto':'Video')+'</small></div><div class="queueActions"><button class="approve" type="button">APPROVA</button><button class="reject" type="button">RIFIUTA</button></div>';
   queue.appendChild(item);
   bindQueueItem(item);
@@ -143,7 +144,8 @@ function bindQueueItem(item){
     const card=document.createElement('article');
     card.className='mediaCard';
     const isPhoto=item.dataset.type==='photo';
-    card.innerHTML='<div class="mediaThumb">'+(isPhoto?'📸':'▶')+'</div><div><strong>'+item.dataset.title+'</strong><small>'+ (isPhoto?'Foto':'Video') +' approvato</small></div>';
+    const href=!isPhoto&&item.dataset.url?item.dataset.url:'';
+    card.innerHTML='<div class="mediaThumb">'+(isPhoto?'📸':'▶')+'</div><div><strong>'+(href?'<a href="'+href+'" target="_blank" rel="noopener">'+item.dataset.title+'</a>':item.dataset.title)+'</strong><small>'+ (isPhoto?'Foto':'Video') +' approvato</small></div>';
     document.getElementById('publicMedia').appendChild(card);
     item.remove();
   };
@@ -161,7 +163,7 @@ document.getElementById('sendVideoBtn').onclick=()=>{
   if(mode==='link'){
     const link=document.getElementById('demoVideoLink').value.trim();
     if(!link){alert('Incolla un link video');return;}
-    addToQueue('video','Nuovo video');
+    addToQueue('video','Nuovo video',link);
   }else{
     const file=document.getElementById('demoVideoFile').files[0];
     if(!file){alert('Scegli un video');return;}
