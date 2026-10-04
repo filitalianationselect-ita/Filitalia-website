@@ -12,9 +12,17 @@ declare
   actor_id uuid := auth.uid();
   actor_role text;
   actor_status text;
-  request_role text := coalesce(auth.role(), '');
+  request_role text := coalesce(current_setting('request.jwt.claim.role', true), '');
   remaining_active_super_admins integer;
 begin
+  -- This trigger protects role/status changes only. Supabase Auth synchronizes
+  -- non-privileged profile fields from auth.users without an authenticated
+  -- request context, so those updates must not be rejected.
+  if new.role is not distinct from old.role
+     and new.status is not distinct from old.status then
+    return new;
+  end if;
+
   if request_role = 'service_role' then
     return new;
   end if;
