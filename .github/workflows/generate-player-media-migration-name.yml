@@ -1,0 +1,52 @@
+name: Generate Player Media RLS Migration
+
+on:
+  push:
+    branches:
+      - preview/player-profile-demo
+    paths:
+      - .github/workflows/generate-player-media-migration-name.yml
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+      - name: Generate migration with Supabase CLI
+        run: |
+          set -euo pipefail
+          supabase migration new restrict_player_media_admin_policies
+          file="$(ls -1t supabase/migrations/*_restrict_player_media_admin_policies.sql | head -n1)"
+          cat > "$file" <<'SQL'
+          begin;
+
+          alter policy "Admins manage player settings"
+            on public.player_public_profile_settings
+            to authenticated
+            using (public.is_active_admin())
+            with check (public.is_active_admin());
+
+          alter policy "Admins manage player media"
+            on public.player_profile_media
+            to authenticated
+            using (public.is_active_admin())
+            with check (public.is_active_admin());
+
+          commit;
+          SQL
+          printf '%s\n' "$file" > /tmp/migration-path.txt
+          cat "$file"
+      - name: Upload generated migration
+        uses: actions/upload-artifact@v4
+        with:
+          name: player-media-rls-migration
+          path: |
+            /tmp/migration-path.txt
+            supabase/migrations/*_restrict_player_media_admin_policies.sql
+          retention-days: 1
