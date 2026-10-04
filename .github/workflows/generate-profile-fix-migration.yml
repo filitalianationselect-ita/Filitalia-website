@@ -1,0 +1,25 @@
+name: Generate Profile Fix Migration Name
+
+on:
+  push:
+    branches:
+      - preview/player-profile-demo
+    paths:
+      - ".github/workflows/generate-profile-fix-migration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+      - name: Generate migration filename
+        run: |
+          set -euo pipefail
+          supabase migration new fix_profile_signup_privileges
+          echo "GENERATED_MIGRATION=$(ls -1t supabase/migrations/*_fix_profile_signup_privileges.sql | head -n1)"
