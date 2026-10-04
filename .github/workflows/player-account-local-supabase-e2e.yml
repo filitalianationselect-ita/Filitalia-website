@@ -320,9 +320,10 @@ jobs:
             const mediaId = r.data[0].id;
 
             r = await request('/rest/v1/player_profile_media?id=eq.' + mediaId, {
-              headers: { apikey: ANON, Authorization: 'Bearer ' + ANON }
+              headers: { apikey: ANON }
             });
-            assert(r.res.ok && Array.isArray(r.data) && r.data.length === 0, 'Pending media is hidden publicly');
+            assert(r.res.ok, 'Anonymous media read endpoint is available', 'HTTP ' + r.res.status + ' ' + r.text);
+            assert(Array.isArray(r.data) && r.data.length === 0, 'Pending media is hidden publicly', r.text);
 
             // Create a real active Admin and approve through authenticated Admin RLS.
             const adminUser = await createAuthUser(adminEmail, {
@@ -348,9 +349,10 @@ jobs:
             assert(r.res.ok && r.data[0].status === 'approved', 'Authenticated Admin can approve player media', r.text);
 
             r = await request('/rest/v1/player_profile_media?id=eq.' + mediaId, {
-              headers: { apikey: ANON, Authorization: 'Bearer ' + ANON }
+              headers: { apikey: ANON }
             });
-            assert(r.res.ok && r.data.length === 1 && r.data[0].status === 'approved', 'Approved media becomes publicly readable');
+            assert(r.res.ok, 'Anonymous approved-media read endpoint is available', 'HTTP ' + r.res.status + ' ' + r.text);
+            assert(r.data.length === 1 && r.data[0].status === 'approved', 'Approved media becomes publicly readable', r.text);
 
             fs.writeFileSync('/tmp/player-account-e2e.json', JSON.stringify({
               result: 'PASS',
