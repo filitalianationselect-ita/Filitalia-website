@@ -530,6 +530,12 @@
     });
   }
 
+  async function getOwnRegistryRegistrations() {
+    const result = await requireClient().rpc("list_my_registry_registrations");
+    if (result.error) throw result.error;
+    return result.data || [];
+  }
+
   async function getOwnRegistrations() {
     const result = await requireClient()
       .from("registrations")
@@ -629,6 +635,7 @@
     listManagedAccounts,
     adminSetAccountStatus,
     getOwnRegistrations,
+    getOwnRegistryRegistrations,
     onAuthStateChange,
     friendlyError
   });
