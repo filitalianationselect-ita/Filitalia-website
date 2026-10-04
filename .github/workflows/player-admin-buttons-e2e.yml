@@ -103,7 +103,7 @@ jobs:
             await page.waitForSelector('#adminLightFrame',{timeout:30000});
             const frame=page.frameLocator('#adminLightFrame');
             const playersNav=frame.locator('button[data-page="players"]');
-            if(await playersNav.count())await playersNav.click();
+            if(await playersNav.count())await playersNav.first().click();
             await frame.locator('.fil-player-admin-launcher').waitFor({state:'visible',timeout:30000});
             await frame.locator('.fil-player-admin-launcher').click();
             await frame.locator('#filPlayerAdminOverlay.show').waitFor({state:'visible',timeout:15000});
