@@ -28,7 +28,7 @@ jobs:
           node-version: "22"
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.109.1
+          version: 2.119.0
 
       - name: Start isolated Supabase
         run: |
@@ -50,6 +50,10 @@ jobs:
           const service={apikey:SERVICE,Authorization:'Bearer '+SERVICE,'Content-Type':'application/json'};
           async function user(email,meta){return req('/auth/v1/admin/users',{method:'POST',headers:service,body:JSON.stringify({email,password,email_confirm:true,user_metadata:meta})})}
           (async()=>{
+            const signup=await req('/auth/v1/signup',{method:'POST',headers:{apikey:ANON,'Content-Type':'application/json'},body:JSON.stringify({email:'fresh.signup@filitalia.test',password,data:{first_name:'Fresh',last_name:'Signup',requested_role:'player',language:'it'}})});
+            if(!signup?.user?.id)throw new Error('Fresh signup did not create an Auth user');
+            const fresh=await req('/rest/v1/profiles?id=eq.'+signup.user.id+'&select=id,email,requested_role,role,status',{headers:service});
+            if(!Array.isArray(fresh)||fresh.length!==1||fresh[0].requested_role!=='player'||fresh[0].role!=='user'||fresh[0].status!=='pending')throw new Error('Fresh signup profile state invalid '+JSON.stringify(fresh));
             const player=await user('media.player@filitalia.test',{first_name:'Media',last_name:'Player',requested_role:'player',language:'it'});
             const admin=await user('media.admin@filitalia.test',{first_name:'Media',last_name:'Admin',requested_role:'staff',language:'it'});
             await req('/rest/v1/profiles?id=eq.'+player.id,{method:'PATCH',headers:{...service,Prefer:'return=representation'},body:JSON.stringify({role:'player',status:'active'})});
