@@ -155,6 +155,13 @@
       const isPlayer=role==="player"||String(profile&&profile.requested_role||"").toLowerCase()==="player";
       section.hidden=!isPlayer;
       if(!isPlayer)return;
+      d.body.classList.add("ppv-player-mode");
+      const accountNav=d.querySelector('.nav-links a[href="account.html"]');
+      if(accountNav)accountNav.textContent="Il mio profilo";
+      const workspaceTitle=d.querySelector(".account-workspace-copy h1");
+      const workspaceCopy=d.querySelector(".account-workspace-copy p");
+      if(workspaceTitle)workspaceTitle.textContent="Il mio profilo";
+      if(workspaceCopy)workspaceCopy.textContent="La tua scheda atleta FIL-ITALIA, i Talent ID e i dati del tuo profilo.";
       section.innerHTML='<div class="ppv-loading">Caricamento Player Profile…</div>';
       const results=await Promise.allSettled([
         auth.getOwnPlayerProfile(),
