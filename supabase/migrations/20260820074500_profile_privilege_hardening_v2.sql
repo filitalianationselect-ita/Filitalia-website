@@ -12,17 +12,9 @@ declare
   actor_id uuid := auth.uid();
   actor_role text;
   actor_status text;
-  request_role text := coalesce(auth.jwt() ->> 'role', '');
+  request_role text := coalesce(auth.role(), '');
   remaining_active_super_admins integer;
 begin
-  -- This trigger protects role/status changes only. Supabase Auth synchronizes
-  -- non-privileged profile fields from auth.users without an authenticated
-  -- request context, so those updates must not be rejected.
-  if new.role is not distinct from old.role
-     and new.status is not distinct from old.status then
-    return new;
-  end if;
-
   if request_role = 'service_role' then
     return new;
   end if;
@@ -75,9 +67,3 @@ end;
 $$;
 
 revoke all on function public.protect_profile_privilege_changes() from public;
-
-
--- The trusted backend reads and approves account profiles through PostgREST.
--- RLS bypass does not replace SQL table privileges, so grant only what the
--- account-management backend requires.
-grant select, update on public.profiles to service_role;
