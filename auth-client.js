@@ -536,6 +536,12 @@
     return result.data || [];
   }
 
+  async function getMyLinkedPlayers() {
+    const result = await requireClient().rpc("list_my_players");
+    if (result.error) throw result.error;
+    return result.data || [];
+  }
+
   async function getOwnRegistrations() {
     const result = await requireClient()
       .from("registrations")
@@ -636,6 +642,7 @@
     adminSetAccountStatus,
     getOwnRegistrations,
     getOwnRegistryRegistrations,
+    getMyLinkedPlayers,
     onAuthStateChange,
     friendlyError
   });
