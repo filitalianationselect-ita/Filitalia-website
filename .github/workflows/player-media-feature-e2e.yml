@@ -63,6 +63,18 @@ jobs:
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
 
+      - name: Dump local Supabase logs on seed failure
+        if: failure()
+        run: |
+          echo "===== CONTAINERS ====="
+          docker ps -a --format '{{.Names}} {{.Status}}' || true
+          echo "===== AUTH ====="
+          auth_container="$(docker ps -a --format '{{.Names}}' | grep 'supabase_auth_' | head -n1 || true)"
+          test -z "$auth_container" || docker logs "$auth_container" --tail 250 || true
+          echo "===== DATABASE ====="
+          db_container="$(docker ps -a --format '{{.Names}}' | grep 'supabase_db_' | head -n1 || true)"
+          test -z "$db_container" || docker logs "$db_container" --tail 250 || true
+
       - name: Point site to local Supabase
         run: |
           set -euo pipefail
