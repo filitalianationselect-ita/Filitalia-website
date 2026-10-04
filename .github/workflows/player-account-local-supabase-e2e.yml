@@ -1,0 +1,516 @@
+name: Player Account Local Supabase E2E
+
+on:
+  push:
+    branches:
+      - preview/player-profile-demo
+    paths:
+      - auth-client.js
+      - auth-pages.js
+      - account.html
+      - account-player-profile-view-v1.js
+      - account-player-profile-view-v1.css
+      - supabase/**
+      - .github/workflows/player-account-local-supabase-e2e.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+
+      - name: Start isolated local Supabase
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase start
+          supabase status -o env > /tmp/supabase-local.env
+          sed -E 's/=.*/=***hidden***/' /tmp/supabase-local.env
+
+      - name: Test account, canonical player, history, RLS, media and storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source /tmp/supabase-local.env
+          set +a
+
+          node <<'NODE'
+          const fs = require('fs');
+
+          const API = process.env.API_URL;
+          const ANON = process.env.ANON_KEY;
+          const SERVICE = process.env.SERVICE_ROLE_KEY;
+          if (!API || !ANON || !SERVICE) throw new Error('Missing local Supabase environment');
+
+          const playerEmail = 'e2e.player@filitalia.test';
+          const adminEmail = 'e2e.admin@filitalia.test';
+          const password = 'E2e-Test-Password-2026!';
+          const result = { checks: [] };
+
+          function ok(name, detail) {
+            result.checks.push({ name, ok: true, detail: detail || '' });
+            console.log('✅', name, detail || '');
+          }
+          function assert(condition, name, detail) {
+            if (!condition) throw new Error(name + (detail ? ': ' + detail : ''));
+            ok(name, detail);
+          }
+          async function request(path, options = {}) {
+            const headers = Object.assign({}, options.headers || {});
+            const res = await fetch(API + path, Object.assign({}, options, { headers }));
+            const text = await res.text();
+            let data = null;
+            try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
+            return { res, data, text };
+          }
+          function serviceHeaders(extra = {}) {
+            return Object.assign({
+              apikey: SERVICE,
+              Authorization: 'Bearer ' + SERVICE,
+              'Content-Type': 'application/json'
+            }, extra);
+          }
+          function userHeaders(token, extra = {}) {
+            return Object.assign({
+              apikey: ANON,
+              Authorization: 'Bearer ' + token,
+              'Content-Type': 'application/json'
+            }, extra);
+          }
+
+          async function serviceInsert(table, payload) {
+            const r = await request('/rest/v1/' + table, {
+              method: 'POST',
+              headers: serviceHeaders({ Prefer: 'return=representation' }),
+              body: JSON.stringify(payload)
+            });
+            if (!r.res.ok) throw new Error('serviceInsert ' + table + ': ' + r.text);
+            return Array.isArray(r.data) ? r.data[0] : r.data;
+          }
+
+          async function createAuthUser(email, meta) {
+            const r = await request('/auth/v1/admin/users', {
+              method: 'POST',
+              headers: serviceHeaders(),
+              body: JSON.stringify({
+                email,
+                password,
+                email_confirm: true,
+                user_metadata: meta
+              })
+            });
+            if (!r.res.ok) throw new Error('createAuthUser: ' + r.text);
+            return r.data;
+          }
+
+          async function signIn(email) {
+            const r = await request('/auth/v1/token?grant_type=password', {
+              method: 'POST',
+              headers: { apikey: ANON, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
+            });
+            if (!r.res.ok) throw new Error('signIn: ' + r.text);
+            return r.data;
+          }
+
+          (async () => {
+            // Existing historical registry player before the account exists.
+            const historical = await serviceInsert('players', {
+              identity_key: 'manual:e2e-historical-player',
+              first_name: 'Test',
+              last_name: 'Player',
+              birth_date: '2012-02-03',
+              residence_city: 'Bologna',
+              email: playerEmail,
+              position: 'PG / SG',
+              current_club: 'E2E Basket',
+              height_cm: 168,
+              instagram: '@e2eplayer',
+              highlights_url: 'https://www.youtube.com/watch?v=e2etest',
+              source: 'registration'
+            });
+            assert(Boolean(historical && historical.id), 'Historical player created');
+
+            const event = await serviceInsert('program_events', {
+              external_event_id: 'e2e-talent-id-2026',
+              name: 'Talent ID E2E',
+              city: 'Bologna',
+              event_date: '2026-09-20',
+              event_type: 'camp',
+              status: 'completed'
+            });
+            await serviceInsert('player_event_registrations', {
+              player_id: historical.id,
+              event_id: event.id,
+              source: 'website',
+              registration_status: 'confirmed',
+              attendance_status: 'present',
+              payment_status: 'paid',
+              privacy_consent: true,
+              media_consent: true
+            });
+            ok('Historical Talent ID created');
+
+            const playerUser = await createAuthUser(playerEmail, {
+              first_name: 'Test',
+              last_name: 'Player',
+              requested_role: 'player',
+              language: 'it'
+            });
+            assert(Boolean(playerUser && playerUser.id), 'Player Auth account created');
+
+            const auth = await signIn(playerEmail);
+            const playerToken = auth.access_token;
+            assert(Boolean(playerToken), 'Player can sign in');
+
+            let r = await request('/rest/v1/profiles?id=eq.' + encodeURIComponent(playerUser.id), {
+              headers: userHeaders(playerToken)
+            });
+            assert(r.res.ok && Array.isArray(r.data) && r.data.length === 1, 'Own profile visible through RLS');
+            assert(r.data[0].requested_role === 'player' && r.data[0].role === 'pending' && r.data[0].status === 'pending', 'New Player starts pending');
+
+            r = await request('/rest/v1/rpc/ensure_self_player', {
+              method: 'POST',
+              headers: userHeaders(playerToken),
+              body: '{}'
+            });
+            assert(!r.res.ok && /PLAYER_ACCOUNT_NOT_ACTIVE/i.test(r.text), 'Pending account cannot claim canonical Player');
+
+            r = await request('/rest/v1/player_profiles', {
+              method: 'POST',
+              headers: userHeaders(playerToken, { Prefer: 'return=representation' }),
+              body: JSON.stringify({
+                user_id: playerUser.id,
+                birth_date: '2012-02-03',
+                sex: 'Maschio',
+                residence_city: 'Bologna',
+                position: 'PG / SG',
+                current_club: 'E2E Basket',
+                height_cm: 168,
+                weight_kg: 58.5,
+                italian_passport: true,
+                filipino_passport: true,
+                instagram: '@e2eplayer',
+                highlights_url: 'https://www.youtube.com/watch?v=e2etest'
+              })
+            });
+            assert(r.res.ok, 'Player can create own Player Profile while pending', r.text);
+
+            // Real storage upload using the authenticated Player.
+            const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
+            const storagePath = playerUser.id + '/e2e-player.png';
+            r = await request('/storage/v1/object/profile-media/' + storagePath, {
+              method: 'POST',
+              headers: {
+                apikey: ANON,
+                Authorization: 'Bearer ' + playerToken,
+                'Content-Type': 'image/png',
+                'x-upsert': 'false'
+              },
+              body: png
+            });
+            assert(r.res.ok, 'Player can upload photo only to own storage folder', r.text);
+
+            r = await request('/storage/v1/object/profile-media/not-' + playerUser.id + '/forbidden.png', {
+              method: 'POST',
+              headers: {
+                apikey: ANON,
+                Authorization: 'Bearer ' + playerToken,
+                'Content-Type': 'image/png',
+                'x-upsert': 'false'
+              },
+              body: png
+            });
+            assert(!r.res.ok, 'Cross-account storage upload is blocked');
+
+            r = await request('/storage/v1/object/profile-media/' + storagePath, {
+              method: 'POST',
+              headers: {
+                apikey: ANON,
+                Authorization: 'Bearer ' + playerToken,
+                'Content-Type': 'image/png',
+                'x-upsert': 'true'
+              },
+              body: png
+            });
+            assert(r.res.ok, 'Player can replace own photo with storage upsert', r.text);
+
+            r = await request('/rest/v1/profiles?id=eq.' + encodeURIComponent(playerUser.id), {
+              method: 'PATCH',
+              headers: userHeaders(playerToken, { Prefer: 'return=representation' }),
+              body: JSON.stringify({ avatar_path: storagePath })
+            });
+            assert(r.res.ok, 'Player can save own avatar path');
+
+            // Trusted backend approval.
+            r = await request('/rest/v1/profiles?id=eq.' + encodeURIComponent(playerUser.id), {
+              method: 'PATCH',
+              headers: serviceHeaders({ Prefer: 'return=representation' }),
+              body: JSON.stringify({ role: 'player', status: 'active' })
+            });
+            assert(r.res.ok && r.data[0].role === 'player' && r.data[0].status === 'active', 'Backend can approve Player account');
+
+            r = await request('/rest/v1/rpc/ensure_self_player', {
+              method: 'POST',
+              headers: userHeaders(playerToken),
+              body: '{}'
+            });
+            assert(r.res.ok, 'Active Player can link canonical Player', r.text);
+            const canonical = Array.isArray(r.data) ? r.data[0] : r.data;
+            assert(canonical && canonical.id === historical.id, 'Existing historical Player adopted instead of duplicated');
+            assert(canonical.instagram === '@e2eplayer' && canonical.highlights_url.includes('youtube.com'), 'Instagram and highlights copied to canonical Player');
+            assert(canonical.photo_path === storagePath, 'Profile photo copied to canonical Player');
+
+            r = await request('/rest/v1/players?first_name=eq.Test&last_name=eq.Player&birth_date=eq.2012-02-03&select=id', {
+              headers: serviceHeaders()
+            });
+            assert(r.res.ok && r.data.length === 1, 'No duplicate Player created');
+
+            r = await request('/rest/v1/rpc/list_my_players', {
+              method: 'POST',
+              headers: userHeaders(playerToken),
+              body: '{}'
+            });
+            assert(r.res.ok && Array.isArray(r.data) && r.data.length === 1 && r.data[0].relationship === 'self', 'My Players returns exactly the linked self Player');
+
+            r = await request('/rest/v1/rpc/list_my_registry_registrations', {
+              method: 'POST',
+              headers: userHeaders(playerToken),
+              body: '{}'
+            });
+            assert(r.res.ok && Array.isArray(r.data) && r.data.some(x => x.event_name === 'Talent ID E2E'), 'Historical Talent ID becomes visible to new account');
+
+            // Self privilege escalation must fail or be ignored.
+            r = await request('/rest/v1/profiles?id=eq.' + encodeURIComponent(playerUser.id), {
+              method: 'PATCH',
+              headers: userHeaders(playerToken, { Prefer: 'return=representation' }),
+              body: JSON.stringify({ role: 'admin', status: 'active' })
+            });
+            r = await request('/rest/v1/profiles?id=eq.' + encodeURIComponent(playerUser.id) + '&select=role,status', {
+              headers: userHeaders(playerToken)
+            });
+            assert(r.res.ok && r.data[0].role === 'player' && r.data[0].status === 'active', 'Player cannot promote own role');
+
+            // Pending media submitted by player.
+            r = await request('/rest/v1/player_profile_media', {
+              method: 'POST',
+              headers: userHeaders(playerToken, { Prefer: 'return=representation' }),
+              body: JSON.stringify({
+                user_id: playerUser.id,
+                public_url: 'https://example.com/e2e-photo.jpg',
+                caption: 'E2E player media',
+                status: 'pending'
+              })
+            });
+            assert(r.res.ok && r.data.length === 1, 'Player can submit media as pending', r.text);
+            const mediaId = r.data[0].id;
+
+            r = await request('/rest/v1/player_profile_media?id=eq.' + mediaId, {
+              headers: { apikey: ANON, Authorization: 'Bearer ' + ANON }
+            });
+            assert(r.res.ok && Array.isArray(r.data) && r.data.length === 0, 'Pending media is hidden publicly');
+
+            // Create a real active Admin and approve through authenticated Admin RLS.
+            const adminUser = await createAuthUser(adminEmail, {
+              first_name: 'E2E',
+              last_name: 'Admin',
+              requested_role: 'staff',
+              language: 'it'
+            });
+            r = await request('/rest/v1/profiles?id=eq.' + encodeURIComponent(adminUser.id), {
+              method: 'PATCH',
+              headers: serviceHeaders({ Prefer: 'return=representation' }),
+              body: JSON.stringify({ role: 'admin', status: 'active' })
+            });
+            assert(r.res.ok, 'Test Admin activated');
+            const adminAuth = await signIn(adminEmail);
+            assert(Boolean(adminAuth.access_token), 'Admin can sign in');
+
+            r = await request('/rest/v1/player_profile_media?id=eq.' + mediaId, {
+              method: 'PATCH',
+              headers: userHeaders(adminAuth.access_token, { Prefer: 'return=representation' }),
+              body: JSON.stringify({ status: 'approved', reviewed_by: adminUser.id, reviewed_at: new Date().toISOString() })
+            });
+            assert(r.res.ok && r.data[0].status === 'approved', 'Authenticated Admin can approve player media', r.text);
+
+            r = await request('/rest/v1/player_profile_media?id=eq.' + mediaId, {
+              headers: { apikey: ANON, Authorization: 'Bearer ' + ANON }
+            });
+            assert(r.res.ok && r.data.length === 1 && r.data[0].status === 'approved', 'Approved media becomes publicly readable');
+
+            fs.writeFileSync('/tmp/player-account-e2e.json', JSON.stringify({
+              result: 'PASS',
+              player_id: historical.id,
+              account_id: playerUser.id,
+              media_id: mediaId,
+              checks: result.checks
+            }, null, 2));
+          })().catch(error => {
+            fs.writeFileSync('/tmp/player-account-e2e.json', JSON.stringify({
+              result: 'FAIL',
+              error: String(error && error.stack || error),
+              checks: result.checks
+            }, null, 2));
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Point site at isolated local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source /tmp/supabase-local.env
+          set +a
+          API_URL="$API_URL" ANON_KEY="$ANON_KEY" node <<'NODE'
+          const fs = require('fs');
+          let source = fs.readFileSync('supabase-config.js', 'utf8');
+          source = source
+            .replace(/"supabaseUrl":\s*"[^"]*"/, '"supabaseUrl": ' + JSON.stringify(process.env.API_URL))
+            .replace(/"supabasePublishableKey":\s*"[^"]*"/, '"supabasePublishableKey": ' + JSON.stringify(process.env.ANON_KEY))
+            .replace(/"siteUrl":\s*"[^"]*"/, '"siteUrl": "http://127.0.0.1:4173"')
+            .replace(/"environment":\s*"[^"]*"/, '"environment": "e2e-local"');
+          fs.writeFileSync('supabase-config.js', source);
+          NODE
+
+      - name: Test real account.html in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --silent playwright-core
+          CHROME_PATH="$(which google-chrome || which chromium || which chromium-browser)"
+          test -n "$CHROME_PATH"
+          python3 -m http.server 4173 >/tmp/player-e2e-http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/login.html >/dev/null && break; sleep 1; done
+
+          CHROME_PATH="$CHROME_PATH" node <<'NODE'
+          const { chromium } = require('playwright-core');
+          const fs = require('fs');
+
+          (async () => {
+            const browser = await chromium.launch({
+              headless: true,
+              executablePath: process.env.CHROME_PATH,
+              args: ['--no-sandbox']
+            });
+            const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+
+            const errors = [];
+            page.on('pageerror', error => errors.push(String(error)));
+
+            await page.goto('http://127.0.0.1:4173/login.html?e2e=1', { waitUntil: 'networkidle', timeout: 120000 });
+            await page.waitForFunction(() => window.FilitaliaAuth && window.FilitaliaAuth.configured === true);
+
+            const loginResult = await page.evaluate(async () => {
+              const out = await window.FilitaliaAuth.signIn('e2e.player@filitalia.test', 'E2e-Test-Password-2026!');
+              return { hasSession: Boolean(out && out.data && out.data.session), error: out && out.error ? String(out.error.message || out.error) : '' };
+            });
+            if (!loginResult.hasSession || loginResult.error) throw new Error('Browser login failed: ' + JSON.stringify(loginResult));
+
+            await page.goto('http://127.0.0.1:4173/account.html?e2e=1', { waitUntil: 'networkidle', timeout: 120000 });
+            await page.waitForSelector('#playerProfileViewSection:not([hidden])', { timeout: 20000 });
+            await page.waitForFunction(() => {
+              const n = document.querySelector('#playerProfileViewSection .ppv-name-row h1');
+              return n && /Test Player/i.test(n.textContent || '');
+            }, { timeout: 20000 });
+
+            const state = await page.evaluate(() => ({
+              name: document.querySelector('#playerProfileViewSection .ppv-name-row h1')?.textContent?.trim(),
+              role: document.querySelector('#playerProfileViewSection .ppv-stats strong')?.textContent?.trim(),
+              height: [...document.querySelectorAll('#playerProfileViewSection .ppv-stats strong')].map(x => x.textContent.trim())[1],
+              instagram: [...document.querySelectorAll('#playerProfileViewSection a')].find(a => /instagram\.com/i.test(a.href || ''))?.href || '',
+              history: [...document.querySelectorAll('#playerProfileViewSection .ppv-event strong')].map(x => x.textContent.trim()),
+              editText: document.querySelector('#ppvEditButton')?.textContent?.trim(),
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+            }));
+
+            if (state.name !== 'Test Player') throw new Error('Wrong profile name: ' + JSON.stringify(state));
+            if (!/PG\s*\/\s*SG/i.test(state.role || '')) throw new Error('Wrong role: ' + JSON.stringify(state));
+            if (state.height !== '168 cm') throw new Error('Wrong height: ' + JSON.stringify(state));
+            if (!state.instagram.includes('instagram.com/e2eplayer')) throw new Error('Instagram not linked: ' + JSON.stringify(state));
+            if (!state.history.some(x => /Talent ID E2E/i.test(x))) throw new Error('Historical Talent ID missing: ' + JSON.stringify(state));
+            if (!/Modifica profilo/i.test(state.editText || '')) throw new Error('Edit button missing');
+            if (state.overflow > 3) throw new Error('Desktop horizontal overflow: ' + state.overflow);
+
+            await page.click('#ppvEditButton');
+            const editorVisible = await page.locator('#playerProfileSection').evaluate(el => !el.hidden && getComputedStyle(el).display !== 'none');
+            if (!editorVisible) throw new Error('Real Player Profile editor did not open');
+
+            await page.screenshot({ path: '/tmp/player-account-real-desktop.png', fullPage: true });
+
+            const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            await mobile.goto('http://127.0.0.1:4173/login.html?e2e=mobile', { waitUntil: 'networkidle', timeout: 120000 });
+            await mobile.waitForFunction(() => window.FilitaliaAuth && window.FilitaliaAuth.configured === true);
+            await mobile.evaluate(async () => {
+              await window.FilitaliaAuth.signIn('e2e.player@filitalia.test', 'E2e-Test-Password-2026!');
+            });
+            await mobile.goto('http://127.0.0.1:4173/account.html?e2e=mobile', { waitUntil: 'networkidle', timeout: 120000 });
+            await mobile.waitForSelector('#playerProfileViewSection:not([hidden])', { timeout: 20000 });
+            const mobileState = await mobile.evaluate(() => ({
+              name: document.querySelector('#playerProfileViewSection .ppv-name-row h1')?.textContent?.trim(),
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+              editVisible: !!document.querySelector('#ppvEditButton') && getComputedStyle(document.querySelector('#ppvEditButton')).display !== 'none'
+            }));
+            if (mobileState.name !== 'Test Player') throw new Error('Mobile profile failed: ' + JSON.stringify(mobileState));
+            if (mobileState.overflow > 3) throw new Error('Mobile horizontal overflow: ' + mobileState.overflow);
+            if (!mobileState.editVisible) throw new Error('Mobile edit button hidden');
+
+            await mobile.screenshot({ path: '/tmp/player-account-real-mobile.png', fullPage: true });
+
+            fs.writeFileSync('/tmp/player-account-browser-e2e.json', JSON.stringify({
+              result: 'PASS',
+              desktop: state,
+              mobile: mobileState,
+              pageErrors: errors
+            }, null, 2));
+
+            await browser.close();
+          })().catch(error => {
+            fs.writeFileSync('/tmp/player-account-browser-e2e.json', JSON.stringify({
+              result: 'FAIL',
+              error: String(error && error.stack || error)
+            }, null, 2));
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Print test results
+        if: always()
+        run: |
+          echo "===== DATABASE E2E ====="
+          cat /tmp/player-account-e2e.json || true
+          echo "===== BROWSER E2E ====="
+          cat /tmp/player-account-browser-e2e.json || true
+
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: player-account-local-supabase-e2e
+          path: |
+            /tmp/player-account-e2e.json
+            /tmp/player-account-browser-e2e.json
+            /tmp/player-account-real-desktop.png
+            /tmp/player-account-real-mobile.png
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
