@@ -1,0 +1,116 @@
+name: Generate Signup Privilege Fix Migration
+
+on:
+  push:
+    branches:
+      - feature/player-photo-video-submissions
+    paths:
+      - .github/workflows/generate-signup-privilege-fix.yml
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.119.0
+      - name: Generate migration
+        run: |
+          set -euo pipefail
+          supabase migration new fix_profile_signup_privileges
+          file="$(ls -1t supabase/migrations/*_fix_profile_signup_privileges.sql | head -n1)"
+          cat > "$file" <<'SQL'
+          begin;
+
+          create or replace function public.protect_profile_privilege_changes()
+          returns trigger
+          language plpgsql
+          security definer
+          set search_path = public, auth, pg_temp
+          as $$
+          declare
+            actor_id uuid := auth.uid();
+            actor_role text;
+            actor_status text;
+            request_role text := coalesce(auth.jwt() ->> 'role', '');
+            remaining_active_super_admins integer;
+          begin
+            -- Supabase Auth synchronizes profile metadata without an end-user
+            -- session. If privilege fields are unchanged, there is no
+            -- authorization decision to make.
+            if new.role is not distinct from old.role
+               and new.status is not distinct from old.status then
+              return new;
+            end if;
+
+            -- Trusted backend account-management operations use service_role
+            -- after validating the caller in the server/Edge Function layer.
+            if request_role = 'service_role' then
+              return new;
+            end if;
+
+            if actor_id is null then
+              raise exception 'NOT_AUTHENTICATED';
+            end if;
+
+            select p.role, p.status
+              into actor_role, actor_status
+            from public.profiles p
+            where p.id = actor_id;
+
+            if actor_id = old.id
+               and (new.role is distinct from old.role or new.status is distinct from old.status) then
+              raise exception 'ROLE_STATUS_SELF_MANAGED';
+            end if;
+
+            if actor_role = 'super_admin' and actor_status = 'active' then
+              if old.role = 'super_admin'
+                 and old.status = 'active'
+                 and (new.role is distinct from 'super_admin' or new.status is distinct from 'active') then
+                select count(*)
+                  into remaining_active_super_admins
+                from public.profiles p
+                where p.id <> old.id
+                  and p.role = 'super_admin'
+                  and p.status = 'active';
+
+                if remaining_active_super_admins = 0 then
+                  raise exception 'CANNOT_REMOVE_LAST_SUPER_ADMIN';
+                end if;
+              end if;
+              return new;
+            end if;
+
+            if actor_role = 'admin' and actor_status = 'active' then
+              if old.role = 'super_admin' or new.role = 'super_admin' then
+                raise exception 'SUPER_ADMIN_REQUIRED';
+              end if;
+              return new;
+            end if;
+
+            raise exception 'ADMIN_REQUIRED';
+          end;
+          $$;
+
+          revoke all on function public.protect_profile_privilege_changes() from public;
+
+          grant select, update on public.profiles to service_role;
+
+          comment on function public.protect_profile_privilege_changes() is
+            'Allows non-privileged Auth profile synchronization while protecting role/status changes.';
+
+          commit;
+          SQL
+          printf '%s\n' "$file" > /tmp/migration-path.txt
+          cat "$file"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signup-privilege-fix-migration
+          path: |
+            /tmp/migration-path.txt
+            supabase/migrations/*_fix_profile_signup_privileges.sql
+          retention-days: 1
