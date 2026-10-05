@@ -81,6 +81,9 @@
     margin:0!important;padding:0!important;
     position:static!important;transform:none!important;
   }
+  html body.fil-final-site .navbar.fil-final-navbar .fil-global-socials{order:1!important}
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions>.language-switch{order:2!important}
+  html body.fil-final-site .navbar.fil-final-navbar .fil-final-auth{order:3!important}
   html body.fil-final-site .navbar.fil-final-navbar .fil-global-socials,
   html body.fil-final-site .navbar.fil-final-navbar .fil-final-actions>.language-switch,
   html body.fil-final-site .navbar.fil-final-navbar .fil-final-auth{
