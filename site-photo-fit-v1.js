@@ -17,7 +17,7 @@ function classify(img){
     return;
   }
   const ratio=img.naturalWidth/img.naturalHeight;
-  const gallery=Boolean(img.closest('.fil-media-card,.fpr-media-image,.home-gallery-full-image,#albumImagesGrid,[data-gallery-category]'));
+  const gallery=Boolean(img.closest('.fil-media-card,.fpr-media-image,.home-gallery-full-image,#albumImagesGrid,[data-gallery-category],.fil-next-event-media'));
   const staff=Boolean(img.closest('.fil-staff-profile,#staff .staff-card'));
   img.classList.add('fil-smart-photo');
 
