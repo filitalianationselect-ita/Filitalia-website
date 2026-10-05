@@ -4,7 +4,7 @@ if(!window.FilitaliaAuth)return;
 
 const original=window.FilitaliaAuth;
 const cfg=window.FILITALIA_CONFIG||{};
-const previewHost=/\.netlify\.app$/i.test(location.hostname)||/^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
+const previewHost=(Boolean(cfg.isPreview)&&/\.netlify\.app$/i.test(location.hostname))||/^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
 const origin=previewHost?location.origin:String(cfg.siteUrl||location.origin).replace(/\/$/,'');
 const email=value=>String(value||'').trim().toLowerCase();
 const validEmail=value=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email(value));
