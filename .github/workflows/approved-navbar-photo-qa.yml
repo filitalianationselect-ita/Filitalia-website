@@ -6,6 +6,10 @@ on:
       - fix/approved-navbar-20261005
     paths:
       - .github/workflows/approved-navbar-photo-qa.yml
+      - site-approved-navbar-v1.css
+      - site-global-polish-v3.js
+      - site-photo-fit-v1.css
+      - site-photo-fit-v1.js
   workflow_dispatch:
 
 permissions:
