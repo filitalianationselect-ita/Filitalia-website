@@ -1,0 +1,28 @@
+/* Preserve difficult portrait/group photos instead of cropping faces or people. */
+img.fil-smart-photo{transition:object-position .2s ease}
+img.fil-smart-photo.fil-smart-portrait{
+  object-fit:cover!important;
+  object-position:center 12%!important;
+}
+img.fil-smart-photo.fil-smart-contain{
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:#071a13!important;
+}
+.fil-smart-photo-shell{background:#071a13!important}
+
+/* Staff portraits should always protect the head area. */
+html body.fil-page-staff .fil-staff-profile img.fil-smart-photo:not(.fil-smart-contain),
+body[data-horizontal-ready="true"] #staff .staff-card img.fil-smart-photo:not(.fil-smart-contain){
+  object-position:center 10%!important;
+}
+
+/* Gallery/album cards can preserve the full frame when the source is very wide or tall. */
+html body.fil-page-gallery .fil-media-card img.fil-smart-contain,
+html body[data-gallery-category] img.fil-smart-contain,
+html body[data-album-id] #albumImagesGrid img.fil-smart-contain,
+.home-gallery-full-image img.fil-smart-contain,
+.fpr-media-image img.fil-smart-contain{
+  padding:0!important;
+  background:#071a13!important;
+}
