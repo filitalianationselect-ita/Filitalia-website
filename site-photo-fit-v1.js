@@ -7,9 +7,7 @@ const selector=[
   '#albumImagesGrid img',
   '[data-gallery-category] img',
   '.fil-staff-profile img',
-  '#staff .staff-card img',
-  '.fil-news-final-card img',
-  '.fil-event-tile-v1 img'
+  '#staff .staff-card img'
 ].join(',');
 
 function classify(img){
@@ -19,11 +17,17 @@ function classify(img){
     return;
   }
   const ratio=img.naturalWidth/img.naturalHeight;
+  const gallery=Boolean(img.closest('.fil-media-card,.fpr-media-image,.home-gallery-full-image,#albumImagesGrid,[data-gallery-category]'));
+  const staff=Boolean(img.closest('.fil-staff-profile,#staff .staff-card'));
   img.classList.add('fil-smart-photo');
-  if(ratio>=1.62||ratio<=0.68){
+
+  if(gallery&&(ratio>1.2||ratio<.84)){
     img.classList.add('fil-smart-contain');
     if(img.parentElement)img.parentElement.classList.add('fil-smart-photo-shell');
-  }else if(ratio<.92){
+  }else if(staff&&(ratio>1.38||ratio<.62)){
+    img.classList.add('fil-smart-contain');
+    if(img.parentElement)img.parentElement.classList.add('fil-smart-photo-shell');
+  }else if(staff||ratio<.95){
     img.classList.add('fil-smart-portrait');
   }
   img.dataset.filSmartPhoto='done';
