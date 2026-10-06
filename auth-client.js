@@ -148,6 +148,31 @@
     });
   }
 
+  async function searchClaimablePlayers(lastName) {
+    const surname = cleanText(lastName, 100);
+    if (surname.length < 2) throw new Error("CLAIM_SURNAME_REQUIRED");
+    const result = await requireClient().rpc("search_player_claim_candidates", {
+      surname_value: surname
+    });
+    if (result.error) throw result.error;
+    return result.data || [];
+  }
+
+  async function claimPlayerProfile(playerId, relationship) {
+    const targetPlayerId = cleanText(playerId, 80);
+    const relation = relationship === "parent" || relationship === "guardian"
+      ? relationship
+      : "self";
+    if (!targetPlayerId) throw new Error("PLAYER_NOT_FOUND");
+
+    const result = await requireClient().rpc("claim_selected_player", {
+      target_player_id: targetPlayerId,
+      target_relationship: relation
+    });
+    if (result.error) throw result.error;
+    return result.data || {};
+  }
+
   async function updatePassword(password) {
     if (String(password || "").length < 10) throw new Error("WEAK_PASSWORD");
     return requireClient().auth.updateUser({ password: String(password) });
@@ -597,6 +622,12 @@
     if (code === "PHOTO_REQUIRED") return t("errorPhotoRequired");
     if (code === "INVALID_PHOTO_TYPE") return t("errorPhotoType");
     if (code === "PHOTO_TOO_LARGE") return t("errorPhotoSize");
+    if (code === "CLAIM_SURNAME_REQUIRED") return "Inserisci almeno 2 lettere del cognome.";
+    if (code === "CLAIM_EMAIL_NOT_VERIFIED") return "Prima devi verificare l’indirizzo email tramite il messaggio ricevuto.";
+    if (code === "CLAIM_EMAIL_MISMATCH") return "Questa email non corrisponde a quella usata per l’iscrizione del profilo selezionato.";
+    if (code === "CLAIM_USE_PARENT_ACCOUNT") return "Questa email risulta associata al genitore/tutore. Seleziona “Genitore / Tutore”.";
+    if (code === "CLAIM_USE_PLAYER_ACCOUNT") return "Questa email risulta associata al giocatore. Seleziona “Giocatore”.";
+    if (code === "ACCOUNT_ALREADY_LINKED_TO_DIFFERENT_SELF_PLAYER") return "Questo account è già collegato a un altro profilo giocatore. Contatta l’amministratore.";
     if (code === "PLAYER_ACCOUNT_NOT_ACTIVE") return "Il profilo giocatore sarà collegato automaticamente dopo l’approvazione dell’account.";
     if (["PLAYER_IDENTITY_EMAIL_CONFLICT_CONTACT_ADMIN","PLAYER_IDENTITY_AMBIGUOUS_CONTACT_ADMIN","PLAYER_ALREADY_LINKED_TO_DIFFERENT_ACCOUNT","PLAYER_PROFILE_IDENTITY_CONFLICT"].includes(code)) return "Account creato correttamente, ma il collegamento alla scheda giocatore deve essere verificato dall’amministratore.";
     if (code === "SHEET_SYNC_NOT_CONFIGURED") return t("errorSheetConfig");
@@ -625,6 +656,8 @@
     signIn,
     signOut,
     sendPasswordReset,
+    searchClaimablePlayers,
+    claimPlayerProfile,
     updatePassword,
     getSession,
     getUser,
