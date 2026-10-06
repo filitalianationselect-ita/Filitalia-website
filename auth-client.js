@@ -67,11 +67,18 @@
     if (!isEmail(email)) throw new Error("INVALID_EMAIL");
     if (password.length < 10) throw new Error("WEAK_PASSWORD");
 
+    const claimPlayerId = cleanText(payload.claimPlayerId, 80);
+    const claimRelationship = payload.claimRelationship === "parent" ? "parent" : "self";
+    const emailRedirectTo = claimPlayerId
+      ? publicSiteUrl() + "/account.html?claim_player=" + encodeURIComponent(claimPlayerId)
+        + "&claim_relationship=" + encodeURIComponent(claimRelationship)
+      : publicSiteUrl() + "/account.html";
+
     return supabaseClient.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: publicSiteUrl() + "/account.html",
+        emailRedirectTo,
         data: {
           first_name: firstName,
           last_name: lastName,
