@@ -166,6 +166,20 @@
       const value = browserPhotoUrl(source[key]);
       if (value) return value;
     }
+
+    const original = source.original_data && typeof source.original_data === "object" ? source.original_data : null;
+    if (original) {
+      const legacyPhoto = original["Foto Giocatore"] || original.photo_url || original.photo || "";
+      if (typeof legacyPhoto === "string") {
+        const value = browserPhotoUrl(legacyPhoto);
+        if (value) return value;
+      } else if (legacyPhoto && typeof legacyPhoto === "object") {
+        const nested = legacyPhoto.url || legacyPhoto.webViewLink || legacyPhoto.drive_url || legacyPhoto.public_url || legacyPhoto.preview_url || "";
+        const value = browserPhotoUrl(nested);
+        if (value) return value;
+      }
+    }
+
     return "";
   }
 
