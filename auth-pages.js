@@ -17,6 +17,18 @@
 
   function readPendingPlayerClaim() {
     try {
+      const params = new URLSearchParams(window.location.search);
+      const urlPlayerId = String(params.get("claim_player") || "").trim();
+      if (urlPlayerId) {
+        const fromUrl = {
+          playerId: urlPlayerId,
+          relationship: params.get("claim_relationship") === "parent" ? "parent" : "self",
+          createdAt: Date.now()
+        };
+        savePendingPlayerClaim(fromUrl);
+        return fromUrl;
+      }
+
       const value = JSON.parse(localStorage.getItem(pendingPlayerClaimKey) || "null");
       if (!value || !value.playerId) return null;
       if (!value.createdAt || Date.now() - Number(value.createdAt) > 72 * 60 * 60 * 1000) {
@@ -31,6 +43,12 @@
 
   function clearPendingPlayerClaim() {
     try { localStorage.removeItem(pendingPlayerClaimKey); } catch (_) {}
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("claim_player");
+      url.searchParams.delete("claim_relationship");
+      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + (url.hash || ""));
+    } catch (_) {}
   }
 
   function tx(key, params) {
@@ -331,7 +349,9 @@
             email: email,
             password: claimAccountForm.password.value,
             requestedRole: relationship === "parent" ? "parent" : "player",
-            language: localStorage.getItem("language") || "it"
+            language: localStorage.getItem("language") || "it",
+            claimPlayerId: claimAccountForm.playerId.value,
+            claimRelationship: relationship
           });
           if (result.error) throw result.error;
 
