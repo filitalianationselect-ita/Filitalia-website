@@ -35,7 +35,7 @@ async function testPlayers(browser) {
             window.__registryCalls.push({ name, args });
             if (name === 'admin_list_registry_players') return { data: realRows, error: null };
             if (name === 'admin_list_registry_events') return { data: [{ event_id: '33333333-3333-4333-8333-333333333333', name: 'Roma Talent ID', city: 'Roma' }], error: null };
-            if (name === 'admin_get_registry_player') return { data: { player: { id: args.target_player_id, first_name: 'Player', last_name: 'Reale Uno', birth_date: '2011-04-03', residence_city: 'Roma', email: 'uno@example.com', phone: '+390001111', current_club: 'Club Uno', status: 'active' }, registrations: [{ event_name: 'Roma Talent ID', event_city: 'Roma', event_date: '2026-08-05', registration_status: 'confirmed', payment_status: 'paid' }] }, error: null };
+            if (name === 'admin_get_registry_player') return { data: { player: { id: args.target_player_id, first_name: 'Player', last_name: 'Reale Uno', birth_date: '2011-04-03', residence_city: 'Roma', email: 'uno@example.com', phone: '+390001111', current_club: 'Club Uno', status: 'active' }, registrations: [{ event_name: 'Roma Talent ID', event_city: 'Roma', event_date: '2026-08-05', registration_status: 'confirmed', payment_status: 'paid', original_data: { 'Foto Giocatore': 'https://drive.google.com/file/d/legacy-drive-photo/view?usp=drivesdk' } }] }, error: null };
             if (name === 'admin_update_registry_player') return { data: args.patch, error: null };
             throw new Error(`RPC inattesa: ${name}`);
           }
@@ -46,11 +46,12 @@ async function testPlayers(browser) {
     });
     await page.addScriptTag({ path: path.join(root, 'admin-player-registry-v1.js') });
     await page.waitForSelector('#filRegistryPlayersRoot');
-    assert.equal(await page.locator('.frp-table tbody tr').count(), 2);
+    assert.equal(await page.locator('.frp-player-card').count(), 2);
     const text = await page.locator('#players').innerText();
     assert.match(text, /Player Reale Uno/);
     assert.doesNotMatch(text, /David Panopio|Dwayne Vivero|Manuel Cruz/);
-    assert.equal(await page.locator('a[href^="mailto:"]').count(), 2);
+    assert.equal(await page.locator('[data-player-detail]').count(), 2);
+    await page.waitForSelector('img[src*="drive.google.com/thumbnail"][src*="legacy-drive-photo"]');
 
     await page.click('[data-player-detail]');
     await page.waitForSelector('#frpOverlay.show');
