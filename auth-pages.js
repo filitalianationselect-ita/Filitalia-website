@@ -3,6 +3,35 @@
 
   const auth = window.FilitaliaAuth;
   let lastProfile = null;
+  const pendingPlayerClaimKey = "filitaliaPendingPlayerClaim";
+
+  function savePendingPlayerClaim(claim) {
+    try {
+      localStorage.setItem(pendingPlayerClaimKey, JSON.stringify({
+        playerId: String(claim.playerId || ""),
+        relationship: claim.relationship === "parent" ? "parent" : "self",
+        createdAt: Date.now()
+      }));
+    } catch (_) {}
+  }
+
+  function readPendingPlayerClaim() {
+    try {
+      const value = JSON.parse(localStorage.getItem(pendingPlayerClaimKey) || "null");
+      if (!value || !value.playerId) return null;
+      if (!value.createdAt || Date.now() - Number(value.createdAt) > 72 * 60 * 60 * 1000) {
+        localStorage.removeItem(pendingPlayerClaimKey);
+        return null;
+      }
+      return value;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function clearPendingPlayerClaim() {
+    try { localStorage.removeItem(pendingPlayerClaimKey); } catch (_) {}
+  }
 
   function tx(key, params) {
     if (window.FilitaliaI18n && typeof window.FilitaliaI18n.t === "function") return window.FilitaliaI18n.t(key, params);
@@ -74,7 +103,7 @@
     });
 
     const queryMode = new URLSearchParams(window.location.search).get("mode");
-    showPanel(["login", "signup", "reset"].includes(queryMode) ? queryMode : "login");
+    showPanel(["login", "signup", "recover", "reset"].includes(queryMode) ? queryMode : "login");
 
     if (!configGuard()) return;
 
@@ -159,6 +188,186 @@
         } catch (error) {
           setStatus("signupStatus", auth.friendlyError(error), "error");
           toggleBusy(signupForm, false);
+        }
+      });
+    }
+
+    const claimSearchForm = byId("claimSearchForm");
+    const claimAccountForm = byId("claimAccountForm");
+    const claimCandidates = byId("claimCandidates");
+    const claimSelectedPlayer = byId("claimSelectedPlayer");
+    const claimGuardianNameFields = byId("claimGuardianNameFields");
+    let selectedClaimCandidate = null;
+
+    function updateClaimRelationshipFields() {
+      if (!claimAccountForm || !claimGuardianNameFields) return;
+      const isParent = claimAccountForm.relationship.value === "parent";
+      claimGuardianNameFields.hidden = !isParent;
+      if (claimAccountForm.guardianFirstName) claimAccountForm.guardianFirstName.required = isParent;
+      if (claimAccountForm.guardianLastName) claimAccountForm.guardianLastName.required = isParent;
+    }
+
+    function resetClaimSelection() {
+      selectedClaimCandidate = null;
+      if (claimAccountForm) {
+        claimAccountForm.reset();
+        claimAccountForm.hidden = true;
+      }
+      if (claimSelectedPlayer) claimSelectedPlayer.replaceChildren();
+      if (claimCandidates) claimCandidates.replaceChildren();
+      updateClaimRelationshipFields();
+      setStatus("claimAccountStatus", "", "");
+    }
+
+    function selectClaimCandidate(candidate) {
+      selectedClaimCandidate = candidate;
+      if (!claimAccountForm || !claimSelectedPlayer) return;
+      claimAccountForm.playerId.value = candidate.player_id || "";
+      claimSelectedPlayer.replaceChildren();
+
+      const title = document.createElement("strong");
+      title.textContent = candidate.display_name || "Profilo FIL-ITALIA";
+      const meta = document.createElement("span");
+      meta.textContent = [candidate.birth_year || "", candidate.event_label || ""].filter(Boolean).join(" · ");
+      claimSelectedPlayer.append(title, meta);
+
+      claimAccountForm.hidden = false;
+      updateClaimRelationshipFields();
+      claimAccountForm.email.focus();
+      setStatus("claimSearchStatus", "Profilo selezionato. Ora inserisci la mail usata durante l’iscrizione.", "success");
+    }
+
+    if (claimSearchForm && claimCandidates && claimAccountForm) {
+      claimSearchForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        selectedClaimCandidate = null;
+        claimAccountForm.hidden = true;
+        claimCandidates.replaceChildren();
+        setStatus("claimSearchStatus", "Ricerca profilo...", "sending");
+        toggleBusy(claimSearchForm, true);
+
+        try {
+          const candidates = await auth.searchClaimablePlayers(claimSearchForm.lastName.value);
+          if (!candidates.length) {
+            setStatus("claimSearchStatus", "Nessun profilo trovato con questo cognome. Controlla come era stato scritto nell’iscrizione.", "warning");
+            return;
+          }
+
+          candidates.forEach(function (candidate) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "claim-candidate";
+
+            const title = document.createElement("strong");
+            title.textContent = candidate.display_name || "Profilo FIL-ITALIA";
+            const meta = document.createElement("span");
+            meta.textContent = [candidate.birth_year || "", candidate.event_label || ""].filter(Boolean).join(" · ");
+
+            button.append(title, meta);
+            button.addEventListener("click", function () { selectClaimCandidate(candidate); });
+            claimCandidates.appendChild(button);
+          });
+
+          setStatus(
+            "claimSearchStatus",
+            candidates.length === 1 ? "Trovato 1 profilo." : "Trovati " + candidates.length + " profili. Seleziona il tuo.",
+            "success"
+          );
+        } catch (error) {
+          setStatus("claimSearchStatus", auth.friendlyError(error), "error");
+        } finally {
+          toggleBusy(claimSearchForm, false);
+        }
+      });
+
+      claimAccountForm.relationship.addEventListener("change", updateClaimRelationshipFields);
+      updateClaimRelationshipFields();
+
+      const chooseAnother = byId("claimChooseAnother");
+      if (chooseAnother) {
+        chooseAnother.addEventListener("click", function () {
+          resetClaimSelection();
+          if (claimSearchForm.lastName) claimSearchForm.lastName.focus();
+        });
+      }
+
+      claimAccountForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        if (!selectedClaimCandidate || !claimAccountForm.playerId.value) {
+          setStatus("claimAccountStatus", "Seleziona prima il profilo da recuperare.", "error");
+          return;
+        }
+        if (claimAccountForm.password.value !== claimAccountForm.passwordConfirm.value) {
+          setStatus("claimAccountStatus", tx("passwordsMismatch"), "error");
+          return;
+        }
+        if (!claimAccountForm.privacy.checked) {
+          setStatus("claimAccountStatus", tx("privacyRequired"), "error");
+          return;
+        }
+
+        const relationship = claimAccountForm.relationship.value === "parent" ? "parent" : "self";
+        if (relationship === "parent" && (!claimAccountForm.guardianFirstName.value.trim() || !claimAccountForm.guardianLastName.value.trim())) {
+          setStatus("claimAccountStatus", "Inserisci nome e cognome del genitore/tutore.", "error");
+          return;
+        }
+
+        const email = claimAccountForm.email.value;
+        const firstName = relationship === "parent" ? claimAccountForm.guardianFirstName.value : "Profilo";
+        const lastName = relationship === "parent" ? claimAccountForm.guardianLastName.value : claimSearchForm.lastName.value;
+
+        savePendingPlayerClaim({
+          playerId: claimAccountForm.playerId.value,
+          relationship: relationship
+        });
+
+        setStatus("claimAccountStatus", "Creazione account e verifica email...", "sending");
+        toggleBusy(claimAccountForm, true);
+
+        try {
+          const result = await auth.signUp({
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: claimAccountForm.password.value,
+            requestedRole: relationship === "parent" ? "parent" : "player",
+            language: localStorage.getItem("language") || "it"
+          });
+          if (result.error) throw result.error;
+
+          const createdUser = result.data && result.data.user;
+          if (createdUser && createdUser.id) {
+            auth.notifyAdminNewUser(createdUser.id).catch(function (notifyError) {
+              console.warn("Admin signup notification unavailable", notifyError);
+            });
+          }
+
+          if (result.data && result.data.session) {
+            await auth.claimPlayerProfile(claimAccountForm.playerId.value, relationship);
+            clearPendingPlayerClaim();
+            window.location.replace("account.html?profile=recovered");
+            return;
+          }
+
+          setStatus(
+            "claimAccountStatus",
+            "Controlla la tua email e conferma l’indirizzo. Dopo la conferma il profilo selezionato verrà collegato automaticamente.",
+            "success"
+          );
+          toggleBusy(claimAccountForm, false);
+        } catch (error) {
+          const raw = String(error && (error.message || error.code) || error || "").toLowerCase();
+          if (raw.includes("already registered") || raw.includes("user already")) {
+            setStatus("loginStatus", "Questa email ha già un account. Accedi: dopo l’accesso proveremo a collegare il profilo selezionato.", "warning");
+            const visibleLogin = byId("loginIdentifierVisible");
+            if (visibleLogin) visibleLogin.value = email;
+            showPanel("login");
+            toggleBusy(claimAccountForm, false);
+            return;
+          }
+          clearPendingPlayerClaim();
+          setStatus("claimAccountStatus", auth.friendlyError(error), "error");
+          toggleBusy(claimAccountForm, false);
         }
       });
     }
@@ -698,7 +907,46 @@
       setStatus("profileStatus", "Account aperto. Il profilo è ancora in sincronizzazione.", "warning");
     }
 
+    let playerClaimNotice = null;
+    const pendingPlayerClaim = readPendingPlayerClaim();
+    if (pendingPlayerClaim && auth.claimPlayerProfile) {
+      try {
+        const claimed = await auth.claimPlayerProfile(
+          pendingPlayerClaim.playerId,
+          pendingPlayerClaim.relationship
+        );
+        clearPendingPlayerClaim();
+        try {
+          profile = await auth.getOwnProfile() || profile;
+        } catch (_) {}
+        playerClaimNotice = {
+          type: "success",
+          message: "Profilo FIL-ITALIA recuperato e collegato correttamente."
+            + (claimed && claimed.display_name ? " " + claimed.display_name : "")
+        };
+      } catch (claimError) {
+        const claimCode = String(claimError && (claimError.code || claimError.message) || claimError || "");
+        if ([
+          "CLAIM_EMAIL_MISMATCH",
+          "CLAIM_USE_PARENT_ACCOUNT",
+          "CLAIM_USE_PLAYER_ACCOUNT",
+          "PLAYER_ALREADY_LINKED_TO_DIFFERENT_ACCOUNT",
+          "ACCOUNT_ALREADY_LINKED_TO_DIFFERENT_SELF_PLAYER",
+          "PLAYER_PROFILE_IDENTITY_CONFLICT"
+        ].includes(claimCode)) {
+          clearPendingPlayerClaim();
+        }
+        playerClaimNotice = {
+          type: "warning",
+          message: auth.friendlyError(claimError)
+        };
+      }
+    }
+
     renderProfile(profile);
+    if (playerClaimNotice) {
+      setStatus("profileStatus", playerClaimNotice.message, playerClaimNotice.type);
+    }
     initDeletionRequest(profile);
     auth.syncOwnProfileToSheet().catch(function (error) {
       console.warn("Google Sheet profile sync unavailable", error);
