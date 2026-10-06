@@ -7,14 +7,18 @@ const previewHost=/\.netlify\.app$/i.test(location.hostname)||/^(localhost|127\.
 const origin=previewHost?location.origin:String(cfg.siteUrl||location.origin).replace(/\/$/,'');
 const email=value=>String(value||'').trim().toLowerCase();
 const validEmail=value=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email(value));
-const requestedRoles=new Set(['player','parent','coach','coordinator','staff']);
+const requestedRoles=new Set(['player','parent','coach','coordinator','staff','volunteer']);
 async function signUp(payload){
  if(!original.client)throw new Error('SUPABASE_NOT_CONFIGURED');
  const firstName=String(payload?.firstName||'').trim().slice(0,100),lastName=String(payload?.lastName||'').trim().slice(0,100),mail=email(payload?.email),password=String(payload?.password||''),role=requestedRoles.has(payload?.requestedRole)?payload.requestedRole:'player';
  if(!firstName||!lastName)throw new Error('NAME_REQUIRED');
  if(!validEmail(mail))throw new Error('INVALID_EMAIL');
  if(password.length<10)throw new Error('WEAK_PASSWORD');
- return original.client.auth.signUp({email:mail,password,options:{emailRedirectTo:origin+'/account.html',data:{first_name:firstName,last_name:lastName,requested_role:role,language:String(payload?.language||'it').slice(0,5)}}});
+ const claimPlayerId=String(payload?.claimPlayerId||'').trim().slice(0,80),claimRelationship=payload?.claimRelationship==='parent'?'parent':'self';
+ const redirect=claimPlayerId
+  ? origin+'/account.html?claim_player='+encodeURIComponent(claimPlayerId)+'&claim_relationship='+encodeURIComponent(claimRelationship)
+  : origin+'/account.html';
+ return original.client.auth.signUp({email:mail,password,options:{emailRedirectTo:redirect,data:{first_name:firstName,last_name:lastName,requested_role:role,language:String(payload?.language||'it').slice(0,5)}}});
 }
 async function sendPasswordReset(value){
  if(!original.client)throw new Error('SUPABASE_NOT_CONFIGURED');
