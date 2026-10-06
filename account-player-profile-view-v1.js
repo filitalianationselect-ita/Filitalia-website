@@ -28,16 +28,38 @@
     const m=v.match(/drive\.google\.com\/file\/d\/([^/?#]+)/)||v.match(/[?&]id=([^&#]+)/);
     return m?"https://drive.google.com/thumbnail?id="+encodeURIComponent(m[1])+"&sz=w1200":v;
   }
-  async function resolvePhoto(profile,canonical){
+  function legacyPhotoCandidate(source){
+    if(!source||typeof source!=="object")return "";
+    const keys=["photo_path","photo_url","image_url","card_image_url","primary_photo_url","public_url","preview_url"];
+    for(const key of keys){
+      const value=String(source[key]||"").trim();
+      if(value)return value;
+    }
+    const original=source.original_data&&typeof source.original_data==="object"?source.original_data:null;
+    if(!original)return "";
+    const legacy=original["Foto Giocatore"]||original.photo_url||original.photo||"";
+    if(typeof legacy==="string")return legacy.trim();
+    if(legacy&&typeof legacy==="object"){
+      return String(legacy.url||legacy.webViewLink||legacy.drive_url||legacy.public_url||legacy.preview_url||legacy.storage_path||legacy.path||"").trim();
+    }
+    return "";
+  }
+  async function resolvePhoto(profile,canonical,history){
     const own=String(profile&&profile.avatar_path||"").trim();
     if(own){
-      try{return await auth.getSignedProfilePhotoUrl(own,3600);}catch(_){}
+      if(/^https?:\/\//i.test(own))return drivePhotoUrl(own);
+      try{return await auth.getSignedProfilePhotoUrl(own.replace(/^profile-media\//,""),3600);}catch(_){}
     }
-    let candidate=String(canonical&&canonical.photo_path||"").trim();
-    if(!candidate)return "images/logo.png";
-    if(/^https?:\/\//i.test(candidate))return drivePhotoUrl(candidate);
-    candidate=candidate.replace(/^profile-media\//,"");
-    try{return await auth.getSignedProfilePhotoUrl(candidate,3600);}catch(_){return "images/logo.png";}
+    const candidates=[legacyPhotoCandidate(canonical)].concat((history||[]).slice().reverse().map(legacyPhotoCandidate)).filter(Boolean);
+    for(let candidate of candidates){
+      if(/^https?:\/\//i.test(candidate))return drivePhotoUrl(candidate);
+      candidate=candidate.replace(/^profile-media\//,"");
+      try{
+        const signed=await auth.getSignedProfilePhotoUrl(candidate,3600);
+        if(signed)return signed;
+      }catch(_){}
+    }
+    return "images/logo.png";
   }
   function mergeData(profile,player,canonical){
     return {
@@ -172,7 +194,7 @@
       const linked=results[1].status==="fulfilled"?results[1].value:[];
       const history=results[2].status==="fulfilled"?results[2].value:[];
       const canonical=(linked||[]).find(x=>String(x.relationship||"")==="self")||(linked||[])[0]||null;
-      const photoUrl=await resolvePhoto(profile,canonical);
+      const photoUrl=await resolvePhoto(profile,canonical,history);
       render(section,profile,player,canonical,history,photoUrl);
       const editor=byId("playerProfileSection");
       if(editor&&!editor.classList.contains("ppv-editor-open"))editor.hidden=true;
