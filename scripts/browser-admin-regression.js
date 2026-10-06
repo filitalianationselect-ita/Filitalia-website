@@ -55,7 +55,7 @@ async function testPlayers(browser) {
 
     await page.click('[data-player-detail]');
     await page.waitForSelector('#frpOverlay.show');
-    assert.match(await page.locator('.frp-history').innerText(), /Roma Talent ID/);
+    assert.match(await page.locator('section.frp-history').innerText(), /Roma Talent ID/);
     await page.fill('#frpPhone', '+390009999');
     await page.click('#frpSave');
     await page.waitForFunction(() => window.__registryCalls.some(call => call.name === 'admin_update_registry_player'));
