@@ -129,6 +129,10 @@ jobs:
         env:
           BROWSER_TEST_URL: http://127.0.0.1:4173
         run: node scripts/browser-profile-recovery-regression.js
+      - name: Test Player Profile recovery against Preview Supabase
+        env:
+          BROWSER_TEST_URL: http://127.0.0.1:4173
+        run: node scripts/browser-profile-recovery-live-db.js
       - name: Test Preview Admin gate in Chromium
         env:
           BROWSER_TEST_URL: http://127.0.0.1:4173
