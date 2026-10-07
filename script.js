@@ -991,6 +991,39 @@ function getLongText(item, field, fallback){
 
 
 
+/* ===== INTENT-BASED PAGE PREFETCH =====
+   Warm the next internal page only when the visitor is about to open it.
+   This keeps navigation fast without preloading the whole website. */
+(function installFilitaliaNavigationPrefetch(){
+  if(window.__filitaliaNavigationPrefetchInstalled)return;
+  window.__filitaliaNavigationPrefetchInstalled=true;
+  const warmed=new Set();
+
+  function warm(target){
+    const anchor=target&&target.closest?target.closest('a[href]'):null;
+    if(!anchor)return;
+    const raw=anchor.getAttribute('href')||'';
+    if(!raw||raw.startsWith('#')||raw.startsWith('mailto:')||raw.startsWith('tel:'))return;
+    let url;
+    try{url=new URL(raw,window.location.href)}catch(_){return}
+    if(url.origin!==window.location.origin)return;
+    if(url.pathname===window.location.pathname&&url.search===window.location.search)return;
+    if(!/\.(?:html)?$/.test(url.pathname)&&!url.pathname.endsWith('/'))return;
+    const href=url.pathname+url.search;
+    if(warmed.has(href))return;
+    warmed.add(href);
+    const link=document.createElement('link');
+    link.rel='prefetch';
+    link.as='document';
+    link.href=href;
+    document.head.appendChild(link);
+  }
+
+  document.addEventListener('pointerover',event=>warm(event.target),{passive:true});
+  document.addEventListener('focusin',event=>warm(event.target));
+  document.addEventListener('touchstart',event=>warm(event.target),{passive:true,capture:true});
+})();
+
 /* ===== FIL-ITALIA SHARE SYSTEM - CLEAN ===== */
 function makeSlug(value){
   return String(value || "")

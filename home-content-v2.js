@@ -284,5 +284,5 @@
   window.addEventListener('filitalia:public-content-updated',refresh);
   window.addEventListener('filitalia:content-updated',refresh);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
-  [450,1300,3200].forEach(function(delay){window.setTimeout(refresh,delay);});
+  window.setTimeout(refresh,700);
 })();
