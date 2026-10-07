@@ -466,21 +466,31 @@
     return payload;
   }
   window.FilitaliaPublicContentReady = new Promise((resolve) => {
-    let attempts = 0;
-    const timer = setInterval(() => {
-      attempts++;
-      if (window.supabase && window.FILITALIA_CONFIG) {
-        clearInterval(timer);
-        remote()
-          .then(resolve)
-          .catch((error) => {
-            console.warn("Contenuti pubblici dinamici non disponibili", error);
-            resolve(localPayload);
-          });
-      } else if (attempts > 40) {
-        clearInterval(timer);
-        resolve(localPayload);
-      }
-    }, 100);
+    const startRemoteRefresh = () => {
+      let attempts = 0;
+      const timer = setInterval(() => {
+        attempts++;
+        if (window.supabase && window.FILITALIA_CONFIG) {
+          clearInterval(timer);
+          remote()
+            .then(resolve)
+            .catch((error) => {
+              console.warn("Contenuti pubblici dinamici non disponibili", error);
+              resolve(localPayload);
+            });
+        } else if (attempts > 30) {
+          clearInterval(timer);
+          resolve(localPayload);
+        }
+      }, 100);
+    };
+
+    // Static data paints first; remote synchronization starts once the browser
+    // has had a chance to render. This avoids layout jumps during navigation.
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(startRemoteRefresh, { timeout: 900 });
+    } else {
+      window.setTimeout(startRemoteRefresh, 250);
+    }
   });
 })();
