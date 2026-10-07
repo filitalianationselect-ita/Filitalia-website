@@ -154,38 +154,38 @@ const eventsData = [
   {
     "id": "idcamp-bologna-2026",
     "title": {
-      "it": "Talent ID Camp Bologna",
-      "en": "Talent ID Camp Bologna",
-      "ph": "Talent ID Camp Bologna"
+      "it": "FIL-ITALIA U12 Camp Bologna",
+      "en": "FIL-ITALIA U12 Camp Bologna",
+      "ph": "FIL-ITALIA U12 Camp Bologna"
     },
     "date": {
-      "it": "Data in arrivo",
-      "en": "Coming Soon",
-      "ph": "Coming Soon"
+      "it": "17 Ottobre 2026",
+      "en": "October 17, 2026",
+      "ph": "Oktubre 17, 2026"
     },
-    "sortDate": "2026-12-31",
-    "time": "Da confermare",
+    "sortDate": "2026-10-17",
+    "time": "15:00 - 17:00",
     "campCity": "Bologna",
     "campDate": {
-      "it": "Data in arrivo",
-      "en": "Coming Soon",
-      "ph": "Coming Soon"
+      "it": "17 Ottobre 2026",
+      "en": "October 17, 2026",
+      "ph": "Oktubre 17, 2026"
     },
     "location": {
-      "it": "Bologna, Italia",
-      "en": "Bologna, Italy",
-      "ph": "Bologna, Italy"
+      "it": "Palestra Don Marella · Via Populonia 9, 40139 Bologna (BO)",
+      "en": "Palestra Don Marella · Via Populonia 9, 40139 Bologna, Italy",
+      "ph": "Palestra Don Marella · Via Populonia 9, 40139 Bologna, Italy"
     },
-    "image": "images/ita.jpg",
+    "image": "images/camp-bologna-u12-2026.jpg",
     "excerpt": {
-      "it": "Data ufficiale in arrivo.",
-      "en": "Official date coming soon.",
-      "ph": "Malapit nang ianunsyo ang opisyal na petsa."
+      "it": "Camp U12 gratuito a Bologna per i nati nel 2014 e più giovani. Registrazione gratuita.",
+      "en": "Free U12 camp in Bologna for players born in 2014 and younger. Free registration.",
+      "ph": "Libreng U12 camp sa Bologna para sa mga ipinanganak noong 2014 at mas bata. Libreng registration."
     },
     "description": {
-      "it": "FIL-ITALIA Talent ID Camp a Bologna per valutazione giocatori, sviluppo e future opportunità. La data ufficiale sarà annunciata presto.",
-      "en": "FIL-ITALIA Talent ID Camp in Bologna for player evaluation, development and future opportunities. The official date will be announced soon.",
-      "ph": "FIL-ITALIA Talent ID Camp sa Bologna para sa player evaluation, development at future opportunities. Malapit nang ianunsyo ang opisyal na petsa."
+      "it": "Finalmente Bologna è ufficiale. FIL-ITALIA Nation Select organizza un camp gratuito dedicato agli Under 12, nati nel 2014 e più giovani, sabato 17 ottobre 2026 dalle 15:00 alle 17:00 presso la Palestra Don Marella, Via Populonia 9, Bologna. Un pomeriggio di basket, sviluppo e divertimento per conoscere da vicino il progetto FIL-ITALIA. La registrazione è gratuita.",
+      "en": "Bologna is officially confirmed. FIL-ITALIA Nation Select will host a free camp for U12 players born in 2014 and younger on Saturday, October 17, 2026, from 3:00 PM to 5:00 PM at Palestra Don Marella, Via Populonia 9, Bologna. An afternoon of basketball, development and fun to discover the FIL-ITALIA project. Registration is free.",
+      "ph": "Opisyal na ang Bologna. Magkakaroon ang FIL-ITALIA Nation Select ng libreng camp para sa U12 players na ipinanganak noong 2014 at mas bata sa Sabado, Oktubre 17, 2026, mula 15:00 hanggang 17:00 sa Palestra Don Marella, Via Populonia 9, Bologna. Isang hapon ng basketball, development at saya para makilala ang FIL-ITALIA project. Libre ang registration."
     },
     "page": "bologna-camp.html"
   },
