@@ -3,7 +3,7 @@ const path = require('path');
 const vm = require('vm');
 
 const root = process.cwd();
-const assetVersions = new Set(['20260822-2', '20260906-1']);
+const assetVersions = new Set(['20260822-2', '20260906-1', '20261007-1']);
 const allowed = new Set([
   'auth-client.js',
   'supabase-config.js',
