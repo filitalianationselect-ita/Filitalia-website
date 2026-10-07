@@ -175,7 +175,7 @@
     });
 
     syncLanguage();
-    [150,500,1000,1800,3000].forEach(function(delay){window.setTimeout(syncAbout,delay);});
+    window.setTimeout(syncAbout,700);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
