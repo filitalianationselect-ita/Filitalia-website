@@ -340,9 +340,17 @@
     } catch (_) {}
     try {
       if (payload.eventsAuthoritative && Array.isArray(payload.events) && typeof eventsData !== "undefined") {
+        // Keep the bundled event catalogue as a resilient fallback.
+        // The production runtime can occasionally return an empty remote list
+        // (for example during database/config mismatches). In that case we must
+        // not erase upcoming events that are already published in events-data.js.
         overlay.events.clear();
-        payload.events.map(eventMap).forEach((item, index) => overlay.events.set(key("events", item, index), item));
-        replaceArray(eventsData, Array.from(overlay.events.values()).sort((a, b) => String(a.sortDate || "2099-12-31").localeCompare(String(b.sortDate || "2099-12-31"))));
+        payload.events
+          .map(eventMap)
+          .forEach((item, index) =>
+            overlay.events.set(key("events", item, index), item),
+          );
+        replaceArray(eventsData, merge("events"));
         changed = true;
       } else if (put("events", payload.events, eventMap) && typeof eventsData !== "undefined") {
         replaceArray(eventsData, merge("events"));
