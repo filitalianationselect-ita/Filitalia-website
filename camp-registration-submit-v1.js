@@ -101,7 +101,7 @@
         const earlyFee = romeDate <= "2026-11-07" ? 50 : 70;
         const isFree = Number.isFinite(year) && year >= 2014;
         payload.payment_amount = isFree
-          ? (payload["Taglia Maglia"] === "NO_SHIRT" ? 0 : 20)
+          ? (payload["Taglia Maglia"] === "NO_SHIRT" ? 0 : 25)
           : earlyFee;
         payload.pricing_rule = isFree ? "U12_FREE_OPTIONAL_SHIRT" : (earlyFee === 50 ? "MILANO_EARLY" : "MILANO_REGULAR");
       }
