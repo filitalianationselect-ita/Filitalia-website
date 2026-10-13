@@ -28,7 +28,7 @@
       summary.style.cssText = "padding:14px 16px;margin-top:16px;border:1px solid rgba(64,122,94,.35);border-radius:12px;background:rgba(25,93,63,.07);line-height:1.55";
       parent.appendChild(summary);
     }
-    summary.textContent = `Talent ID Milano: €50 fino al 7 novembre · €70 dall’8 novembre. Quota attuale €${currentMilanFee()}. Nati dal 2014 in poi: ingresso gratuito senza maglia (maglia facoltativa €20).`;
+    summary.textContent = `Talent ID Milano: €50 fino al 7 novembre · €70 dall’8 novembre. Quota attuale €${currentMilanFee()}. Nati dal 2014 in poi: ingresso gratuito senza maglia (maglia facoltativa €25).`;
   }
   function applyEntry(entry) {
     const birth = entry.querySelector('input[name="Data Nascita"]');
@@ -55,7 +55,7 @@
       shirt.insertAdjacentElement("afterend", note);
     }
     note.textContent = isU12
-      ? "U12: partecipazione gratuita senza maglia; maglia facoltativa €20."
+      ? (isMilanCamp() ? "U12: partecipazione gratuita senza maglia; maglia facoltativa €25." : "U12: partecipazione gratuita senza maglia; maglia facoltativa €20.")
       : isMilanCamp() ? `Talent ID Milano: quota attuale €${currentMilanFee()} con maglia inclusa.` : "Over U12: quota attuale €50 con maglia inclusa.";
   }
   function applyAll() {
