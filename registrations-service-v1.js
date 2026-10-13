@@ -169,6 +169,7 @@
       media_consent: bool(payload["Media Consent"]),
       registration_status: "received",
       payment_status: "pending",
+      payment_amount: Number.isFinite(Number(payload.payment_amount)) && payload.payment_amount != null ? Number(payload.payment_amount) : null,
       notes: clean(payload.Note, 2000) || null,
       original_data: sanitizeOriginal(payload),
       sheet_copy_status: "queued",
