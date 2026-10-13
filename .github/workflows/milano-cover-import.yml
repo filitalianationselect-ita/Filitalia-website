@@ -1,0 +1,28 @@
+name: Milan cover image import
+on:
+  push:
+    branches:
+      - feature/milano-talent-id-nov-2026
+    paths:
+      - .github/workflows/milano-cover-import.yml
+permissions:
+  contents: write
+jobs:
+  import-cover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download public Canva image
+        run: |
+          set -euo pipefail
+          mkdir -p images
+          curl -fLsS --retry 2 --max-time 40 'https://media.canva.com/v2/image-resize/format:JPG/height:1402/quality:90/uri:ifs%3A%2F%2FM%2F79f530e1-a50b-478e-9f6e-f4237839992c/watermark:F/width:1122' -o images/talent-id-milano-2026.jpg
+          test "$(file --mime-type --brief images/talent-id-milano-2026.jpg)" = "image/jpeg"
+          test "$(stat -c%s images/talent-id-milano-2026.jpg)" -gt 100000
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git add images/talent-id-milano-2026.jpg
+          git commit -m 'Use full-resolution Milan Talent ID poster'
+          git push origin HEAD:feature/milano-talent-id-nov-2026
