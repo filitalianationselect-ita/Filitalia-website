@@ -31,9 +31,9 @@ const eventsData = [
       "ph": "Milan Talent ID · Nob 14, 18:30–21:30. €50 hanggang Nob 7, €70 mula Nob 8; libre para sa ipinanganak noong 2014 o mas bago."
     },
     "description": {
-      "it": "FIL-EURO Nation Select arriva a Milano sabato 14 novembre 2026, dalle 18:30 alle 21:30, presso il Centro Sportivo M6 Sport (Arzaga), Via Luigi Mengoni, Milano. Tre ore dedicate al basket, allo scouting e al Talent Identification per il percorso verso le Filippine 2027. Quota di registrazione €50 fino al 7 novembre incluso, €70 dall'8 novembre. Partecipazione gratuita per i giocatori nati dal 2014 in poi (maglia facoltativa €20). Iscrizioni aperte sul sito ufficiale FIL-ITALIA.",
-      "en": "FIL-EURO Nation Select comes to Milan on Saturday, November 14, 2026, from 6:30 PM to 9:30 PM at M6 Sport Center (Arzaga), Via Luigi Mengoni, Milan. Three hours of basketball, scouting and talent identification as part of the pathway towards the Philippines in 2027. Registration is €50 through November 7, then €70 from November 8. Players born in 2014 or later attend free (optional jersey €20). Register through the official FIL-ITALIA website.",
-      "ph": "Darating ang FIL-EURO Nation Select sa Milan sa Sabado, Nobyembre 14, 2026, mula 18:30 hanggang 21:30 sa M6 Sport Center (Arzaga), Via Luigi Mengoni, Milan. Tatlong oras ng basketball at scouting bilang bahagi ng proseso ng talent identification para sa Philippines 2027. €50 ang registration hanggang Nobyembre 7 at €70 simula Nobyembre 8. Libre ang pagsali para sa ipinanganak noong 2014 o mas bago (opsyonal na jersey €20). Magparehistro sa opisyal na FIL-ITALIA website."
+      "it": "FIL-EURO Nation Select arriva a Milano sabato 14 novembre 2026, dalle 18:30 alle 21:30, presso il Centro Sportivo M6 Sport (Arzaga), Via Luigi Mengoni, Milano. Tre ore dedicate al basket, allo scouting e al Talent Identification per il percorso verso le Filippine 2027. Quota di registrazione €50 fino al 7 novembre incluso, €70 dall'8 novembre. Partecipazione gratuita per i giocatori nati dal 2014 in poi (maglia facoltativa €25). Iscrizioni aperte sul sito ufficiale FIL-ITALIA.",
+      "en": "FIL-EURO Nation Select comes to Milan on Saturday, November 14, 2026, from 6:30 PM to 9:30 PM at M6 Sport Center (Arzaga), Via Luigi Mengoni, Milan. Three hours of basketball, scouting and talent identification as part of the pathway towards the Philippines in 2027. Registration is €50 through November 7, then €70 from November 8. Players born in 2014 or later attend free (optional jersey €25). Register through the official FIL-ITALIA website.",
+      "ph": "Darating ang FIL-EURO Nation Select sa Milan sa Sabado, Nobyembre 14, 2026, mula 18:30 hanggang 21:30 sa M6 Sport Center (Arzaga), Via Luigi Mengoni, Milan. Tatlong oras ng basketball at scouting bilang bahagi ng proseso ng talent identification para sa Philippines 2027. €50 ang registration hanggang Nobyembre 7 at €70 simula Nobyembre 8. Libre ang pagsali para sa ipinanganak noong 2014 o mas bago (opsyonal na jersey €25). Magparehistro sa opisyal na FIL-ITALIA website."
     },
     "registrationFees": {
       "currency": "EUR",
@@ -42,7 +42,7 @@ const eventsData = [
       "regularAmount": 70,
       "regularFrom": "2026-11-08",
       "freeBirthYearFrom": 2014,
-      "optionalShirtAmount": 20
+      "optionalShirtAmount": 25
     },
     "ticket": "camp-register.html?event=idcamp-milano-2026",
     "page": "milano-camp.html"
