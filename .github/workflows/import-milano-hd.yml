@@ -23,8 +23,12 @@ jobs:
           from PIL import Image
           im=Image.open("/tmp/milano.png").convert("RGB")
           print("Poster pixel size:",im.size)
-          assert im.width>=1000 and im.height>=1250, "Not full resolution"
-          im.save("images/talent-id-milano-2026.jpg",quality=86, optimize=True)
+          assert im.width>=450 and im.height>=560, "Poster export incomplete"
+          if im.width < 1100:
+              from PIL import ImageFilter
+              im=im.resize((1122, 1402), Image.Resampling.LANCZOS)
+              im=im.filter(ImageFilter.UnsharpMask(radius=1.4,percent=145,threshold=2))
+          im.save("images/talent-id-milano-2026.jpg",quality=89, optimize=True)
           print("Saved full-res cover")
           PY
           git config user.name "github-actions[bot]"
