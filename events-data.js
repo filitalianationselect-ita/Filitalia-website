@@ -24,7 +24,7 @@ const eventsData = [
       "en": "M6 Sport Center (Arzaga), Via Luigi Mengoni, Milan",
       "ph": "M6 Sport Center (Arzaga), Via Luigi Mengoni, Milan"
     },
-    "image": "images/talent-id-milano-2026.webp",
+    "image": "images/talent-id-milano-2026.png",
     "excerpt": {
       "it": "Talent ID Milano · 14 novembre, 18:30–21:30. €50 entro il 7/11, €70 dall'8/11; nati dal 2014 gratis.",
       "en": "Milan Talent ID · Nov 14, 6:30–9:30 PM. €50 until Nov 7, €70 from Nov 8; born 2014 or later free.",
