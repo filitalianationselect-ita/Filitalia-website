@@ -1,0 +1,76 @@
+name: One-time Milano registration confirmation QA
+on:
+  push:
+    branches: [qa/registration-email-milano-20261014]
+    paths: [.github/workflows/qa-milano-registration-mail.yml]
+permissions:
+  contents: read
+jobs:
+  register-one-test-player:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Submit one clearly labeled TEST athlete through production form
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({headless:true, args:['--no-sandbox']});
+            const page = await browser.newPage({viewport:{width:390,height:844}});
+            const errors=[];
+            page.on('pageerror', e => errors.push(String(e.message).slice(0,220)));
+            const url='https://www.filitalianationselect.com/camp-register.html?event=idcamp-milano-2026';
+            console.log('[QA] Navigating to official registration form');
+            await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
+            await page.waitForSelector('#campEventSelect option[data-id="idcamp-milano-2026"]',{timeout:18000});
+            await page.waitForTimeout(1500);
+            const selected=await page.locator('#campEventSelect option:checked').getAttribute('data-id');
+            if(selected!=='idcamp-milano-2026')throw new Error('Wrong event selected: '+selected);
+            console.log('[QA] Milano event selected correctly');
+            await page.locator('input[name="Nome"]').fill('TESTREGISTRAZIONE');
+            await page.locator('input[name="Cognome"]').fill('FILITALIAQA141026');
+            await page.locator('input[name="Data Nascita"]').fill('2001-06-15');
+            await page.locator('select[name="Sesso"]').selectOption('Maschio');
+            await page.locator('input[name="Città di Residenza"]').fill('Milano');
+            await page.locator('input[name="Email Giocatore"]').fill('filitalia.nationselect@gmail.com');
+            await page.locator('select[name="Taglia Maglia"]').selectOption('M');
+            const photo=await page.evaluate(()=>{
+              const c=document.createElement('canvas');c.width=450;c.height=450;
+              const ctx=c.getContext('2d');
+              ctx.fillStyle='#143629';ctx.fillRect(0,0,450,450);
+              ctx.fillStyle='#fff';ctx.font='bold 50px sans-serif';ctx.fillText('TEST QA',90,200);
+              ctx.font='bold 22px sans-serif';ctx.fillText('NON E UN GIOCATORE',65,260);
+              return c.toDataURL('image/png').split(',')[1];
+            });
+            await page.locator('input[name="Foto Giocatore"]').setInputFiles({name:'FILITALIA-TEST-ONLY.png',mimeType:'image/png',buffer:Buffer.from(photo,'base64')});
+            await page.locator('input[name="Privacy Consent"]').check();
+            await page.waitForTimeout(4500);
+            const validation=await page.locator('#campForm').evaluate(f=>({valid:f.checkValidity(),missing:[...f.elements].filter(e=>e.willValidate&&!e.checkValidity()).map(e=>e.name)}));
+            console.log('[QA] HTML form validation '+JSON.stringify(validation));
+            if(!validation.valid)throw new Error('Form invalid: '+validation.missing.join(','));
+            console.log('[QA] Submitting real TEST form exactly once');
+            await page.locator('#campForm button[type="submit"]').click();
+            let outcome='unknown';
+            try {
+              await page.waitForURL(/thank-you\.html\?event=idcamp-milano-2026/,{timeout:65000});
+              outcome='thank-you';
+            }catch(e){
+              const status=await page.locator('#campFormStatus').textContent().catch(()=>'(none)');
+              outcome='not-redirected';
+              console.log('[QA] Status after click:',status);
+            }
+            console.log('[QA] Outcome:',outcome);
+            console.log('[QA] Current page path:',new URL(page.url()).pathname);
+            if(errors.length)console.log('[QA] Browser errors:',errors.slice(0,8));
+            await browser.close();
+            if(outcome!=='thank-you')process.exitCode=2;
+          })().catch(e=>{console.error('[QA] Error:',String(e&&e.stack||e));process.exitCode=1;});
+          JS
