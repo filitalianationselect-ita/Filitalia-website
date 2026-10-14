@@ -1944,7 +1944,7 @@ function renderEventDetailPage(){
   if(!container || typeof eventsData === "undefined") return;
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id") || params.get("event");
-  const item = getEventByIdFinal(id) || getVisibleEvents()[0];
+  const item = id ? getEventByIdFinal(id) : null;
   if(!item){
     container.innerHTML = `<div class="event-detail-card"><div class="event-detail-info"><h1>Evento non trovato</h1><a class="players-list-link" href="events.html">← Torna agli Eventi</a></div></div>`;
     return;
