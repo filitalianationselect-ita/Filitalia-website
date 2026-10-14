@@ -35,12 +35,12 @@
     style.id = "filRegistryPlayersStyle";
     style.textContent = `
       #players .frp-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:22px 24px;margin-bottom:16px;border-radius:20px;background:linear-gradient(135deg,#083b2a,#13734d);color:#fff;box-shadow:0 14px 34px rgba(7,54,37,.14)}
-      #players .frp-head h1{margin:3px 0 5px!important;color:#fff!important}.frp-sub{max-width:720px;color:#d5eae0;font-size:13px;line-height:1.5}.frp-count{display:inline-flex;align-items:center;min-height:40px;padding:9px 13px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.12);font-weight:900;white-space:nowrap}
+      #players .frp-toolbar{grid-template-columns:minmax(200px,1fr) repeat(3,minmax(135px,.4fr))}#players .frp-head h1{margin:3px 0 5px!important;color:#fff!important}.frp-sub{max-width:720px;color:#d5eae0;font-size:13px;line-height:1.5}.frp-count{display:inline-flex;align-items:center;min-height:40px;padding:9px 13px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.12);font-weight:900;white-space:nowrap}
       .frp-card{padding:17px;border:1px solid #c9ddd2;border-radius:19px;background:#fff;box-shadow:0 10px 28px rgba(9,55,38,.07)}.frp-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(170px,.45fr) minmax(170px,.45fr);gap:9px;margin-bottom:14px}.frp-toolbar input,.frp-toolbar select{width:100%;min-height:46px;padding:10px 13px;border:1px solid #bed5c9;border-radius:12px;background:#fff;color:#153f2f;font:inherit}
       .frp-table{overflow:auto;border:1px solid #d1e1d8;border-radius:16px}.frp-table table{width:100%;min-width:980px;border-collapse:collapse}.frp-table th{padding:12px;background:#edf6f1;color:#315747;font-size:10px;text-align:left}.frp-table td{padding:13px;border-top:1px solid #e1ece6;vertical-align:middle}.frp-name{font-weight:900;color:#174934}.frp-muted{color:#60766c;font-size:11px}.frp-contact{display:flex;gap:6px;flex-wrap:wrap}.frp-contact a,.frp-detail{display:inline-flex;min-height:38px;align-items:center;justify-content:center;padding:8px 10px;border:1px solid #bfd5c9;border-radius:10px;background:#fff;color:#0c6242;font-size:11px;font-weight:900;text-decoration:none}.frp-detail{border:0;background:#0c6c47;color:#fff;cursor:pointer}.frp-empty,.frp-error{padding:28px;border-radius:15px;text-align:center}.frp-empty{background:#f3f9f6;color:#315747}.frp-error{border:1px solid #e8bcbc;background:#fff1f1;color:#8d2d2d}
       .frp-overlay{position:fixed;z-index:3600;inset:0;display:none;align-items:flex-start;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom));background:rgba(3,28,19,.74);overflow:hidden}.frp-overlay.show{display:flex}.frp-modal{display:flex;flex-direction:column;width:min(900px,100%);max-height:calc(100dvh - 20px);margin:auto;overflow:hidden;border-radius:20px;background:#f5faf7;box-shadow:0 32px 90px rgba(0,0,0,.38)}.frp-modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:18px 20px;background:linear-gradient(135deg,#073923,#126d49);color:#fff}.frp-modal-head h2{margin:0 0 4px!important;color:#fff!important}.frp-close{min-height:42px;padding:9px 12px;border:0;border-radius:10px;background:#fff;color:#174934;font-weight:900}.frp-body{min-height:0;overflow-y:auto;padding:17px}.frp-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.frp-form label{color:#315747;font-size:11px;font-weight:900}.frp-form input,.frp-form select{width:100%;min-height:46px;margin-top:6px;padding:10px 12px;border:1px solid #b9d1c4;border-radius:11px;background:#fff;color:#173f30;font:inherit}.frp-history{grid-column:1/-1;margin-top:5px;padding-top:15px;border-top:1px solid #cddfd5}.frp-history h3{margin:0 0 10px}.frp-event{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-top:1px solid #e0ebe5}.frp-event:first-of-type{border-top:0}.frp-event strong{display:block}.frp-event small{color:#61776d}.frp-foot{display:flex;justify-content:flex-end;gap:9px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #bfd5c9;background:#edf6f1}.frp-foot button{min-height:46px;padding:10px 16px;border-radius:11px;font-weight:900}.frp-cancel{border:1px solid #bfd5c9;background:#fff;color:#174934}.frp-save{border:0;background:#0c6c47;color:#fff}
       .frp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.frp-player-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #c9ddd2;border-radius:18px;background:#fff;box-shadow:0 9px 25px rgba(9,55,38,.07)}.frp-photo{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,#dfeee6,#f4f9f6)}.frp-photo img{width:100%;height:100%;display:block;object-fit:contain;object-position:center center;background:#eef5f1}.frp-photo-placeholder{width:100%;height:100%;display:grid;place-items:center;font-size:42px;font-weight:900;color:#7b9689}.frp-player-content{display:flex;flex:1;flex-direction:column;padding:14px}.frp-player-name{margin:0;color:#174934;font-size:17px;line-height:1.18}.frp-player-meta{margin:5px 0 0;color:#60766c;font-size:11px;line-height:1.45}.frp-chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.frp-chip{display:inline-flex;align-items:center;min-height:27px;padding:5px 8px;border-radius:999px;background:#edf6f1;color:#255440;font-size:10px;font-weight:900}.frp-chip.pending{background:#fff4d9;color:#765b18}.frp-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:auto;padding-top:10px;border-top:1px solid #e3ece7}.frp-card-bottom small{color:#60766c}.frp-profile-hero{grid-column:1/-1;display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px;align-items:center;margin-bottom:6px;padding:14px;border:1px solid #c9ddd2;border-radius:16px;background:#fff}.frp-profile-photo{width:170px;aspect-ratio:4/3;overflow:hidden;border-radius:14px;background:#e4f0e9}.frp-profile-photo img{width:100%;height:100%;object-fit:contain;object-position:center center;background:#eef5f1}.frp-profile-photo .frp-photo-placeholder{font-size:34px}.frp-profile-summary h3{margin:0 0 6px;color:#174934}.frp-profile-summary p{margin:0;color:#60766c;font-size:12px;line-height:1.5}.frp-profile-hint{grid-column:1/-1;margin:0;padding:10px 12px;border-radius:11px;background:#eef7f2;color:#3a6351;font-size:11px}.frp-invite-test{grid-column:1/-1;margin:0;padding:14px;border:1px solid #cfe0d6;border-radius:14px;background:#f7fbf9}.frp-invite-test h3{margin:0 0 8px;color:#174934;font-size:15px}.frp-invite-test p{margin:4px 0;color:#52695f;font-size:12px;line-height:1.45}.frp-invite-test strong{color:#203f32}
-      @media(max-width:760px){#players .frp-head{padding:18px;flex-direction:column}.frp-toolbar{grid-template-columns:1fr}.frp-table{overflow:visible;border:0}.frp-table table,.frp-table tbody{display:block;min-width:0}.frp-table thead{display:none}.frp-table tr{display:block;margin-bottom:11px;padding:14px;border:1px solid #c9ddd2;border-radius:15px;background:#fff}.frp-table td{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:6px 0;border:0}.frp-table td:before{content:attr(data-label);color:#60766c;font-size:9px;font-weight:900}.frp-table td:last-child{display:block;padding-top:10px}.frp-detail{width:100%}.frp-form{grid-template-columns:1fr}.frp-profile-hero{grid-template-columns:96px minmax(0,1fr)}.frp-profile-photo{width:96px}.frp-history{grid-column:auto}.frp-event{grid-template-columns:1fr}.frp-modal{max-height:100dvh;border-radius:16px}.frp-overlay{padding:0}.frp-contact{justify-content:flex-start}}
+      @media(max-width:760px){#players .frp-toolbar{grid-template-columns:1fr}#players .frp-head{padding:18px;flex-direction:column}.frp-toolbar{grid-template-columns:1fr}.frp-table{overflow:visible;border:0}.frp-table table,.frp-table tbody{display:block;min-width:0}.frp-table thead{display:none}.frp-table tr{display:block;margin-bottom:11px;padding:14px;border:1px solid #c9ddd2;border-radius:15px;background:#fff}.frp-table td{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:6px 0;border:0}.frp-table td:before{content:attr(data-label);color:#60766c;font-size:9px;font-weight:900}.frp-table td:last-child{display:block;padding-top:10px}.frp-detail{width:100%}.frp-form{grid-template-columns:1fr}.frp-profile-hero{grid-template-columns:96px minmax(0,1fr)}.frp-profile-photo{width:96px}.frp-history{grid-column:auto}.frp-event{grid-template-columns:1fr}.frp-modal{max-height:100dvh;border-radius:16px}.frp-overlay{padding:0}.frp-contact{justify-content:flex-start}}
     `;
     d.head.appendChild(style);
   }
@@ -59,7 +59,7 @@
       club: String(row.current_club || ""),
       email: String(row.email || ""),
       phone: String(row.phone || ""),
-      photoUrl: String(row.photo_url || row.image_url || row.card_image_url || row.primary_photo_url || ""),
+      photoUrl: browserPhotoUrl(row.photo_url || row.image_url || row.card_image_url || row.primary_photo_url || ""),
       photoPath: String(row.photo_storage_path || row.storage_path || row.primary_photo_path || ""),
       status: String(row.player_status || "active"),
       registrations: Number(row.registration_count) || 0,
@@ -77,7 +77,8 @@
     const direct = profileMeta.find((item) => String(item.id || "") === String(player.id || ""));
     if (direct) return direct;
     const key = profileKey(player.name);
-    return profileMeta.find((item) => profileKey(item.name) === key && (!player.year || !item.year || String(item.year) === String(player.year))) || null;
+    const matches = profileMeta.filter((item) => profileKey(item.name) === key && (!player.year || !item.year || String(item.year) === String(player.year)));
+    return matches.length === 1 ? matches[0] : null; // Mai associare foto a omonimi ambigui.
   }
 
   function mergeMetaIntoRows() {
@@ -90,7 +91,7 @@
         heightCm: player.heightCm || Number(meta.heightCm || meta.height_cm || 0) || null,
         club: player.club || meta.club || "",
         city: player.city || meta.city || "",
-        photoUrl: player.photoUrl || meta.imageUrl || meta.cardImageUrl || meta.image_url || meta.card_image_url || ""
+        photoUrl: player.photoUrl || directPhotoCandidate(meta) || ""
       });
     });
   }
@@ -146,7 +147,7 @@
 
   function browserPhotoUrl(value) {
     const photo = safePhoto(value);
-    if (!photo) return "";
+    if (!photo || (!/^(https?:|blob:|data:image\/)/i.test(photo) && !/^images\//i.test(photo))) return "";
     const driveMatch = photo.match(/^https:\/\/drive\.google\.com\/file\/d\/([^/]+)/i)
       || photo.match(/[?&]id=([^&]+)/i);
     if (driveMatch && driveMatch[1]) {
@@ -161,10 +162,19 @@
 
   function directPhotoCandidate(source) {
     if (!source || typeof source !== "object") return "";
-    const keys = ["photo_url", "image_url", "card_image_url", "primary_photo_url", "public_url", "preview_url", "photo_path"];
+    const keys = ["photo_url", "image_url", "card_image_url", "primary_photo_url", "public_url", "preview_url", "photo_path", "player_photo_path", "imageUrl", "cardImageUrl", "photoUrl"];
     for (const key of keys) {
-      const value = browserPhotoUrl(source[key]);
+      const raw = source[key];
+      const value = browserPhotoUrl(raw && typeof raw === "object" ? (raw.url || raw.public_url || raw.preview_url) : raw);
       if (value) return value;
+    }
+    const original = source.original_data;
+    if (original && typeof original === "object") {
+      for (const key of ["Foto Giocatore", "Foto giocatore", "Profile Photo Path", "player_photo", "photo"]) {
+        const raw = original[key];
+        const url = browserPhotoUrl(raw && typeof raw === "object" ? (raw.url || raw.public_url || raw.preview_url) : raw);
+        if (url) return url;
+      }
     }
     return "";
   }
@@ -173,16 +183,20 @@
     const list = [];
     const add = (value) => {
       let path = String(value || "").trim();
-      if (!path || /^https?:/i.test(path)) return;
+      if (!path || /^(https?:|blob:|data:)/i.test(path)) return;
       path = path.replace(/^profile-media\//, "").replace(/^\/+/, "");
+      if (!/^[a-z0-9_./-]+$/i.test(path)) return;
       if (path && !list.includes(path)) list.push(path);
     };
     [player].concat(registrations || []).forEach((source) => {
       if (!source || typeof source !== "object") return;
-      ["photo_storage_path", "storage_path", "primary_photo_path", "registration_photo_path", "photo_path"].forEach((key) => add(source[key]));
+      ["photo_storage_path", "storage_path", "primary_photo_path", "registration_photo_path", "photo_path", "player_photo_path"].forEach((key) => add(source[key]));
       if (source.original_data && typeof source.original_data === "object") {
-        const photo = source.original_data["Foto Giocatore"];
-        if (photo && typeof photo === "object") add(photo.storage_path || photo.path);
+        const original = source.original_data;
+        ["Foto Giocatore", "Foto giocatore", "Profile Photo Path", "photo_path", "player_photo"].forEach((key) => {
+          const photo = original[key];
+          add(photo && typeof photo === "object" ? (photo.storage_path || photo.path) : photo);
+        });
       }
       const registrationId = String(source.id || source.registration_id || "").trim();
       const submissionId = String(source.submission_id || "").trim();
@@ -266,8 +280,9 @@
 
   function filteredRows() {
     const search = String(d.getElementById("frpSearch")?.value || "").toLowerCase();
+    const statusFilter = String(d.getElementById("frpStatusFilter")?.value || "active");
     const sort = String(d.getElementById("frpSort")?.value || "name-asc");
-    let list = rows.filter((player) => !search || [player.name, player.email, player.phone, player.city, player.club, player.position, player.category, player.year, player.heightCm].join(" ").toLowerCase().includes(search));
+    let list = rows.filter((player) => (statusFilter === "all" || (player.status === "archived" ? "archived" : "active") === statusFilter) && (!search || [player.name, player.email, player.phone, player.city, player.club, player.position, player.category, player.year, player.heightCm].join(" ").toLowerCase().includes(search)));
     const collator = new Intl.Collator("it", { sensitivity: "base", numeric: true });
     list = list.slice().sort((a, b) => {
       if (sort === "name-desc") return collator.compare(b.name, a.name);
@@ -295,12 +310,22 @@
   function ensureModal() {
     let overlay = d.getElementById("frpOverlay");
     if (overlay) return overlay;
-    d.body.insertAdjacentHTML("beforeend", `<div id="frpOverlay" class="frp-overlay" aria-hidden="true"><section class="frp-modal" role="dialog" aria-modal="true"><header class="frp-modal-head"><div><h2 id="frpTitle">Scheda giocatore</h2><div>Archivio permanente dei giocatori iscritti.</div></div><button id="frpClose" class="frp-close" type="button">Chiudi</button></header><div id="frpBody" class="frp-body"></div><footer class="frp-foot"><button id="frpCancel" class="frp-cancel" type="button">Annulla</button><button id="frpSave" class="frp-save" type="button">Salva dati</button></footer></section></div>`);
+    d.body.insertAdjacentHTML("beforeend", `<div id="frpOverlay" class="frp-overlay" aria-hidden="true"><section class="frp-modal" role="dialog" aria-modal="true"><header class="frp-modal-head"><div><h2 id="frpTitle">Scheda giocatore</h2><div>Archivio permanente dei giocatori iscritti.</div></div><button id="frpClose" class="frp-close" type="button">Chiudi</button></header><div id="frpBody" class="frp-body"></div><footer class="frp-foot"><button id="frpArchive" type="button" class="frp-cancel">Archivia profilo</button><button id="frpCancel" class="frp-cancel" type="button">Annulla</button><button id="frpSave" class="frp-save" type="button">Salva dati</button></footer></section></div>`);
     overlay = d.getElementById("frpOverlay");
     const close = () => { overlay.classList.remove("show"); overlay.setAttribute("aria-hidden", "true"); d.body.style.overflow = ""; };
     d.getElementById("frpClose").onclick = close;
     d.getElementById("frpCancel").onclick = close;
     d.getElementById("frpSave").onclick = saveDetail;
+    d.getElementById("frpArchive").onclick = function () {
+      const status = d.getElementById("frpStatus");
+      if (!status) return;
+      const archive = status.value !== "archived";
+      if (!window.confirm(archive
+        ? "Archiviare il giocatore? Il profilo non sarà pubblico, ma iscrizioni e storico resteranno conservati."
+        : "Riattivare il giocatore nell'archivio? La pubblicazione della Player Card resta una scelta separata.")) return;
+      status.value = archive ? "archived" : "active";
+      saveDetail();
+    };
     overlay.onclick = (event) => { if (event.target === overlay) close(); };
     return overlay;
   }
@@ -396,10 +421,13 @@
       '<label>Categoria<input id="frpCategory" value="' + esc(category) + '" placeholder="Es. Under 16"></label><label>Ruolo<input id="frpPosition" value="' + esc(player.position || row.position) + '" placeholder="Es. PG / SG"></label>' +
       '<label>Altezza (cm)<input id="frpHeight" type="number" min="120" max="250" step="1" value="' + esc(heightCm) + '" placeholder="Es. 184"></label><label>Squadra<input id="frpClub" value="' + esc(player.current_club || row.club) + '"></label>' +
       '<label class="frp-history">Foto profilo (URL, opzionale)<input id="frpPhotoUrl" value="' + esc(persistentPhoto) + '" placeholder="La foto della registrazione viene usata automaticamente"></label>' +
+      '<label>Carica foto (JPG, PNG o WEBP, max 10 MB)<input id="frpPhotoFile" type="file" accept="image/jpeg,image/png,image/webp"></label>' +
       '<label>Stato<select id="frpStatus"><option value="active">Attivo</option><option value="archived">Archiviato</option></select></label>' +
+      '<p class="frp-profile-hint">Archiviare nasconde il profilo pubblico e conserva iscrizioni e storico. La cancellazione definitiva da database, Drive e Fogli non è ancora collegata: non viene eseguita da qui.</p>' +
       '<section class="frp-history"><h3>Storico eventi (' + registrations.length + ')</h3>' + eventHistory(registrations) + '</section>' +
     '</div>';
     d.getElementById("frpStatus").value = player.status === "archived" ? "archived" : "active";
+    d.getElementById("frpArchive").textContent = player.status === "archived" ? "Riattiva profilo" : "Archivia profilo";
     if (row) row.__eventIds = registrations.map((registration) => String(registration.event_id));
   }
 
@@ -419,7 +447,13 @@
       const category = d.getElementById("frpCategory").value.trim();
       const heightText = d.getElementById("frpHeight").value.trim();
       const heightCm = heightText ? Number(heightText) : null;
-      const photoUrl = safePhoto(d.getElementById("frpPhotoUrl").value);
+      let photoUrl = safePhoto(d.getElementById("frpPhotoUrl").value);
+      const imageFile = d.getElementById("frpPhotoFile")?.files?.[0];
+      if (imageFile) {
+        if (!window.FilitaliaCore || typeof window.FilitaliaCore.uploadPublicAsset !== "function") throw new Error("CARICAMENTO_FOTO_NON_DISPONIBILE");
+        photoUrl = await window.FilitaliaCore.uploadPublicAsset(imageFile, "players");
+        if (!/^https:\/\//i.test(photoUrl)) throw new Error("FOTO_NON_SALVATA_SU_STORAGE");
+      }
       patch.height_cm = heightCm;
       if (photoUrl) patch.photo_path = photoUrl;
       if (!patch.first_name || !patch.last_name || !patch.birth_date) throw new Error("Nome, cognome e data di nascita sono obbligatori.");
@@ -427,6 +461,10 @@
 
       const result = await client().rpc("admin_update_registry_player", { target_player_id: currentId, patch });
       if (result.error) throw result.error;
+      if (patch.status === "archived") {
+        const unpublished = await client().rpc("admin_unpublish_player_card_v2", { target_player_id: currentId });
+        if (unpublished.error) throw new Error("Profilo archiviato, ma impossibile nascondere la Player Card: " + unpublished.error.message);
+      }
 
       let profileError = null;
       if (window.FilitaliaCore && typeof window.FilitaliaCore.savePlayer === "function") {
@@ -445,7 +483,7 @@
             city: patch.residence_city,
             imageUrl: photoUrl || existing.imageUrl || existing.image_url || "",
             cardImageUrl: photoUrl || existing.cardImageUrl || existing.card_image_url || existing.imageUrl || existing.image_url || "",
-            status: existing.status || "active",
+            status: patch.status,
             profileStatus: existing.profileStatus || existing.profile_status || "incomplete"
           }));
         } catch (error) {
@@ -458,13 +496,14 @@
       d.getElementById("frpOverlay").classList.remove("show");
       d.body.style.overflow = "";
       await render();
-    } catch (error) { notify("Dati non salvati: " + (error.message || error)); }
+    } catch (error) { notify("Salvataggio non completato. Verifica i dati: " + (error.message || error)); }
     finally { button.disabled = false; button.textContent = "Salva dati"; }
   }
 
   function bind() {
     d.getElementById("frpSearch").addEventListener("input", refreshTable);
     d.getElementById("frpSort").addEventListener("change", refreshTable);
+    d.getElementById("frpStatusFilter").addEventListener("change", refreshTable);
     d.getElementById("frpEvent").addEventListener("change", async function () {
       const tableBox = d.getElementById("frpTable");
       tableBox.innerHTML = '<div class="frp-empty">Aggiornamento elenco…</div>';
@@ -483,7 +522,7 @@
     section.innerHTML = '<div class="frp-empty">Caricamento archivio giocatori…</div>';
     try {
       await load();
-      section.innerHTML = `<div id="filRegistryPlayersRoot"><header class="frp-head"><div><span class="eyebrow">ARCHIVIO ISCRITTI</span><h1>Player Profiles</h1><div class="frp-sub">Foto, nome e cognome in primo piano. Ogni scheda mantiene lo storico delle registrazioni e può essere completata con categoria, ruolo e altezza.</div></div><span id="frpVisibleCount" class="frp-count">${rows.length} giocatori</span></header><div class="frp-card"><div class="frp-toolbar"><input id="frpSearch" type="search" placeholder="Cerca nome, ruolo, altezza, città o squadra"><select id="frpEvent"><option value="">Tutti gli eventi</option>${events.map((event) => `<option value="${esc(event.event_id)}">${esc([event.city, event.name].filter(Boolean).join(" · "))}</option>`).join("")}</select><select id="frpSort"><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option><option value="year-asc">Anno: più grandi prima</option><option value="year-desc">Anno: più giovani prima</option><option value="height-desc">Altezza: più alti prima</option><option value="height-asc">Altezza: più bassi prima</option><option value="recent">Evento più recente</option></select></div><div id="frpTable"></div></div></div>`;
+      section.innerHTML = `<div id="filRegistryPlayersRoot"><header class="frp-head"><div><span class="eyebrow">ARCHIVIO ISCRITTI</span><h1>Player Profiles</h1><div class="frp-sub">Foto, nome e cognome in primo piano. Ogni scheda mantiene lo storico delle registrazioni e può essere completata con categoria, ruolo e altezza.</div></div><span id="frpVisibleCount" class="frp-count">${rows.length} giocatori</span></header><div class="frp-card"><div class="frp-toolbar"><input id="frpSearch" type="search" placeholder="Cerca nome, ruolo, altezza, città o squadra"><select id="frpEvent"><option value="">Tutti gli eventi</option>${events.map((event) => `<option value="${esc(event.event_id)}">${esc([event.city, event.name].filter(Boolean).join(" · "))}</option>`).join("")}</select><select id="frpStatusFilter" aria-label="Stato giocatori"><option value="active">Attivi</option><option value="archived">Archiviati</option><option value="all">Tutti</option></select><select id="frpSort"><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option><option value="year-asc">Anno: più grandi prima</option><option value="year-desc">Anno: più giovani prima</option><option value="height-desc">Altezza: più alti prima</option><option value="height-asc">Altezza: più bassi prima</option><option value="recent">Evento più recente</option></select></div><div id="frpTable"></div></div></div>`;
       bind();
     } catch (error) {
       section.innerHTML = `<div class="frp-error"><b>Archivio giocatori non disponibile.</b><div>${esc(error.message || error)}</div></div>`;
