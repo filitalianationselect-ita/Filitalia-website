@@ -63,7 +63,6 @@
           String(item.slug || ""),
         ].includes(wanted);
       }) ||
-      eventSource()[0] ||
       null
     );
   }
