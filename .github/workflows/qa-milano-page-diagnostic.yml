@@ -1,0 +1,39 @@
+name: Diagnose Milano registration page (read-only)
+on:
+  push:
+    branches: [qa/registration-email-milano-20261014]
+    paths: [.github/workflows/qa-milano-page-diagnostic.yml]
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Inspect mobile form without submission
+        run: |
+          node <<'JS'
+          const {chromium}=require('playwright');
+          let browser;
+          const stop=setTimeout(()=>{console.error('[DIAG] Overall timeout');process.exit(44)},70000);
+          (async()=>{
+            try{
+              browser=await chromium.launch({headless:true});
+              const page=await browser.newPage();
+              page.on('pageerror',e=>console.log('[DIAG] JS error '+String(e.message).slice(0,300)));
+              console.log('[DIAG] Open production form');
+              await page.goto('https://www.filitalianationselect.com/camp-register.html?event=idcamp-milano-2026',{waitUntil:'domcontentloaded',timeout:20000});
+              console.log('[DIAG] Form loaded:',await page.locator('#campForm').count());
+              await page.waitForTimeout(1300);
+              const stats=await page.evaluate(()=>({ready:document.readyState,event:document.querySelector('#campEventSelect option:checked')?.dataset.id,options:document.querySelector('#campEventSelect')?.options.length,fieldNames:[...document.querySelectorAll('#campForm [name]')].map(x=>x.name),submitHandlers:typeof window.FilitaliaRegistrations?.createCampRegistration,endpointReady:!!window.FILITALIA_FORM_ENDPOINT}));
+              console.log('[DIAG] '+JSON.stringify(stats));
+            }finally{if(browser)await browser.close();clearTimeout(stop)}
+          })().catch(e=>{console.error('[DIAG] ERROR: '+String(e.stack||e));process.exitCode=1});
+          JS
