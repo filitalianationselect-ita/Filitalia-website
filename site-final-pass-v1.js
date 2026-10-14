@@ -133,6 +133,29 @@ function installHomeStyles(){
   @media(max-width:1050px){#homeStaffGrid .fhs-shell{grid-template-columns:minmax(0,1fr) minmax(300px,.72fr);gap:38px}#homeStaffGrid .fhs-card{width:min(360px,35vw)}#homeEventsGrid .fhe-layout{grid-template-columns:1fr}.fhe-list{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:none!important}.fhe-mini{grid-template-columns:1fr!important}.fhe-mini-media{min-height:140px!important}}
   @media(max-width:900px){#homeStaffGrid .fhs-stage,#homeEventsGrid .fhe-stage{padding:42px 22px 48px}#homeStaffGrid .fhs-shell{grid-template-columns:1fr;min-height:0;gap:34px}#homeStaffGrid .fhs-card-wrap{grid-row:2}#homeStaffGrid .fhs-card{width:min(82vw,430px);max-height:none}#homeStaffGrid .fhs-prev{left:8px}#homeStaffGrid .fhs-next{right:8px}#homeEventsGrid .fhe-shell{min-height:0}#homeEventsGrid .fhe-header{align-items:flex-start;flex-direction:column}#homeEventsGrid .fhe-feature-copy{width:100%}#homeEventsGrid .fhe-list{grid-template-columns:1fr!important}}
   @media(max-width:620px){#homeStaffGrid .fhs-title{font-size:clamp(3rem,17vw,4.8rem)!important}#homeStaffGrid .fhs-name{font-size:clamp(1.9rem,10vw,2.8rem)!important}#homeStaffGrid .fhs-bio{-webkit-line-clamp:5}#homeStaffGrid .fhs-card{width:min(100%,350px)}#homeStaffGrid .fhs-card-footer{padding-right:76px}#homeStaffGrid .fhs-card-logo{width:50px}#homeStaffGrid .fhs-controls{gap:3px}#homeStaffGrid .fhs-tab{min-width:34px;font-size:.68rem}#homeEventsGrid .fhe-title{font-size:clamp(2.8rem,15vw,4.5rem)!important}#homeEventsGrid .fhe-feature,#homeEventsGrid .fhe-feature-copy{min-height:500px}#homeEventsGrid .fhe-feature-copy{padding:25px}#homeEventsGrid .fhe-feature:after{background:linear-gradient(180deg,rgba(2,23,16,.18),rgba(2,23,16,.94) 62%)}#homeEventsGrid .fhe-mini{grid-template-columns:105px minmax(0,1fr)!important}.fhe-mini-media{min-height:0!important}}
+
+  /* Event cover mobile: display the entire poster instead of cropping it under the copy. */
+  @media(max-width:620px){
+    #homeEventsGrid .fhe-feature{
+      display:flex!important;flex-direction:column!important;
+      min-height:0!important;height:auto!important;
+      background:#092a20!important;
+    }
+    #homeEventsGrid .fhe-feature>img{
+      position:relative!important;inset:auto!important;
+      display:block!important;flex:none!important;
+      width:100%!important;height:min(100vw,480px)!important;
+      object-fit:contain!important;object-position:center!important;
+      background:#081b17!important;
+    }
+    #homeEventsGrid .fhe-feature:after{display:none!important}
+    #homeEventsGrid .fhe-feature-copy{
+      box-sizing:border-box!important;position:relative!important;
+      width:100%!important;height:auto!important;min-height:0!important;
+      padding:24px 22px 28px!important;z-index:2;
+      background:linear-gradient(150deg,#073527,#05261d)!important;
+    }
+  }
   @media(prefers-reduced-motion:reduce){#homeStaffGrid .fhs-person,#homeStaffGrid .fhs-card{transition:none!important}#homeStaffGrid .fhs-tab[aria-selected="true"] .fhs-progress{animation:none!important;transform:scaleX(1)}}`;
   document.head.appendChild(style);
 }

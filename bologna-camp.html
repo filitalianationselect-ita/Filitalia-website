@@ -19,6 +19,7 @@
 }
 .bologna-event-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(3,25,18,.78),transparent 48%);pointer-events:none}
 .bologna-event-shell{position:relative;z-index:1;width:min(1180px,calc(100% - 40px));margin:0 auto;padding:72px 0 64px;color:#fff}
+.bologna-mobile-cover{display:none}
 .bologna-kicker{display:inline-flex;gap:9px;align-items:center;padding:8px 12px;border:1px solid rgba(255,255,255,.26);border-radius:999px;background:rgba(0,0,0,.28);font-size:12px;font-weight:800;letter-spacing:.1em}
 .bologna-event-shell h1{font-size:clamp(42px,7vw,88px);line-height:.92;margin:18px 0 16px;max-width:820px;letter-spacing:-.045em}
 .bologna-lead{font-size:clamp(18px,2.4vw,28px);font-weight:700;margin:0 0 24px}
@@ -31,8 +32,12 @@
 .bologna-actions .main-button{background:#fff!important;color:#063728!important;border-radius:10px!important;padding:14px 20px!important;font-weight:900!important}
 .bologna-actions .players-list-link{display:inline-flex;align-items:center;color:#fff!important;border:1px solid rgba(255,255,255,.34);border-radius:10px;padding:14px 18px;text-decoration:none;font-weight:800}
 @media(max-width:760px){
-  .bologna-event-hero{min-height:760px;background-position:center top;background-image:linear-gradient(0deg,rgba(3,25,18,.96) 0%,rgba(3,25,18,.82) 46%,rgba(3,25,18,.18) 100%),url('images/camp-bologna-u12-2026.jpg')}
-  .bologna-event-shell{width:min(100% - 28px,1180px);padding:300px 0 42px}
+  .bologna-event-hero{display:block;min-height:0;background-image:none;background-color:#06251b}
+  .bologna-event-hero:after{display:none}
+  .bologna-mobile-cover{display:block;margin:0;padding:0;background:#061c16;text-align:center}
+  .bologna-mobile-cover img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;object-position:center;background:#061c16}
+
+  .bologna-event-shell{width:min(100% - 28px,1180px);padding:30px 0 42px}
   .bologna-facts{grid-template-columns:1fr}
   .bologna-event-shell h1{font-size:46px}
 }
@@ -59,6 +64,7 @@
 
 <section class="players-page registration-page bologna-event-page">
   <div class="bologna-event-hero">
+    <figure class="bologna-mobile-cover"><img src="images/camp-bologna-u12-2026.jpg" alt="Locandina ufficiale FIL-ITALIA U12 Camp Bologna, 17 ottobre 2026" loading="eager" decoding="async"></figure>
     <div class="bologna-event-shell">
       <span class="bologna-kicker">FIL-ITALIA NATION SELECT · BOLOGNA</span>
       <h1>U12 CAMP BOLOGNA</h1>
