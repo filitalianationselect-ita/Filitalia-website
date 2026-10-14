@@ -42,6 +42,7 @@
       .frp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.frp-player-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #c9ddd2;border-radius:18px;background:#fff;box-shadow:0 9px 25px rgba(9,55,38,.07)}.frp-photo{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,#dfeee6,#f4f9f6)}.frp-photo img{width:100%;height:100%;display:block;object-fit:contain;object-position:center center;background:#eef5f1}.frp-photo-placeholder{width:100%;height:100%;display:grid;place-items:center;font-size:42px;font-weight:900;color:#7b9689}.frp-player-content{display:flex;flex:1;flex-direction:column;padding:14px}.frp-player-name{margin:0;color:#174934;font-size:17px;line-height:1.18}.frp-player-meta{margin:5px 0 0;color:#60766c;font-size:11px;line-height:1.45}.frp-chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.frp-chip{display:inline-flex;align-items:center;min-height:27px;padding:5px 8px;border-radius:999px;background:#edf6f1;color:#255440;font-size:10px;font-weight:900}.frp-chip.pending{background:#fff4d9;color:#765b18}.frp-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:auto;padding-top:10px;border-top:1px solid #e3ece7}.frp-card-bottom small{color:#60766c}.frp-profile-hero{grid-column:1/-1;display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px;align-items:center;margin-bottom:6px;padding:14px;border:1px solid #c9ddd2;border-radius:16px;background:#fff}.frp-profile-photo{width:170px;aspect-ratio:4/3;overflow:hidden;border-radius:14px;background:#e4f0e9}.frp-profile-photo img{width:100%;height:100%;object-fit:contain;object-position:center center;background:#eef5f1}.frp-profile-photo .frp-photo-placeholder{font-size:34px}.frp-profile-summary h3{margin:0 0 6px;color:#174934}.frp-profile-summary p{margin:0;color:#60766c;font-size:12px;line-height:1.5}.frp-profile-hint{grid-column:1/-1;margin:0;padding:10px 12px;border-radius:11px;background:#eef7f2;color:#3a6351;font-size:11px}.frp-invite-test{grid-column:1/-1;margin:0;padding:14px;border:1px solid #cfe0d6;border-radius:14px;background:#f7fbf9}.frp-invite-test h3{margin:0 0 8px;color:#174934;font-size:15px}.frp-invite-test p{margin:4px 0;color:#52695f;font-size:12px;line-height:1.45}.frp-invite-test strong{color:#203f32}
       @media(max-width:760px){#players .frp-toolbar{grid-template-columns:1fr}#players .frp-head{padding:18px;flex-direction:column}.frp-toolbar{grid-template-columns:1fr}.frp-table{overflow:visible;border:0}.frp-table table,.frp-table tbody{display:block;min-width:0}.frp-table thead{display:none}.frp-table tr{display:block;margin-bottom:11px;padding:14px;border:1px solid #c9ddd2;border-radius:15px;background:#fff}.frp-table td{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;padding:6px 0;border:0}.frp-table td:before{content:attr(data-label);color:#60766c;font-size:9px;font-weight:900}.frp-table td:last-child{display:block;padding-top:10px}.frp-detail{width:100%}.frp-form{grid-template-columns:1fr}.frp-profile-hero{grid-template-columns:96px minmax(0,1fr)}.frp-profile-photo{width:96px}.frp-history{grid-column:auto}.frp-event{grid-template-columns:1fr}.frp-modal{max-height:100dvh;border-radius:16px}.frp-overlay{padding:0}.frp-contact{justify-content:flex-start}}
     `;
+    style.textContent += "#players .frp-head button.frp-recover{background:#fff;color:#0c6242;border:1px solid #aad8c0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;margin-top:8px;min-height:42px}#players .frp-head button.frp-recover:disabled{opacity:.6;cursor:wait}";
     d.head.appendChild(style);
   }
 
@@ -500,7 +501,43 @@
     finally { button.disabled = false; button.textContent = "Salva dati"; }
   }
 
+  async function restoreLegacyPhotos() {
+    const button = d.getElementById("frpRecoverPhotos");
+    if (!button || button.disabled) return;
+    if (!window.confirm("Recuperare le foto originali delle vecchie iscrizioni già verificate? Le immagini saranno conservate nello storage privato FIL-ITALIA.")) return;
+    button.disabled = true;
+    button.textContent = "Recupero foto…";
+    let completed = 0;
+    try {
+      await requireAdmin();
+      for (let round = 0; round < 12; round++) {
+        if (!client()?.functions?.invoke) throw new Error("SERVIZIO_FOTO_NON_DISPONIBILE");
+        const result = await client().functions.invoke("legacy-photo-backfill", { body: {} });
+        if (result.error) throw result.error;
+        const payload = result.data || {};
+        const results = Array.isArray(payload.results) ? payload.results : [];
+        completed += results.filter(item => item.ok).length;
+        const failures = results.filter(item => !item.ok);
+        if (failures.length) throw new Error("Alcune foto non sono state trasferite: " + failures.map(item => item.error || item.id).join(", "));
+        button.textContent = "Foto recuperate: " + completed;
+        if (!Number(payload.remaining)) break;
+        if (!results.length) throw new Error("RECUPERO_FOTO_SENZA_AVANZAMENTO");
+      }
+      notify(completed ? "Recuperate " + completed + " foto nello storage privato. Le schede sono state aggiornate." : "Nessuna altra foto da recuperare.");
+      await render();
+    } catch (error) {
+      notify("Recupero incompleto (" + completed + " foto): " + (error.message || error));
+    } finally {
+      const refreshed = d.getElementById("frpRecoverPhotos");
+      if (refreshed) {
+        refreshed.disabled = false;
+        refreshed.textContent = "Recupera foto vecchie iscrizioni";
+      }
+    }
+  }
+
   function bind() {
+    d.getElementById("frpRecoverPhotos").addEventListener("click", restoreLegacyPhotos);
     d.getElementById("frpSearch").addEventListener("input", refreshTable);
     d.getElementById("frpSort").addEventListener("change", refreshTable);
     d.getElementById("frpStatusFilter").addEventListener("change", refreshTable);
@@ -522,7 +559,7 @@
     section.innerHTML = '<div class="frp-empty">Caricamento archivio giocatori…</div>';
     try {
       await load();
-      section.innerHTML = `<div id="filRegistryPlayersRoot"><header class="frp-head"><div><span class="eyebrow">ARCHIVIO ISCRITTI</span><h1>Player Profiles</h1><div class="frp-sub">Foto, nome e cognome in primo piano. Ogni scheda mantiene lo storico delle registrazioni e può essere completata con categoria, ruolo e altezza.</div></div><span id="frpVisibleCount" class="frp-count">${rows.length} giocatori</span></header><div class="frp-card"><div class="frp-toolbar"><input id="frpSearch" type="search" placeholder="Cerca nome, ruolo, altezza, città o squadra"><select id="frpEvent"><option value="">Tutti gli eventi</option>${events.map((event) => `<option value="${esc(event.event_id)}">${esc([event.city, event.name].filter(Boolean).join(" · "))}</option>`).join("")}</select><select id="frpStatusFilter" aria-label="Stato giocatori"><option value="active">Attivi</option><option value="archived">Archiviati</option><option value="all">Tutti</option></select><select id="frpSort"><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option><option value="year-asc">Anno: più grandi prima</option><option value="year-desc">Anno: più giovani prima</option><option value="height-desc">Altezza: più alti prima</option><option value="height-asc">Altezza: più bassi prima</option><option value="recent">Evento più recente</option></select></div><div id="frpTable"></div></div></div>`;
+      section.innerHTML = `<div id="filRegistryPlayersRoot"><header class="frp-head"><div><span class="eyebrow">ARCHIVIO ISCRITTI</span><h1>Player Profiles</h1><div class="frp-sub">Foto, nome e cognome in primo piano. Ogni scheda mantiene lo storico delle registrazioni e può essere completata con categoria, ruolo e altezza.</div></div><div><span id="frpVisibleCount" class="frp-count">${rows.length} giocatori</span><div><button type="button" id="frpRecoverPhotos" class="frp-recover">Recupera foto vecchie iscrizioni</button></div></div></header><div class="frp-card"><div class="frp-toolbar"><input id="frpSearch" type="search" placeholder="Cerca nome, ruolo, altezza, città o squadra"><select id="frpEvent"><option value="">Tutti gli eventi</option>${events.map((event) => `<option value="${esc(event.event_id)}">${esc([event.city, event.name].filter(Boolean).join(" · "))}</option>`).join("")}</select><select id="frpStatusFilter" aria-label="Stato giocatori"><option value="active">Attivi</option><option value="archived">Archiviati</option><option value="all">Tutti</option></select><select id="frpSort"><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option><option value="year-asc">Anno: più grandi prima</option><option value="year-desc">Anno: più giovani prima</option><option value="height-desc">Altezza: più alti prima</option><option value="height-asc">Altezza: più bassi prima</option><option value="recent">Evento più recente</option></select></div><div id="frpTable"></div></div></div>`;
       bind();
     } catch (error) {
       section.innerHTML = `<div class="frp-error"><b>Archivio giocatori non disponibile.</b><div>${esc(error.message || error)}</div></div>`;
