@@ -26,11 +26,16 @@
   }
 
   async function signedPhotoUrl(client, path) {
-    if (!path) return "";
+    const source = String(path || "").trim();
+    if (!source) return "";
+    if (/^https:\/\//i.test(source)) {
+      const drive = source.match(/^https:\/\/drive\.google\.com\/file\/d\/([^/]+)/i) || source.match(/[?&]id=([^&]+)/i);
+      return drive ? "https://drive.google.com/thumbnail?id=" + encodeURIComponent(drive[1]) + "&sz=w1200" : source;
+    }
     try {
       const result = await client.storage
         .from("profile-media")
-        .createSignedUrl(path, 3600);
+        .createSignedUrl(source.replace(/^profile-media\//, ""), 3600);
       if (result.error) throw result.error;
       return result.data && result.data.signedUrl ? result.data.signedUrl : "";
     } catch (error) {
@@ -47,11 +52,17 @@
     if (!client) return;
 
     try {
-      const result = await client
-        .from("public_player_cards")
-        .select("user_id,full_name,birth_year,category,position,height_cm,current_club,city,nationality,instagram,highlights_url,photo_path,published_at")
+      let result = await client
+        .from("public_player_cards_unified")
+        .select("card_id,user_id,full_name,birth_year,category,position,height_cm,current_club,city,nationality,instagram,highlights_url,photo_path,published_at")
         .order("published_at", { ascending: false });
-
+      // Older installations may not yet have the compatibility view.
+      if (result.error) {
+        result = await client
+          .from("public_player_cards")
+          .select("user_id,full_name,birth_year,category,position,height_cm,current_club,city,nationality,instagram,highlights_url,photo_path,published_at")
+          .order("published_at", { ascending: false });
+      }
       if (result.error) throw result.error;
 
       const rows = Array.isArray(result.data) ? result.data : [];
@@ -70,7 +81,7 @@
         existingNames.add(nameKey);
 
         return {
-          id: "account-" + row.user_id,
+          id: "account-" + (row.user_id || row.card_id),
           name: row.full_name || "FIL-ITALIA Player",
           year: year,
           category: row.category || year,
