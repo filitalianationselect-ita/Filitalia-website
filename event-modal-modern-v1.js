@@ -25,14 +25,15 @@ function eventTime(item){
   const parsed=Date.parse(value);
   return Number.isNaN(parsed)?Number.MAX_SAFE_INTEGER:parsed;
 }
-function visibleEvents(){return source().filter(isVisible).slice().sort(function(a,b){return eventTime(a)-eventTime(b)})}
+function visibleEvents(){const now=new Date();now.setHours(0,0,0,0);return source().filter(function(item){return isVisible(item)&&eventTime(item)>=now.getTime()}).slice().sort(function(a,b){return eventTime(a)-eventTime(b)})}
 function findById(id){
   const wanted=String(id||'');
   return source().find(function(item,index){return [eventId(item,index),String(item.id||''),String(item.slug||'')].includes(wanted)})||null;
 }
 function findFromElement(element){
   if(!element)return null;
-  const direct=element.dataset&&element.dataset.eventId;
+  const identified=element.closest('[data-event-id]')||element;
+  const direct=identified.dataset&&identified.dataset.eventId;
   if(direct){const found=findById(direct);if(found)return found}
   const indexValue=element.dataset&&(element.dataset.fheIndex||element.dataset.fheOpen);
   if(indexValue!=null&&indexValue!==''){
