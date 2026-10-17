@@ -34,6 +34,14 @@ function generateSitemap(){
   const files = getHtmlFiles();
 
   const urls = files
+    .filter(file => {
+      try {
+        const source = fs.readFileSync(file, "utf8");
+        return !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(source);
+      } catch (_) {
+        return true;
+      }
+    })
     .map(file => {
       const cleanPath = file === "index.html" ? "" : file;
       return `${SITE_URL}/${cleanPath}`;
