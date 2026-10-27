@@ -60,6 +60,8 @@
     if (!id || !select) return;
 
     const event = findEvent(id);
+    // Non creare eventi cancellati a partire dai vecchi link.
+    if (!event) return;
     const current = Array.from(select.options).find(function (option) { return option.dataset && option.dataset.id === id; });
     const details = eventDetails(event);
     const title = details.title || current?.dataset?.title || current?.value || "Camp FIL-ITALIA";
