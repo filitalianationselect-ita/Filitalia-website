@@ -91,20 +91,6 @@
       payload.registrationBatchSize = entries.length;
       payload.registrationBatchPosition = index + 1;
       // Fee is recorded for reference only. Payment is collected separately.
-      if (payload.eventId === "idcamp-milano-2026") {
-        const year = Number(String(payload["Data Nascita"] || "").slice(0, 4));
-        const dateParts = new Intl.DateTimeFormat("en-GB", {
-          timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit"
-        }).formatToParts(new Date());
-        const p = Object.fromEntries(dateParts.map(part => [part.type, part.value]));
-        const romeDate = `${p.year}-${p.month}-${p.day}`;
-        const earlyFee = romeDate <= "2026-11-07" ? 50 : 70;
-        const isFree = Number.isFinite(year) && year >= 2014;
-        payload.payment_amount = isFree
-          ? (payload["Taglia Maglia"] === "NO_SHIRT" ? 0 : 25)
-          : earlyFee;
-        payload.pricing_rule = isFree ? "U12_FREE_OPTIONAL_SHIRT" : (earlyFee === 50 ? "MILANO_EARLY" : "MILANO_REGULAR");
-      }
       payload.submittedAt = new Date().toISOString();
       payload.submissionId = entry.dataset.submissionId || uuid();
       entry.dataset.submissionId = payload.submissionId;
@@ -189,6 +175,11 @@
     if (submitButton) { submitButton.disabled = true; submitButton.textContent = words().sending; }
     try {
       const payloads = await collectBatch(form);
+      if (payloads.some(payload => payload.eventId === 'idcamp-milano-2026')) {
+        show(form, 'Il Talent ID Milano del 14 novembre è stato cancellato. Le iscrizioni sono chiuse.', 'error');
+        restore(form);
+        return;
+      }
       if (duplicateInBatch(payloads)) {
         show(form, words().duplicate, "error");
         restore(form);
