@@ -241,7 +241,7 @@
       result = result.filter((item) => {
         const title =
           translated(item && item.title) || String((item && item.name) || "");
-        return !/^id\s*session\b/i.test(title) && !/^test\b/i.test(title);
+        return String((item && item.id) || "") !== "idcamp-milano-2026" && !/^id\s*session\b/i.test(title) && !/^test\b/i.test(title);
       });
       result.sort((a, b) =>
         String(a.sortDate || "2099-12-31").localeCompare(

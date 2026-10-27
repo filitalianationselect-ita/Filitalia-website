@@ -76,11 +76,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.filitalianationselect.com/generated/events/idcamp-milano-2026.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.filitalianationselect.com/generated/events/idcamp-roma-2026.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -237,11 +232,6 @@
   </url>
   <url>
     <loc>https://www.filitalianationselect.com/messina-camp.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.filitalianationselect.com/milano-camp.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
